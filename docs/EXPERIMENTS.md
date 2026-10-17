@@ -516,6 +516,32 @@ Stopped at 16,500 and abandoned. Next: the same data from the pretrained base,
 120,000 steps, so every scene is seen from the first step and nothing has to be
 unlearned (`training/settings.wide_base.env`).
 
+### 4.14 The wide data from the pretrained base: 80,000 steps, no take-off
+
+The same 26,336 episodes, from `allenai/MolmoAct2-SO100_101` with the published run's
+rates, the decay sized to 120,000 steps and the two scenes it left alone - wide and home -
+checked every 10,000 steps (`training/settings.wide_base.env`).
+
+| step | wide scenes (48) | moves / captures | named piece engaged | home rig (24) | loss |
+| --- | --- | --- | --- | --- | --- |
+| 10,000 | 2 | 0/32, 2/16 | 10 | 0 | 0.64 |
+| 20,000 | 1 | 1/32, 0/16 | 12 | 0 | 0.29 |
+| 30,000 | 3 | 3/32, 0/16 | 16 | 3 | 0.26 |
+| 40,000 | 4 | 3/32, 1/16 | 18 | 3 | 0.25 |
+| 50,000 | 3 | 1/32, 2/16 | 15 | 3 | 0.23 |
+| 60,000 | **5** | 3/32, 2/16 | 28 | 2 | 0.22 |
+| 70,000 | 2 | 1/32, 1/16 | 24 | **5** | 0.21 |
+| 80,000 | 4 | 1/32, 3/16 | 18 | - | - |
+
+The published run on its one scene stood at 11, 19, 27 and 32 of 48 at 20,000 to 50,000
+steps. This one never left the floor. From 30,000 on the wide score sat between 2 and 5
+of 48, inside the noise of 48 episodes, while the loss kept falling and the policy
+reached the named piece on half the episodes by 60,000. It finds the piece and then does
+not place it: the move error stayed at 34-41 mm and captures ended about 200 mm short of
+the graveyard. Starting from the base removed the unlearning of §4.12-4.13 and nothing
+replaced it. Stopped at 80,000 and abandoned with MolmoAct2 for the wide data; the next
+attempt changes the model.
+
 ## 5. Findings
 
 ### 5.1 The action label was a copy of the next observed state
