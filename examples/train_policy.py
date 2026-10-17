@@ -27,7 +27,7 @@ from chess_sim.rollout import EvaluationReport
 from chess_sim.training import RECIPES, CheckpointScore, TrainConfig
 
 BEST = "best.json"
-PYTHON = os.path.expanduser("~/vla/venv/bin/python")
+PYTHON = os.path.expanduser(os.environ.get("PYTHON", "~/vla/venv/bin/python"))
 EVALUATOR = "examples/evaluate_policy.py"
 TAIL = 2000     # of the evaluator's output to echo
 
@@ -50,6 +50,8 @@ def score_checkpoint(args, checkpoint: str, step: int, minutes: float) -> Checkp
             command += ["--only-moves", args.moves]
         if args.no_interpolate:
             command += ["--no-interpolate"]
+        steps_flag = action_steps_flag(args)
+        command += steps_flag
         out = subprocess.run(command, capture_output=True, text=True)
         sys.stdout.write(out.stdout[-TAIL:])
         if not os.path.exists(report_path):
@@ -64,7 +66,8 @@ def score_checkpoint(args, checkpoint: str, step: int, minutes: float) -> Checkp
             home = subprocess.run([PYTHON, EVALUATOR, "--checkpoint", checkpoint,
                                    "--moves", str(args.eval_home_episodes), "--captures", str(args.eval_home_episodes // 2),
                                    "--seed", str(args.eval_seed), "--max-steps", str(args.eval_max_steps),
-                                   "--dataset-root", args.root, "--report", home_path], capture_output=True, text=True)
+                                   "--dataset-root", args.root, "--report", home_path, *steps_flag],
+                                  capture_output=True, text=True)
             if os.path.exists(home_path):
                 with open(home_path) as f:
                     home_report = EvaluationReport.model_validate_json(f.read())
@@ -72,6 +75,12 @@ def score_checkpoint(args, checkpoint: str, step: int, minutes: float) -> Checkp
             else:
                 print("home-rig evaluation produced no report:", home.stderr[-400:])
     return CheckpointScore.from_report(report, step=step, minutes=minutes)
+
+
+def action_steps_flag(args) -> list[str]:
+    """The recipe's execution length for the simulator, when it has one."""
+    steps = RECIPES[args.policy].eval_action_steps
+    return [] if steps is None else ["--n-action-steps", str(steps)]
 
 
 def main():

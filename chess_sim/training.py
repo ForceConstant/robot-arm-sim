@@ -24,7 +24,8 @@ from .hub import DATASET_REPO
 from .rollout import EvaluationReport
 from .tasks import TaskFamily
 
-ACCELERATE = "~/vla/venv/bin/accelerate"
+# the environment a run's own lerobot lives in; FLUX 3 needs a newer one than MolmoAct2
+ACCELERATE = os.environ.get("ACCELERATE", "~/vla/venv/bin/accelerate")
 TRAIN_MODULE = "lerobot.scripts.lerobot_train"
 MM_PER_M = 1000.0
 CHECKPOINT_DIR = "checkpoints"
@@ -49,8 +50,20 @@ class PolicyRecipe(Config):
         """How a fresh run names its weights. Most policies open them by path."""
         return [f"--policy.path={base}"]
 
+    # actions per policy call in the simulator: None is the evaluator's default, 0
+    # keeps the checkpoint's own
+    eval_action_steps: int | None = None
+
     def model_flags(self, run: "TrainConfig") -> list[str]:
         return []
+
+    def shape_flags(self, run: "TrainConfig") -> list[str]:
+        """The horizon, the schedule and the augmentation a run sets for itself."""
+        return [f"--policy.chunk_size={run.chunk}", f"--policy.n_action_steps={run.chunk}",
+                "--dataset.image_transforms.enable=true",
+                # every LeRobot scheduler decays over its own fixed count whatever
+                # --steps says; the first full run spent everything past 24,000 at the floor
+                f"--policy.scheduler_decay_steps={run.total_steps}"]
 
 
 class MolmoAct2Recipe(PolicyRecipe):
@@ -116,7 +129,47 @@ class SmolVLARecipe(PolicyRecipe):
                 f"--policy.scheduler_warmup_steps={min(1000, run.total_steps // 20)}"]
 
 
-RECIPES: dict[str, PolicyRecipe] = {"molmoact2": MolmoAct2Recipe(), "smolvla": SmolVLARecipe()}
+class Flux3Recipe(PolicyRecipe):
+    """FLUX 3 Action: a 7B video-and-action diffusion transformer, adapted with LoRA.
+
+    The SO-101 package was trained on the community SO-101 data in the same
+    degrees-with-offset convention our exports write, at 30 Hz, so its own
+    normalization statistics apply as published. The checkpoint owns its horizon
+    (42 predicted, 32 executed), its eight-frame history, its delta actions and its
+    camera layout; a run passes none of them. Training settings come from the
+    package's own LoRA preset: rank 32, EMA 0.999, batch 2 with four-step
+    accumulation, so --steps counts micro-batches.
+    """
+    policy_type: str = "flux3"
+    base: str = "black-forest-labs/flux-3-action-so101"
+    chunk_size: int = 42
+    n_action_steps: int = 32
+    learning_rates: dict[str, float] = {"optimizer_lr": 1e-4}   # heads run at 5x this
+    install_extra: str = "flux3"
+    preset: str = "~/vla/lerobot_main/examples/flux3/lora.json"
+    eval_action_steps: int | None = 0
+    # the package names its cameras for what they show
+    camera_names: dict[Camera, str] = {Camera.TOP: "scene", Camera.WRIST: "wrist"}
+    # the preset holds out a fifth of every task for its offline loss, rounded up per
+    # task - and nearly every episode here has an instruction of its own, so any split
+    # holds out everything. The simulator is the held-out test.
+    eval_split: float = 0.0
+
+    def fresh_start(self, base: str) -> list[str]:
+        return [f"--config_path={os.path.expanduser(self.preset)}", f"--policy.path={base}"]
+
+    def model_flags(self, run: "TrainConfig") -> list[str]:
+        rename = {f"observation.images.{c}": f"observation.images.{name}"
+                  for c, name in self.camera_names.items() if c in run.cameras}
+        return [f"--rename_map={json.dumps(rename)}", f"--dataset.eval_split={self.eval_split}",
+                *([] if self.eval_split else ["--eval_steps=0"])]
+
+    def shape_flags(self, run: "TrainConfig") -> list[str]:
+        return []
+
+
+RECIPES: dict[str, PolicyRecipe] = {"molmoact2": MolmoAct2Recipe(), "smolvla": SmolVLARecipe(),
+                                    "flux3": Flux3Recipe()}
 BASE_CHECKPOINT = RECIPES["molmoact2"].base
 LAST = "last"
 PRETRAINED = "pretrained_model"
@@ -236,15 +289,12 @@ class TrainConfig(Config):
                   else self.recipe.fresh_start(self.base))
         return self._launcher() + [
             f"--dataset.repo_id={self.repo_id}", f"--dataset.root={self.dataset_root}",
-            "--dataset.video_backend=pyav", "--dataset.image_transforms.enable=true",
+            "--dataset.video_backend=pyav",
             *policy, f"--policy.device={self.device}",
-            f"--policy.chunk_size={self.chunk}", f"--policy.n_action_steps={self.chunk}",
+            *self.recipe.shape_flags(self),
             *self.recipe.model_flags(self),
             "--policy.push_to_hub=false", "--wandb.enable=false",
             f"--batch_size={self.batch_size}", f"--steps={steps}",
-            # every LeRobot scheduler decays over its own fixed count whatever
-            # --steps says; the first full run spent everything past 24,000 at the floor
-            f"--policy.scheduler_decay_steps={self.total_steps}",
             f"--accelerator.gradient_accumulation.steps={self.grad_accum}",
             f"--num_workers={self.num_workers}",
             f"--save_freq={self.save_every}", "--env_eval_freq=-1",

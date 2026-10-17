@@ -134,7 +134,11 @@ class LeRobotPolicy:
 
         # the checkpoint names its own type and the inputs it was trained on
         pretrained = PreTrainedConfig.from_pretrained(config.checkpoint)
-        policy = get_policy_class(pretrained.type).from_pretrained(config.checkpoint)
+        policy_class = get_policy_class(pretrained.type)
+        if getattr(pretrained, "use_peft", False):
+            policy = _merged_adapter(policy_class, config.checkpoint)
+        else:
+            policy = policy_class.from_pretrained(config.checkpoint)
         policy = policy.to(config.device).eval()
         # the checkpoint carries its own normalization pipelines; the policy sees
         # normalized inputs and returns actions in dataset units through them
@@ -177,6 +181,11 @@ class LeRobotPolicy:
 
     def reset(self) -> None:
         self.policy.reset()
+        # pipelines that keep history between calls (FLUX 3 buffers frames and
+        # integrates its delta actions) start each episode empty too
+        for pipeline in (self.preprocess, self.postprocess):
+            if hasattr(pipeline, "reset"):
+                pipeline.reset()
         self._queue = []
         self._previous = None
 
@@ -226,6 +235,16 @@ class LeRobotPolicy:
                 frame = torch.from_numpy(observation.images[camera].copy())
                 batch[name] = (frame.permute(2, 0, 1).float() / PIXEL_MAX)[None].to(device)
         return batch
+
+
+def _merged_adapter(policy_class, checkpoint: str):
+    """A LoRA checkpoint holds the adapters and trained heads, and names the base
+    they were trained on: load that base, apply them, and fold them in for rollout."""
+    from peft import PeftConfig, PeftModel
+
+    adapter = PeftConfig.from_pretrained(checkpoint)
+    base = policy_class.from_pretrained(adapter.base_model_name_or_path, revision=adapter.revision)
+    return PeftModel.from_pretrained(base, checkpoint, config=adapter).merge_and_unload()
 
 
 def _accepts_kwarg(function, name: str) -> bool:
