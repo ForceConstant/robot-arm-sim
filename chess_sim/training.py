@@ -330,7 +330,7 @@ class TrainConfig(Config):
         complete = []
         for tag in sorted(d for d in os.listdir(self.checkpoints_dir) if d.isdigit()):
             path = os.path.join(self.checkpoints_dir, tag)
-            needed = [os.path.join(path, PRETRAINED, "model.safetensors"),
+            needed = [_weights(os.path.join(path, PRETRAINED)),
                       os.path.join(path, TRAINING_STATE, "optimizer_state.safetensors"),
                       os.path.join(path, TRAINING_STATE, "training_step.json")]
             try:
@@ -353,6 +353,12 @@ class TrainConfig(Config):
         for tag in self.complete_checkpoints():
             if tag not in tags:
                 shutil.rmtree(os.path.join(self.checkpoints_dir, tag), ignore_errors=True)
+
+
+def _weights(model_dir: str) -> str:
+    """The weights file of a saved policy: a LoRA run saves only its adapters and heads."""
+    adapter = os.path.join(model_dir, "adapter_model.safetensors")
+    return adapter if os.path.exists(adapter) else os.path.join(model_dir, "model.safetensors")
 
 
 # the name the first runs were written against
