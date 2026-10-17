@@ -53,6 +53,7 @@ class PolicyRecipe(Config):
     # actions per policy call in the simulator: None is the evaluator's default, 0
     # keeps the checkpoint's own
     eval_action_steps: int | None = None
+    train_module: str = TRAIN_MODULE            # what `accelerate launch -m` runs
 
     def model_flags(self, run: "TrainConfig") -> list[str]:
         return []
@@ -148,6 +149,9 @@ class Flux3Recipe(PolicyRecipe):
     install_extra: str = "flux3"
     preset: str = "~/vla/lerobot_main/examples/flux3/lora.json"
     eval_action_steps: int | None = 0
+    # lerobot's trainer with the text encoder replaced by cached contexts: with it on
+    # the card, batch 1 runs out of memory once instructions stop repeating
+    train_module: str = "chess_sim.flux3_train"
     # the package names its cameras for what they show
     camera_names: dict[Camera, str] = {Camera.TOP: "scene", Camera.WRIST: "wrist"}
     # the preset holds out a fifth of every task for its offline loss, rounded up per
@@ -316,7 +320,7 @@ class TrainConfig(Config):
 
     def _launcher(self) -> list[str]:
         return [os.path.expanduser(self.accelerate), "launch", "--num_processes=1",
-                "--mixed_precision=bf16", "-m", TRAIN_MODULE]
+                "--mixed_precision=bf16", "-m", self.recipe.train_module]
 
     def complete_checkpoints(self) -> list[str]:
         """Step directories a run can resume from, newest last.
