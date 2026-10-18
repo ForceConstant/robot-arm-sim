@@ -281,6 +281,10 @@ CAMERA_FRAMED_HALF_WIDTH = 0.150             # half the strip that should fill t
 CAMERA_FOVY_SLACK = (0.93, 1.10)
 CAMERA_AIM = 0.012
 CAMERA_ROLL = 8.0
+# every camera field at the published rig's values: applied over any draw, it puts the
+# lens back on the mast
+PUBLISHED_RIG_CAMERA = dict(camera_height=None, camera_offset=None, camera_fovy=24.0,
+                            camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0)
 
 
 class AppearanceConfig(Config):
@@ -328,8 +332,7 @@ class AppearanceConfig(Config):
         otherwise a boom arm over the board or a tripod beside it. Every field is
         returned, so applying the draw to a scene on the mast moves it off, and back."""
         u = rng.uniform
-        camera = dict(camera_height=None, camera_offset=None, camera_fovy=24.0,
-                      camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0)
+        camera = dict(PUBLISHED_RIG_CAMERA)
         if rng.random() >= PUBLISHED_RIG_CHANCE:
             height = float(u(*CAMERA_HEIGHT_RANGE))
             offset = None
