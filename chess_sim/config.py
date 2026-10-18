@@ -285,6 +285,16 @@ CAMERA_ROLL = 8.0
 # lens back on the mast
 PUBLISHED_RIG_CAMERA = dict(camera_height=None, camera_offset=None, camera_fovy=24.0,
                             camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0)
+# a camera on a tripod at the arm's left, clear of the parked pieces on its right, half a
+# metre from the board centre and 35 degrees above the table, framing the board; no mast
+SIDE_CAMERA_DISTANCE, SIDE_CAMERA_ELEVATION_DEG = 0.50, 35.0
+SIDE_RIG_CAMERA = dict(
+    camera_height=SIDE_CAMERA_DISTANCE * float(np.sin(np.radians(SIDE_CAMERA_ELEVATION_DEG))),
+    camera_offset=(-SIDE_CAMERA_DISTANCE * float(np.cos(np.radians(SIDE_CAMERA_ELEVATION_DEG))), 0.0),
+    camera_fovy=float(np.degrees(2 * np.arctan(CAMERA_FRAMED_HALF_WIDTH / SIDE_CAMERA_DISTANCE))),
+    camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0, camera_mast=False)
+# the workspace cameras a collection can hold fixed instead of drawing one per episode
+FIXED_CAMERAS = {"rig": PUBLISHED_RIG_CAMERA, "side": SIDE_RIG_CAMERA}
 
 
 class AppearanceConfig(Config):
@@ -310,6 +320,7 @@ class AppearanceConfig(Config):
     # a boom-arm camera anywhere above the table: offset of the lens from the board
     # centre (x, y); overrides camera_over_board when set
     camera_offset: tuple[float, float] | None = None
+    camera_mast: bool = True              # the published rig's mast beside the arm, built into the scene
     white_rgba: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)  # tint over the texture
     black_rgba: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)
     light_square: tuple[int, int, int] = (214, 178, 132)   # board colors, 0-255

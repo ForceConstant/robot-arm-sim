@@ -124,7 +124,7 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     _add_board(spec, board, board_texture, appearance)
     _add_pieces(spec, board, appearance)
     _add_arm(spec, board)
-    camera_pos = _add_camera_mast(spec, board)
+    camera_pos = _add_camera_mast(spec, board) if appearance.camera_mast else mast_lens(board)
 
     _add_camera(spec, Camera.EXTERNAL, (-0.31, -0.16, board.top + 0.26), (0.0, 0.02, board.top + 0.04))
     # the overhead image is upright along the files (white at the bottom) and

@@ -23,7 +23,7 @@ import time
 import numpy as np
 
 from chess_sim.assets import available_piece_sets
-from chess_sim.config import PER_EPISODE_PLACEMENT, PUBLISHED_RIG_CAMERA
+from chess_sim.config import FIXED_CAMERAS, PER_EPISODE_PLACEMENT
 from chess_sim import (ActionNoiseConfig, AppearanceConfig, BoardConfig, RandomizationConfig, CaptureSampler, ChessSimEnv, ControlConfig,
                        EnvConfig, EpisodeRecorder, MoveSampler, RecorderConfig, TaskFamily, demonstrate)
 
@@ -34,7 +34,7 @@ SEED_STRIDE = 1000      # keeps shards' random streams apart
 def collect(out: str, episodes: int, seed: int, randomize: bool, image_size: tuple[int, int],
             moves: tuple[str, ...], family: TaskFamily, noise: ActionNoiseConfig,
             piece_sets: tuple[str, ...] = ("default",), vary_board: bool = False,
-            fixed_camera: bool = False) -> tuple[int, int]:
+            fixed_camera: str | None = None) -> tuple[int, int]:
     """Record `episodes` demonstrations into `out`; returns (successes, episodes)."""
     rng, looks = random.Random(seed), np.random.default_rng(seed)
     # One scene per process: piece size and the board texture are baked into the
@@ -42,11 +42,11 @@ def collect(out: str, episodes: int, seed: int, randomize: bool, image_size: tup
     # Size, piece set and board vary across chunks instead, colors and lighting per episode.
     # the board's size and material and the piece set are compiled in, so they vary per
     # chunk; where the board lies and where the camera stands change every episode
-    placement = dict(PER_EPISODE_PLACEMENT, camera=not fixed_camera)
+    placement = dict(PER_EPISODE_PLACEMENT, camera=fixed_camera is None)
     config = EnvConfig(board=BoardConfig.sample(looks, per_episode_placement=True) if vary_board else BoardConfig(),
                        randomization=RandomizationConfig(**placement) if vary_board else RandomizationConfig(),
                        appearance=pinned(AppearanceConfig.sample(looks, piece_sets=piece_sets), fixed_camera)
-                       if randomize else AppearanceConfig(piece_set=piece_sets[0]),
+                       if randomize else pinned(AppearanceConfig(piece_set=piece_sets[0]), fixed_camera),
                        control=ControlConfig(image_size=image_size), action_noise=noise)
     env = ChessSimEnv(config)
     recorder = EpisodeRecorder(env, RecorderConfig(root=out))
@@ -63,9 +63,9 @@ def collect(out: str, episodes: int, seed: int, randomize: bool, image_size: tup
     return sum(r.success for r in results), episodes
 
 
-def pinned(appearance: AppearanceConfig, fixed_camera: bool) -> AppearanceConfig:
-    """The draw with the workspace camera left on the published rig's mast."""
-    return appearance.model_copy(update=PUBLISHED_RIG_CAMERA) if fixed_camera else appearance
+def pinned(appearance: AppearanceConfig, fixed_camera: str | None) -> AppearanceConfig:
+    """The draw with the workspace camera held where `fixed_camera` names."""
+    return appearance.model_copy(update=FIXED_CAMERAS[fixed_camera]) if fixed_camera else appearance
 
 
 def _worker(job):
@@ -97,8 +97,9 @@ def main():
     ap.add_argument("--piece-sets", nargs="*", default=["default"],
                     help="piece sets to draw from, one per chunk; 'all' for every set the expert passed "
                          "(see chess_sim.assets.available_piece_sets)")
-    ap.add_argument("--fixed-camera", action="store_true",
-                    help="keep the workspace camera on the published rig's mast in every episode; "
+    ap.add_argument("--fixed-camera", choices=list(FIXED_CAMERAS), default=None,
+                    help="hold the workspace camera in one place in every episode - 'rig' on the "
+                         "published mast, 'side' on a tripod at the arm's left with no mast; "
                          "everything else still varies")
     args = ap.parse_args()
     noise = ActionNoiseConfig(joint_std=args.noise, hold=args.noise_hold)
