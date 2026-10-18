@@ -16,7 +16,7 @@ import argparse
 import numpy as np
 
 from chess_sim.assets import available_piece_sets
-from chess_sim.config import BOARD_FINISHES, PER_EPISODE_PLACEMENT
+from chess_sim.config import BOARD_FINISHES, FIXED_CAMERAS, PER_EPISODE_PLACEMENT
 from chess_sim.rollout import EvaluationReport
 from chess_sim import (AppearanceConfig, BoardConfig, Camera, CaptureSampler, RandomizationConfig, ChessSimEnv, ControlConfig, EnvConfig, LeRobotPolicy,
                        LeRobotPolicyConfig, MoveSampler, RolloutConfig, evaluate)
@@ -33,9 +33,15 @@ def sample_scenes(args) -> list:
     scenes = []
     while len(scenes) < args.scenes:
         board, look = BoardConfig.sample(rng, per_episode_placement=True), AppearanceConfig.sample(rng, piece_sets=sets)
+        look = pinned(look, args.fixed_camera)
         if look.board_finish in finishes:
             scenes.append((board, look))
     return scenes
+
+
+def pinned(look: AppearanceConfig, fixed_camera: str | None) -> AppearanceConfig:
+    """The look with the workspace camera held where the policy's data held it."""
+    return look.model_copy(update=FIXED_CAMERAS[fixed_camera]) if fixed_camera else look
 
 
 def describe(board, look) -> str:
@@ -85,6 +91,9 @@ def main():
     ap.add_argument("--exclude-piece-sets", nargs="*", default=[])
     ap.add_argument("--board-finishes", nargs="*", default=None, help="draw scenes only on these board materials")
     ap.add_argument("--exclude-board-finishes", nargs="*", default=[])
+    ap.add_argument("--fixed-camera", choices=list(FIXED_CAMERAS), default=None,
+                    help="the workspace camera held where a --fixed-camera collection held it, "
+                         "on sampled scenes and on the published one")
     args = ap.parse_args()
 
     control = ControlConfig()
@@ -97,9 +106,11 @@ def main():
     extra = tuple(c for c in (args.video_cameras if args.video else []) if c not in policy.cameras)
     cameras = policy.cameras + extra
     control = control.model_copy(update={"cameras": cameras})
-    scenes = sample_scenes(args) if args.scenes else [(BoardConfig(), AppearanceConfig())]
-    # sampled scenes also move the board and the camera every episode, as the wide collection does
-    randomization = RandomizationConfig(**PER_EPISODE_PLACEMENT) if args.scenes else RandomizationConfig()
+    scenes = sample_scenes(args) if args.scenes else [(BoardConfig(), pinned(AppearanceConfig(), args.fixed_camera))]
+    # sampled scenes also move the board and the camera every episode, as the wide collection
+    # does - the camera only when the collection drew one
+    placement = dict(PER_EPISODE_PLACEMENT, camera=args.fixed_camera is None)
+    randomization = RandomizationConfig(**placement) if args.scenes else RandomizationConfig()
     env = ChessSimEnv(EnvConfig(board=scenes[0][0], appearance=scenes[0][1], control=control,
                                 randomization=randomization))
     print(f"{policy.policy_type}: executing {policy.action_steps} of {policy.chunk_size} actions "

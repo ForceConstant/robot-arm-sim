@@ -50,7 +50,7 @@ def score_checkpoint(args, checkpoint: str, step: int, minutes: float) -> Checkp
             command += ["--only-moves", args.moves]
         if args.no_interpolate:
             command += ["--no-interpolate"]
-        steps_flag = action_steps_flag(args)
+        steps_flag = action_steps_flag(args) + camera_flag(args)
         command += steps_flag
         out = subprocess.run(command, capture_output=True, text=True)
         sys.stdout.write(out.stdout[-TAIL:])
@@ -81,6 +81,11 @@ def action_steps_flag(args) -> list[str]:
     """The recipe's execution length for the simulator, when it has one."""
     steps = RECIPES[args.policy].eval_action_steps
     return [] if steps is None else ["--n-action-steps", str(steps)]
+
+
+def camera_flag(args) -> list[str]:
+    """The workspace camera the data held fixed, for both checks."""
+    return ["--fixed-camera", args.eval_fixed_camera] if args.eval_fixed_camera else []
 
 
 def main():
@@ -121,6 +126,8 @@ def main():
     ap.add_argument("--eval-home-episodes", type=int, default=0,
                     help="with --eval-scenes: also score this many moves (and half as many captures) on the published rig")
     ap.add_argument("--eval-max-steps", type=int, default=450)
+    ap.add_argument("--eval-fixed-camera", default=None,
+                    help="the camera a --fixed-camera collection held ('rig' or 'side'), for both checks")
     args = ap.parse_args()
 
     settings = {"recipe": RECIPES[args.policy], "dataset_root": args.root, "repo_id": args.repo_id,
