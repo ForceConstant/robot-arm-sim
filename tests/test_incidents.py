@@ -14,7 +14,8 @@ import pytest
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask
 from chess_sim.dual import DualArmEnv
 from robot_web.incidents import (LABELS, Recording, Store, bookkeeping,
-                                 physics_state, restore, signature)
+                                 model_signature, physics_state, restore,
+                                 runtime_signature)
 from robot_web.torture import CASES, SUITE_VERSION
 
 
@@ -57,10 +58,11 @@ def env():
 
 def test_recording_round_trip(env, tmp_path):
     store = Store(tmp_path)
-    model_signature = signature(env)
+    model_hash = model_signature(env)
+    code_hash = runtime_signature(model_hash)
     before = physics_state(env)
     book = bookkeeping(env)
-    rec = Recording(store, env, model_signature,
+    rec = Recording(store, env, model_hash, code_hash,
                     {"action": "move", "task": {"kind": "move", "from": "e2", "to": "e4"},
                      "arm": "white", "case_id": "test"}, {})
     rec.target_body = env._square_slot[chess.E2].body
@@ -74,7 +76,8 @@ def test_recording_round_trip(env, tmp_path):
 
     assert meta["frames"] == len(rec.states) > 10
     manifest = json.loads((store.root / meta["id"] / "manifest.json").read_text())
-    assert manifest["model_signature"] == model_signature
+    assert manifest["model_signature"] == model_hash
+    assert manifest["runtime_signature"] == code_hash
     assert manifest["initial"]["position"] == book["position"]
     trace = json.loads((store.root / meta["id"] / "trace.json").read_text())
     assert len(trace) == manifest["frames"]
@@ -84,7 +87,7 @@ def test_recording_round_trip(env, tmp_path):
         step["phase"] for step in trace}
     assert [r["id"] for r in store.rows()] == [meta["id"]]
 
-    loaded, states, loaded_trace = store.load(meta["id"], model_signature)
+    loaded, states, loaded_trace = store.load(meta["id"], model_hash)
     assert np.allclose(states[0], rec.states[0])
     assert loaded_trace[0]["phase"] == trace[0]["phase"]
 

@@ -33,11 +33,16 @@ def atomic_json(path, value):
     tmp.replace(path)
 
 
-def signature(env):
+def model_signature(env):
+    """Hash of the compiled model: enough to replay a saved state honestly."""
     binary = np.empty(mujoco.mj_sizeModel(env.model), dtype=np.uint8)
     mujoco.mj_saveModel(env.model, None, binary)
-    h = hashlib.sha256(binary.tobytes())
-    # Include the controller/runtime source: matching geometry alone is insufficient.
+    return hashlib.sha256(binary.tobytes()).hexdigest()
+
+
+def runtime_signature(model_hash):
+    """Model plus controller/runtime source. Required to re-execute, not to view."""
+    h = hashlib.sha256(str(model_hash).encode())
     for folder in ('chess_sim', 'robot_web'):
         for p in sorted((Path(__file__).resolve().parents[1] / folder).glob('*.py')):
             h.update(p.name.encode()); h.update(p.read_bytes())
@@ -137,13 +142,13 @@ class Store:
 
 
 class Recording:
-    def __init__(self, store, env, model_signature, metadata, frames):
+    def __init__(self, store, env, model_hash, code_hash, metadata, frames):
         self.store, self.env = store, env
         self.id = uuid.uuid4().hex
         self.path = store.root / ('.' + self.id)
         self.path.mkdir()
         self.meta = dict(id=self.id, created=datetime.now(timezone.utc).isoformat(),
-                         schema=1, model_signature=model_signature,
+                         schema=2, model_signature=model_hash, runtime_signature=code_hash,
                          mujoco_version=mujoco.__version__, state_spec=int(STATE_SPEC),
                          config=env.config.model_dump(mode='json'), initial=bookkeeping(env),
                          review_label='unreviewed', review_notes='', **metadata)

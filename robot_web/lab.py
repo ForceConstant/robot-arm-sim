@@ -65,6 +65,7 @@ class Lab:
         self.storage.mkdir(parents=True, exist_ok=True)
         self.recorder = Store(self.storage)
         self.model_signature = None
+        self.runtime_signature = None
         self.recording = None
         self.record_enabled = True
         self.current_case = None
@@ -344,7 +345,7 @@ class Lab:
                    else {"kind": "capture", "square": str(task.square)})
         slot = env._slot_for(task)
         try:
-            rec = Recording(self.recorder, env, self.model_signature,
+            rec = Recording(self.recorder, env, self.model_signature, self.runtime_signature,
                             {"action": payload["kind"], "task": payload,
                              "arm": env.active_side, "case_id": self.current_case,
                              "move": self.state.get("current_move"), "speed": self.speed,
@@ -621,6 +622,9 @@ class Lab:
             return
         self._live()
         meta, states, _ = self.recorder.load(ident, self.model_signature)
+        if meta.get("runtime_signature") != self.runtime_signature:
+            raise ValueError("This recording was made by different controller code; replay works, "
+                             "re-run needs the build that produced it")
         restore(self.env, states[0], meta["initial"])
         self.game = chess.Board(meta["initial"]["position"])
         self.history = []
@@ -660,7 +664,8 @@ class Lab:
                 appearance=AppearanceConfig(camera_mast=False),
                 control=ControlConfig(cameras=(), image_size=(800, 600))))
             self.env.model.vis.quality.shadowsize = 2048
-            self.model_signature = __import__("robot_web.incidents", fromlist=["signature"]).signature(self.env)
+            self.model_signature = __import__("robot_web.incidents", fromlist=["model_signature"]).model_signature(self.env)
+            self.runtime_signature = __import__("robot_web.incidents", fromlist=["runtime_signature"]).runtime_signature(self.model_signature)
             self.incident_count = len(self.recorder.rows())
             self._reset()
             from OpenGL import GL
