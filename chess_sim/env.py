@@ -131,7 +131,7 @@ class ChessSimEnv:
         self.config = config
         self.board = config.board                     # live geometry: reset() may shift its origin
         self.position = chess.Board(None)             # mirror of what stands on the board
-        self.spec = build_scene(config.board, config.appearance)
+        self.spec = build_scene(config.board, config.appearance, dual_arms=config.dual_arms)
         self.model = self.spec.compile()
         self.data = mujoco.MjData(self.model)
         self._board_mocap = self.model.body_mocapid[
@@ -577,7 +577,7 @@ class ChessSimEnv:
             """Free distance along `d` to the nearest piece surface."""
             best = clearance.probe_distance
             for rel, radius in others:
-                along, across = np.dot(rel, d), float(np.cross(d, rel))
+                along, across = np.dot(rel, d), float(d[0] * rel[1] - d[1] * rel[0])
                 if along > 0 and abs(across) < lane:
                     best = min(best, along - radius)
             return best

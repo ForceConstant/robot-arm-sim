@@ -1,0 +1,61 @@
+import importlib
+
+import pytest
+from fastapi.testclient import TestClient
+
+from robot_web.lab import Interrupted, Lab
+
+
+@pytest.fixture
+def lab(tmp_path, monkeypatch):
+    monkeypatch.setenv("ROBOT_DATA_DIR", str(tmp_path))
+    return Lab()
+
+
+def test_pause_resume_preserves_in_flight_move(lab):
+    lab.reset_requested = False
+    lab.running = True
+    lab.dirty = True
+    lab.state.update(phase="moving", current_move="e2e4")
+    lab.command("pause")
+    lab.command("start")
+    assert lab.running
+    assert not lab.reset_requested
+    assert lab.state["current_move"] == "e2e4"
+
+
+def test_stop_then_start_requires_new_game(lab):
+    lab.reset_requested = False
+    lab.dirty = True
+    lab.command("stop")
+    with pytest.raises(Interrupted):
+        lab._checkpoint()
+    lab.command("start")
+    assert lab.reset_requested
+
+
+def test_running_configuration_is_rejected(lab):
+    lab.running = True
+    with pytest.raises(ValueError):
+        lab.command("configure", mode="opening")
+
+
+def test_api_control_bounds_and_sensor_contract(lab, monkeypatch):
+    module = importlib.import_module("robot_web.app")
+    monkeypatch.setattr(module, "lab", lab)
+    lab.ready = True
+    # No context manager: this API test must not start another physics worker.
+    client = TestClient(module.app)
+    assert client.post("/api/control", json={"action": "start"}).status_code == 403
+    headers = {"X-Robot-Lab": "1"}
+    assert client.post("/api/control", headers={**headers, "Origin": "http://evil.invalid"},
+                       json={"action": "start"}).status_code == 403
+    assert client.post("/api/control", headers=headers,
+                       json={"action": "speed", "speed": 999}).status_code == 422
+    data = client.get("/api/observations").json()
+    assert set(data["cameras"]) == {"white_wrist", "black_wrist"}
+    assert "fen" not in data and "pieces" not in data
+    assert client.post("/api/control", headers=headers,
+                       json={"action": "configure", "observations": "all"}).status_code == 200
+    assert "top" in client.get("/api/observations").json()["cameras"]
+    assert client.get("/api/frame/unknown.jpg").status_code == 404

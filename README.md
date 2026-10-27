@@ -1,4 +1,70 @@
-# chess_so101
+# Robot Arm · Chess Lab
+
+**Brian's fork:** [ForceConstant/robot-arm-sim](https://github.com/ForceConstant/robot-arm-sim)
+of [qalby-tech/embryo_lab_chess_so101](https://github.com/qalby-tech/embryo_lab_chess_so101).
+Upstream project documentation follows below; it describes upstream work, not
+newly reproduced results for this fork. See [UPSTREAM.md](UPSTREAM.md).
+
+## Environment-first milestone (v1.0.0)
+
+- Two distinct SO101 follower models on opposite sides of one 32-piece board.
+- Browser UI with Start, Pause/Resume, Stop, Reset, one-turn stepping and target speed.
+- Overview, overhead-debug and independent white/black wrist-camera views.
+- Stockfish self-play driver and deterministic opening/capture test modes.
+- Wrist-only versus overhead-plus-wrists observation contract for future
+  perception experiments; overhead remains available separately for debugging.
+- Confirmed-position display, physical failure logs, placement diagnostics and PGN export.
+- CPU physics plus NVIDIA EGL rendering in a single Dockhand-managed container.
+- No real robot, serial device or Docker socket is connected to the application.
+
+**Scope:** this milestone commissions the environment, not robust manipulation.
+The upstream scripted controller uses exact simulator state and tuned contact
+pads. Failed grasps, disturbed neighbours, inaccessible moves and collisions
+stop a run visibly; complete-game reliability is not claimed. Promotion exchange
+is not automated. Castling/en-passant action expansion is present but not yet
+physically validated. Full pick/place optimization is explicitly deferred.
+
+### Run
+
+Install Python 3.12 and the pinned `requirements.lock` into an isolated virtual
+environment. Install Stockfish separately (`STOCKFISH_PATH=/usr/games/stockfish`
+in the Docker image). Without it, only the opening/capture replay is available.
+
+```sh
+MUJOCO_GL=egl ROBOT_DATA_DIR=/tmp/robot-arm-data \
+  python -m uvicorn robot_web.app:app --host 0.0.0.0 --port 8098
+```
+
+Docker builds the dependencies and Stockfish into the image; startup does not
+download models or install packages. The shipped [compose](deploy/compose.yaml)
+is specific to Brian's HTPC LAN/GPU and embeds the [Dockerfile](Dockerfile).
+`python scripts/deploy.py` registers/uploads/builds only the `robot_arm` stack
+through Dockhand. It requires explicit infrastructure authorization; it is not
+an installation step for other users.
+
+The web service remains running when the simulation is stopped. Use the browser
+controls for run control, or Dockhand to stop/start the entire container. Pause
+resumes in place; Stop cancels a run and the next Start resets. Configure the
+driver, initial scene and observations only while stopped; Apply resets the scene.
+
+State/health: `/api/status`, `/health`. Selected sensor contract:
+`/api/observations` (joint feedback and selected camera links; no piece poses/FEN).
+View frames: `/api/frame/{overview,top,white_wrist,black_wrist}.jpg`.
+Completed moves persist as `/data/last-game.pgn` and `/data/last-run.json`.
+
+### Tests
+
+```sh
+MUJOCO_GL=egl python -m pytest -q tests
+TEST_URL=http://127.0.0.1:8098 node scripts/browser-check.mjs
+```
+
+Local browser checks require Playwright and Chromium; they use the actual UI and
+will briefly start/pause/stop/reset the simulation. No hardware is commanded.
+
+---
+
+# Upstream: chess_so101
 
 An SO-101 arm playing chess in MuJoCo: sim-ready assets, one assembled scene, a
 scripted expert that actually picks pieces up, and a typed API for writing your

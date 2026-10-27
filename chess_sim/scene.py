@@ -99,7 +99,8 @@ def _add_camera(spec, name: Camera, pos, target, fovy=42, up=(0.0, 0.0, 1.0)):
                               xyaxes=list(lookat_xyaxes(pos, target, up)), fovy=fovy)
 
 
-def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig = AppearanceConfig()) -> mujoco.MjSpec:
+def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig = AppearanceConfig(),
+                dual_arms: bool = False) -> mujoco.MjSpec:
     """Assemble the MjSpec. Mesh/texture paths are relative to the assets dir."""
     board_texture = assets.ensure_scene_assets(board, appearance)
     spec = mujoco.MjSpec()
@@ -124,9 +125,20 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     _add_board(spec, board, board_texture, appearance)
     _add_pieces(spec, board, appearance)
     _add_arm(spec, board)
+    if dual_arms:
+        _add_arm(spec, board.model_copy(update={"arm_side": "black"}), prefix="black:")
+        if board.arm_riser > 0:
+            ax, ay, _ = board.model_copy(update={"arm_side": "black"}).arm_base
+            spec.worldbody.add_geom(name="black_pedestal", type=mujoco.mjtGeom.mjGEOM_BOX,
+                size=[0.055, 0.055, board.arm_riser / 2],
+                pos=[ax, ay, board.table_top + board.arm_riser / 2], rgba=[0.25, 0.25, 0.28, 1])
     camera_pos = _add_camera_mast(spec, board) if appearance.camera_mast else mast_lens(board)
 
-    _add_camera(spec, Camera.EXTERNAL, (-0.31, -0.16, board.top + 0.26), (0.0, 0.02, board.top + 0.04))
+    if dual_arms:
+        _add_camera(spec, Camera.EXTERNAL, (-0.60, -0.53, board.top + 0.58),
+                    (0.0, 0.0, board.top + 0.06), fovy=47)
+    else:
+        _add_camera(spec, Camera.EXTERNAL, (-0.31, -0.16, board.top + 0.26), (0.0, 0.02, board.top + 0.04))
     # the overhead image is upright along the files (white at the bottom) and
     # framed on the board: at this distance the board fills ~86% of the frame
     # height, which is what a policy needs to tell one square from another
@@ -300,18 +312,23 @@ def _add_pieces(spec, board, appearance):
                           rgba=[1, 1, 1, 0], density=600)
 
 
-def build_arm(board: BoardConfig = BoardConfig()) -> mujoco.MjSpec:
+def build_arm(board: BoardConfig = BoardConfig(), prefix: str = ARM_PREFIX) -> mujoco.MjSpec:
     """The SO-101 alone, mounted exactly as in the scene (same names): the
     kinematic model the IK solves on, 33x fewer degrees of freedom."""
     spec = mujoco.MjSpec()
     spec.modelname = "so101_arm"
     spec.meshdir = assets.ASSET_DIR
-    _add_arm(spec, board)
+    _add_arm(spec, board, prefix=prefix)
     return spec
 
 
-def _add_arm(spec, board):
+def _add_arm(spec, board, prefix=ARM_PREFIX):
     arm = mujoco.MjSpec.from_file(assets.SO101_XML)
+    for material in arm.materials:
+        r, g, b, _ = material.rgba
+        if r > 0.8 and g > 0.5 and b < 0.4:
+            material.rgba = ([0.96, 0.53, 0.22, 1] if board.arm_side == "black"
+                             else [0.12, 0.64, 0.65, 1])
     arm.meshdir = assets.ASSET_DIR  # merged assets resolve against the shared tree
     for mesh in arm.meshes:
         mesh.file = os.path.join("so101", os.path.basename(mesh.file))
@@ -337,15 +354,17 @@ def _add_arm(spec, board):
                       solimp=list(gripper.PAD_SOLIMP), condim=gripper.PAD_CONDIM,
                       priority=gripper.PAD_PRIORITY, rgba=[0.1, 0.1, 0.1, 1], group=3)
     ax, ay, az = board.arm_base
+    yaw = np.pi / 2 + (np.pi if board.arm_side == "black" else 0.0)
     frame = spec.worldbody.add_frame(pos=[ax, ay, az],
-                                     quat=[np.cos(np.pi / 4), 0, 0, np.sin(np.pi / 4)])
-    frame.attach_body(arm.body("base"), ARM_PREFIX, "")
-    _add_wrist_camera(spec)
+                                     quat=[np.cos(yaw / 2), 0, 0, np.sin(yaw / 2)])
+    frame.attach_body(arm.body("base"), prefix, "")
+    _add_wrist_camera(spec, prefix=prefix,
+                      name=Camera.WRIST_BLACK if board.arm_side == "black" else Camera.WRIST)
 
 
-def _add_wrist_camera(spec):
+def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     """Camera on the gripper body, placed relative to the gripperframe site."""
-    site = spec.site(ARM_PREFIX + "gripperframe")
+    site = spec.site(prefix + "gripperframe")
     rot = np.zeros(9)
     mujoco.mju_quat2Mat(rot, np.asarray(site.quat, dtype=float))
     rot = rot.reshape(3, 3)                      # site axes in the gripper body frame
@@ -353,9 +372,9 @@ def _add_wrist_camera(spec):
     pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
     axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
     xyaxes = np.concatenate([rot @ axes[:3], rot @ axes[3:]])
-    gripper = spec.body(ARM_PREFIX + "gripper")
-    gripper.add_camera(name=str(Camera.WRIST), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
-    gripper.add_geom(name="wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=[0.012, 0.012, 0.008],
+    gripper = spec.body(prefix + "gripper")
+    gripper.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
+    gripper.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=[0.012, 0.012, 0.008],
                      pos=list(pos - rot @ np.array([0.01, 0.0, 0.0])),
                      rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0, group=1, density=0)
 

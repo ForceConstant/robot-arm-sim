@@ -95,6 +95,13 @@ class PickPlaceController:
         place_pt = np.array([target_xy[0], target_xy[1], target_z + lift])
         span_grasp = env.grasp_span(grasp_pt, off_open, exclude=slot)
         span_place = env.grasp_span(place_pt, off_hold, exclude=slot)
+        # On the opposite-side arm, an equally clear empty destination used to
+        # select a 180-degree wrist flip. Avoid twisting a friction-held piece
+        # when the original jaw orientation is still clear and reachable.
+        if span_grasp is not None and env.jaw_clearance(place_pt[:2], span_grasp, exclude=slot) >= 0:
+            trial = env.ik.solve(env.data, place_pt, offset=off_hold, span=span_grasp)
+            if trial.position_error <= 0.008 and trial.tilt <= np.radians(30):
+                span_place = span_grasp
         ok = True
 
         # approach the piece along the tool axis, close, let the clamp build

@@ -41,6 +41,7 @@ class Camera(StrEnum):
     TOP = "top"          # overhead, sees the whole board
     WRIST = "wrist"      # on the gripper, sees what it is about to grasp
     EXTERNAL = "external"  # viewing only: never recorded, never given to a policy
+    WRIST_BLACK = "wrist_black"  # second arm's wrist, in the dual-arm scene
 
 
 ROBOT_CAMERAS: tuple[Camera, ...] = (Camera.TOP, Camera.WRIST)   # what the real arm has
@@ -119,6 +120,7 @@ class BoardConfig(Config):
     table_top: float = 0.43        # table height above the floor
     arm_gap: float = 0.08          # distance from board edge to arm base center
     arm_riser: float = 0.06        # pedestal height under the arm base
+    arm_side: str = "white"       # the dual-arm scene mirrors the black mount
     # where the board's centre sits on the table; the arm, camera mast, tray and
     # parked pieces do not move with it
     origin: tuple[float, float] = (0.0, 0.0)
@@ -153,7 +155,8 @@ class BoardConfig(Config):
     def arm_base(self) -> tuple[float, float, float]:
         """World position of the SO-101 base frame. Independent of `origin`:
         shifting the board moves it relative to the arm."""
-        return (0.0, -(self.width / 2 + self.arm_gap), self.table_top + self.arm_riser)
+        sign = 1.0 if self.arm_side == "black" else -1.0
+        return (0.0, sign * (self.width / 2 + self.arm_gap), self.table_top + self.arm_riser)
 
     def square_center(self, square: int | str | Square) -> tuple[float, float]:
         """World x/y of a square, as a `Square`, a name or an index (0 = a1 ... 63 = h8)."""
@@ -204,7 +207,7 @@ class BoardConfig(Config):
     @property
     def calibrated(self) -> bool:
         """Is this the board the per-square servo calibration was measured on?"""
-        return self.model_copy(update={"origin": (0.0, 0.0)}) == BoardConfig()
+        return self.arm_side == "white" and self.model_copy(update={"origin": (0.0, 0.0)}) == BoardConfig()
 
     def tray_slot(self, index: int) -> tuple[float, float]:
         """Where a piece taken off the board is set down.
@@ -489,6 +492,7 @@ class EnvConfig(Config):
     tolerances: ToleranceConfig = ToleranceConfig()
     clearance: ClearanceConfig = ClearanceConfig()
     action_noise: ActionNoiseConfig = ActionNoiseConfig()
+    dual_arms: bool = False
 
 
 def square_index(square: int | str | Square) -> int:
