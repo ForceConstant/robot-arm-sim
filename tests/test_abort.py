@@ -43,8 +43,8 @@ def test_failed_place_descent_returns_piece_to_source(env, monkeypatch):
 
 
 def test_clean_move_still_releases_normally(env):
+    # Deliberately no manual reset: a stall from the previous test must not leak.
     env.reset(chess.STARTING_FEN)
-    env.diagnostic_stall = None
     result = env.execute(MoveTask(from_square="e2", to_square="e4"))
     assert result.success is True
     assert result.waypoints_precise is True

@@ -102,6 +102,8 @@ class PickPlaceController:
         the table, a board's thickness lower, and a piece released at board
         height there falls the difference and topples."""
         env, board, g = self.env, self.env.board, slot.geometry
+        env.diagnostic_stall = None      # per action, not per session: a stall must
+        env.diagnostic_ik = None         # never leak into the next action's record
         px, py, _ = env.piece_position(slot)
         plan = grasp_plan(g, board)
         z_grasp, gap_open, gap_hold = plan.z_grasp, plan.gap_open, plan.gap_hold
