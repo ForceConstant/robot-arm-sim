@@ -345,6 +345,7 @@ class Lab:
                    "error_mm": round(result.placement_error * 1000, 2),
                    "disturbed": [str(x) for x in result.disturbed],
                    "upright": bool(result.upright),
+                   "waypoints_precise": bool(result.waypoints_precise),
                    "reason": str(result.reason) if result.reason else None}
         self._record_finish(recording, result.success, outcome, "")
         if report:

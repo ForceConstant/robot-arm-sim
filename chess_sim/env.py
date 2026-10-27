@@ -169,6 +169,8 @@ class ChessSimEnv:
         self._renderer: mujoco.Renderer | None = None
         # Diagnostics read by the incident recorder; they describe intent, not state.
         self.diagnostic_phase = 'idle'
+        self.diagnostic_ik = None       # last IK verdict: residual, tilt, span, offset
+        self.diagnostic_stall = None    # set when the controller had to abort a phase
         self.diagnostic_target = None
         self.diagnostic_gap = None
         self.diagnostic_offset = np.zeros(3)

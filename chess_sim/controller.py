@@ -22,6 +22,7 @@ StepCallback = Callable[[np.ndarray], None]  # receives the 6-D action applied
 
 TRANSIT = 0.105
 APPROACH_LENGTH = 0.06
+RELEASE_TOLERANCE = 0.012   # how far the jaws may sit from the placement pose and still open
 PRECISION = 0.004            # executed pocket error accepted at grasp/place
 SERVO_ROUNDS_PRECISE = 11
 SERVO_ROUNDS_TRANSIT = 2
@@ -160,7 +161,15 @@ class PickPlaceController:
 
         # set down along the tool axis, release, retreat
         self._phase('place_descend', place_pt, gap_hold, off_hold)
-        ok &= self._descend(place_pt, gap_hold, off_hold, approach, on_step)
+        arrived = self._descend(place_pt, gap_hold, off_hold, approach, on_step)
+        held = env.ik.tool_pose(env.data, off_hold)[0]
+        if not arrived or float(np.linalg.norm(held - place_pt)) > RELEASE_TOLERANCE:
+            # A tracking failure here used to fall through to the release: the
+            # jaws opened wherever the arm happened to stop, sometimes 50 mm up,
+            # and the piece was dropped. Put it back instead.
+            return self._abort_to_source(grasp_pt, px, py, span_grasp, span_place,
+                                         gap_hold, off_hold, gap_open, off_open, on_step)
+        ok &= arrived
         # open the jaws, then shift the tool so the piece sits centered between
         # the open prongs (the wider gap's pocket lies further from the fixed
         # prong) and retreat straight up: backing out along a tilted tool axis
@@ -174,6 +183,35 @@ class PickPlaceController:
         self._go(np.array([target_xy[0], target_xy[1], board.top + TRANSIT]), gap_open, off_open, 10, on_step)
         self._phase('done', clear_pt, gap_open, off_open)
         return bool(ok)
+
+    def _abort_to_source(self, grasp_pt, px, py, span_grasp, span_place,
+                         gap_hold, off_hold, gap_open, off_open, on_step) -> bool:
+        """Carry the piece back to the square it came from and set it down.
+
+        Returning a piece to its source is the only honest recovery: leaving it
+        in the jaws parks the arm holding a piece, and releasing mid-air is the
+        failure this guard exists to stop. The attempt still reports failure.
+        """
+        env, board = self.env, self.env.board
+        env.diagnostic_stall = 'place_descend'
+        self._span = span_grasp
+        carry_z = board.top + TRANSIT
+        here = env.ik.tool_pose(env.data, off_hold)[0]
+        safe = np.array([here[0], here[1], carry_z])
+        self._phase('abort_return', safe, gap_hold, off_hold)
+        self._line(here, safe, gap_hold, off_hold, on_step, segments=3)
+        above_src = np.array([px, py, carry_z])
+        self._line(safe, above_src, gap_hold, off_hold, on_step, segments=3)
+        approach = self._approach_axis(grasp_pt, off_hold)
+        ok = self._descend(grasp_pt, gap_hold, off_hold, approach, on_step)
+        self._span = span_place
+        self._phase('abort_release', grasp_pt, gap_open, off_open)
+        self._go(grasp_pt, gap_open, off_hold, 8, on_step)
+        self._go(grasp_pt, gap_open, off_open, 6, on_step)
+        clear_pt = np.array([px, py, grasp_pt[2] + 0.06])
+        self._line(grasp_pt, clear_pt, gap_open, off_open, on_step, segments=3)
+        self._go(np.array([px, py, carry_z]), gap_open, off_open, 8, on_step)
+        return False
 
     # -- motion primitives ---------------------------------------------------
 
@@ -219,6 +257,14 @@ class PickPlaceController:
         # cannot cancel a perturbation that keeps moving under it.
         env.noise_suppressed = precise
         res = env.ik.solve(env.data, target, offset=offset, span=self._span)
+        # What the solver thought, not just where the arm ended up: a stalled
+        # descent looks identical to a slow one in the trace otherwise.
+        span = None if self._span is None else np.asarray(self._span, dtype=float)
+        env.diagnostic_ik = {"residual_m": float(res.position_error),
+                             "tilt_rad": float(res.tilt),
+                             "span_deg": None if span is None else float(
+                                 np.degrees(np.arctan2(span[1], span[0]))),
+                             "offset": np.asarray(offset, dtype=float).tolist()}
         q_start = env.arm_joint_positions()[:5]
         grip = gripper.gap_to_angle(gap)
         for i in range(1, steps + 1):

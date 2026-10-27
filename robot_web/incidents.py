@@ -217,12 +217,37 @@ class Recording:
         actual=env.arm_joint_positions()
         shifts={name:float(np.linalg.norm(env.data.xpos[env._slot_body[name]][:2]-p[:2]))
                 for name,p in self.start_positions.items() if name != self.target_body}
+        ik = getattr(env, 'diagnostic_ik', None) or {}
         self.trace.append(dict(time=float(env.data.time),phase=getattr(env,'diagnostic_phase','initial'),
             target_tcp=getattr(env,'diagnostic_target',None),actual_tcp=tip.tolist(),
             commanded_gap_m=getattr(env,'diagnostic_gap',None),
             actual_gap_m=float(__import__('chess_sim.gripper',fromlist=['angle_to_gap']).angle_to_gap(actual[5])),
             action=None if action is None else np.asarray(action).tolist(),joints=actual.tolist(),
+            # what the solver thought and how much joint room was left: a stalled
+            # waypoint and a slow one look the same in TCP positions alone
+            ik_residual_mm=None if 'residual_m' not in ik else 1000*ik['residual_m'],
+            ik_tilt_deg=None if 'tilt_rad' not in ik else float(np.degrees(ik['tilt_rad'])),
+            span_deg=ik.get('span_deg'),
+            offset_mm=None if 'offset' not in ik else [1000*float(v) for v in ik['offset']],
+            joint_margin_rad=self._joint_margin(env),
+            stall=getattr(env, 'diagnostic_stall', None),
             max_neighbour_shift_m=max(shifts.values(),default=0)))
+
+    @staticmethod
+    def _joint_margin(env):
+        """Smallest distance from the active arm's joints to their limits."""
+        try:
+            from chess_sim.env import JOINTS
+            prefix = 'black:' if getattr(env, 'active_side', 'white') == 'black' else 'so101:'
+            margins = []
+            for name in JOINTS:
+                jid = env.model.joint(prefix + str(name)).id
+                lo, hi = env.model.jnt_range[jid]
+                q = float(env.data.qpos[env.model.jnt_qposadr[jid]])
+                margins.append(min(q - lo, hi - q))
+            return min(margins)
+        except Exception:
+            return None
 
     def finish(self, success, result, message, frames):
         self.images('after',frames)
@@ -236,8 +261,11 @@ class Recording:
         unexpected=[c for c in self.contacts.values()
                     if c.get('kind') == 'piece' and not c['target_contact']]
         if unexpected:categories.append('unexpected_contact_candidate')
+        stalls=[step.get('stall') for step in self.trace if step.get('stall')]
+        if stalls:categories.append('stalled_descent')
         if not success and not categories:categories.append('interrupted' if message=='Interrupted' else 'execution_error')
         self.meta.update(success=bool(success),frames=len(self.states),categories=categories or ['success'],
+                         stalled_phase=(stalls[0] if stalls else None),
                          error_mm=(result or {}).get('error_mm'),result=result,message=message,
                          contact_sampling='every physics substep; frame states every control step',
                          playback='recorded state visualization, not a physical re-simulation',
