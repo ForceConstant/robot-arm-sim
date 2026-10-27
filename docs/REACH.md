@@ -51,6 +51,31 @@ Levers, all small:
   is available;
 - nothing else helps - the board cannot be turned out of the annulus it sits in.
 
+## Border: how much room may sit in front of the base
+
+For the 28 mm board the distance from the **near edge of the squares to the pan
+axis** is a narrow two-sided window (`scripts/border_window.py`):
+
+| field edge to axis | reachable | what fails |
+| --- | --- | --- |
+| 55 mm | 56/64 | near rank c1-g1, d2-e2 - inside the near field |
+| 65 mm | 60/64 | c1, d1, e1, f1 |
+| 75 mm | 60/64 | c1, d1, e1, f1 |
+| 85 mm | 62/64 | d1, e1 at exactly 100 mm |
+| **95 mm** | **64/64** | - |
+| 105 mm | 63/64 | a8 at 330 mm |
+| 115 mm | 62/64 | a8, h8 |
+| 125 mm | 56/64 | whole back rank |
+
+So **85-105 mm, target 95 mm**, which is exactly the published board (15 mm
+border + 80 mm arm gap). Close than 85 mm puts the near rank inside the
+near-field exclusion - the files in front of the base, where the forearm is most
+upright; further than 105 mm starts costing back-rank corners.
+
+A border is free on the far and side edges. Only the near edge counts, and the
+arm's own foot needs ~40-60 mm of that budget, leaving 35-50 mm for a decorative
+near border.
+
 ## Consequence worth remembering
 
 The far corners are at 97 % of reach, which is exactly where IK error, servo
