@@ -76,7 +76,7 @@ class Control(BaseModel):
     enable: bool = True
     suite: Literal["start", "stop"] = "start"
     id: str | None = None
-    frame: int = 0
+    frame: int | None = None
     play: bool = False
 
 

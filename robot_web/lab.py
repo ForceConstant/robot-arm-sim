@@ -150,7 +150,7 @@ class Lab:
                 self.suite = None
                 self.rerun_request = None
                 if self.replay is not None:
-                    self.replay_request = ("live", 0)
+                    self.replay_request = ("live", None, False)
             elif action == "speed":
                 self.speed = float(options["speed"])
             elif action == "orbit":
@@ -188,12 +188,13 @@ class Lab:
                     self.replay["ident"] if self.replay else None)
                 if not ident:
                     raise ValueError("A recording id is required")
-                self.replay_request = (ident, int(options.get("frame") or 0),
+                frame = options.get("frame")
+                self.replay_request = (ident, None if frame is None else int(frame),
                                        bool(options.get("play")))
                 self.running = False
             elif action == "live":
                 self.running = False
-                self.replay_request = ("live", 0)
+                self.replay_request = ("live", None, False)
             elif action == "rerun":
                 self.rerun_request = str(options["id"])
                 self.running = False
@@ -549,7 +550,7 @@ class Lab:
         request, self.replay_request = self.replay_request, None
         if request is None:
             return
-        ident, frame, play = request
+        ident, frame, play = (list(request) + [None, False])[:3]
         if ident == "live":
             return self._live()
         if self.replay is None or self.replay["ident"] != ident:
@@ -563,10 +564,10 @@ class Lab:
                            "live_meta": bookkeeping(self.env),
                            "live_phase": self.state["phase"],
                            "live_message": self.state["message"]}
-        # Scrubbing pauses playback; pressing play resumes from the shown frame.
+        # An explicit frame is always honoured: scrubbing pauses there, and play
+        # starts from the frame the viewer is looking at.
+        idx = self.replay["frame"] if frame is None else int(frame)
         self.replay["playing"] = bool(play)
-        idx = self.replay["frame"] if play else max(0, min(int(frame),
-                                                           self.replay["frames"] - 1))
         self._replay_show(idx)
 
     def _replay_show(self, idx):
@@ -711,6 +712,8 @@ class Lab:
                 except Exception as exc:
                     self.running = False
                     self.dirty = True
+                    if self.replay is not None:
+                        self.replay["playing"] = False    # never tick past a fault
                     with self.lock:
                         self.state.update(phase="fault", message=str(exc))
                     self.log(str(exc), "error")
