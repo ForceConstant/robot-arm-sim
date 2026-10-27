@@ -14,8 +14,8 @@ import pytest
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask
 from chess_sim.dual import DualArmEnv
 from robot_web.incidents import (LABELS, Recording, Store, bookkeeping,
-                                 model_signature, physics_state, restore,
-                                 runtime_signature)
+                                 DIAGNOSTIC_DEFAULTS, model_signature, physics_state,
+                                 reset_diagnostics, restore, runtime_signature)
 from robot_web.torture import CASES, SUITE_VERSION
 
 
@@ -116,3 +116,17 @@ def test_camera_views_are_fixed_and_well_formed():
             assert 0.0 <= value["azimuth"] < 360.0, name
             assert -89.0 < value["elevation"] < 0.0, name      # above the table, never past the pole
             assert 0.2 < value["distance"] < 1.5, name
+
+
+def test_diagnostics_do_not_leak_between_actions():
+    class Fake:
+        diagnostic_phase = "abort_release"
+        diagnostic_target = [1, 2, 3]
+        diagnostic_gap = 0.008
+        diagnostic_ik = {"residual_m": 0.05}
+        diagnostic_stall = "place_descend"
+
+    fake = Fake()
+    reset_diagnostics(fake)
+    for key, value in DIAGNOSTIC_DEFAULTS.items():
+        assert getattr(fake, key) == value, key

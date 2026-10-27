@@ -49,6 +49,21 @@ def runtime_signature(model_hash):
     return h.hexdigest()
 
 
+DIAGNOSTIC_DEFAULTS = dict(diagnostic_phase="idle", diagnostic_target=None,
+                           diagnostic_gap=None, diagnostic_ik=None, diagnostic_stall=None)
+
+
+def reset_diagnostics(env):
+    """Blank the per-action diagnostics before a recording starts.
+
+    Without this the first sample of a recording carries the previous action's
+    phase and stall flag, so a clean action can be labelled with someone else's
+    failure (and a successful case can report a stall).
+    """
+    for key, value in DIAGNOSTIC_DEFAULTS.items():
+        setattr(env, key, value)
+
+
 def physics_state(env):
     state = np.empty(mujoco.mj_stateSize(env.model, STATE_SPEC))
     mujoco.mj_getState(env.model, env.data, state, STATE_SPEC)

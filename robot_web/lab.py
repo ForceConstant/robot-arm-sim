@@ -21,7 +21,8 @@ from PIL import Image
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
 from chess_sim import gripper
-from .incidents import Store, Recording, restore, bookkeeping, physics_state
+from .incidents import (Store, Recording, restore, bookkeeping, physics_state,
+                        reset_diagnostics)
 from .torture import CASES, SUITE_VERSION
 
 OPENING = ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5", "c2c3", "g8f6",
@@ -332,6 +333,7 @@ class Lab:
 
     def _physical(self, task, env=None, callback=None, report=True):
         env = self.env if env is None else env
+        reset_diagnostics(env)          # this action owns its diagnostics, not the last one
         recording = self._record_start(env, task)
         try:
             result = env.execute(task, on_step=self._record_step(
