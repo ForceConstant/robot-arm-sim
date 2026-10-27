@@ -455,7 +455,8 @@ class Lab:
         suite = self.suite
         suite["phase"] = "running"
         while suite["index"] < len(CASES):
-            if self.shutdown.is_set() or self.stop_requested:
+            if self.shutdown.is_set() or self.stop_requested or not self.running or \
+                    suite["phase"] != "running":
                 suite["phase"] = "stopped"
                 self.running = False
                 return
@@ -468,18 +469,36 @@ class Lab:
                                   last_recording=None, last_categories=None)
             self.game = chess.Board(case.fen)
             self.history = []
+            move = chess.Move.from_uci(case.move)
             self.env.reset(self.game.fen())
             self.env.select_arm(case.arm)
             self.env.position = self.game.copy()
+            # Every case must start from a fully placed board. A missing source
+            # square is silent in the old path (it surfaced once as a bare
+            # "no piece on source square"), so reload and say so instead.
+            if self.env._square_slot.get(move.from_square) is None:
+                self.log(f"{case.id}: source square missing after reset "
+                         f"({len(self.env._square_slot)} slots); reloading the board", "error")
+                self.env.reset(chess.Board(case.fen))
+                self.env.select_arm(case.arm)
+                self.env.position = self.game.copy()
+            slots = len(self.env._square_slot)
+            if self.env._square_slot.get(move.from_square) is None:
+                self.log(f"{case.id}: source square still missing ({slots} slots); skipping", "error")
+                suite["results"].append({"case": case.id, "description": case.description,
+                    "move": case.move, "arm": case.arm, "success": False, "error_mm": None,
+                    "slots": slots, "categories": ["setup_error"],
+                    "message": "source square missing after reset", "recording": None})
+                suite["index"] += 1
+                continue
             self.dirty = False
             self.last_recording_id = None
             self._render(force=True)
             record = {"case": case.id, "description": case.description, "move": case.move,
-                      "arm": case.arm, "success": False, "error_mm": None,
+                      "arm": case.arm, "success": False, "error_mm": None, "slots": slots,
                       "categories": [], "message": "", "recording": None}
             try:
-                self._execute_on(self.env, chess.Move.from_uci(case.move),
-                                 self._checkpoint, report=True)
+                self._execute_on(self.env, move, self._checkpoint, report=True)
                 record["success"] = True
             except Interrupted:
                 suite["results"].append(record)
@@ -544,8 +563,11 @@ class Lab:
         restore(self.env, replay["live_state"], replay["live_meta"])
         self.game = chess.Board(replay["live_meta"]["position"])
         self.dirty = False
+        phase = replay["live_phase"]
+        if phase == "moving" and not self.running:
+            phase = "ready"       # a stale label from the moment replay began
         with self.lock:
-            self.state.update(phase=replay["live_phase"], message=replay["live_message"])
+            self.state.update(phase=phase, message=replay["live_message"])
         self._render(force=True)
 
     def _rerun(self):
