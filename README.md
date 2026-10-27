@@ -7,6 +7,30 @@ newly reproduced results for this fork. See [UPSTREAM.md](UPSTREAM.md).
 
 ## Environment-first milestone (v1.0.0)
 
+### Parallel CAD tool integration (v1.1.0)
+
+- Both arms can mount an external parallel-jaw MJCF tool pack while retaining
+  all five arm joints. Each tool has one bounded pinion actuator and two
+  independent coupled slider jaws; the existing six-command arm API remains.
+- Symmetric aperture/TCP mapping, full compound contact geometry, an estimated
+  servo/camera envelope and conservative IK envelopes replace stock finger pads.
+- Stock executed-reach calibration is disabled for the new tool. Grip planning
+  uses the full finger band and actual tool aperture rather than stock jaw geometry.
+- The runtime reports the active tool and measured jaw aperture for each arm.
+- Private CAD meshes, profiles, capture JSON and screenshots are **not included**
+  in Git or public releases. Public checkout defaults to the stock tool. To use
+  an external pack, set `ROBOT_GRIPPER=cad_parallel` and
+  `ROBOT_GRIPPER_ASSETS=/absolute/path/to/pack` (containing `profile.json`,
+  `model.xml`, referenced assets and license attribution).
+- The HTPC compose selects the custom tool; deploy requires the separately
+  supplied private pack. `scripts/deploy.py` adds it only to the authorized LAN
+  build context, never to the public source/runtime release archive.
+- Mount alignment, servo/camera masses, printed mass, friction and motor response
+  are simulation assumptions until hardware exists. This is not full-game,
+  crowded-board, payload or physical-fit qualification.
+
+See [the tool-pack contract](docs/PRIVATE_TOOL_PACK.md) for mounting and testing.
+
 - Two distinct SO101 follower models on opposite sides of one 32-piece board.
 - Browser UI with Start, Pause/Resume, Stop, Reset, one-turn stepping and target speed.
 - Overview, overhead-debug and independent white/black wrist-camera views.

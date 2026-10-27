@@ -10,6 +10,7 @@ import mujoco
 import numpy as np
 
 from .config import JOINTS, EnvConfig, square_index
+from . import gripper
 from .controller import grasp_plan
 from .env import ChessSimEnv, GRASP_HEIGHT
 from .ik import So101Ik
@@ -65,13 +66,15 @@ class DualArmEnv(ChessSimEnv):
         mujoco.mj_resetData(self.model, self.data)
         self._capture_count = {"white": 0, "black": 0}
         rest = self.home_pose()
-        for context in self._contexts.values():
+        for side, context in self._contexts.items():
             self.data.qpos[context["qpos"]] = rest
             self.data.ctrl[context["actuators"]] = rest
+            gripper.seed_coupled(self.model, self.data, ARM_PREFIX if side == 'white' else 'black:')
         super().reset(position, rng=rng)
-        for context in self._contexts.values():
+        for side, context in self._contexts.items():
             self.data.qpos[context["qpos"]] = rest
             self.data.ctrl[context["actuators"]] = rest
+            gripper.seed_coupled(self.model, self.data, ARM_PREFIX if side == 'white' else 'black:')
         self.data.qvel[:] = 0
         mujoco.mj_forward(self.model, self.data)
         for _ in range(20):

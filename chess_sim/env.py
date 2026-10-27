@@ -12,6 +12,7 @@ expert demonstration and a learned attempt are directly comparable.
 from __future__ import annotations
 
 from typing import Callable
+from . import gripper
 
 import chess
 import mujoco
@@ -222,6 +223,7 @@ class ChessSimEnv:
                               for v, limits in zip(start, ranges)])
         self.layout = Layout(board_origin=self.board.origin, arm_start=JointPose.from_array(start))
         self.data.qpos[self._joint_qpos] = start
+        gripper.seed_coupled(self.model, self.data, ARM_PREFIX)
         self.data.qvel[:] = 0
         mujoco.mj_forward(self.model, self.data)
         action = start
@@ -302,7 +304,8 @@ class ChessSimEnv:
             update={k: getattr(appearance, k) for k in CAMERA_FIELDS})})
 
     def _compute_reach(self) -> ReachMap:
-        return ReachMap.compute(self.board, self._tool_query, grasp_height=GRASP_HEIGHT)
+        return ReachMap.compute(self.board, self._tool_query, grasp_height=GRASP_HEIGHT,
+                                executed={} if gripper.CUSTOM else None)
 
     def _tool_query(self, target: np.ndarray):
         res = self.ik.solve(self.data, target)
@@ -572,6 +575,8 @@ class ChessSimEnv:
         others = [(self.piece_position(sl)[:2] - xy, sl.geometry.collider_radius)
                   for sl in self.active_slots() if sl is not exclude]
         lane = clearance.lane_fraction * self.board.square
+        if gripper.CUSTOM:
+            lane = max(lane, gripper.PROFILE['finger_halfwidth_m'] + .002)
 
         def room(d):
             """Free distance along `d` to the nearest piece surface."""
@@ -583,6 +588,11 @@ class ChessSimEnv:
             return best
 
         def margin(d):
+            if gripper.CUSTOM:
+                # A symmetric tool has no stationary-prong shortcut. This is a
+                # conservative heuristic; full compound contacts remain active.
+                needed = max(clearance.moving_jaw_room, clearance.fixed_prong_room)
+                return float(min(room(d), room(-d)) - needed)
             return float(min(room(d) - clearance.moving_jaw_room,
                              room(-d) - clearance.fixed_prong_room))
 

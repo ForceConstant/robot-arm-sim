@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import mink
 import mujoco
 import numpy as np
+from . import gripper
 
 ARM_JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
 _DOWN = np.array([0.0, 0.0, -1.0])
@@ -146,10 +147,16 @@ class So101Ik:
         q_rest = self.configuration.q
         q_rest[self._arm_qpos] = rest
         self._posture.set_target(q_rest)
-        hand = [g for b in HAND_BODIES for g in mink.get_body_geom_ids(arm_model, arm_model.body(prefix + b).id)]
+        hand = ([g for g in range(arm_model.ngeom)
+                 if 'clearance_proxy_' in (mujoco.mj_id2name(arm_model, mujoco.mjtObj.mjOBJ_GEOM, g) or '')]
+                if gripper.CUSTOM else
+                [g for b in HAND_BODIES for g in mink.get_body_geom_ids(arm_model, arm_model.body(prefix + b).id)])
         arm = [g for b in ARM_BODIES for g in mink.get_body_geom_ids(arm_model, arm_model.body(prefix + b).id)]
+        velocity_limits = {prefix + n: STEP_LIMIT for n in ARM_JOINTS}
+        if gripper.CUSTOM:
+            velocity_limits.update({prefix + n: 0. for n in ('gripper', *gripper.PROFILE['jaw_joints'])})
         self._limits = [mink.ConfigurationLimit(arm_model),
-                        mink.VelocityLimit(arm_model, {prefix + n: STEP_LIMIT for n in ARM_JOINTS}),
+                        mink.VelocityLimit(arm_model, velocity_limits),
                         mink.CollisionAvoidanceLimit(arm_model, [(hand, arm)],
                                                      minimum_distance_from_collisions=COLLISION_MARGIN,
                                                      collision_detection_distance=COLLISION_DETECT)]

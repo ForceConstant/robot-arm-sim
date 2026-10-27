@@ -107,7 +107,7 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     spec.modelname = "chess_so101"
     spec.meshdir = assets.ASSET_DIR
     spec.texturedir = assets.ASSET_DIR
-    spec.option.timestep = 0.002
+    spec.option.timestep = 0.001 if gripper.CUSTOM else 0.002
     # Elliptic friction cones with a high impedance ratio: with the default
     # pyramidal cones a friction-held piece creeps through the pads by ~1 cm
     # over a two-second carry and slides off its widest segment.
@@ -319,11 +319,19 @@ def build_arm(board: BoardConfig = BoardConfig(), prefix: str = ARM_PREFIX) -> m
     spec.modelname = "so101_arm"
     spec.meshdir = assets.ASSET_DIR
     _add_arm(spec, board, prefix=prefix)
+    if gripper.CUSTOM:
+        # Cheap conservative envelopes only in the IK model. Physics uses the
+        # full compound tool contacts, not these proxies or fingertip-only pads.
+        for geom in spec.geoms:
+            if 'clearance_proxy_' in geom.name:
+                geom.contype = geom.conaffinity = 1
     return spec
 
 
 def _add_arm(spec, board, prefix=ARM_PREFIX):
     arm = mujoco.MjSpec.from_file(assets.SO101_XML)
+    for name in ('timestep', 'integrator', 'cone', 'impratio'):
+        setattr(arm.option, name, getattr(spec.option, name))
     for material in arm.materials:
         r, g, b, _ = material.rgba
         if r > 0.8 and g > 0.5 and b < 0.4:
@@ -332,27 +340,31 @@ def _add_arm(spec, board, prefix=ARM_PREFIX):
     arm.meshdir = assets.ASSET_DIR  # merged assets resolve against the shared tree
     for mesh in arm.meshes:
         mesh.file = os.path.join("so101", os.path.basename(mesh.file))
-    # fingertip contact pads replace the finger hulls for contact (see gripper.py)
-    hinge_axis = np.array(arm.joint("gripper").axis, dtype=float)
-    for body_name, pad in gripper.FINGER_PADS.items():
-        body = arm.body(body_name)
-        for geom in body.geoms:
-            if geom.meshname in gripper.FINGER_HULL_MESHES and geom.contype != 0:
-                geom.contype = 0
-                geom.conaffinity = 0
-        quat = np.array(pad.quat, dtype=float)
-        if body_name == "moving_jaw_so101_v1":
-            # undo the hinge rotation the pad will have at the nominal grasp angle
-            comp = np.zeros(4)
-            mujoco.mju_axisAngle2Quat(comp, hinge_axis, -gripper.NOMINAL_GRASP_ANGLE)
-            out = np.zeros(4)
-            mujoco.mju_mulQuat(out, comp, quat)
-            quat = out
-        body.add_geom(name=f"{body_name}_pad", type=mujoco.mjtGeom.mjGEOM_BOX,
-                      pos=list(pad.pos), quat=list(quat), size=list(pad.size),
-                      friction=list(gripper.PAD_FRICTION), solref=list(gripper.PAD_SOLREF),
-                      solimp=list(gripper.PAD_SOLIMP), condim=gripper.PAD_CONDIM,
-                      priority=gripper.PAD_PRIORITY, rgba=[0.1, 0.1, 0.1, 1], group=3)
+    if gripper.CUSTOM:
+        from .cad_tool import install
+        install(arm, gripper.PROFILE, gripper.ASSET_ROOT)
+    else:
+        # fingertip contact pads replace the finger hulls for contact (see gripper.py)
+        hinge_axis = np.array(arm.joint("gripper").axis, dtype=float)
+        for body_name, pad in gripper.FINGER_PADS.items():
+            body = arm.body(body_name)
+            for geom in body.geoms:
+                if geom.meshname in gripper.FINGER_HULL_MESHES and geom.contype != 0:
+                    geom.contype = 0
+                    geom.conaffinity = 0
+            quat = np.array(pad.quat, dtype=float)
+            if body_name == "moving_jaw_so101_v1":
+                # undo the hinge rotation the pad will have at the nominal grasp angle
+                comp = np.zeros(4)
+                mujoco.mju_axisAngle2Quat(comp, hinge_axis, -gripper.NOMINAL_GRASP_ANGLE)
+                out = np.zeros(4)
+                mujoco.mju_mulQuat(out, comp, quat)
+                quat = out
+            body.add_geom(name=f"{body_name}_pad", type=mujoco.mjtGeom.mjGEOM_BOX,
+                          pos=list(pad.pos), quat=list(quat), size=list(pad.size),
+                          friction=list(gripper.PAD_FRICTION), solref=list(gripper.PAD_SOLREF),
+                          solimp=list(gripper.PAD_SOLIMP), condim=gripper.PAD_CONDIM,
+                          priority=gripper.PAD_PRIORITY, rgba=[0.1, 0.1, 0.1, 1], group=3)
     ax, ay, az = board.arm_base
     yaw = np.pi / 2 + (np.pi if board.arm_side == "black" else 0.0)
     frame = spec.worldbody.add_frame(pos=[ax, ay, az],
@@ -372,16 +384,22 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
     axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
     xyaxes = np.concatenate([rot @ axes[:3], rot @ axes[3:]])
-    gripper = spec.body(prefix + "gripper")
-    gripper.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
-    gripper.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=[0.012, 0.012, 0.008],
+    tool_body = spec.body(prefix + "gripper")
+    tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
+    tool_body.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=[0.012, 0.012, 0.008],
                      pos=list(pos - rot @ np.array([0.01, 0.0, 0.0])),
                      rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0, group=1, density=0)
+    if gripper.CUSTOM:
+        housing = tool_body.add_body(name=prefix + 'camera_housing',
+            pos=list(pos - rot @ np.array([0.01, 0.0, 0.0])))
+        housing.add_geom(name=prefix + 'camera_collision', type=mujoco.mjtGeom.mjGEOM_BOX,
+            size=[.012, .012, .008], mass=gripper.PROFILE['camera_mass_kg'],
+            rgba=[.08, .08, .08, 1], group=3)
 
 
 def arm_rest_pose() -> JointPose:
     """Parked joint targets (name -> radians), keys without the scene prefix."""
-    return ARM_REST
+    return ARM_REST.model_copy(update={'gripper': gripper.gap_to_angle(.04)}) if gripper.CUSTOM else ARM_REST
 
 
 def export_xml(spec: mujoco.MjSpec, path: str, model: mujoco.MjModel | None = None,

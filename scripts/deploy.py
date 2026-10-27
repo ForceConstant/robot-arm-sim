@@ -5,6 +5,7 @@ The source snapshot is copied to Dockhand's build context via Docker archive API
 """
 import io
 import json
+import os
 from pathlib import Path
 import tarfile
 import urllib.request
@@ -29,7 +30,7 @@ def compose():
     dockerfile = (ROOT / "Dockerfile").read_text()
     return """services:
   simulation:
-    image: robot-arm-sim:1.0.0
+    image: robot-arm-sim:1.1.0
     build:
       context: .
       dockerfile_inline: |
@@ -46,6 +47,8 @@ def compose():
       ROBOT_VIEW_FPS: "5"
       ROBOT_DATA_DIR: /data
       STOCKFISH_PATH: /usr/games/stockfish
+      ROBOT_GRIPPER: cad_parallel
+      ROBOT_GRIPPER_ASSETS: /app/chess_sim/assets/custom_gripper
     volumes:
       - /mnt/user/appdata/robot_arm/data:/data
     cpus: 2.0
@@ -64,6 +67,11 @@ def compose():
 def main():
     private = ROOT / ".private"
     private.mkdir(exist_ok=True)
+    # A private CAD payload is uploaded only to the authorized LAN build
+    # context. Never add it to Git, public release archives or a registry image.
+    private_assets = Path(os.environ.get('ROBOT_GRIPPER_ASSETS', private / 'gripper-assets'))
+    if not (private_assets / 'profile.json').is_file():
+        raise RuntimeError('Supply the private gripper asset pack before deploying this custom-tool stack')
     content = compose()
     (ROOT / "deploy/compose.yaml").write_text(content)
     stacks = request(DOCKHAND, "/api/stacks?env=1")
@@ -94,6 +102,7 @@ def main():
                 info.uname = info.gname = "robot"
                 return info
             archive.add(ROOT / name, arcname=name, filter=keep)
+        archive.add(private_assets, arcname='chess_sim/assets/custom_gripper', filter=keep)
     request(DOCKER, "/containers/" + dockhand["Id"] +
             "/archive?path=/app/data/stacks/HTPC/robot_arm", "PUT", raw=tar.getvalue())
     result = request(DOCKHAND, "/api/stacks/robot_arm/deploy?env=1", "POST",

@@ -43,6 +43,24 @@ class GraspPlan:
 
 def grasp_plan(geometry, board) -> GraspPlan:
     g = geometry
+    if gripper.CUSTOM:
+        # A symmetric parallel tool must clamp a section within its actual
+        # aperture, not reuse the stock rotating jaw's head/waist calibration.
+        # Include the complete straight finger band, not just an invisible pad.
+        low, high = gripper.PROFILE['aperture_range_m']
+        candidates = [g.waist] + [z1 - g.bottom_offset + gripper.TIP_X - .003
+                                  for _, z1, _ in reversed(g.profile)]
+        for height in candidates:
+            if height < gripper.TIP_CLEARANCE + gripper.TIP_X or height >= g.height + gripper.TIP_X:
+                continue
+            radius = g.radius_between(height - gripper.TIP_X,
+                                      height + gripper.PROFILE['finger_proximal_reach_m'])
+            hold = 2 * radius - gripper.SQUEEZE
+            opening = 2 * radius + .006
+            if low <= hold and opening <= high:
+                return GraspPlan(z_grasp=board.top + height, gap_open=min(opening + .010, high),
+                                 gap_hold=hold, off_open=np.zeros(3), off_hold=np.zeros(3))
+        raise ValueError('No piece section fits the selected CAD gripper aperture and fingertip clearance')
     # Pocket height: the piece's grasp height, unless the fingertips would
     # touch the board or the pads would reach down into a wider segment
     # below the one they clamp (a rook's base flange).

@@ -7,9 +7,19 @@ Frame: the `gripperframe` site; +x is the approach axis, +z spans the jaw gap.
 """
 from __future__ import annotations
 
+import json
+import os
+from pathlib import Path
 import numpy as np
 
 from .config import Config
+
+KIND = os.environ.get('ROBOT_GRIPPER', 'stock')
+if KIND not in ('stock', 'cad_parallel'):
+    raise ValueError('ROBOT_GRIPPER must be stock or cad_parallel')
+CUSTOM = KIND == 'cad_parallel'
+ASSET_ROOT = Path(os.environ.get('ROBOT_GRIPPER_ASSETS', Path(__file__).parent / 'assets' / 'custom_gripper')).resolve()
+PROFILE = json.loads((ASSET_ROOT / 'profile.json').read_text()) if CUSTOM else {}
 
 # Jaw gap at the fingertips as a function of the gripper joint angle (rad):
 # gap ≈ GAP_AT_ZERO + GAP_PER_RAD * angle, valid over the closing range.
@@ -57,6 +67,32 @@ SQUEEZE = 0.0025     # jaw closure past the piece surface for a physical grasp
 # rotated by the nominal grasp angle so the faces are parallel when closed.
 NOMINAL_GRASP_ANGLE = -0.075   # rad, gripper joint angle at a typical pinch
 
+if CUSTOM:
+    GAP_AT_ZERO = PROFILE['gap_at_zero_m']
+    GAP_PER_RAD = -2 * PROFILE['ratio_m_per_rad']
+    JOINT_MIN, JOINT_MAX = PROFILE['angle_range_rad']
+    POCKET_X = 0.
+    TIP_X = PROFILE['tip_reach_m']
+    PAD_REACH = PROFILE['tip_reach_m']
+    # Bare plastic, not the stock model's artificial high-friction pads.
+    SQUEEZE = .0005  # estimated preload; custom grasp calibration is not qualified
+
+
+def description() -> dict:
+    return {'kind': KIND, 'name': PROFILE.get('name', 'Stock SO101'),
+            'source_revision': PROFILE.get('source_microversion'),
+            'aperture_mm': [v * 1000 for v in PROFILE.get('aperture_range_m', [])],
+            'calibrated': False, 'symmetric': CUSTOM,
+            'manipulation_validated': False if CUSTOM else None}
+
+
+def seed_coupled(model, data, prefix):
+    """Initialize dependent jaw coordinates consistently after an explicit reset."""
+    if CUSTOM:
+        angle = data.qpos[model.joint(prefix + 'gripper').qposadr[0]]
+        for name in PROFILE['jaw_joints']:
+            data.qpos[model.joint(prefix + name).qposadr[0]] = angle * PROFILE['ratio_m_per_rad']
+
 
 def gap_to_angle(gap: float) -> float:
     """Gripper joint angle that yields a fingertip gap of `gap` meters."""
@@ -69,7 +105,7 @@ def angle_to_gap(angle: float) -> float:
 
 def pocket_offset(gap: float) -> np.ndarray:
     """Pinch-pocket center in the site frame for a given jaw gap."""
-    return np.array([POCKET_X, 0.0, 0.5 * gap])
+    return np.zeros(3) if CUSTOM else np.array([POCKET_X, 0.0, 0.5 * gap])
 
 
 def measure_pocket(model, data, gripper_joint: str = "gripper",
@@ -84,8 +120,11 @@ def measure_pocket(model, data, gripper_joint: str = "gripper",
 
     jid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, gripper_joint)
     sid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, site)
-    fixed = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "gripper")
-    moving = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "moving_jaw_so101_v1")
+    prefix = gripper_joint.removesuffix('gripper')
+    fixed = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY,
+        prefix + 'cad:parallel_jaw_left' if CUSTOM else 'gripper')
+    moving = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY,
+        prefix + 'cad:parallel_jaw_right' if CUSTOM else 'moving_jaw_so101_v1')
 
     def prong_points(body_id, smat, spos):
         pts = []
@@ -99,8 +138,9 @@ def measure_pocket(model, data, gripper_joint: str = "gripper",
         return local[local[:, 0] > -0.04]
 
     rows = []
-    for angle in np.linspace(0.3, JOINT_MIN, 8):
+    for angle in np.linspace(JOINT_MAX if CUSTOM else .3, JOINT_MIN, 8):
         data.qpos[model.jnt_qposadr[jid]] = angle
+        seed_coupled(model, data, prefix)
         mujoco.mj_kinematics(model, data)
         smat = data.site_xmat[sid].reshape(3, 3)
         spos = data.site_xpos[sid]

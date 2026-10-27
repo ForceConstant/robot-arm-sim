@@ -19,6 +19,7 @@ from PIL import Image
 
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
+from chess_sim import gripper
 
 OPENING = ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5", "c2c3", "g8f6",
            "d2d3", "d7d6", "b1d2", "a7a6", "c4b3", "c5a7", "h2h3", "h7h6",
@@ -82,6 +83,8 @@ class Lab:
                     "events": list(self.events), "frame_id": self.frame_id,
                     "control": "oracle-state scripted IK; contact-based grasping",
                     "perception_validated": False, "hardware_connected": False,
+                    "gripper": gripper.description(),
+                    "gripper_feedback": getattr(self, 'gripper_feedback', {}),
                     "observation_cameras": ["white_wrist", "black_wrist"] +
                         (["top"] if self.observations == "all" else []),
                     "joints": getattr(self, "joint_snapshot", {})}
@@ -135,10 +138,18 @@ class Lab:
             frames[key] = buf.getvalue()
         joints = {side: self.env.data.qpos[c["qpos"]].tolist()
                   for side, c in self.env._contexts.items()}
+        feedback = {}
+        if gripper.CUSTOM:
+            for side, prefix in (('white', 'so101:'), ('black', 'black:')):
+                positions = [float(self.env.data.qpos[self.env.model.joint(prefix + n).qposadr[0]])
+                             for n in gripper.PROFILE['jaw_joints']]
+                feedback[side] = {'jaw_positions_m': positions,
+                    'aperture_mm': 1000 * (gripper.GAP_AT_ZERO - sum(positions))}
         with self.lock:
             self.frames = frames
             self.frame_id += 1
             self.joint_snapshot = joints
+            self.gripper_feedback = feedback
             self.state["sim_time"] = float(self.env.data.time)
         self.last_render = time.monotonic()
 
