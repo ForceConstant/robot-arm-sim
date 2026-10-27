@@ -625,7 +625,10 @@ class Lab:
                                       + (" · legacy recording" if replay.get("legacy") else ""))
         # Playback renders whatever the viewer has selected, not a hard-coded
         # overview: an isometric replay used to sit frozen while the clock ran.
-        self._render(force=True, subset=tuple(self._active_views()))
+        # Both wrist views always follow the recording too — they are the view
+        # that explains a bad grasp, and the page shows them throughout.
+        subset = tuple(set(self._active_views()) | {"white_wrist", "black_wrist"})
+        self._render(force=True, subset=subset)
 
     def _replay_tick(self):
         replay = self.replay
