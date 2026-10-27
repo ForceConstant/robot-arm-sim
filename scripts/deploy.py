@@ -30,7 +30,7 @@ def compose():
     dockerfile = (ROOT / "Dockerfile").read_text()
     return """services:
   simulation:
-    image: robot-arm-sim:1.3.3
+    image: robot-arm-sim:1.3.4
     build:
       context: .
       dockerfile_inline: |
