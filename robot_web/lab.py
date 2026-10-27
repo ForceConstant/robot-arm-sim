@@ -565,8 +565,18 @@ class Lab:
                            "live_phase": self.state["phase"],
                            "live_message": self.state["message"]}
         # An explicit frame is always honoured: scrubbing pauses there, and play
-        # starts from the frame the viewer is looking at.
+        # starts from the frame the viewer is looking at. Pressing play at the end
+        # restarts rather than doing nothing visible.
         idx = self.replay["frame"] if frame is None else int(frame)
+        if play and self.replay["frames"] < 2:
+            self.replay["playing"] = False
+            with self.lock:
+                self.state.update(phase="replay", active_arm=self.replay["meta"].get("arm"),
+                                  message=f"Replay {ident[:8]} · single frame, nothing to play")
+            self._replay_show(0)
+            return
+        if play and idx >= self.replay["frames"] - 1:
+            idx = 0
         self.replay["playing"] = bool(play)
         self._replay_show(idx)
 
@@ -596,10 +606,17 @@ class Lab:
         replay = self.replay
         if replay is None or not replay.get("playing"):
             return
+        if replay["frames"] < 2:
+            replay["playing"] = False
+            with self.lock:
+                self.state.update(message=f"Replay {replay['ident'][:8]} · single frame, "
+                                          f"nothing to play")
+            return
         if replay["frame"] >= replay["frames"] - 1:
             replay["playing"] = False
             with self.lock:
-                self.state.update(message=f"Replay {replay['ident'][:8]} · end of recording")
+                self.state.update(message=f"Replay {replay['ident'][:8]} · end of recording "
+                                          f"(press play to restart)")
             return
         self._replay_show(replay["frame"] + 1)
         # Never busy-spin; pause/stop land within one frame interval.
