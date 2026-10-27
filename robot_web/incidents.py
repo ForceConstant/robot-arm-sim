@@ -116,8 +116,16 @@ class Store:
 
     def load(self, ident, expected_signature):
         path = self.path(ident); m = self.read(ident)
-        if m['model_signature'] != expected_signature or m['mujoco_version'] != mujoco.__version__:
-            raise ValueError('Recording model/runtime differs from this build; download it for the matching build')
+        # Schema 1 stored one combined model+source hash, so it cannot be compared
+        # to a model-only hash. Those recordings are viewable (playback renders the
+        # states they contain) but never re-runnable: re-run needs a runtime hash.
+        if m.get("schema", 1) >= 2:
+            if m["model_signature"] != expected_signature:
+                raise ValueError("This recording was made with a different model; "
+                                 "download it and replay it on that build")
+            if m["mujoco_version"] != mujoco.__version__:
+                raise ValueError(f"Recording needs MuJoCo {m['mujoco_version']}, "
+                                 f"this build has {mujoco.__version__}")
         with np.load(path / 'states.npz', allow_pickle=False) as z:
             states = z['states'].copy()
         return m, states, json.loads((path / 'trace.json').read_text())

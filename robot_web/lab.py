@@ -558,6 +558,7 @@ class Lab:
             meta, states, trace = self.recorder.load(ident, self.model_signature)
             self.replay = {"ident": ident, "frame": 0, "frames": len(states),
                            "playing": False, "states": states, "trace": trace, "meta": meta,
+                           "legacy": meta.get("schema", 1) < 2,
                            "live_state": physics_state(self.env),
                            "live_meta": bookkeeping(self.env),
                            "live_phase": self.state["phase"],
@@ -584,7 +585,8 @@ class Lab:
                               current_move=meta.get("move"),
                               message=f"Replay {replay['ident'][:8]} · frame {idx + 1}/"
                                       f"{replay['frames']} · {step.get('phase', '?')}"
-                                      + (" · playing" if replay["playing"] else ""))
+                                      + (" · playing" if replay["playing"] else "")
+                                      + (" · legacy recording" if replay.get("legacy") else ""))
         # Playback only needs the main view; the wrist streams keep their last
         # real frame rather than paying for three extra renders per step.
         self._render(force=True, subset=("overview",))
