@@ -23,6 +23,7 @@ StepCallback = Callable[[np.ndarray], None]  # receives the 6-D action applied
 TRANSIT = 0.105
 APPROACH_LENGTH = 0.06
 RELEASE_TOLERANCE = 0.012   # how far the jaws may sit from the placement pose and still open
+PICKUP_MIN = 0.006          # a gripped piece rises at least this much on the lift
 PRECISION = 0.004            # executed pocket error accepted at grasp/place
 SERVO_ROUNDS_PRECISE = 11
 SERVO_ROUNDS_TRANSIT = 2
@@ -141,7 +142,13 @@ class PickPlaceController:
         # piece cannot take jerk, so the carry is a slow straight tool path
         lift_pt = grasp_pt - approach * (APPROACH_LENGTH + 0.01)
         self._phase('lift', lift_pt, gap_hold, off_hold)
+        was_z = float(env.piece_position(slot)[2])
         self._line(grasp_pt, lift_pt, gap_hold, off_hold, on_step)
+        if float(env.piece_position(slot)[2]) - was_z < PICKUP_MIN:
+            # The jaws closed on air (or the piece slipped straight out). Carrying
+            # it to the destination reports the failure as a placement error the
+            # width of the move, which is how a missed grasp hid as bad aiming.
+            return self._abort_missed_grasp(px, py, gap_open, off_open, on_step)
         carry_z = board.top + TRANSIT
         above_src = np.array([px, py, carry_z])
         above_dst = np.array([target_xy[0], target_xy[1], carry_z])
@@ -185,6 +192,21 @@ class PickPlaceController:
         self._go(np.array([target_xy[0], target_xy[1], board.top + TRANSIT]), gap_open, off_open, 10, on_step)
         self._phase('done', clear_pt, gap_open, off_open)
         return bool(ok)
+
+    def _abort_missed_grasp(self, px, py, gap_open, off_open, on_step) -> bool:
+        """Nothing came up with the jaws: open them, retreat, report the miss.
+
+        The piece is still standing on its square, so no undo is needed — only
+        the honesty of not carrying empty jaws to the target square.
+        """
+        env, board = self.env, self.env.board
+        env.diagnostic_stall = 'lift'
+        here = env.ik.tool_pose(env.data, off_open)[0]
+        self._phase('abort_grasp', here, gap_open, off_open)
+        self._go(here, gap_open, off_open, 8, on_step)
+        clear = np.array([here[0], here[1], board.top + TRANSIT])
+        self._line(here, clear, gap_open, off_open, on_step, segments=3)
+        return False
 
     def _abort_to_source(self, grasp_pt, px, py, span_grasp, span_place,
                          gap_hold, off_hold, gap_open, off_open, on_step) -> bool:

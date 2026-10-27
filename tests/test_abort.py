@@ -50,3 +50,27 @@ def test_clean_move_still_releases_normally(env):
     assert result.waypoints_precise is True
     assert env.diagnostic_stall is None
     assert chess.E4 in env._square_slot
+
+
+def test_missed_grasp_stops_before_carrying(env, monkeypatch):
+    """If nothing rises with the jaws, do not carry air to the target square."""
+    import dataclasses
+    env.reset(chess.STARTING_FEN)
+    original = C.grasp_plan
+
+    def closes_too_high(geometry, board):
+        # A 60 mm error in grasp height: the jaws close on air above the piece.
+        return dataclasses.replace(original(geometry, board),
+                                   z_grasp=original(geometry, board).z_grasp + 0.06)
+
+    monkeypatch.setattr(C, "grasp_plan", closes_too_high)
+    result = env.execute(MoveTask(from_square="e2", to_square="e4"))
+
+    assert result.success is False
+    assert result.picked is None
+    assert env.diagnostic_stall == "lift"
+    slot = env._square_slot[chess.E2]
+    centre = np.array(env.board.square_center(chess.E2))
+    assert np.linalg.norm(env.piece_position(slot)[:2] - centre) < 0.01
+    assert env.piece_upright(slot) > env.config.tolerances.upright_min
+    assert chess.E4 not in env._square_slot

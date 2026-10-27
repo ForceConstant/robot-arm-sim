@@ -277,7 +277,12 @@ class Recording:
                     if c.get('kind') == 'piece' and not c['target_contact']]
         if unexpected:categories.append('unexpected_contact_candidate')
         stalls=[step.get('stall') for step in self.trace if step.get('stall')]
-        if stalls:categories.append('stalled_descent')
+        if result and result.get('picked') is None and not success:
+            categories.append('missed_grasp')      # nothing moved: aiming was not the problem
+        elif stalls:
+            categories.append('stalled_descent')
+        if stalls and stalls[0] == 'lift' and 'missed_grasp' not in categories:
+            categories.append('missed_grasp')
         if not success and not categories:categories.append('interrupted' if message=='Interrupted' else 'execution_error')
         self.meta.update(success=bool(success),frames=len(self.states),categories=categories or ['success'],
                          stalled_phase=(stalls[0] if stalls else None),
