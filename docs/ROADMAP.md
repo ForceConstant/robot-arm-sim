@@ -17,7 +17,7 @@ prerequisite for the phases below.
 | 0.1 | incident recorder: full integration state, command, phase label, desired vs executed TCP and jaw gap, neighbour shifts, contact candidates, before/after images | done — `robot_web/incidents.py` |
 | 0.2 | replay (saved-state visualisation) and re-run (restore the recorded starting state and execute again), gated on a model + source signature and MuJoCo version | done |
 | 0.3 | crowded-board torture suite: 12 independent cases, fresh board each, no chess engine, failures stay visible | done — `robot_web/torture.py` |
-| 0.4 | orbitable live camera: drag to orbit, shift-wheel to zoom, double-click to reset | done |
+| 0.4 | fixed camera views (overview, four isometrics, left, right, white/black side, overhead) replacing a free orbit camera that gimbal-locked | done |
 | 0.5 | triage the saved recordings into a category (path, gripper envelope, grasp profile, slip, tracking) and fix the dominant one | next |
 | 0.6 | wrist-camera perception replacing exact simulator positions | after pick-and-place is consistent |
 

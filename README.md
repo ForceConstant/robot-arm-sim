@@ -21,8 +21,9 @@ MuJoCo version, so they only replay on the build that produced them.
 - **`crowded-v1` torture suite**: 12 independent manipulation cases (both bishops from the
   observed failures included), each on a fresh board, no chess engine involved. A failed
   case does not contaminate the next.
-- **Orbitable live camera**: drag the main view to orbit, shift-wheel to zoom,
-  double-click to reset.
+- **Fixed camera views**: overview, four isometrics, left, right, white side, black
+  side, overhead and the two wrist cameras. Deliberately not a free orbit camera —
+  dragging gimbal-locked near the poles and drifted while the arm moved.
 
 `GET /api/incidents`, `GET /api/incidents/{id}`, `GET /api/incidents/{id}/trace`,
 `GET /api/incidents/{id}.zip`, `POST /api/incidents/{id}/label`, and `GET /api/suite`
