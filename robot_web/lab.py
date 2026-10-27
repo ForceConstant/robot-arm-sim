@@ -35,14 +35,14 @@ CAMERAS = {"overview": Camera.EXTERNAL, "top": Camera.TOP,
 VIEWS = {
     "overview": ("camera", Camera.EXTERNAL),
     "top": ("camera", Camera.TOP),
-    "right": ("orbit", {"azimuth": 0.0, "elevation": -12.0, "distance": 0.58}),
-    "left": ("orbit", {"azimuth": 180.0, "elevation": -12.0, "distance": 0.58}),
-    "white_side": ("orbit", {"azimuth": 90.0, "elevation": -12.0, "distance": 0.56}),
-    "black_side": ("orbit", {"azimuth": 270.0, "elevation": -12.0, "distance": 0.56}),
-    "iso_ne": ("orbit", {"azimuth": 45.0, "elevation": -32.0, "distance": 0.66}),
-    "iso_nw": ("orbit", {"azimuth": 135.0, "elevation": -32.0, "distance": 0.66}),
-    "iso_se": ("orbit", {"azimuth": 315.0, "elevation": -32.0, "distance": 0.66}),
-    "iso_sw": ("orbit", {"azimuth": 225.0, "elevation": -32.0, "distance": 0.66}),
+    "right": ("orbit", {"azimuth": 0.0, "elevation": -20.0, "distance": 0.90}),
+    "left": ("orbit", {"azimuth": 180.0, "elevation": -20.0, "distance": 0.90}),
+    "white_side": ("orbit", {"azimuth": 90.0, "elevation": -32.0, "distance": 1.00}),
+    "black_side": ("orbit", {"azimuth": 270.0, "elevation": -32.0, "distance": 1.00}),
+    "iso_ne": ("orbit", {"azimuth": 45.0, "elevation": -35.0, "distance": 1.00}),
+    "iso_nw": ("orbit", {"azimuth": 135.0, "elevation": -35.0, "distance": 1.00}),
+    "iso_se": ("orbit", {"azimuth": 315.0, "elevation": -35.0, "distance": 1.00}),
+    "iso_sw": ("orbit", {"azimuth": 225.0, "elevation": -35.0, "distance": 1.00}),
     "white_wrist": ("camera", Camera.WRIST),
     "black_wrist": ("camera", Camera.WRIST_BLACK),
 }
@@ -213,6 +213,7 @@ class Lab:
         # distinct from the declared observations, even in wrist-only mode.
         keys = list(VIEWS.items()) if subset is None else [(k, VIEWS[k]) for k in subset]
         lookat = self.env.orbit_default()["lookat"]
+        lookat = [lookat[0], lookat[1], lookat[2] + 0.03]
         for key, (kind, value) in keys:
             image = (self.env.render(value) if kind == "camera"
                      else self.env.render(Camera.EXTERNAL, orbit={**value, "lookat": lookat}))
