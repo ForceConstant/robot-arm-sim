@@ -24,6 +24,19 @@ prerequisite for the phases below.
 The recorder and suite change nothing about what counts as success: grasps stay
 contact-based, thresholds are unchanged, and a failed case is reported as a failure.
 
+### Data and perception track (added 2026-10-27)
+
+| step | what | state |
+| --- | --- | --- |
+| D.1 | evaluate **LeLab** (huggingface/leLab, a web UI on LeRobot) for SO-101 calibration, repeatable test moves and episode recording, including what it assumes about hardware the simulation lacks | open |
+| D.2 | record **episodes** from the simulator in LeRobot layout — observation frames, joint states, actions, task text, verified success/failure — reusing the incident recorder's state sampling | open |
+| D.3 | train **board-state perception** for the opponent's move: registration, occupancy/colour, legal-successor matching, scored against simulator truth in an evaluator only | open, after 0.5 |
+
+D.2 is the prerequisite for any fine-tuning: a dataset whose labels come from
+physically verified moves, not from the engine's intent. D.3 replaces the
+earlier "wrist vision" placeholder — it is a perception model, not a camera
+wired into the scripted controller.
+
 ### Why wrist vision comes after step 0.5
 
 The scripted controller already reads exact piece poses from MuJoCo, so these failures are
