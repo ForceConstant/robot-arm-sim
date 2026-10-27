@@ -144,16 +144,19 @@ class PickPlaceController:
         self._phase('lift', lift_pt, gap_hold, off_hold)
         was_z = float(env.piece_position(slot)[2])
         self._line(grasp_pt, lift_pt, gap_hold, off_hold, on_step)
-        if float(env.piece_position(slot)[2]) - was_z < PICKUP_MIN:
-            # The jaws closed on air (or the piece slipped straight out). Carrying
-            # it to the destination reports the failure as a placement error the
-            # width of the move, which is how a missed grasp hid as bad aiming.
-            return self._abort_missed_grasp(px, py, gap_open, off_open, on_step)
         carry_z = board.top + TRANSIT
         above_src = np.array([px, py, carry_z])
         above_dst = np.array([target_xy[0], target_xy[1], carry_z])
         self._phase('carry', above_dst, gap_hold, off_hold)
         self._line(lift_pt, above_src, gap_hold, off_hold, on_step, segments=2, steps=6)
+        # Measured at carry height, not at the end of the lift command: the servo
+        # is still accelerating there, and a gripped piece has risen only a few
+        # millimetres when the check used to fire — it rejected good grasps.
+        if float(env.piece_position(slot)[2]) - was_z < PICKUP_MIN:
+            # The jaws closed on air (or the piece slipped straight out). Carrying
+            # it on reports the failure as a placement error the width of the move,
+            # which is how a missed grasp hid as bad aiming.
+            return self._abort_missed_grasp(px, py, gap_open, off_open, on_step)
         self._line(above_src, above_dst, gap_hold, off_hold, on_step,
                    segments=max(2, int(np.linalg.norm(above_dst - above_src) / 0.03)), steps=8)
 

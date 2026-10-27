@@ -8,6 +8,7 @@ import shutil
 import threading
 import time
 import traceback
+import zlib
 from collections import deque
 from pathlib import Path
 
@@ -520,6 +521,10 @@ class Lab:
             self.game = chess.Board(case.fen)
             self.history = []
             move = chess.Move.from_uci(case.move)
+            # Fixed draw per case: the suite is a regression check, so the same
+            # case must see the same servo noise on every build.
+            seed = zlib.crc32(case.id.encode()) & 0xffffffff
+            self.env._noise_rng = np.random.default_rng(seed)
             self.env.reset(self.game.fen())
             self.env.select_arm(case.arm)
             self.env.position = self.game.copy()
