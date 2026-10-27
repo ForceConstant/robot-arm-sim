@@ -205,16 +205,19 @@ class Lab:
                 self.running = False
                 self.replay_request = ("live", None, False)
             elif action == "rerun":
+                self.stop_requested = False
                 self.rerun_request = str(options["id"])
                 self.running = False
             elif action == "correct":
                 if not options.get("id"):
                     raise ValueError("A recording id is required")
+                self.stop_requested = False
                 self.correct_request = {"id": str(options["id"]), "params": options.get("params") or {}}
                 self.running = False
             elif action == "sweep":
                 if not options.get("id"):
                     raise ValueError("A recording id is required")
+                self.stop_requested = False
                 self.sweep_request = {"id": str(options["id"])}
                 self.running = False
             else:
@@ -298,6 +301,27 @@ class Lab:
             self._render()
             self.wake.wait(0.04)
             self.wake.clear()
+        contact = self._cross_arm_contact()
+        if contact:
+            raise RuntimeError("Arm-to-arm collision: " + " / ".join(contact))
+        self._render()
+        period = 1 / self.env.control_hz / self.speed
+        now = time.monotonic()
+        if self.last_tick:
+            remaining = period - (now - self.last_tick)
+            if remaining > 0:
+                self.shutdown.wait(min(remaining, 0.1))
+        self.last_tick = time.monotonic()
+
+    def _pace(self, _action=None):
+        """Checkpoint for actions that run while the sim is stopped.
+
+        Corrections, sweeps and re-runs are requested directly, so they must not
+        wait for the Start button the way a game turn does. Stop still aborts
+        them, and arm-to-arm contact is still fatal.
+        """
+        if self.shutdown.is_set() or self.stop_requested:
+            raise Interrupted()
         contact = self._cross_arm_contact()
         if contact:
             raise RuntimeError("Arm-to-arm collision: " + " / ".join(contact))
@@ -721,7 +745,7 @@ class Lab:
                               last_result=None, last_recording=None)
         self._render(force=True)
         try:
-            self._physical(task)
+            self._physical(task, callback=self._pace)
             with self.lock:
                 self.state.update(phase="ready", message="Re-run finished")
         except Exception as exc:
@@ -773,7 +797,7 @@ class Lab:
         self._message("moving", "Correcting " + ident[:8] + " with " + (str(params) or "no change"))
         self._render(force=True)
         try:
-            self._physical(task, override=PlanOverride(**params),
+            self._physical(task, callback=self._pace, override=PlanOverride(**params),
                            extra={"correction_of": ident, "override": params})
             self._message("ready", "Correction finished")
         except Exception as exc:
@@ -808,7 +832,7 @@ class Lab:
                 self._restore_from(meta, states)
                 self._message("moving", "Sweep " + ident[:8] + " " + (str(params) or "baseline"))
                 try:
-                    result = self.env.execute(task, on_step=self._checkpoint,
+                    result = self.env.execute(task, on_step=self._pace,
                                               override=PlanOverride(**params))
                     results.append({"params": params, "success": bool(result.success),
                                     "error_mm": round(result.placement_error * 1000, 1)})
@@ -823,7 +847,7 @@ class Lab:
         if best is not None:
             self._restore_from(meta, states)
             try:
-                self._physical(task, override=PlanOverride(**best),
+                self._physical(task, callback=self._pace, override=PlanOverride(**best),
                                extra={"correction_of": ident, "override": best, "swept": True})
                 self._message("ready", "Sweep fixed %s with %s" % (ident[:8], best or "no change"))
             except Exception as exc:
