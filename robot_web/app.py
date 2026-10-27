@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import __version__
-from .lab import Lab, CAMERAS
+from .lab import Lab, VIEWS
 from .incidents import LABELS
 from .torture import CASES, SUITE_VERSION
 
@@ -154,7 +154,7 @@ def suite():
 
 @app.get("/api/frame/{camera}.jpg")
 def frame(camera: str):
-    if camera not in CAMERAS:
+    if camera not in VIEWS:
         raise HTTPException(404)
     with lab.lock:
         data = lab.frames.get(camera)
@@ -165,7 +165,7 @@ def frame(camera: str):
 
 @app.get("/api/stream/{camera}")
 async def stream(camera: str, request: Request):
-    if camera not in CAMERAS:
+    if camera not in VIEWS:
         raise HTTPException(404)
 
     async def images():

@@ -104,3 +104,15 @@ def test_recording_round_trip(env, tmp_path):
     store.annotate(meta["id"], "slip_drop", "reviewed in test")
     assert store.read(meta["id"])["review_label"] == "slip_drop"
     assert "slip_drop" in LABELS
+
+
+def test_camera_views_are_fixed_and_well_formed():
+    from robot_web.lab import VIEWS
+    assert {"overview", "top", "left", "right", "white_side", "black_side"} <= set(VIEWS)
+    assert sum(1 for name in VIEWS if name.startswith("iso_")) == 4
+    for name, (kind, value) in VIEWS.items():
+        assert kind in ("camera", "orbit"), name
+        if kind == "orbit":
+            assert 0.0 <= value["azimuth"] < 360.0, name
+            assert -89.0 < value["elevation"] < 0.0, name      # above the table, never past the pole
+            assert 0.2 < value["distance"] < 1.5, name

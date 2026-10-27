@@ -29,6 +29,23 @@ OPENING = ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5", "c2c3", "g8f6",
            "d2f1", "c8e6", "f1g3", "d8d7"]
 CAMERAS = {"overview": Camera.EXTERNAL, "top": Camera.TOP,
            "white_wrist": Camera.WRIST, "black_wrist": Camera.WRIST_BLACK}
+# Fixed viewpoints instead of a free orbit camera: a draggable camera gimbal-locks
+# near the poles and drifts while the arm is moving. Azimuth 0 looks from +X,
+# 90 from -Y (White's side), 180 from -X, 270 from +Y (Black's side).
+VIEWS = {
+    "overview": ("camera", Camera.EXTERNAL),
+    "top": ("camera", Camera.TOP),
+    "right": ("orbit", {"azimuth": 0.0, "elevation": -12.0, "distance": 0.58}),
+    "left": ("orbit", {"azimuth": 180.0, "elevation": -12.0, "distance": 0.58}),
+    "white_side": ("orbit", {"azimuth": 90.0, "elevation": -12.0, "distance": 0.56}),
+    "black_side": ("orbit", {"azimuth": 270.0, "elevation": -12.0, "distance": 0.56}),
+    "iso_ne": ("orbit", {"azimuth": 45.0, "elevation": -32.0, "distance": 0.66}),
+    "iso_nw": ("orbit", {"azimuth": 135.0, "elevation": -32.0, "distance": 0.66}),
+    "iso_se": ("orbit", {"azimuth": 315.0, "elevation": -32.0, "distance": 0.66}),
+    "iso_sw": ("orbit", {"azimuth": 225.0, "elevation": -32.0, "distance": 0.66}),
+    "white_wrist": ("camera", Camera.WRIST),
+    "black_wrist": ("camera", Camera.WRIST_BLACK),
+}
 SCENARIOS = {"standard": chess.STARTING_FEN,
              "capture": "4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1"}
 
@@ -73,7 +90,6 @@ class Lab:
         self.replay = None
         self.replay_request = None
         self.rerun_request = None
-        self.orbit = None
         self.incident_count = 0
         self.state = {"phase": "initializing", "message": "Building the two-arm scene",
                       "renderer": "Starting", "engine": "Starting", "sim_time": 0,
@@ -104,7 +120,6 @@ class Lab:
                     "record_enabled": self.record_enabled,
                     "incidents": self.incident_count,
                     "case": self.current_case,
-                    "orbit": self.orbit,
                     "replay": None if self.replay is None else
                         {"id": self.replay["ident"], "frame": self.replay["frame"],
                          "frames": self.replay["frames"],
@@ -153,19 +168,6 @@ class Lab:
                     self.replay_request = ("live", None, False)
             elif action == "speed":
                 self.speed = float(options["speed"])
-            elif action == "orbit":
-                base = self.env.orbit_default() if self.env else {"lookat": [0, 0, 0.02],
-                                                                  "distance": 0.9, "azimuth": 130.0,
-                                                                  "elevation": -35.0}
-                orbit = dict(self.orbit or base)
-                for key, limit in (("distance", (0.22, 1.8)), ("elevation", (-88.0, 88.0))):
-                    if options.get(key) is not None:
-                        orbit[key] = float(np.clip(float(options[key]), *limit))
-                if options.get("azimuth") is not None:
-                    orbit["azimuth"] = float(options["azimuth"]) % 360.0
-                if options.get("reset"):
-                    orbit = base
-                self.orbit = orbit
             elif action == "record":
                 self.record_enabled = bool(options.get("enable", True))
                 self.log("Incident recording " + ("enabled" if self.record_enabled else "disabled"))
@@ -209,10 +211,11 @@ class Lab:
         frames = {}
         # All contexts and renders stay on this thread. The debug top view is
         # distinct from the declared observations, even in wrist-only mode.
-        keys = list(CAMERAS.items()) if subset is None else [(k, CAMERAS[k]) for k in subset]
-        for key, camera in keys:
-            orbit = self.orbit if key == "overview" else None
-            image = self.env.render(camera, orbit=orbit)
+        keys = list(VIEWS.items()) if subset is None else [(k, VIEWS[k]) for k in subset]
+        lookat = self.env.orbit_default()["lookat"]
+        for key, (kind, value) in keys:
+            image = (self.env.render(value) if kind == "camera"
+                     else self.env.render(Camera.EXTERNAL, orbit={**value, "lookat": lookat}))
             buf = io.BytesIO()
             Image.fromarray(image).save(buf, "JPEG", quality=82)
             frames[key] = buf.getvalue()
