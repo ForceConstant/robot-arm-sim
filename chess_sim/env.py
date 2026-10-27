@@ -167,6 +167,12 @@ class ChessSimEnv:
         self._noise_to = np.zeros(len(JOINTS))     # a wander, not a jolt that shakes a piece loose
         self.noise_suppressed = False    # the expert sets this for its precise servo phases
         self._renderer: mujoco.Renderer | None = None
+        # Diagnostics read by the incident recorder; they describe intent, not state.
+        self.diagnostic_phase = 'idle'
+        self.diagnostic_target = None
+        self.diagnostic_gap = None
+        self.diagnostic_offset = np.zeros(3)
+        self._orbit = None               # (lookat, distance, azimuth, elevation)
         self.controller = PickPlaceController(self)
         self._step_count = 0
         self.reach = self._compute_reach()
@@ -523,12 +529,40 @@ class ChessSimEnv:
                            joint_vel=self.data.qvel[self._joint_dof].copy(),
                            images=CameraImages(frames=frames), fen=self.position.fen())
 
-    def render(self, camera: Camera | str = Camera.TOP) -> np.ndarray:
+    def render(self, camera: Camera | str = Camera.TOP,
+               orbit: dict | None = None) -> np.ndarray:
+        """Render one camera. `orbit` overrides `camera` with a free camera
+        (azimuth/elevation in degrees, distance and lookat in metres)."""
         if self._renderer is None:
             width, height = self.config.control.image_size
             self._renderer = mujoco.Renderer(self.model, height=height, width=width)
-        self._renderer.update_scene(self.data, camera=str(camera))
+        if orbit is None:
+            self._renderer.update_scene(self.data, camera=str(camera))
+        else:
+            cam = mujoco.MjvCamera()
+            mujoco.mjv_defaultCamera(cam)
+            cam.lookat[:] = np.asarray(orbit['lookat'], dtype=float)
+            cam.distance = float(orbit['distance'])
+            cam.azimuth = float(orbit['azimuth'])
+            cam.elevation = float(orbit['elevation'])
+            self._renderer.update_scene(self.data, camera=cam)
         return self._renderer.render()
+
+    def orbit_default(self) -> dict:
+        """Starting free-camera view, framed on the board from the external pose."""
+        board = self.board
+        lookat = np.array([0.0, 0.0, board.top])
+        cid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, str(Camera.EXTERNAL))
+        if cid >= 0:
+            pos = self.model.cam_pos[cid]
+            delta = pos - lookat
+            distance = float(np.linalg.norm(delta))
+            azimuth = float(np.degrees(np.arctan2(-delta[1], delta[0]))) % 360.0
+            elevation = float(np.degrees(np.arcsin(np.clip(-delta[2] / distance, -1, 1))))
+        else:
+            distance, azimuth, elevation = 0.9, 130.0, -35.0
+        return {"lookat": lookat.tolist(), "distance": distance,
+                "azimuth": azimuth, "elevation": elevation}
 
     def arm_joint_positions(self) -> np.ndarray:
         return self.data.qpos[self._joint_qpos]

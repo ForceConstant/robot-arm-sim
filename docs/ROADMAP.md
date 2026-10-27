@@ -1,8 +1,35 @@
 # Roadmap
 
-Where the project stands on 2026-09-28 and what comes next, in order, with what each step
+Where the project stands on 2026-10-27 and what comes next, in order, with what each step
 costs and what has to be true before the next one starts. The experiment record
 (`EXPERIMENTS.md`) says why each decision was made; this file only says what is being done.
+
+## Now — make the manipulator trustworthy before training anything
+
+A live run on 2026-10-27 produced a black bishop `f8b4` that finished **61.6 mm** from its
+square and disturbed `f7`; an earlier white bishop `f1g2` failed at 30.9 mm. The old logs
+could not say whether that was a collision, a missed grasp or a slip, because they kept the
+FEN rather than the physics state. Fix the diagnostics first; piece-level success is the
+prerequisite for the phases below.
+
+| step | what | state |
+| --- | --- | --- |
+| 0.1 | incident recorder: full integration state, command, phase label, desired vs executed TCP and jaw gap, neighbour shifts, contact candidates, before/after images | done — `robot_web/incidents.py` |
+| 0.2 | replay (saved-state visualisation) and re-run (restore the recorded starting state and execute again), gated on a model + source signature and MuJoCo version | done |
+| 0.3 | crowded-board torture suite: 12 independent cases, fresh board each, no chess engine, failures stay visible | done — `robot_web/torture.py` |
+| 0.4 | orbitable live camera: drag to orbit, shift-wheel to zoom, double-click to reset | done |
+| 0.5 | triage the saved recordings into a category (path, gripper envelope, grasp profile, slip, tracking) and fix the dominant one | next |
+| 0.6 | wrist-camera perception replacing exact simulator positions | after pick-and-place is consistent |
+
+The recorder and suite change nothing about what counts as success: grasps stay
+contact-based, thresholds are unchanged, and a failed case is reported as a failure.
+
+### Why wrist vision comes after step 0.5
+
+The scripted controller already reads exact piece poses from MuJoCo, so these failures are
+not perception errors. Making the wrist cameras drive the loop now would add noise to a
+process that is not yet repeatable. First make the same move succeed twice in a row; then
+replace ground truth with the camera and measure the difference.
 
 ## Where things stand
 

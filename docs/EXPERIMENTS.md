@@ -954,3 +954,31 @@ LoRA on the VLM plus a trainable action expert: 737 M trainable of 5.6 B, 29.7 G
    exercised - and a grasp for a piece lying on its side.
 4. **Sim-to-real geometry.** Board square size, camera height and field of view must match the
    physical rig, or none of this transfers.
+
+## 9. Diagnostics — the 2026-10-27 bishop failure (recorded)
+
+Black's `f8b4` finished **61.6 mm** from its target square and shifted the pawn on `f7`;
+white's `f1g2` had earlier failed at 30.9 mm. The run could not be interrogated afterwards:
+the saved status held a FEN, not the integration state, so the first contact, the requested
+jaw gap, the commanded versus executed tool pose and the phase of the failure were gone.
+That is a diagnostics gap, not a verdict on the gripper.
+
+Adopted as a result:
+
+1. **Every physical action records** `mjSTATE_INTEGRATION`, the controller's intent
+   (phase, target TCP, commanded gap), the executed tool pose and actual jaw gap,
+   neighbour displacement, contact candidates with peak force, and before/after camera
+   frames. Loading is gated on a hash of the compiled model plus the controller sources
+   and on the MuJoCo version, so a recording from a different build refuses to load
+   instead of showing something misleading.
+2. **Replay vs re-run are different promises.** `replay` re-renders saved states and says
+   so; it never claims to re-simulate physics. `re-run` restores frame 0 — the state
+   before the command — and executes the same task again, producing a new recording.
+3. **`crowded-v1`** gives 12 independent cases, each resetting to its own FEN, so a
+   failure can be reproduced on demand instead of found by accident in a long game. The
+   two observed bishop failures are regression cases. These are physical tasks, not legal
+   chess games.
+
+Still open: what actually happened on `f8b4`. The recorder stores candidate categories
+(path collision, gripper envelope, missed grasp, slip, release/retreat, tracking); a
+candidate is not a cause until triaged or separated by a controlled A/B.

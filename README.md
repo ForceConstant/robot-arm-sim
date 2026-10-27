@@ -7,6 +7,28 @@ newly reproduced results for this fork. See [UPSTREAM.md](UPSTREAM.md).
 
 ## Environment-first milestone (v1.0.0)
 
+### Incident recording, replay and the torture suite (v1.2.0)
+
+Every physical action can now be recorded and interrogated: full MuJoCo integration
+state, the controller's intent (phase, target TCP, commanded jaw gap), the executed tool
+pose and actual gap, neighbour displacement, contact candidates with peak force, and
+before/after camera frames. Recordings are gated on a model-plus-source signature and the
+MuJoCo version, so they only replay on the build that produced them.
+
+- **Replay** re-renders saved states. It is a visualisation, not a physics re-simulation.
+- **Re-run** restores the recording's frame 0 (the state before the command) and executes
+  the same task again.
+- **`crowded-v1` torture suite**: 12 independent manipulation cases (both bishops from the
+  observed failures included), each on a fresh board, no chess engine involved. A failed
+  case does not contaminate the next.
+- **Orbitable live camera**: drag the main view to orbit, shift-wheel to zoom,
+  double-click to reset.
+
+`GET /api/incidents`, `GET /api/incidents/{id}`, `GET /api/incidents/{id}/trace`,
+`GET /api/incidents/{id}.zip`, `POST /api/incidents/{id}/label`, and `GET /api/suite`
+expose the same data over HTTP. Review categories are stored with the recording; a
+candidate category is not a root cause until triaged.
+
 ### Parallel CAD tool integration (v1.1.0)
 
 - Both arms can mount an external parallel-jaw MJCF tool pack while retaining

@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from . import __version__
 from .lab import Lab, CAMERAS
+from .incidents import LABELS
+from .torture import CASES, SUITE_VERSION
 
 lab = Lab()
 
@@ -61,11 +63,20 @@ def status():
 
 
 class Control(BaseModel):
-    action: Literal["start", "pause", "stop", "reset", "step", "configure", "speed"]
+    action: Literal["start", "pause", "stop", "reset", "step", "configure", "speed",
+                   "orbit", "record", "suite", "replay", "live", "rerun"]
     mode: Literal["engine", "opening"] = "engine"
     scenario: Literal["standard", "capture"] = "standard"
     observations: Literal["wrists", "all"] = "wrists"
     speed: float = Field(default=2, ge=0.25, le=8)
+    azimuth: float | None = None
+    elevation: float | None = None
+    distance: float | None = None
+    reset: bool = False
+    enable: bool = True
+    suite: Literal["start", "stop"] = "start"
+    id: str | None = None
+    frame: int = 0
 
 
 @app.post("/api/control")
@@ -73,10 +84,71 @@ def control(body: Control):
     try:
         if not lab.ready and body.action != "stop":
             raise HTTPException(409, "The simulator is still initializing")
-        lab.command(body.action, **body.model_dump(exclude={"action"}))
+        options = body.model_dump(exclude={"action"})
+        if body.action in ("replay", "rerun") and not options.get("id"):
+            raise HTTPException(422, "A recording id is required")
+        lab.command(body.action, **options)
         return {"version": __version__, **lab.snapshot()}
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/api/incidents")
+def incidents():
+    with lab.lock:
+        rows = lab.recorder.rows()
+        return {"recording": lab.record_enabled, "rows": rows, "labels": list(LABELS)}
+
+
+@app.get("/api/incidents/{ident}")
+def incident(ident: str):
+    try:
+        with lab.lock:
+            return lab.recorder.read(ident)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@app.get("/api/incidents/{ident}/trace")
+def incident_trace(ident: str):
+    try:
+        path = lab.recorder.path(ident)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    return FileResponse(path / "trace.json", media_type="application/json")
+
+
+@app.get("/api/incidents/{ident}.zip")
+def incident_zip(ident: str):
+    try:
+        with lab.lock:
+            data = lab.recorder.download(ident)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    return Response(data, media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="incident-{ident}.zip"'})
+
+
+class Review(BaseModel):
+    label: str
+    notes: str = ""
+
+
+@app.post("/api/incidents/{ident}/label")
+def incident_label(ident: str, body: Review):
+    try:
+        with lab.lock:
+            lab.recorder.annotate(ident, body.label, body.notes)
+            return lab.recorder.read(ident)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/suite")
+def suite():
+    return {"version": SUITE_VERSION,
+            "cases": [{"id": c.id, "arm": c.arm, "move": c.move,
+                       "description": c.description} for c in CASES]}
 
 
 @app.get("/api/frame/{camera}.jpg")

@@ -14,12 +14,15 @@ from pathlib import Path
 import chess
 import chess.engine
 import chess.pgn
+import mujoco
 import numpy as np
 from PIL import Image
 
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
 from chess_sim import gripper
+from .incidents import Store, Recording, restore, bookkeeping, physics_state
+from .torture import CASES, SUITE_VERSION
 
 OPENING = ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5", "c2c3", "g8f6",
            "d2d3", "d7d6", "b1d2", "a7a6", "c4b3", "c5a7", "h2h3", "h7h6",
@@ -58,11 +61,22 @@ class Lab:
         self.observations = "wrists"
         self.scenario = "standard"
         self.dirty = False
+        self.storage = Path(os.environ.get("ROBOT_DATA_DIR", "/tmp/robot-arm-data"))
+        self.storage.mkdir(parents=True, exist_ok=True)
+        self.recorder = Store(self.storage)
+        self.model_signature = None
+        self.recording = None
+        self.record_enabled = True
+        self.current_case = None
+        self.suite = None
+        self.replay = None
+        self.replay_request = None
+        self.rerun_request = None
+        self.orbit = None
+        self.incident_count = 0
         self.state = {"phase": "initializing", "message": "Building the two-arm scene",
                       "renderer": "Starting", "engine": "Starting", "sim_time": 0,
                       "active_arm": None, "current_move": None, "last_result": None}
-        self.storage = Path(os.environ.get("ROBOT_DATA_DIR", "/tmp/robot-arm-data"))
-        self.storage.mkdir(parents=True, exist_ok=True)
         self.thread = threading.Thread(target=self._run, name="physics-render", daemon=True)
 
     def start_worker(self):
@@ -85,6 +99,18 @@ class Lab:
                     "perception_validated": False, "hardware_connected": False,
                     "gripper": gripper.description(),
                     "gripper_feedback": getattr(self, 'gripper_feedback', {}),
+                    "recording": None if self.recording is None else self.recording.id,
+                    "record_enabled": self.record_enabled,
+                    "incidents": self.incident_count,
+                    "case": self.current_case,
+                    "orbit": self.orbit,
+                    "replay": None if self.replay is None else
+                        {"id": self.replay["ident"], "frame": self.replay["frame"],
+                         "frames": self.replay["frames"]},
+                    "suite": None if self.suite is None else
+                        {"version": self.suite["version"], "index": self.suite["index"],
+                         "total": len(CASES), "phase": self.suite["phase"],
+                         "results": list(self.suite["results"])},
                     "observation_cameras": ["white_wrist", "black_wrist"] +
                         (["top"] if self.observations == "all" else []),
                     "joints": getattr(self, "joint_snapshot", {})}
@@ -102,6 +128,7 @@ class Lab:
                 if self.state["phase"] in ("fault", "complete", "stopped") or (
                         self.dirty and self.state["phase"] != "paused"):
                     self.reset_requested = True
+                self.suite = None
                 self.stop_requested = False
                 self.step_requested = action == "step"
                 self.running = True
@@ -118,8 +145,51 @@ class Lab:
                 self.running = False
                 self.stop_requested = True
                 self.reset_requested = True
+                self.suite = None
+                self.rerun_request = None
+                if self.replay is not None:
+                    self.replay_request = ("live", 0)
             elif action == "speed":
                 self.speed = float(options["speed"])
+            elif action == "orbit":
+                base = self.env.orbit_default() if self.env else {"lookat": [0, 0, 0.02],
+                                                                  "distance": 0.9, "azimuth": 130.0,
+                                                                  "elevation": -35.0}
+                orbit = dict(self.orbit or base)
+                for key, limit in (("distance", (0.22, 1.8)), ("elevation", (-88.0, 88.0))):
+                    if options.get(key) is not None:
+                        orbit[key] = float(np.clip(float(options[key]), *limit))
+                if options.get("azimuth") is not None:
+                    orbit["azimuth"] = float(options["azimuth"]) % 360.0
+                if options.get("reset"):
+                    orbit = base
+                self.orbit = orbit
+            elif action == "record":
+                self.record_enabled = bool(options.get("enable", True))
+                self.log("Incident recording " + ("enabled" if self.record_enabled else "disabled"))
+            elif action == "suite":
+                choice = options.get("suite", "start")
+                if choice == "start":
+                    self.suite = {"version": SUITE_VERSION, "index": 0, "phase": "running",
+                                  "results": []}
+                    self.running, self.stop_requested, self.step_requested = True, False, False
+                    self.log(f"Torture suite {SUITE_VERSION}: {len(CASES)} independent cases")
+                elif choice == "stop":
+                    if self.suite:
+                        self.suite["phase"] = "stopped"
+                    self.running = False
+                    self.log("Torture suite stops after the current case")
+                else:
+                    raise ValueError("Unknown suite action")
+            elif action == "replay":
+                self.replay_request = (str(options["id"]), int(options.get("frame", 0)))
+                self.running = False
+            elif action == "live":
+                self.running = False
+                self.replay_request = ("live", 0)
+            elif action == "rerun":
+                self.rerun_request = str(options["id"])
+                self.running = False
             else:
                 raise ValueError("Unknown action")
             self.wake.set()
@@ -132,7 +202,8 @@ class Lab:
         # All contexts and renders stay on this thread. The debug top view is
         # distinct from the declared observations, even in wrist-only mode.
         for key, camera in CAMERAS.items():
-            image = self.env.render(camera)
+            orbit = self.orbit if key == "overview" else None
+            image = self.env.render(camera, orbit=orbit)
             buf = io.BytesIO()
             Image.fromarray(image).save(buf, "JPEG", quality=82)
             frames[key] = buf.getvalue()
@@ -186,11 +257,11 @@ class Lab:
                 self.shutdown.wait(min(remaining, 0.1))
         self.last_tick = time.monotonic()
 
-    def _reset(self):
+    def _reset(self, fen=None):
         with self.lock:
             self.state.update(phase="resetting", message="Resetting the board", active_arm=None,
                               current_move=None, last_result=None)
-        self.game = chess.Board(SCENARIOS[self.scenario])
+        self.game = chess.Board(fen or SCENARIOS[self.scenario])
         self.history = []
         self.env.reset(self.game.fen())
         self.env.cameras = ((Camera.WRIST, Camera.WRIST_BLACK, Camera.TOP)
@@ -224,16 +295,90 @@ class Lab:
 
     def _physical(self, task, env=None, callback=None, report=True):
         env = self.env if env is None else env
-        result = env.execute(task, on_step=callback or self._checkpoint)
+        recording = self._record_start(env, task)
+        try:
+            result = env.execute(task, on_step=self._record_step(
+                recording, callback or self._checkpoint))
+        except BaseException as exc:
+            self._record_finish(recording, False, None,
+                                "Interrupted" if isinstance(exc, Interrupted)
+                                else (str(exc) or type(exc).__name__))
+            raise
+        outcome = {"success": result.success,
+                   "error_mm": round(result.placement_error * 1000, 2),
+                   "disturbed": [str(x) for x in result.disturbed],
+                   "upright": bool(result.upright),
+                   "reason": str(result.reason) if result.reason else None}
+        self._record_finish(recording, result.success, outcome, "")
         if report:
             with self.lock:
                 self.state["last_result"] = {"success": result.success,
-                    "error_mm": round(result.placement_error * 1000, 2),
-                    "disturbed": [str(x) for x in result.disturbed],
-                    "reason": str(result.reason) if result.reason else None}
+                    "error_mm": outcome["error_mm"],
+                    "disturbed": outcome["disturbed"],
+                    "reason": outcome["reason"]}
         if not result.success:
             raise RuntimeError(f"Physical action failed: {result.reason or 'placement/clearance'}; "
                                f"error {result.placement_error * 1000:.1f} mm")
+
+    # -- incident recording --------------------------------------------------
+
+    def _frames(self):
+        with self.lock:
+            return dict(self.frames)
+
+    def _record_start(self, env, task):
+        if not self.record_enabled or not self.model_signature:
+            return None
+        payload = ({"kind": "move", "from": str(task.from_square), "to": str(task.to_square)}
+                   if isinstance(task, MoveTask)
+                   else {"kind": "capture", "square": str(task.square)})
+        slot = env._slot_for(task)
+        try:
+            rec = Recording(self.recorder, env, self.model_signature,
+                            {"action": payload["kind"], "task": payload,
+                             "arm": env.active_side, "case_id": self.current_case,
+                             "move": self.state.get("current_move"), "speed": self.speed,
+                             "gripper": gripper.description()},
+                            self._frames())
+        except Exception as exc:      # recording must never block a physical action
+            self.log("Recording could not start: " + str(exc), "error")
+            return None
+        rec.target_body = None if slot is None else slot.body
+        with self.lock:
+            self.recording = rec
+        return rec
+
+    def _record_step(self, recording, checkpoint):
+        def step(action=None):
+            checkpoint(action)
+            if recording is None:
+                return
+            try:
+                recording.contact_sample()
+                recording.sample(action)
+            except Exception as exc:
+                self.log("Recording stopped: " + str(exc), "error")
+                with self.lock:
+                    self.recording = None
+        return step
+
+    def _record_finish(self, recording, success, outcome, message):
+        if recording is None:
+            return
+        with self.lock:
+            self.recording = None
+        try:
+            meta = recording.finish(success, outcome, message, self._frames())
+        except Exception as exc:
+            self.log("Recording could not be saved: " + str(exc), "error")
+            return
+        with self.lock:
+            self.incident_count += 1
+            self.last_recording_id = meta["id"]
+            self.state["last_recording"] = meta["id"]
+            self.state["last_categories"] = meta["categories"]
+        self.log(("Kept" if not success else "Recorded") + f" incident {meta['id'][:8]}: "
+                 + ", ".join(meta["categories"]))
 
     def _turn(self):
         side = "white" if self.game.turn else "black"
@@ -302,6 +447,137 @@ class Lab:
             self.state.update(phase="complete", message=message, current_move=None)
         self.log(message)
 
+    # -- torture suite: independent, predetermined physical cases -------------
+
+    def _suite_run(self):
+        """Each case gets a fresh board, so a failed case cannot poison the next.
+        These are physical manipulation tasks, not legal chess games."""
+        suite = self.suite
+        suite["phase"] = "running"
+        while suite["index"] < len(CASES):
+            if self.shutdown.is_set() or self.stop_requested:
+                suite["phase"] = "stopped"
+                self.running = False
+                return
+            case = CASES[suite["index"]]
+            self.current_case = case.id
+            self.log(f"Case {suite['index'] + 1}/{len(CASES)} · {case.id} · {case.move}")
+            with self.lock:
+                self.state.update(phase="moving", active_arm=case.arm, current_move=case.move,
+                                  message=f"{case.id}: {case.description}", last_result=None,
+                                  last_recording=None, last_categories=None)
+            self.game = chess.Board(case.fen)
+            self.history = []
+            self.env.reset(self.game.fen())
+            self.env.select_arm(case.arm)
+            self.env.position = self.game.copy()
+            self.dirty = False
+            self.last_recording_id = None
+            self._render(force=True)
+            record = {"case": case.id, "description": case.description, "move": case.move,
+                      "arm": case.arm, "success": False, "error_mm": None,
+                      "categories": [], "message": "", "recording": None}
+            try:
+                self._execute_on(self.env, chess.Move.from_uci(case.move),
+                                 self._checkpoint, report=True)
+                record["success"] = True
+            except Interrupted:
+                suite["results"].append(record)
+                suite["phase"] = "stopped"
+                self.running = False
+                return
+            except Exception as exc:
+                record["message"] = str(exc)
+                last = self.state.get("last_result") or {}
+                record["error_mm"] = last.get("error_mm")
+            record["recording"] = getattr(self, "last_recording_id", None)
+            record["categories"] = list(self.state.get("last_categories") or [])
+            suite["results"].append(record)
+            suite["index"] += 1
+        suite["phase"] = "complete"
+        self.current_case = None
+        self.running = False
+        passed = sum(1 for r in suite["results"] if r["success"])
+        with self.lock:
+            self.state.update(phase="complete", current_move=None, active_arm=None,
+                              message=f"Torture suite {suite['version']}: "
+                                      f"{passed}/{len(suite['results'])} cases passed")
+        self.log(f"Torture suite {suite['version']} complete: {passed}/{len(suite['results'])}")
+
+    # -- replay / re-run -----------------------------------------------------
+
+    def _replay(self):
+        request, self.replay_request = self.replay_request, None
+        if request is None:
+            return
+        ident, frame = request
+        if ident == "live":
+            return self._live()
+        meta, states, trace = self.recorder.load(ident, self.model_signature)
+        if self.replay is None or self.replay["ident"] != ident:
+            if self.replay is not None:
+                self._live()
+            self.replay = {"ident": ident, "frame": 0, "frames": len(states),
+                           "live_state": physics_state(self.env),
+                           "live_meta": bookkeeping(self.env),
+                           "live_phase": self.state["phase"],
+                           "live_message": self.state["message"]}
+        idx = max(0, min(int(frame), len(states) - 1))
+        mujoco.mj_setState(self.env.model, self.env.data, states[idx],
+                           mujoco.mjtState.mjSTATE_INTEGRATION)
+        warm = self.env.data.qacc_warmstart.copy()
+        mujoco.mj_forward(self.env.model, self.env.data)
+        self.env.data.qacc_warmstart[:] = warm
+        self.replay["frame"] = idx
+        step = trace[idx] if idx < len(trace) else {}
+        with self.lock:
+            self.state.update(phase="replay", active_arm=meta.get("arm"),
+                              current_move=meta.get("move"),
+                              message=f"Replay {ident[:8]} · frame {idx + 1}/{len(states)} · "
+                                      f"{step.get('phase', '?')}")
+        self._render(force=True)
+
+    def _live(self):
+        if self.replay is None:
+            return
+        replay, self.replay = self.replay, None
+        restore(self.env, replay["live_state"], replay["live_meta"])
+        self.game = chess.Board(replay["live_meta"]["position"])
+        self.dirty = False
+        with self.lock:
+            self.state.update(phase=replay["live_phase"], message=replay["live_message"])
+        self._render(force=True)
+
+    def _rerun(self):
+        ident, self.rerun_request = self.rerun_request, None
+        if ident is None:
+            return
+        self._live()
+        meta, states, _ = self.recorder.load(ident, self.model_signature)
+        restore(self.env, states[0], meta["initial"])
+        self.game = chess.Board(meta["initial"]["position"])
+        self.history = []
+        self.dirty = False
+        self.current_case = meta.get("case_id")
+        payload = meta.get("task") or {}
+        task = (MoveTask(from_square=payload["from"], to_square=payload["to"])
+                if payload.get("kind") == "move" else CaptureTask(square=payload["square"]))
+        with self.lock:
+            self.state.update(phase="moving", current_move=meta.get("move"),
+                              message=f"Re-run of {ident[:8]} from its saved starting state",
+                              last_result=None, last_recording=None)
+        self._render(force=True)
+        try:
+            self._physical(task)
+            with self.lock:
+                self.state.update(phase="ready", message="Re-run finished")
+        except Exception as exc:
+            with self.lock:
+                self.state.update(phase="fault", message="Re-run: " + str(exc))
+            self.log("Re-run failed: " + str(exc), "error")
+        finally:
+            self.current_case = None
+
     def _save_game(self):
         g = chess.pgn.Game.from_board(self.game)
         g.headers.update(Event="SO101 simulation", White="White SO101", Black="Black SO101")
@@ -317,6 +593,8 @@ class Lab:
                 appearance=AppearanceConfig(camera_mast=False),
                 control=ControlConfig(cameras=(), image_size=(800, 600))))
             self.env.model.vis.quality.shadowsize = 2048
+            self.model_signature = __import__("robot_web.incidents", fromlist=["signature"]).signature(self.env)
+            self.incident_count = len(self.recorder.rows())
             self._reset()
             from OpenGL import GL
             renderer = GL.glGetString(GL.GL_RENDERER)
@@ -336,7 +614,13 @@ class Lab:
                 try:
                     if self.reset_requested:
                         self._reset()
-                    if self.running:
+                    if self.replay_request is not None:
+                        self._replay()
+                    if self.rerun_request is not None:
+                        self._rerun()
+                    if self.suite is not None and self.suite["phase"] == "running":
+                        self._suite_run()
+                    elif self.running:
                         self._turn()
                     else:
                         self.wake.wait(0.15)

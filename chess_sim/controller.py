@@ -124,20 +124,25 @@ class PickPlaceController:
 
         # approach the piece along the tool axis, close, let the clamp build
         self._span = span_grasp
+        self._phase('transit', grasp_pt, gap_open, off_open)
         self._go(np.array([px, py, max(board.top, source_z) + TRANSIT]), gap_open, off_open, 22, on_step)
         approach = self._approach_axis(grasp_pt, off_open)
+        self._phase('approach', grasp_pt, gap_open, off_open)
         self._go(grasp_pt - approach * APPROACH_LENGTH, gap_open, off_open, 14, on_step)
         ok &= self._descend(grasp_pt, gap_open, off_open, approach, on_step)
+        self._phase('close', grasp_pt, gap_hold, off_hold)
         self._go(grasp_pt, gap_hold, off_hold, 10, on_step)
         self._settle(SETTLE_STEPS, gap_hold, on_step)
 
         # lift and carry high enough to clear standing pieces; a friction-held
         # piece cannot take jerk, so the carry is a slow straight tool path
         lift_pt = grasp_pt - approach * (APPROACH_LENGTH + 0.01)
+        self._phase('lift', lift_pt, gap_hold, off_hold)
         self._line(grasp_pt, lift_pt, gap_hold, off_hold, on_step)
         carry_z = board.top + TRANSIT
         above_src = np.array([px, py, carry_z])
         above_dst = np.array([target_xy[0], target_xy[1], carry_z])
+        self._phase('carry', above_dst, gap_hold, off_hold)
         self._line(lift_pt, above_src, gap_hold, off_hold, on_step, segments=2, steps=6)
         self._line(above_src, above_dst, gap_hold, off_hold, on_step,
                    segments=max(2, int(np.linalg.norm(above_dst - above_src) / 0.03)), steps=8)
@@ -147,25 +152,40 @@ class PickPlaceController:
         # relative to the pocket so the PIECE lands centered on the square
         self._span = span_place
         approach = self._approach_axis(place_pt, off_hold)
+        self._phase('place_approach', place_pt, gap_hold, off_hold)
         self._go(place_pt - approach * APPROACH_LENGTH, gap_hold, off_hold, 14, on_step)
         pocket, _ = env.ik.tool_pose(env.data, off_hold)
         axis = env.piece_position(slot)[:2] + g.center[:2]
         place_pt[:2] -= axis - pocket[:2]
 
         # set down along the tool axis, release, retreat
+        self._phase('place_descend', place_pt, gap_hold, off_hold)
         ok &= self._descend(place_pt, gap_hold, off_hold, approach, on_step)
         # open the jaws, then shift the tool so the piece sits centered between
         # the open prongs (the wider gap's pocket lies further from the fixed
         # prong) and retreat straight up: backing out along a tilted tool axis
         # would sweep a prong through the piece
+        self._phase('release', place_pt, gap_release, off_hold)
         self._go(place_pt, gap_release, off_hold, 8, on_step)
         self._go(place_pt, gap_release, off_release, 6, on_step)
         clear_pt = np.array([target_xy[0], target_xy[1], target_z + g.height + 0.03])
+        self._phase('retreat', clear_pt, gap_release, off_release)
         self._line(place_pt, clear_pt, gap_release, off_release, on_step, segments=4)
         self._go(np.array([target_xy[0], target_xy[1], board.top + TRANSIT]), gap_open, off_open, 10, on_step)
+        self._phase('done', clear_pt, gap_open, off_open)
         return bool(ok)
 
     # -- motion primitives ---------------------------------------------------
+
+    def _phase(self, name: str, target=None, gap=None, offset=None) -> None:
+        """Label the intended phase for the recorder. It records intent only;
+        the trajectory is still whatever the servos actually did."""
+        env = self.env
+        env.diagnostic_phase = name
+        env.diagnostic_target = None if target is None else np.asarray(target, dtype=float).tolist()
+        env.diagnostic_gap = None if gap is None else float(gap)
+        env.diagnostic_offset = (np.zeros(3) if offset is None
+                                 else np.asarray(offset, dtype=float).copy())
 
     def _approach_axis(self, target, offset) -> np.ndarray:
         res = self.env.ik.solve(self.env.data, target, offset=offset, span=self._span)
