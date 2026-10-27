@@ -99,6 +99,11 @@ def test_custom_actuator_cycles_are_independent_bounded_and_contact_based(custom
                 point_sets.append(np.asarray(points))
             measured_gap = point_sets[1][:, 2].min() - point_sets[0][:, 2].max()
             assert abs(measured_gap - gripper.angle_to_gap(float(e.arm_joint_positions()[5]))) < .0001
+            if target == gripper.JOINT_MAX:
+                # Requested zero-aperture endpoint, measured from the actual
+                # mounted collision meshes after actuator settling.
+                assert abs(gripper.angle_to_gap(target)) < 1e-9
+                assert abs(measured_gap) < .0001, (side, measured_gap)
         after = [float(e.data.qpos[e.model.joint(other + n).qposadr[0]]) for n in gripper.PROFILE['jaw_joints']]
         assert np.max(np.abs(np.array(after) - before)) < .0002
         assert max(observed) - min(observed) > .9 * np.ptp(gripper.PROFILE['aperture_range_m'])

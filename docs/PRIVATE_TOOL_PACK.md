@@ -67,15 +67,15 @@ ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=/path/to/private/pack \
 The public suite includes a synthetic (non-CAD) adapter fixture. Two additional
 integration tests require an explicitly supplied private pack; they check both
 arm graphs, independent bounded actuator-driven cycles and absence of hidden
-attachment welds. The existing stock lift/place regression keeps its physical-lift
-and neighbour-disturbance thresholds and runs only for the stock profile. It is
-explicitly skipped for external CAD packs: preliminary custom-tool pawn moves
-are not reliable and manipulation qualification is not part of this integration.
+attachment welds, measured mounted mesh aperture and the supplied zero-opening
+endpoint within 0.1 mm after settling. The same two-arm pawn lift/place regression
+runs for both stock and custom profiles, preserving physical-lift and undisturbed-
+board thresholds. Passing these two moves is not full manipulation qualification.
 
 Inspect all four real camera images and browser start/pause/resume/stop/reset.
 Save private screenshots/receipts under `.private/`, not in the public release.
 Only the authorized deployment script adds the private pack to the LAN Docker
 build context. Do not publish that resulting private image to a registry.
 
-Empty jaw cycling, stock baseline pawn moves and environment controls do not
+Empty jaw cycling, two baseline pawn moves and environment controls do not
 establish full-game reliability, crowded-board clearance or physical validation.

@@ -380,7 +380,8 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     rot = np.zeros(9)
     mujoco.mju_quat2Mat(rot, np.asarray(site.quat, dtype=float))
     rot = rot.reshape(3, 3)                      # site axes in the gripper body frame
-    cam = WRIST_CAMERA
+    cam = (CameraMount(pos=(-.060, .080, 0), target=(0, 0, 0),
+                       up=(-1, 0, 0), fovy=75) if gripper.CUSTOM else WRIST_CAMERA)
     pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
     axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
     xyaxes = np.concatenate([rot @ axes[:3], rot @ axes[3:]])
@@ -395,6 +396,9 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         housing.add_geom(name=prefix + 'camera_collision', type=mujoco.mjtGeom.mjGEOM_BOX,
             size=[.012, .012, .008], mass=gripper.PROFILE['camera_mass_kg'],
             rgba=[.08, .08, .08, 1], group=3)
+        tool_body.add_geom(name=prefix + 'clearance_proxy_camera', type=mujoco.mjtGeom.mjGEOM_BOX,
+            pos=list(housing.pos), size=[.012, .012, .008], contype=0, conaffinity=0,
+            density=0, group=5)
 
 
 def arm_rest_pose() -> JointPose:
