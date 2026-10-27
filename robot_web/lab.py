@@ -418,7 +418,16 @@ class Lab:
     def _execute_on(self, env, move, callback, report=False):
         def physical(task):
             self._physical(task, env=env, callback=callback, report=report)
-        if self.game.is_capture(move):
+        # Turn-independent capture test. python-chess reports is_capture() True
+        # for an illegal move by the side not to move, which silently converted
+        # a black arm's move into a capture of its own destination square.
+        moving = self.game.piece_at(move.from_square)
+        occupant = self.game.piece_at(move.to_square)
+        is_capture = bool(
+            self.game.is_en_passant(move)
+            or (moving is not None and occupant is not None
+                and occupant.color != moving.color))
+        if is_capture:
             captured = move.to_square
             if self.game.is_en_passant(move):
                 captured += -8 if self.game.turn else 8

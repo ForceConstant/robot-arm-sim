@@ -29,6 +29,10 @@ def test_suite_cases_are_distinct_and_parseable():
         move = chess.Move.from_uci(case.move)
         piece = board.piece_at(move.from_square)
         assert piece is not None and piece.color == (case.arm == "white")
+        # The arm's side must be the side to move, or python-chess reports an
+        # illegal move as a capture and the case becomes a discard task.
+        assert board.turn == (case.arm == "white"), case.id
+        assert board.is_capture(move) is False, case.id
     # The two observed failures stay in the suite as regression cases.
     assert {"white-bishop", "black-bishop"} <= set(ids)
 
