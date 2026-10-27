@@ -624,10 +624,20 @@ class Lab:
         if ident is None:
             return
         self._live()
-        meta, states, _ = self.recorder.load(ident, self.model_signature)
+        try:
+            meta, states, _ = self.recorder.load(ident, self.model_signature)
+        except ValueError as exc:
+            with self.lock:
+                self.state.update(phase="ready", message="Re-run unavailable: " + str(exc))
+            self.log("Re-run unavailable: " + str(exc))
+            return
         if meta.get("runtime_signature") != self.runtime_signature:
-            raise ValueError("This recording was made by different controller code; replay works, "
-                             "re-run needs the build that produced it")
+            message = ("Re-run unavailable: this recording was made by different controller code; "
+                       "replay still works, re-run needs the build that produced it")
+            with self.lock:
+                self.state.update(phase="ready", message=message)
+            self.log(message)
+            return
         restore(self.env, states[0], meta["initial"])
         self.game = chess.Board(meta["initial"]["position"])
         self.history = []
