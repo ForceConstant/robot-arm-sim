@@ -74,3 +74,30 @@ def test_missed_grasp_stops_before_carrying(env, monkeypatch):
     assert np.linalg.norm(env.piece_position(slot)[:2] - centre) < 0.01
     assert env.piece_upright(slot) > env.config.tolerances.upright_min
     assert chess.E4 not in env._square_slot
+
+
+def test_plan_override_shifts_the_grasp(env):
+    """A correction is a parameter change, so it must reach the controller."""
+    from chess_sim.controller import PlanOverride
+    env.reset(chess.STARTING_FEN)
+    seen = {}
+
+    def watch(action=None):
+        if env.diagnostic_phase == "close" and "z" not in seen and env.diagnostic_target:
+            seen["z"] = env.diagnostic_target[2]
+
+    env.execute(MoveTask(from_square="e2", to_square="e4"), on_step=watch)
+    base = seen["z"]
+
+    env.reset(chess.STARTING_FEN)
+    seen.clear()
+    env.execute(MoveTask(from_square="e2", to_square="e4"), on_step=watch,
+                override=PlanOverride(grasp_dz=0.010))
+    assert seen["z"] - base > 0.008, (base, seen["z"])
+
+
+def test_sweep_grid_starts_with_the_baseline():
+    from robot_web.lab import Lab
+    assert Lab.SWEEP_GRID[0] == {}
+    assert any("grasp_dz" in p for p in Lab.SWEEP_GRID)
+    assert any("span_deg" in p for p in Lab.SWEEP_GRID)

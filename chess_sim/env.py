@@ -358,7 +358,8 @@ class ChessSimEnv:
 
     # -- scripted expert -----------------------------------------------------
 
-    def execute(self, task: Task, on_step: OnStep | None = None) -> TaskResult:
+    def execute(self, task: Task, on_step: OnStep | None = None,
+                override=None) -> TaskResult:
         """Carry out a task with the scripted expert and score it.
 
         This plans against the simulator state, so it is a demonstrator, not an
@@ -379,7 +380,8 @@ class ChessSimEnv:
                 return self._rejected(task, FailureReason.TRAY_FULL)
             target, target_z = tray, self.board.table_top
 
-        precise = self.controller.pick_place(slot, target, on_step, target_z=target_z)
+        precise = self.controller.pick_place(slot, target, on_step, target_z=target_z,
+                                            override=override)
         for _ in range(int(self.config.control.release_seconds * self.control_hz)):
             self.apply_action(self._current_action(), on_step)
         result = self.evaluate(task, before, steps=self._step_count - started,

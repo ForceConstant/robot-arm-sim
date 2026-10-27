@@ -22,6 +22,7 @@ from PIL import Image
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
 from chess_sim import gripper
+from chess_sim.controller import PlanOverride
 from .incidents import (Store, Recording, restore, bookkeeping, physics_state,
                         reset_diagnostics)
 from .torture import CASES, SUITE_VERSION
@@ -92,6 +93,8 @@ class Lab:
         self.replay = None
         self.replay_request = None
         self.rerun_request = None
+        self.correct_request = None
+        self.sweep_request = None
         self.incident_count = 0
         self.viewers = {}
         self.state = {"phase": "initializing", "message": "Building the two-arm scene",
@@ -123,6 +126,7 @@ class Lab:
                     "record_enabled": self.record_enabled,
                     "incidents": self.incident_count,
                     "case": self.current_case,
+                    "sweep": self.state.get("sweep"),
                     "replay": None if self.replay is None else
                         {"id": self.replay["ident"], "frame": self.replay["frame"],
                          "frames": self.replay["frames"],
@@ -202,6 +206,16 @@ class Lab:
                 self.replay_request = ("live", None, False)
             elif action == "rerun":
                 self.rerun_request = str(options["id"])
+                self.running = False
+            elif action == "correct":
+                if not options.get("id"):
+                    raise ValueError("A recording id is required")
+                self.correct_request = {"id": str(options["id"]), "params": options.get("params") or {}}
+                self.running = False
+            elif action == "sweep":
+                if not options.get("id"):
+                    raise ValueError("A recording id is required")
+                self.sweep_request = {"id": str(options["id"])}
                 self.running = False
             else:
                 raise ValueError("Unknown action")
@@ -332,13 +346,14 @@ class Lab:
         return self.engine.play(self.game, chess.engine.Limit(time=0.15),
                                 root_moves=candidates).move
 
-    def _physical(self, task, env=None, callback=None, report=True):
+    def _physical(self, task, env=None, callback=None, report=True,
+                  override=None, extra=None):
         env = self.env if env is None else env
         reset_diagnostics(env)          # this action owns its diagnostics, not the last one
-        recording = self._record_start(env, task)
+        recording = self._record_start(env, task, extra)
         try:
             result = env.execute(task, on_step=self._record_step(
-                recording, callback or self._checkpoint))
+                recording, callback or self._checkpoint), override=override)
         except BaseException as exc:
             self._record_finish(recording, False, None,
                                 "Interrupted" if isinstance(exc, Interrupted)
@@ -368,7 +383,7 @@ class Lab:
         with self.lock:
             return dict(self.frames)
 
-    def _record_start(self, env, task):
+    def _record_start(self, env, task, extra=None):
         if not self.record_enabled or not self.model_signature:
             return None
         payload = ({"kind": "move", "from": str(task.from_square), "to": str(task.to_square)}
@@ -380,7 +395,7 @@ class Lab:
                             {"action": payload["kind"], "task": payload,
                              "arm": env.active_side, "case_id": self.current_case,
                              "move": self.state.get("current_move"), "speed": self.speed,
-                             "gripper": gripper.description()},
+                             "gripper": gripper.description(), **(extra or {})},
                             self._frames())
         except Exception as exc:      # recording must never block a physical action
             self.log("Recording could not start: " + str(exc), "error")
@@ -716,6 +731,107 @@ class Lab:
         finally:
             self.current_case = None
 
+    # -- human correction ----------------------------------------------------
+
+    SWEEP_GRID = (
+        {},
+        {"grasp_dz": -0.004}, {"grasp_dz": 0.004},
+        {"span_deg": -20.0}, {"span_deg": 20.0},
+        {"place_dy": 0.002}, {"place_dy": -0.002},
+    )
+
+    def _message(self, phase, text):
+        with self.lock:
+            self.state.update(phase=phase, message=text)
+
+    def _task_from(self, meta):
+        payload = meta.get("task") or {}
+        return (MoveTask(from_square=payload["from"], to_square=payload["to"])
+                if payload.get("kind") == "move" else CaptureTask(square=payload["square"]))
+
+    def _restore_from(self, meta, states):
+        restore(self.env, states[0], meta["initial"])
+        self.game = chess.Board(meta["initial"]["position"])
+        self.history = []
+        self.dirty = False
+        self.current_case = meta.get("case_id")
+
+    def _correct(self):
+        """Re-run a recording from its saved start with human-chosen parameters."""
+        request, self.correct_request = self.correct_request, None
+        if not request:
+            return
+        ident, params = request["id"], request.get("params") or {}
+        try:
+            meta, states, _ = self.recorder.load(ident, self.model_signature)
+        except ValueError as exc:
+            self._message("ready", "Correction unavailable: " + str(exc))
+            return
+        self._live()
+        self._restore_from(meta, states)
+        task = self._task_from(meta)
+        self._message("moving", "Correcting " + ident[:8] + " with " + (str(params) or "no change"))
+        self._render(force=True)
+        try:
+            self._physical(task, override=PlanOverride(**params),
+                           extra={"correction_of": ident, "override": params})
+            self._message("ready", "Correction finished")
+        except Exception as exc:
+            self._message("fault", "Correction: " + str(exc))
+        finally:
+            self.current_case = None
+
+    def _sweep(self):
+        """Search a small parameter grid; record only the best variant.
+
+        This is the cheap answer to 'do we need human demonstrations?': if a
+        grasp that failed can be fixed by moving the jaw height 4 mm, the
+        dataset can be repaired without a human in the loop.
+        """
+        request, self.sweep_request = self.sweep_request, None
+        if not request:
+            return
+        ident = request["id"]
+        try:
+            meta, states, _ = self.recorder.load(ident, self.model_signature)
+        except ValueError as exc:
+            self._message("ready", "Sweep unavailable: " + str(exc))
+            return
+        self._live()
+        task = self._task_from(meta)
+        results = []
+        keep_recording, self.record_enabled = self.record_enabled, False
+        try:
+            for params in self.SWEEP_GRID:
+                if self.shutdown.is_set() or self.stop_requested:
+                    break
+                self._restore_from(meta, states)
+                self._message("moving", "Sweep " + ident[:8] + " " + (str(params) or "baseline"))
+                try:
+                    result = self.env.execute(task, on_step=self._checkpoint,
+                                              override=PlanOverride(**params))
+                    results.append({"params": params, "success": bool(result.success),
+                                    "error_mm": round(result.placement_error * 1000, 1)})
+                except Exception as exc:
+                    results.append({"params": params, "success": False,
+                                    "error_mm": None, "message": str(exc)[:120]})
+        finally:
+            self.record_enabled = keep_recording
+        best = next((r["params"] for r in results if r["success"]), None)
+        with self.lock:
+            self.state["sweep"] = {"id": ident, "results": list(results), "best": best}
+        if best is not None:
+            self._restore_from(meta, states)
+            try:
+                self._physical(task, override=PlanOverride(**best),
+                               extra={"correction_of": ident, "override": best, "swept": True})
+                self._message("ready", "Sweep fixed %s with %s" % (ident[:8], best or "no change"))
+            except Exception as exc:
+                self._message("fault", "Sweep recording failed: " + str(exc))
+        else:
+            self._message("ready", "Sweep found no fix for " + ident[:8])
+        self.current_case = None
+
     def _save_game(self):
         g = chess.pgn.Game.from_board(self.game)
         g.headers.update(Event="SO101 simulation", White="White SO101", Black="Black SO101")
@@ -757,6 +873,10 @@ class Lab:
                         self._replay()
                     if self.rerun_request is not None:
                         self._rerun()
+                    if self.correct_request is not None:
+                        self._correct()
+                    if self.sweep_request is not None:
+                        self._sweep()
                     if self.replay is not None and self.replay.get("playing") \
                             and not self.running:
                         self._replay_tick()

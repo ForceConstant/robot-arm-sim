@@ -64,7 +64,8 @@ def status():
 
 class Control(BaseModel):
     action: Literal["start", "pause", "stop", "reset", "step", "configure", "speed",
-                   "orbit", "record", "suite", "replay", "live", "rerun"]
+                   "orbit", "record", "suite", "replay", "live", "rerun",
+                   "correct", "sweep"]
     mode: Literal["engine", "opening"] = "engine"
     scenario: Literal["standard", "capture"] = "standard"
     observations: Literal["wrists", "all"] = "wrists"
@@ -78,6 +79,7 @@ class Control(BaseModel):
     id: str | None = None
     frame: int | None = None
     play: bool = False
+    params: dict | None = None
 
 
 @app.post("/api/control")

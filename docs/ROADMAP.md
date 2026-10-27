@@ -37,6 +37,24 @@ physically verified moves, not from the engine's intent. D.3 replaces the
 earlier "wrist vision" placeholder — it is a perception model, not a camera
 wired into the scripted controller.
 
+### Correction track (E) — started 2026-10-27
+
+Failures here are mostly parametric (missed grasps from jaw height/span), so a
+correction is a *parameter change*, not a teleoperated trajectory: it stays
+executable by the same controller and doubles as a training episode.
+
+| step | what | state |
+| --- | --- | --- |
+| E.1 | parameterised correction: re-run a recording from its saved start with changed grasp height, jaw span, placement offset or carry clearance | done (`PlanOverride`, `/api/control` `correct`) |
+| E.1b | automatic sweep over a small parameter grid, recording only the variant that succeeds | done (`sweep`), reports whether a failure is parametric at all |
+| E.2 | gamepad takeover in the browser: drive the simulated arm, record the (state, action) pair from the failure point for DAgger | next |
+| E.3 | kinesthetic capture on real hardware | blocked: no arm |
+| E.4 | dataset merge: corrections labelled `correction_of`, success verified, exported with the episode set | open |
+
+No hardware is required for E.1, E.1b or E.2. The gamepad replaces a leader arm
+for the simulated DAgger loop; E.3 waits for the physical arm and a torque-off
+calibration.
+
 ### Why wrist vision comes after step 0.5
 
 The scripted controller already reads exact piece poses from MuJoCo, so these failures are

@@ -85,6 +85,26 @@ def grasp_plan(geometry, board) -> GraspPlan:
                      off_open=gripper.pocket_offset(2 * clear), off_hold=gripper.pocket_offset(gap_hold))
 
 
+@dataclass
+class PlanOverride:
+    """A human correction expressed as plan parameters, not a trajectory.
+
+    Chess failures are mostly parametric (grasp height, jaw span, placement
+    offset), so a correction that changes those values stays executable by the
+    same controller and is directly usable as a training episode.
+    """
+
+    grasp_dz: float = 0.0        # metres; + closes higher above the piece
+    place_dx: float = 0.0
+    place_dy: float = 0.0
+    place_dz: float = 0.0
+    span_deg: float | None = None   # force the jaw span direction
+    lift_dz: float = 0.0         # extra carry clearance
+
+    def as_dict(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v}
+
+
 class PickPlaceController:
     def __init__(self, env):
         self.env = env
@@ -94,7 +114,8 @@ class PickPlaceController:
 
     def pick_place(self, slot: PieceSlot, target_xy: tuple[float, float],
                    on_step: StepCallback | None = None,
-                   source_z: float | None = None, target_z: float | None = None) -> bool:
+                   source_z: float | None = None, target_z: float | None = None,
+                   override: "PlanOverride | None" = None) -> bool:
         """Move `slot`'s piece so its axis stands on `target_xy`. True if all
         waypoints executed within tolerance (final outcome is verified by env).
 
@@ -107,16 +128,23 @@ class PickPlaceController:
         env.diagnostic_ik = None         # never leak into the next action's record
         px, py, _ = env.piece_position(slot)
         plan = grasp_plan(g, board)
-        z_grasp, gap_open, gap_hold = plan.z_grasp, plan.gap_open, plan.gap_hold
+        override = override or PlanOverride()
+        z_grasp, gap_open, gap_hold = plan.z_grasp + override.grasp_dz, plan.gap_open, plan.gap_hold
         lift = z_grasp - board.top                      # grasp height above the surface
         source_z = board.top if source_z is None else source_z
         target_z = board.top if target_z is None else target_z
         off_open, off_hold = plan.off_open, plan.off_hold
         gap_release, off_release = gap_open, off_open
         grasp_pt = np.array([px, py, source_z + lift])
-        place_pt = np.array([target_xy[0], target_xy[1], target_z + lift])
+        place_pt = np.array([target_xy[0] + override.place_dx,
+                             target_xy[1] + override.place_dy,
+                             target_z + lift + override.place_dz])
         span_grasp = env.grasp_span(grasp_pt, off_open, exclude=slot)
         span_place = env.grasp_span(place_pt, off_hold, exclude=slot)
+        if override.span_deg is not None:
+            a = np.radians(override.span_deg)
+            span_grasp = np.array([np.cos(a), np.sin(a)])
+            span_place = span_grasp.copy()
         # On the opposite-side arm, an equally clear empty destination used to
         # select a 180-degree wrist flip. Avoid twisting a friction-held piece
         # when the original jaw orientation is still clear and reachable.
@@ -144,7 +172,7 @@ class PickPlaceController:
         self._phase('lift', lift_pt, gap_hold, off_hold)
         was_z = float(env.piece_position(slot)[2])
         self._line(grasp_pt, lift_pt, gap_hold, off_hold, on_step)
-        carry_z = board.top + TRANSIT
+        carry_z = board.top + TRANSIT + override.lift_dz
         above_src = np.array([px, py, carry_z])
         above_dst = np.array([target_xy[0], target_xy[1], carry_z])
         self._phase('carry', above_dst, gap_hold, off_hold)
