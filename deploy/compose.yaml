@@ -1,6 +1,6 @@
 services:
   simulation:
-    image: robot-arm-sim:1.2.0
+    image: robot-arm-sim:1.2.1
     build:
       context: .
       dockerfile_inline: |

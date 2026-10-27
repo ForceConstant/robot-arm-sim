@@ -106,7 +106,8 @@ class Lab:
                     "orbit": self.orbit,
                     "replay": None if self.replay is None else
                         {"id": self.replay["ident"], "frame": self.replay["frame"],
-                         "frames": self.replay["frames"]},
+                         "frames": self.replay["frames"],
+                         "playing": self.replay.get("playing", False)},
                     "suite": None if self.suite is None else
                         {"version": self.suite["version"], "index": self.suite["index"],
                          "total": len(CASES), "phase": self.suite["phase"],
@@ -182,7 +183,12 @@ class Lab:
                 else:
                     raise ValueError("Unknown suite action")
             elif action == "replay":
-                self.replay_request = (str(options["id"]), int(options.get("frame", 0)))
+                ident = str(options["id"]) if options.get("id") else (
+                    self.replay["ident"] if self.replay else None)
+                if not ident:
+                    raise ValueError("A recording id is required")
+                self.replay_request = (ident, int(options.get("frame") or 0),
+                                       bool(options.get("play")))
                 self.running = False
             elif action == "live":
                 self.running = False
@@ -194,14 +200,15 @@ class Lab:
                 raise ValueError("Unknown action")
             self.wake.set()
 
-    def _render(self, force=False):
+    def _render(self, force=False, subset=None):
         now = time.monotonic()
         if not force and now - self.last_render < 1 / float(os.environ.get("ROBOT_VIEW_FPS", "5")):
             return
         frames = {}
         # All contexts and renders stay on this thread. The debug top view is
         # distinct from the declared observations, even in wrist-only mode.
-        for key, camera in CAMERAS.items():
+        keys = list(CAMERAS.items()) if subset is None else [(k, CAMERAS[k]) for k in subset]
+        for key, camera in keys:
             orbit = self.orbit if key == "overview" else None
             image = self.env.render(camera, orbit=orbit)
             buf = io.BytesIO()
@@ -217,7 +224,10 @@ class Lab:
                 feedback[side] = {'jaw_positions_m': positions,
                     'aperture_mm': 1000 * (gripper.GAP_AT_ZERO - sum(positions))}
         with self.lock:
-            self.frames = frames
+            if subset is None:
+                self.frames = frames
+            else:
+                self.frames.update(frames)
             self.frame_id += 1
             self.joint_snapshot = joints
             self.gripper_feedback = feedback
@@ -538,32 +548,58 @@ class Lab:
         request, self.replay_request = self.replay_request, None
         if request is None:
             return
-        ident, frame = request
+        ident, frame, play = request
         if ident == "live":
             return self._live()
-        meta, states, trace = self.recorder.load(ident, self.model_signature)
         if self.replay is None or self.replay["ident"] != ident:
             if self.replay is not None:
                 self._live()
+            meta, states, trace = self.recorder.load(ident, self.model_signature)
             self.replay = {"ident": ident, "frame": 0, "frames": len(states),
+                           "playing": False, "states": states, "trace": trace, "meta": meta,
                            "live_state": physics_state(self.env),
                            "live_meta": bookkeeping(self.env),
                            "live_phase": self.state["phase"],
                            "live_message": self.state["message"]}
-        idx = max(0, min(int(frame), len(states) - 1))
+        # Scrubbing pauses playback; pressing play resumes from the shown frame.
+        self.replay["playing"] = bool(play)
+        idx = self.replay["frame"] if play else max(0, min(int(frame),
+                                                           self.replay["frames"] - 1))
+        self._replay_show(idx)
+
+    def _replay_show(self, idx):
+        replay = self.replay
+        idx = max(0, min(int(idx), replay["frames"] - 1))
+        states, trace, meta = replay["states"], replay["trace"], replay["meta"]
         mujoco.mj_setState(self.env.model, self.env.data, states[idx],
                            mujoco.mjtState.mjSTATE_INTEGRATION)
         warm = self.env.data.qacc_warmstart.copy()
         mujoco.mj_forward(self.env.model, self.env.data)
         self.env.data.qacc_warmstart[:] = warm
-        self.replay["frame"] = idx
+        replay["frame"] = idx
         step = trace[idx] if idx < len(trace) else {}
         with self.lock:
             self.state.update(phase="replay", active_arm=meta.get("arm"),
                               current_move=meta.get("move"),
-                              message=f"Replay {ident[:8]} · frame {idx + 1}/{len(states)} · "
-                                      f"{step.get('phase', '?')}")
-        self._render(force=True)
+                              message=f"Replay {replay['ident'][:8]} · frame {idx + 1}/"
+                                      f"{replay['frames']} · {step.get('phase', '?')}"
+                                      + (" · playing" if replay["playing"] else ""))
+        # Playback only needs the main view; the wrist streams keep their last
+        # real frame rather than paying for three extra renders per step.
+        self._render(force=True, subset=("overview",))
+
+    def _replay_tick(self):
+        replay = self.replay
+        if replay is None or not replay.get("playing"):
+            return
+        if replay["frame"] >= replay["frames"] - 1:
+            replay["playing"] = False
+            with self.lock:
+                self.state.update(message=f"Replay {replay['ident'][:8]} · end of recording")
+            return
+        self._replay_show(replay["frame"] + 1)
+        # Never busy-spin; pause/stop land within one frame interval.
+        self.shutdown.wait(1 / float(os.environ.get("ROBOT_REPLAY_FPS", "12")))
 
     def _live(self):
         if self.replay is None:
@@ -649,6 +685,10 @@ class Lab:
                         self._replay()
                     if self.rerun_request is not None:
                         self._rerun()
+                    if self.replay is not None and self.replay.get("playing") \
+                            and not self.running:
+                        self._replay_tick()
+                        continue
                     if self.suite is not None and self.suite["phase"] == "running":
                         self._suite_run()
                     elif self.running:
