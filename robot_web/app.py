@@ -156,6 +156,7 @@ def suite():
 def frame(camera: str):
     if camera not in VIEWS:
         raise HTTPException(404)
+    lab.touch_view(camera)
     with lab.lock:
         data = lab.frames.get(camera)
     if not data:
@@ -167,11 +168,13 @@ def frame(camera: str):
 async def stream(camera: str, request: Request):
     if camera not in VIEWS:
         raise HTTPException(404)
+    lab.touch_view(camera)
 
     async def images():
         last = -1
         sent_at = 0.0
         while not await request.is_disconnected():
+            lab.touch_view(camera)
             with lab.lock:
                 seq, data = lab.frame_id, lab.frames.get(camera)
             # Browsers may wait for the next multipart boundary before showing

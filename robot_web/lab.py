@@ -91,6 +91,7 @@ class Lab:
         self.replay_request = None
         self.rerun_request = None
         self.incident_count = 0
+        self.viewers = {}
         self.state = {"phase": "initializing", "message": "Building the two-arm scene",
                       "renderer": "Starting", "engine": "Starting", "sim_time": 0,
                       "active_arm": None, "current_move": None, "last_result": None}
@@ -204,6 +205,20 @@ class Lab:
                 raise ValueError("Unknown action")
             self.wake.set()
 
+
+    def touch_view(self, name):
+        """Remember which view a browser is watching, so replay renders it."""
+        with self.lock:
+            self.viewers[name] = time.monotonic()
+
+    def _active_views(self, include_wrists=False):
+        now = time.monotonic()
+        with self.lock:
+            active = {k for k, t in self.viewers.items() if now - t < 6 and k in VIEWS}
+        if not include_wrists:
+            active -= {"white_wrist", "black_wrist"}
+        return active or {"overview"}
+
     def _render(self, force=False, subset=None):
         now = time.monotonic()
         if not force and now - self.last_render < 1 / float(os.environ.get("ROBOT_VIEW_FPS", "5")):
@@ -211,7 +226,13 @@ class Lab:
         frames = {}
         # All contexts and renders stay on this thread. The debug top view is
         # distinct from the declared observations, even in wrist-only mode.
-        keys = list(VIEWS.items()) if subset is None else [(k, VIEWS[k]) for k in subset]
+        if subset is None:
+            # Routine passes render only what is on screen; the full set is for
+            # resets and explicit snapshots. Twelve views at 5 fps was 60 renders
+            # a second for images nobody was looking at.
+            subset = (list(VIEWS) if force else
+                      tuple(self._active_views(include_wrists=True)))
+        keys = [(k, VIEWS[k]) for k in subset]
         lookat = self.env.orbit_default()["lookat"]
         lookat = [lookat[0], lookat[1], lookat[2] + 0.03]
         for key, (kind, value) in keys:
@@ -602,9 +623,9 @@ class Lab:
                                       f"{replay['frames']} · {step.get('phase', '?')}"
                                       + (" · playing" if replay["playing"] else "")
                                       + (" · legacy recording" if replay.get("legacy") else ""))
-        # Playback only needs the main view; the wrist streams keep their last
-        # real frame rather than paying for three extra renders per step.
-        self._render(force=True, subset=("overview",))
+        # Playback renders whatever the viewer has selected, not a hard-coded
+        # overview: an isometric replay used to sit frozen while the clock ran.
+        self._render(force=True, subset=tuple(self._active_views()))
 
     def _replay_tick(self):
         replay = self.replay
