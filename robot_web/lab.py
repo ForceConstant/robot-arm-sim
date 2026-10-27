@@ -570,10 +570,10 @@ class Lab:
         idx = self.replay["frame"] if frame is None else int(frame)
         if play and self.replay["frames"] < 2:
             self.replay["playing"] = False
+            self._replay_show(0)      # show the frame first: it sets its own message
             with self.lock:
                 self.state.update(phase="replay", active_arm=self.replay["meta"].get("arm"),
                                   message=f"Replay {ident[:8]} · single frame, nothing to play")
-            self._replay_show(0)
             return
         if play and idx >= self.replay["frames"] - 1:
             idx = 0
