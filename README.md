@@ -87,7 +87,11 @@ download models or install packages. The shipped [compose](deploy/compose.yaml)
 is specific to Brian's HTPC LAN/GPU and embeds the [Dockerfile](Dockerfile).
 `python scripts/deploy.py` registers/uploads/builds only the `robot_arm` stack
 through Dockhand. It requires explicit infrastructure authorization; it is not
-an installation step for other users.
+an installation step for other users. Every deploy then waits for the job, waits
+for the new build to report ready, and runs the `crowded-v1` suite against it
+(5-6 minutes), writing `.private/post-deploy-<version>.json`. Case failures are
+reported as data, not treated as a failed deploy. `--no-verify` skips the run
+for debugging only; `scripts/verify_deploy.py` can rerun it alone.
 
 The web service remains running when the simulation is stopped. Use the browser
 controls for run control, or Dockhand to stop/start the entire container. Pause
@@ -96,7 +100,8 @@ driver, initial scene and observations only while stopped; Apply resets the scen
 
 State/health: `/api/status`, `/health`. Selected sensor contract:
 `/api/observations` (joint feedback and selected camera links; no piece poses/FEN).
-View frames: `/api/frame/{overview,top,white_wrist,black_wrist}.jpg`.
+View frames: `/api/frame/<view>.jpg` for `overview`, `top`, `left`, `right`,
+`white_side`, `black_side`, `iso_{ne,nw,se,sw}`, `white_wrist`, `black_wrist`.
 Completed moves persist as `/data/last-game.pgn` and `/data/last-run.json`.
 
 ### Tests

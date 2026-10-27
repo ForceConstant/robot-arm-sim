@@ -3,9 +3,12 @@
 No unrelated stack changes and no Docker socket mounted into the application.
 The source snapshot is copied to Dockhand's build context via Docker archive API.
 """
+import argparse
 import io
 import json
 import os
+import sys
+import time
 from pathlib import Path
 import tarfile
 import urllib.request
@@ -64,7 +67,21 @@ def compose():
 """
 
 
+def wait_job(job_id, timeout=15 * 60):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        job = request(DOCKHAND, "/api/jobs/" + job_id)
+        if job.get("status") != "running":
+            return job.get("status")
+        time.sleep(8)
+    raise RuntimeError("Deploy job did not finish in time")
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-verify", action="store_true",
+                        help="skip the post-deploy crowded-v1 run (debugging only)")
+    args = parser.parse_args()
     private = ROOT / ".private"
     private.mkdir(exist_ok=True)
     # A private CAD payload is uploaded only to the authorized LAN build
@@ -109,6 +126,22 @@ def main():
                      {"build": True, "pull": False, "forceRecreate": False})
     (private / "deploy-job.json").write_text(json.dumps(result, indent=2))
     print("Deployment job:", result)
+    if args.no_verify:
+        print("Post-deploy suite skipped by --no-verify")
+        return
+    # Standing rule: every redeploy ends with the crowded-v1 suite against the
+    # live build. Case failures are reported, not treated as a failed deploy.
+    print("Waiting for deploy job...")
+    print("Deploy job ended:", wait_job(result["jobId"]))
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from verify_deploy import verify
+    version = (ROOT / "robot_web" / "__init__.py").read_text().split('"')[1]
+    receipt = verify("http://192.168.1.138:8098", version)
+    print("Post-deploy suite: %d/%d passed in %.0fs" % (
+        receipt["passed"], receipt["cases"], receipt["elapsed_s"]))
+    for case in receipt["results"]:
+        print("  %-13s %-5s %-8s %s" % (case["case"], "ok" if case["success"] else "FAIL",
+                                        case["error_mm"], ", ".join(case["categories"] or [])))
 
 
 if __name__ == "__main__":
