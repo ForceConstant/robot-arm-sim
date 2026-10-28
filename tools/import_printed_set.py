@@ -96,10 +96,19 @@ def main():
                   else min(band or profile[1:], key=lambda seg: abs(0.5 * (seg[0] + seg[1]) - 0.40 * height)))
         grasp_h = float(0.5 * (chosen[0] + chosen[1]))
         grasp_h = min(grasp_h, height - 0.004)
+        # Directional widths at the grasp height. An asymmetric piece (the
+        # knight) is wider across one board axis than the other, so a hold
+        # taken from an axisymmetric radius squeezes INTO the piece on one
+        # side and pushes it away instead of gripping it.
+        gs = source.section(plane_origin=[0, 0, grasp_h], plane_normal=[0, 0, 1])
+        gv = np.asarray(gs.vertices[:, :2]) if gs is not None and len(gs.vertices) >= 3 else None
+        width_x = float(np.ptp(gv[:, 0])) if gv is not None else 0.0
+        width_y = float(np.ptp(gv[:, 1])) if gv is not None else 0.0
         source.density = args.density
         manifest["pieces"][name] = dict(source_sha256=hashlib.sha256(files[name].read_bytes()).hexdigest(),
             source_bounds_mm=source_bounds.tolist(), extent_m=source.extents.tolist(),
             collision_meshes=parts, profile=profile, grasp_h_m=grasp_h,
+            width_x_m=width_x, width_y_m=width_y,
             mass_kg=float(source.mass), center_mass_m=source.center_mass.tolist(),
             inertia_kg_m2=source.moment_inertia.tolist())
         print(f"{name}: {len(parts)} convex parts, {source.mass*1000:.2f} g estimated", flush=True)

@@ -153,6 +153,7 @@ class PieceGeometry:
     center: np.ndarray    # scaled mesh AABB center (mesh frame)
     profile: tuple        # ((z_bottom, z_top, radius), ...) in scaled mesh frame
     grasp_height: float | None = None   # measured neck above the base, if the set carries one
+    grasp_width: float | None = None    # widest directional width at that neck (asymmetric pieces)
 
     @property
     def waist(self) -> float:
@@ -255,6 +256,9 @@ def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
         profile=profile,
         grasp_height=(float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]]["grasp_h_m"])
                       * scale if piece_set == PRINTED_SET else None),
+        grasp_width=(max(float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]].get("width_x_m", 0.0)),
+                         float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]].get("width_y_m", 0.0)))
+                     * scale if piece_set == PRINTED_SET else None),
     )
 
 

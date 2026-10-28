@@ -66,7 +66,10 @@ def grasp_plan(geometry, board) -> GraspPlan:
             height = max(height, gripper.TIP_CLEARANCE + gripper.TIP_X)
             if height >= g.height - .001:
                 continue
-            contact = g.radius_between(height - .0015, height + .0015)
+            # Hold across the real width of the section, not an equivalent radius:
+            # an asymmetric piece is wider along one board axis, and closing to
+            # the circular estimate drives the jaws into it.
+            contact = (0.5 * g.grasp_width) if g.grasp_width else g.radius_between(height - .0015, height + .0015)
             straddle = g.radius_between(height - gripper.TIP_X, height + proximal)
             hold = 2 * contact - gripper.SQUEEZE
             opening = 2 * straddle + .006
