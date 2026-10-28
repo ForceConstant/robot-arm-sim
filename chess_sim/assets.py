@@ -223,6 +223,24 @@ def _radius_at(path: str, fraction: float) -> float:
     return float(np.linalg.norm(pts - axis, axis=1).max())
 
 
+
+def _pack_grasp(ptype, piece_set: str, key: str, scale: float) -> float | None:
+    """Optional per-piece grasp hint from a printed pack, or None.
+
+    Older packs (and the synthetic test fixture) predate these fields. Falling
+    back to the profile-derived waist is correct there; only a set that carries
+    a measured neck gets the measured one.
+    """
+    if piece_set != PRINTED_SET:
+        return None
+    record = set_properties(piece_set)["pieces"].get(_TYPE_NAME[ptype], {})
+    if key == "grasp_width_m":
+        value = max(float(record.get("width_x_m", 0.0)), float(record.get("width_y_m", 0.0)))
+        return (value * scale) if value > 0 else None
+    value = record.get(key)
+    return None if value is None else float(value) * scale
+
+
 def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
                    piece_set: str = DEFAULT_SET) -> PieceGeometry:
     """Scale a piece to the board: target height, footprint capped to the square;
@@ -254,11 +272,8 @@ def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
         bottom_offset=float(lo[2] * scale),
         center=(lo + hi) * 0.5 * scale,
         profile=profile,
-        grasp_height=(float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]]["grasp_h_m"])
-                      * scale if piece_set == PRINTED_SET else None),
-        grasp_width=(max(float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]].get("width_x_m", 0.0)),
-                         float(set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]].get("width_y_m", 0.0)))
-                     * scale if piece_set == PRINTED_SET else None),
+        grasp_height=_pack_grasp(piece.piece_type, piece_set, "grasp_h_m", scale),
+        grasp_width=_pack_grasp(piece.piece_type, piece_set, "grasp_width_m", scale),
     )
 
 

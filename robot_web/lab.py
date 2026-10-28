@@ -588,6 +588,7 @@ class Lab:
                 continue
             self.dirty = False
             self.last_recording_id = None
+            self.state["last_result"] = None      # this case owns its verdict, not the last one
             self._render(force=True)
             record = {"case": case.id, "description": case.description, "move": case.move,
                       "arm": case.arm, "success": False, "error_mm": None, "slots": slots,
@@ -604,6 +605,18 @@ class Lab:
                 record["message"] = str(exc)
                 last = self.state.get("last_result") or {}
                 record["error_mm"] = last.get("error_mm")
+            # One source of truth for the verdict. Success used to mean "no
+            # exception escaped", while categories came from the recorder: a
+            # checkpoint raising after a good placement scored the case FAIL
+            # with categories ['success'], and the same physical result passed
+            # in one runner and failed in another.
+            outcome = self.state.get("last_result") or {}
+            if outcome:
+                record["success"] = bool(outcome.get("success"))
+                record["error_mm"] = outcome.get("error_mm")
+            elif record["success"]:
+                record["success"] = False
+                record.setdefault("categories", []).append("no_outcome_recorded")
             record["recording"] = getattr(self, "last_recording_id", None)
             record["categories"] = list(self.state.get("last_categories") or [])
             suite["results"].append(record)
