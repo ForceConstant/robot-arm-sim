@@ -8,8 +8,9 @@ import subprocess
 root = Path(__file__).resolve().parents[1]
 out = root / "dist"
 out.mkdir(exist_ok=True)
-archive = out / "robot-arm-sim-1.0.0-runtime.tar.gz"
-source = subprocess.check_output(["git", "archive", "--format=tar", "--prefix=robot-arm-sim-1.0.0/", "HEAD"], cwd=root)
+version = (root / "robot_web" / "__init__.py").read_text().split('"')[1]
+archive = out / f"robot-arm-sim-{version}-runtime.tar.gz"
+source = subprocess.check_output(["git", "archive", "--format=tar", f"--prefix=robot-arm-sim-{version}/", "HEAD"], cwd=root)
 archive.write_bytes(gzip.compress(source, compresslevel=6, mtime=0))
 shutil.copyfile(root / "deploy/compose.yaml", out / "robot_arm-compose.yaml")
 files = [archive, out / "robot_arm-compose.yaml"]

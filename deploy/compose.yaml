@@ -1,6 +1,6 @@
 services:
   simulation:
-    image: robot-arm-sim:1.5.1
+    image: robot-arm-sim:1.6.0
     build:
       context: .
       dockerfile_inline: |
@@ -24,7 +24,7 @@ services:
             && chown -R robot:robot /app /data && chmod +x /app/entrypoint.sh
         EXPOSE 8098
         LABEL org.opencontainers.image.source="https://github.com/ForceConstant/robot-arm-sim" \
-              org.opencontainers.image.version="1.5.1"
+              org.opencontainers.image.version="1.6.0"
         HEALTHCHECK --start-period=60s --interval=15s --timeout=5s --retries=3 \
             CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8098/health',timeout=3)"
         ENTRYPOINT ["/app/entrypoint.sh"]
@@ -43,6 +43,8 @@ services:
       STOCKFISH_PATH: /usr/games/stockfish
       ROBOT_GRIPPER: cad_parallel
       ROBOT_GRIPPER_ASSETS: /app/chess_sim/assets/custom_gripper
+      ROBOT_PIECE_SET: printed
+      ROBOT_PIECE_ASSETS: /app/chess_sim/assets/printed_pieces
     volumes:
       - /mnt/user/appdata/robot_arm/data:/data
     cpus: 2.0

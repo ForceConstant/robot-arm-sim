@@ -294,6 +294,11 @@ def _add_pieces(spec, board, appearance):
             tint = piece_tint(slot.piece, appearance.white_rgba, appearance.black_rgba, piece_set)
             mat = spec.add_material(name=f"mat_{kind}", reflectance=0.2, rgba=list(tint))
             mat.textures[mujoco.mjtTextureRole.mjTEXROLE_RGB.value] = f"tex_{kind}"
+            if piece_set == assets.PRINTED_SET:
+                record = assets.set_properties(piece_set)["pieces"][assets._TYPE_NAME[slot.piece.piece_type]]
+                for ci, relative in enumerate(record["collision_meshes"]):
+                    spec.add_mesh(name=f"contact_{kind}_{ci}", scale=[g.scale] * 3,
+                                  file=os.path.join(assets.printed_set_root(), relative))
             kinds_done.add(kind)
         gx, gy = board.graveyard_slot(i)
         body = spec.worldbody.add_body(name=slot.body,
@@ -301,6 +306,21 @@ def _add_pieces(spec, board, appearance):
         body.add_freejoint(name=f"{slot.body}_joint")
         body.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=f"mesh_{kind}",
                       material=f"mat_{kind}", contype=0, conaffinity=0, density=0)
+        if piece_set == assets.PRINTED_SET:
+            # Use original-shape convex compounds for real contact, not the
+            # controller's conservative axisymmetric clearance envelope.
+            record = assets.set_properties(piece_set)["pieces"][assets._TYPE_NAME[slot.piece.piece_type]]
+            body.explicitinertial = True
+            body.mass = record["mass_kg"] * g.scale**3
+            body.ipos = np.asarray(record["center_mass_m"]) * g.scale
+            tensor = np.asarray(record["inertia_kg_m2"]) * g.scale**5
+            body.fullinertia = [tensor[0, 0], tensor[1, 1], tensor[2, 2],
+                                tensor[0, 1], tensor[0, 2], tensor[1, 2]]
+            for ci in range(len(record["collision_meshes"])):
+                body.add_geom(name=f"{slot.body}_contact_{ci}",
+                              type=mujoco.mjtGeom.mjGEOM_MESH, meshname=f"contact_{kind}_{ci}",
+                              rgba=[1, 1, 1, 0], density=0, group=3)
+            continue
         # Profiled collider: a short stack of cylinders following the mesh
         # (flat base for stable settling, true radii above it so the jaws close
         # on the widest segment). Generated hulls rest on a rounded nub and

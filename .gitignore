@@ -27,3 +27,6 @@ dist/
 MUJOCO_LOG.TXT
 # imported generated piece sets (~25 MB each; rebuild with tools/import_piece_sets.py)
 chess_sim/assets/piece_sets/
+
+# User-supplied printed geometry, supplied only to the private LAN build
+chess_sim/assets/printed_pieces/

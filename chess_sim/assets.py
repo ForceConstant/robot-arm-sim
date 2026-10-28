@@ -40,6 +40,16 @@ SET_COUNTS = {chess.PAWN: 8, chess.ROOK: 2, chess.KNIGHT: 2,
 # mesh per type, imported from EmbodiedGen by tools/import_piece_sets.py, and the
 # black side is the same mesh under a dark tint.
 DEFAULT_SET = "default"
+PRINTED_SET = "printed"
+
+
+def printed_set_root() -> str:
+    """Explicit local-only pack; requested missing geometry must fail loudly."""
+    root = os.environ.get("ROBOT_PIECE_ASSETS")
+    if not root or not os.path.isfile(os.path.join(root, "set.json")):
+        raise ValueError("printed pieces require ROBOT_PIECE_ASSETS with set.json")
+    return os.path.abspath(root)
+
 PIECE_SETS_DIR = os.path.join(ASSET_DIR, "piece_sets")
 DARK_SIDE = 0.22          # how far a single-colour set's black pieces are darkened
 VERIFIED_FILE = "verified.json"   # tools/check_piece_sets.py: which sets the expert handles
@@ -67,12 +77,14 @@ def available_piece_sets(verified_only: bool = False) -> list[str]:
             with open(path) as f:
                 verdicts = json.load(f)
         imported = [name for name in imported if verdicts.get(name, {}).get("passed")]
-    return [DEFAULT_SET, *imported]
+    return [DEFAULT_SET, *imported, *([PRINTED_SET] if os.environ.get("ROBOT_PIECE_ASSETS") and not verified_only else [])]
 
 
 def single_colour(piece_set: str) -> bool:
     """One light mesh per type, the black side tinted - unless the set brings its
     own black pieces (black_<type>/), as the vendored set and the token sets do."""
+    if piece_set == PRINTED_SET:
+        return True
     if piece_set == DEFAULT_SET:
         return False
     return not os.path.isdir(os.path.join(PIECE_SETS_DIR, piece_set, "black_king"))
@@ -83,7 +95,8 @@ def set_properties(piece_set: str) -> dict:
     """piece_sets/<set>/set.json, if any. `"scale": "absolute"` means the meshes are
     already in metres at their true size - tokens, not Staunton pieces - and are
     not stretched to chess heights."""
-    path = os.path.join(PIECE_SETS_DIR, piece_set, "set.json")
+    path = (os.path.join(printed_set_root(), "set.json") if piece_set == PRINTED_SET
+            else os.path.join(PIECE_SETS_DIR, piece_set, "set.json"))
     if piece_set == DEFAULT_SET or not os.path.isfile(path):
         return {}
     import json
@@ -92,6 +105,9 @@ def set_properties(piece_set: str) -> dict:
 
 
 def _piece_dir(piece: chess.Piece, piece_set: str) -> tuple[str, str]:
+    if piece_set == PRINTED_SET:
+        name = _TYPE_NAME[piece.piece_type]
+        return os.path.join(printed_set_root(), name), name
     if piece_set == DEFAULT_SET:
         name = piece_asset_name(piece)
         return os.path.join(ASSET_DIR, "pieces", name), name
@@ -152,7 +168,12 @@ class PieceGeometry:
 
     @property
     def _grasp_segment(self):
-        return max(self.profile[1:], key=lambda seg: seg[2])
+        # Dense imported profiles must exclude the whole foot, not just the
+        # first thin slab. This is the same lower-quarter exclusion as the
+        # legacy four-segment profile.
+        upper = [seg for seg in self.profile
+                 if seg[0] >= self.bottom_offset + 0.25 * self.height - 1e-9]
+        return max(upper or list(self.profile[1:]), key=lambda seg: seg[2])
 
     @property
     def flange_top(self) -> float:
@@ -166,7 +187,8 @@ class PieceGeometry:
     @property
     def collider_radius(self) -> float:
         """Footprint radius (the base segment of the collider profile)."""
-        return self.profile[0][2]
+        return max(r for z0, _, r in self.profile
+                   if z0 < self.bottom_offset + 0.25 * self.height)
 
     def radius_between(self, lo: float, hi: float) -> float:
         """Widest collider radius between heights `lo` and `hi` above the base
@@ -209,13 +231,20 @@ def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
     fit = 0.88 * square * piece_scale / max(extent[0], extent[1], 1e-6)   # footprint inside a square
     if set_properties(piece_set).get("scale") == "absolute":
         scale = min(piece_scale, fit)
+        if piece_set == PRINTED_SET:
+            if max(extent[:2]) * piece_scale > 0.88 * square:
+                raise ValueError("Printed set exceeds square footprint; choose one uniform scale for the whole set")
+            scale = piece_scale
     else:
         target_h = _PIECE_HEIGHT[piece.piece_type] * (square / _REFERENCE_SQUARE) * piece_scale
         scale = min(target_h / max(extent[2], 1e-6), fit)
-    profile = tuple(
+    profile = () if piece_set == PRINTED_SET else tuple(
         (float(lo[2] + b * extent[2]) * scale, float(lo[2] + t * extent[2]) * scale,
          (_radius_at(path, f) + 0.0004) * scale)
         for b, t, f in PROFILE_SEGMENTS)
+    if piece_set == PRINTED_SET:
+        profile = tuple(tuple(float(v) * scale for v in seg)
+                        for seg in set_properties(piece_set)["pieces"][_TYPE_NAME[piece.piece_type]]["profile"])
     return PieceGeometry(
         scale=scale,
         height=float(extent[2] * scale),

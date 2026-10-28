@@ -33,7 +33,7 @@ def compose():
     dockerfile = (ROOT / "Dockerfile").read_text()
     return """services:
   simulation:
-    image: robot-arm-sim:1.5.1
+    image: robot-arm-sim:1.6.0
     build:
       context: .
       dockerfile_inline: |
@@ -52,6 +52,8 @@ def compose():
       STOCKFISH_PATH: /usr/games/stockfish
       ROBOT_GRIPPER: cad_parallel
       ROBOT_GRIPPER_ASSETS: /app/chess_sim/assets/custom_gripper
+      ROBOT_PIECE_SET: printed
+      ROBOT_PIECE_ASSETS: /app/chess_sim/assets/printed_pieces
     volumes:
       - /mnt/user/appdata/robot_arm/data:/data
     cpus: 2.0
@@ -89,6 +91,9 @@ def main():
     private_assets = Path(os.environ.get('ROBOT_GRIPPER_ASSETS', private / 'gripper-assets'))
     if not (private_assets / 'profile.json').is_file():
         raise RuntimeError('Supply the private gripper asset pack before deploying this custom-tool stack')
+    piece_assets = Path(os.environ.get("ROBOT_PIECE_ASSETS", private / "piece-assets"))
+    if not (piece_assets / "set.json").is_file():
+        raise RuntimeError("Supply the local printed-piece pack before deploying")
     content = compose()
     (ROOT / "deploy/compose.yaml").write_text(content)
     stacks = request(DOCKHAND, "/api/stacks?env=1")
@@ -120,6 +125,7 @@ def main():
                 return info
             archive.add(ROOT / name, arcname=name, filter=keep)
         archive.add(private_assets, arcname='chess_sim/assets/custom_gripper', filter=keep)
+        archive.add(piece_assets, arcname='chess_sim/assets/printed_pieces', filter=keep)
     request(DOCKER, "/containers/" + dockhand["Id"] +
             "/archive?path=/app/data/stacks/HTPC/robot_arm", "PUT", raw=tar.getvalue())
     result = request(DOCKHAND, "/api/stacks/robot_arm/deploy?env=1", "POST",

@@ -22,6 +22,7 @@ from PIL import Image
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
 from chess_sim import gripper
+from chess_sim.assets import set_properties
 from chess_sim.controller import PlanOverride
 from .incidents import (Store, Recording, restore, bookkeeping, physics_state,
                         reset_diagnostics)
@@ -868,7 +869,8 @@ class Lab:
     def _run(self):
         try:
             self.env = DualArmEnv(EnvConfig(
-                appearance=AppearanceConfig(camera_mast=False),
+                appearance=AppearanceConfig(camera_mast=False,
+                    piece_set=os.environ.get("ROBOT_PIECE_SET", "default")),
                 control=ControlConfig(cameras=(), image_size=(800, 600))))
             self.env.model.vis.quality.shadowsize = 2048
             self.model_signature = __import__("robot_web.incidents", fromlist=["model_signature"]).model_signature(self.env)
@@ -886,7 +888,9 @@ class Lab:
                 self.engine.configure({"Threads": 1, "Hash": 32})
             with self.lock:
                 self.ready = True
-                self.state.update(renderer=renderer, engine=self.engine.id.get("name", "Stockfish")
+                self.state.update(piece_set={"id": self.env.config.appearance.piece_set,
+                    "name": set_properties(self.env.config.appearance.piece_set).get("name", "Original generated set")},
+                    renderer=renderer, engine=self.engine.id.get("name", "Stockfish")
                                   if self.engine else "Unavailable — opening replay only")
             self.log("Renderer: " + renderer)
             while not self.shutdown.is_set():
