@@ -65,7 +65,7 @@ def status():
 class Control(BaseModel):
     action: Literal["start", "pause", "stop", "reset", "step", "configure", "speed",
                    "orbit", "record", "suite", "replay", "live", "rerun",
-                   "correct", "sweep"]
+                   "correct", "sweep", "jog"]
     mode: Literal["engine", "opening"] = "engine"
     scenario: Literal["standard", "capture"] = "standard"
     observations: Literal["wrists", "all"] = "wrists"
@@ -80,6 +80,16 @@ class Control(BaseModel):
     frame: int | None = None
     play: bool = False
     params: dict | None = None
+    # Manual (gamepad) jog: one Cartesian step per request, consumed once by the
+    # physics worker. Nothing runs away if the browser or controller drops.
+    dx: float = Field(default=0.0, ge=-0.05, le=0.05)
+    dy: float = Field(default=0.0, ge=-0.05, le=0.05)
+    dz: float = Field(default=0.0, ge=-0.05, le=0.05)
+    grip: float | None = Field(default=None, ge=0.0, le=0.06)
+    arm: Literal["white", "black"] | None = None
+    # Keyboard joint jog: one servo per key pair (A/Q, S/W, D/E, F/R, G/T, Z/X).
+    joint: int | None = Field(default=None, ge=0, le=5)
+    dq: float = Field(default=0.0, ge=-0.20, le=0.20)
 
 
 @app.post("/api/control")

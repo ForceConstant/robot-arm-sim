@@ -38,15 +38,19 @@ CAMERAS = {"overview": Camera.EXTERNAL, "top": Camera.TOP,
 # 90 from -Y (White's side), 180 from -X, 270 from +Y (Black's side).
 VIEWS = {
     "overview": ("camera", Camera.EXTERNAL),
-    "top": ("camera", Camera.TOP),
-    "right": ("orbit", {"azimuth": 0.0, "elevation": -20.0, "distance": 0.90}),
-    "left": ("orbit", {"azimuth": 180.0, "elevation": -20.0, "distance": 0.90}),
-    "white_side": ("orbit", {"azimuth": 90.0, "elevation": -42.0, "distance": 1.05}),
-    "black_side": ("orbit", {"azimuth": 270.0, "elevation": -42.0, "distance": 1.05}),
-    "iso_ne": ("orbit", {"azimuth": 45.0, "elevation": -35.0, "distance": 1.00}),
-    "iso_nw": ("orbit", {"azimuth": 135.0, "elevation": -35.0, "distance": 1.00}),
-    "iso_se": ("orbit", {"azimuth": 315.0, "elevation": -35.0, "distance": 1.00}),
-    "iso_sw": ("orbit", {"azimuth": 225.0, "elevation": -35.0, "distance": 1.00}),
+    # Distances solved so the scene bounding box covers ~68% of the frame at
+    # 800x600 / fovy 45 (was 26-41%, i.e. the arm and board filled a quarter of
+    # the screen). `lookat` is the scene centre, not the origin: the board sits
+    # at z~0.56 m, so aiming at the origin cropped the subject when zoomed.
+    "top": ("orbit", {"azimuth": 0.0, "elevation": -88.9, "distance": 0.669, "lookat": [0.0, 0.0, 0.5587]}),
+    "right": ("orbit", {"azimuth": 0.0, "elevation": -20.0, "distance": 0.663, "lookat": [0.0, 0.0, 0.5587]}),
+    "left": ("orbit", {"azimuth": 180.0, "elevation": -20.0, "distance": 0.663, "lookat": [0.0, 0.0, 0.5587]}),
+    "white_side": ("orbit", {"azimuth": 90.0, "elevation": -42.0, "distance": 0.708, "lookat": [0.0, 0.0, 0.5587]}),
+    "black_side": ("orbit", {"azimuth": 270.0, "elevation": -42.0, "distance": 0.708, "lookat": [0.0, 0.0, 0.5587]}),
+    "iso_ne": ("orbit", {"azimuth": 45.0, "elevation": -35.0, "distance": 0.791, "lookat": [0.0, 0.0, 0.5587]}),
+    "iso_nw": ("orbit", {"azimuth": 135.0, "elevation": -35.0, "distance": 0.791, "lookat": [0.0, 0.0, 0.5587]}),
+    "iso_se": ("orbit", {"azimuth": 315.0, "elevation": -35.0, "distance": 0.791, "lookat": [0.0, 0.0, 0.5587]}),
+    "iso_sw": ("orbit", {"azimuth": 225.0, "elevation": -35.0, "distance": 0.791, "lookat": [0.0, 0.0, 0.5587]}),
     "white_wrist": ("camera", Camera.WRIST),
     "black_wrist": ("camera", Camera.WRIST_BLACK),
 }
@@ -67,6 +71,7 @@ class Lab:
         self.stop_requested = False
         self.reset_requested = True
         self.step_requested = False
+        self.jog_request = None
         self.ready = False
         self.env = None
         self.engine = None
@@ -174,6 +179,17 @@ class Lab:
                 self.rerun_request = None
                 if self.replay is not None:
                     self.replay_request = ("live", None, False)
+            elif action == "jog":
+                # Manual gamepad step. Staged here and consumed by the physics
+                # worker thread: HTTP never touches MuJoCo, and one request moves
+                # the arm one step, so a dropped controller stops the arm dead.
+                self.jog_request = {"dx": options.get("dx", 0.0), "dy": options.get("dy", 0.0),
+                                    "dz": options.get("dz", 0.0), "grip": options.get("grip"),
+                                    "arm": options.get("arm"),
+                                    "joint": options.get("joint"), "dq": options.get("dq", 0.0)}
+                self.running = False
+                self.stop_requested = False
+                self.state.update(phase="manual", message="Manual jog")
             elif action == "speed":
                 self.speed = float(options["speed"])
             elif action == "record":
@@ -334,6 +350,106 @@ class Lab:
             if remaining > 0:
                 self.shutdown.wait(min(remaining, 0.1))
         self.last_tick = time.monotonic()
+
+    def _jog(self):
+        """Apply one manual Cartesian step, on the physics thread.
+
+        Reports requested vs achieved motion so the UI's BLOCKED lamp reflects
+        what the arm actually did, not merely that a command was accepted. A
+        step whose IK residual is too large is refused outright: snapping to the
+        nearest reachable pose is what makes a teleoperated arm feel like it is
+        fighting you.
+        """
+        req, self.jog_request = self.jog_request, None
+        if req is None:
+            return
+        env = self.env
+        side = req.get("arm") or (self.state.get("active_arm") or "white")
+        try:
+            env.select_arm(side)
+        except Exception:
+            pass
+        prefix = "black:" if side == "black" else "so101:"
+        if req.get("joint") is not None:
+            self._jog_joint(env, side, prefix, req)
+            return
+        zeros = np.zeros(3)
+        start, _ = env.ik.tool_pose(env.data, zeros)
+        delta = np.array([req.get("dx") or 0.0, req.get("dy") or 0.0, req.get("dz") or 0.0],
+                         dtype=float)
+        target = start + delta
+        requested = float(np.linalg.norm(delta))
+        blocked, achieved, solution = None, 0.0, None
+        if requested > 0.0:
+            sol = env.ik.solve(env.data, target)
+            if sol.position_error > 0.002:
+                blocked = "unreachable"
+            else:
+                solution = np.asarray(sol.q, dtype=float)
+        if blocked is None:
+            joints = np.asarray(env.arm_joint_positions(), dtype=float)
+            q = solution if solution is not None else joints[:5]
+            grip = req.get("grip")
+            gap = (gripper.angle_to_gap(float(joints[5])) if grip is None else float(grip))
+            env.apply_action(np.concatenate([q, [gripper.gap_to_angle(gap)]]))
+            now, _ = env.ik.tool_pose(env.data, zeros)
+            achieved = float(np.linalg.norm(now - start))
+            if requested > 0.0 and achieved < 0.35 * requested:
+                blocked = "contact"
+        # The white arm is built as `so101:` and the black one as `black:`; `side`
+        # is the logical name, so map it rather than assuming side + ':'.
+        prefix = "black:" if side == "black" else "so101:"
+        near = []
+        for jn in ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll"):
+            joint = env.model.joint(prefix + jn)
+            if not joint.limited:
+                continue
+            value = float(env.data.qpos[joint.qposadr[0]])
+            lo, hi = float(joint.range[0]), float(joint.range[1])
+            if min(value - lo, hi - value) < 0.10:
+                near.append(jn)
+        with self.lock:
+            self.state.update(manual={"arm": side, "blocked": blocked,
+                                      "requested_mm": round(requested * 1000, 2),
+                                      "achieved_mm": round(achieved * 1000, 2),
+                                      "near_limit": near})
+        self._render(force=True)
+
+    def _jog_joint(self, env, side, prefix, req):
+        """Step one servo by a key-pair press (joint space, not Cartesian)."""
+        names = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper")
+        idx = max(0, min(len(names) - 1, int(req["joint"])))
+        dq = float(req.get("dq") or 0.0)
+        joints = np.asarray(env.arm_joint_positions(), dtype=float).copy()
+        joint = env.model.joint(prefix + names[idx])
+        lo, hi = (float(joint.range[0]), float(joint.range[1])) if joint.limited else (-1e9, 1e9)
+        before = float(joints[idx])
+        after = min(max(before + dq, lo), hi)
+        joints[idx] = after
+        blocked = None
+        moved = abs(after - before)
+        if dq != 0.0 and moved < 1e-9:
+            blocked = "joint limit"
+        else:
+            env.apply_action(joints)
+            realised = abs(float(env.arm_joint_positions()[idx]) - before)
+            if dq != 0.0 and realised < 0.25 * abs(dq):
+                blocked = "contact"
+        near = []
+        for jn in names[:5]:
+            other = env.model.joint(prefix + jn)
+            if not other.limited:
+                continue
+            value = float(env.data.qpos[other.qposadr[0]])
+            if min(value - float(other.range[0]), float(other.range[1]) - value) < 0.10:
+                near.append(jn)
+        with self.lock:
+            self.state.update(manual={"arm": side, "joint": names[idx], "unit": "deg",
+                                      "blocked": blocked,
+                                      "requested_mm": round(float(np.degrees(dq)), 2),
+                                      "achieved_mm": round(float(np.degrees(after - before)), 2),
+                                      "near_limit": near})
+        self._render(force=True)
 
     def _reset(self, fen=None):
         with self.lock:
@@ -921,6 +1037,9 @@ class Lab:
                     if self.replay is not None and self.replay.get("playing") \
                             and not self.running:
                         self._replay_tick()
+                        continue
+                    if self.jog_request is not None:
+                        self._jog()
                         continue
                     if self.suite is not None and self.suite["phase"] == "running":
                         self._suite_run()

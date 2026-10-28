@@ -42,6 +42,15 @@ class CameraMount(Config):
 # beside the wrist-roll motor, looking at the fingertips, wide lens
 WRIST_CAMERA = CameraMount(pos=(-0.075, 0.045, 0.012), target=(0.0, 0.0, 0.012),
                            up=(-1.0, 0.0, 0.0), fovy=75)
+
+# The CAD gripper hangs a camera off the base, further to the side and less far
+# back than the stock wrist camera. Offsets from the tip centre (the
+# gripperframe origin, which sits on the fingertip plane): 60 mm back along the
+# approach axis, 80 mm lateral, 0 along the jaw span. The CAD mount does not yet
+# match this pose -- the housing below is placed to end exactly at the lens, so
+# the rendered model agrees with the image it produces.
+WRIST_CAMERA_CUSTOM = CameraMount(pos=(-0.060, 0.080, 0.0), target=(0.0, 0.0, 0.0),
+                                  up=(-1.0, 0.0, 0.0), fovy=75)
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
                      wrist_flex=0.4, wrist_roll=0.0, gripper=0.6)
 
@@ -135,7 +144,9 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     camera_pos = _add_camera_mast(spec, board) if appearance.camera_mast else mast_lens(board)
 
     if dual_arms:
-        _add_camera(spec, Camera.EXTERNAL, (-0.60, -0.53, board.top + 0.58),
+        # Pulled in toward the same aim point so the two arms and the board fill
+        # the frame (~68% coverage, was ~41% at the old stand-off).
+        _add_camera(spec, Camera.EXTERNAL, (-0.465, -0.411, board.top + 0.463),
                     (0.0, 0.0, board.top + 0.06), fovy=47)
     else:
         _add_camera(spec, Camera.EXTERNAL, (-0.31, -0.16, board.top + 0.26), (0.0, 0.02, board.top + 0.04))
@@ -400,25 +411,33 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     rot = np.zeros(9)
     mujoco.mju_quat2Mat(rot, np.asarray(site.quat, dtype=float))
     rot = rot.reshape(3, 3)                      # site axes in the gripper body frame
-    cam = (CameraMount(pos=(-.060, .080, 0), target=(0, 0, 0),
-                       up=(-1, 0, 0), fovy=75) if gripper.CUSTOM else WRIST_CAMERA)
+    cam = WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA
     pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
     axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
-    xyaxes = np.concatenate([rot @ axes[:3], rot @ axes[3:]])
+    x_axis, y_axis = rot @ axes[:3], rot @ axes[3:]
+    xyaxes = np.concatenate([x_axis, y_axis])
     tool_body = spec.body(prefix + "gripper")
     tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
-    tool_body.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=[0.012, 0.012, 0.008],
-                     pos=list(pos - rot @ np.array([0.01, 0.0, 0.0])),
+    # Orient the housing body with the camera, not the gripper body. A MuJoCo
+    # camera looks down its own -z, so the box sits at +z from the lens and its
+    # front face lands exactly on the image plane.
+    cam_R = np.column_stack([x_axis, y_axis, np.cross(x_axis, y_axis)])
+    cam_quat = np.zeros(4)
+    mujoco.mju_mat2Quat(cam_quat, cam_R.reshape(-1))
+    cam_size = [0.012, 0.012, 0.008]
+    housing_centre = pos + cam_R @ np.array([0.0, 0.0, cam_size[2]])
+    tool_body.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=cam_size,
+                     pos=list(housing_centre), quat=list(cam_quat),
                      rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0, group=1, density=0)
     if gripper.CUSTOM:
-        housing = tool_body.add_body(name=prefix + 'camera_housing',
-            pos=list(pos - rot @ np.array([0.01, 0.0, 0.0])))
+        housing = tool_body.add_body(name=prefix + 'camera_housing', pos=list(housing_centre),
+                                     quat=list(cam_quat))
         housing.add_geom(name=prefix + 'camera_collision', type=mujoco.mjtGeom.mjGEOM_BOX,
-            size=[.012, .012, .008], mass=gripper.PROFILE['camera_mass_kg'],
+            size=cam_size, mass=gripper.PROFILE['camera_mass_kg'],
             rgba=[.08, .08, .08, 1], group=3)
         tool_body.add_geom(name=prefix + 'clearance_proxy_camera', type=mujoco.mjtGeom.mjGEOM_BOX,
-            pos=list(housing.pos), size=[.012, .012, .008], contype=0, conaffinity=0,
-            density=0, group=5)
+            pos=list(housing.pos), quat=list(cam_quat), size=cam_size,
+            contype=0, conaffinity=0, density=0, group=5)
 
 
 def arm_rest_pose() -> JointPose:

@@ -73,7 +73,11 @@ if CUSTOM:
     JOINT_MIN, JOINT_MAX = PROFILE['angle_range_rad']
     POCKET_X = 0.
     TIP_X = PROFILE['tip_reach_m']
-    PAD_REACH = PROFILE['tip_reach_m']
+    # A pad's axial half-extent is a property of the grip surface, not of how far
+    # the tips project past the TCP. These were the same number while the TCP sat
+    # 8mm above the tips; once a tool puts the grasp plane at the tips (tip reach
+    # 0) sharing the value collapsed the pad band to a point and broke placement.
+    PAD_REACH = PROFILE.get('pad_reach_m', PROFILE['tip_reach_m'])
     # Bare plastic, not the stock model's artificial high-friction pads.
     SQUEEZE = .0005  # estimated preload; custom grasp calibration is not qualified
 
