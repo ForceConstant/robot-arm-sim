@@ -176,6 +176,22 @@ class PickPlaceController:
         self._phase('approach', grasp_pt, gap_open, off_open)
         self._go(grasp_pt - approach * APPROACH_LENGTH, gap_open, off_open, 14, on_step)
         ok &= self._descend(grasp_pt, gap_open, off_open, approach, on_step)
+        if not ok and span_grasp is not None:
+            # The descent is gated on the *executed* tool point, so a jaw swinging
+            # into a neighbour leaves the IK residual tiny while the arm never
+            # arrives. Retry once with the opposite span: which side is clear
+            # depends on the piece and on the arm's mount, and hard-coding a sign
+            # for the mirrored arm traded one passing case for another.
+            flipped = -np.asarray(span_grasp, dtype=float)
+            self._span = flipped
+            self._go(grasp_pt - approach * APPROACH_LENGTH, gap_open, off_open, 14, on_step)
+            if self._descend(grasp_pt, gap_open, off_open, approach, on_step):
+                span_grasp = flipped
+                ok = True
+                trial = env.ik.solve(env.data, place_pt, offset=off_hold, span=flipped)
+                if (trial.position_error <= 0.008 and trial.tilt <= np.radians(30)
+                        and env.jaw_clearance(place_pt[:2], flipped, exclude=slot) >= 0):
+                    span_place = flipped
         self._phase('close', grasp_pt, gap_hold, off_hold)
         self._go(grasp_pt, gap_hold, off_hold, 10, on_step)
         self._settle(SETTLE_STEPS, gap_hold, on_step)

@@ -51,20 +51,6 @@ class DualArmEnv(ChessSimEnv):
         self._contexts["black"]["reach"] = self.reach
         self.select_arm("white")
 
-    def grasp_span(self, point, offset, exclude=None):
-        """Mirror the chosen jaw span on the black arm.
-
-        The span is a world direction, but the black mount is rotated 180 deg,
-        so the same world span puts its moving jaw on the opposite side of the
-        piece - into the neighbour the white arm has clear. Measured: black
-        g8-f6 never picked (0.1 mm lift, descent missed its gate) until the
-        span was mirrored, then it picked at 0.24 mm.
-        """
-        span = super().grasp_span(point, offset, exclude=exclude)
-        if span is None or self.active_side != "black":
-            return span
-        return -np.asarray(span, dtype=float)
-
     def select_arm(self, side: str):
         if side not in ("white", "black"):
             raise ValueError("Unknown arm")
