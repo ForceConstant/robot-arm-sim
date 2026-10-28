@@ -72,26 +72,34 @@ def main():
                 hull.export(args.output / rel)
                 parts.append(str(rel))
         # Conservative, finely sampled envelope for controller clearance ONLY.
-        # Real contact uses the convex parts above, never these cylinders.
+        # Real contact uses the convex slabs above, never these cylinders.
+        # Radius is sampled from the section at the slab CENTRE: taking the
+        # maximum over every vertex in the slab inflates the profile near a
+        # flange or crown and pushes the chosen grasp height off the piece.
         height = float(source.extents[2])
         profile = []
         for z0, z1 in zip(np.linspace(0, height, 49)[:-1], np.linspace(0, height, 49)[1:]):
-            points = []
-            band = source.vertices[(source.vertices[:, 2] >= z0) & (source.vertices[:, 2] <= z1)]
-            if len(band):
-                points.append(band[:, :2])
-            for z in (z0 + 1e-8, (z0 + z1) / 2, z1 - 1e-8):
-                section = source.section(plane_origin=[0, 0, z], plane_normal=[0, 0, 1])
-                if section is not None:
-                    points.append(section.vertices[:, :2])
-            if not points:
-                raise ValueError(f"{name}: empty silhouette slab")
-            radius = float(np.linalg.norm(np.concatenate(points), axis=1).max()) + 0.0001
+            section = source.section(plane_origin=[0, 0, (z0 + z1) / 2], plane_normal=[0, 0, 1])
+            if section is None or len(section.vertices) < 3:
+                raise ValueError(f"{name}: empty silhouette slab at {(z0 + z1) / 2:.4f} m")
+            radius = float(np.linalg.norm(section.vertices[:, :2], axis=1).max()) + 0.0001
             profile.append([float(z0), float(z1), radius])
+        # Grasp height: a cylindrical section between 40% and 70% of
+        # the piece, where a parallel jaw can close on a section the pads reach.
+        # Falls back to 40% height for shapes without a waist (the knight).
+        band = [seg for seg in profile if 0.35 * height <= 0.5 * (seg[0] + seg[1]) <= 0.75 * height]
+        necks = [seg for seg in band if 0.005 <= 2 * seg[2] <= 0.016]
+        # Prefer a contact near 10 mm across, not the thinnest neck: a narrow
+        # waist gives the jaws almost no torque capacity and tall pieces pivot
+        # on it. Still within the [5, 16] mm window above.
+        chosen = (min(necks, key=lambda seg: abs(2 * seg[2] - 0.010)) if necks
+                  else min(band or profile[1:], key=lambda seg: abs(0.5 * (seg[0] + seg[1]) - 0.40 * height)))
+        grasp_h = float(0.5 * (chosen[0] + chosen[1]))
+        grasp_h = min(grasp_h, height - 0.004)
         source.density = args.density
         manifest["pieces"][name] = dict(source_sha256=hashlib.sha256(files[name].read_bytes()).hexdigest(),
             source_bounds_mm=source_bounds.tolist(), extent_m=source.extents.tolist(),
-            collision_meshes=parts, profile=profile,
+            collision_meshes=parts, profile=profile, grasp_h_m=grasp_h,
             mass_kg=float(source.mass), center_mass_m=source.center_mass.tolist(),
             inertia_kg_m2=source.moment_inertia.tolist())
         print(f"{name}: {len(parts)} convex parts, {source.mass*1000:.2f} g estimated", flush=True)

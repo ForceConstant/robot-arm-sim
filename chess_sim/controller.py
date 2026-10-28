@@ -49,17 +49,28 @@ def grasp_plan(geometry, board) -> GraspPlan:
         # A symmetric parallel tool must clamp a section within its actual
         # aperture, not reuse the stock rotating jaw's head/waist calibration.
         # Include the complete straight finger band, not just an invisible pad.
+        #
+        # A set may carry a measured neck (printed sets do). Prefer it, clamp it
+        # to the piece's usable height, and drive the *hold* from the section the
+        # pads actually close on while the *opening* clears the widest feature
+        # the fingers straddle. Using the band's widest radius for both is what
+        # previously slammed the jaws shut on a crown or closed above the piece.
         low, high = gripper.PROFILE['aperture_range_m']
-        candidates = [g.waist] + [z1 - g.bottom_offset + gripper.TIP_X - .003
-                                  for _, z1, _ in reversed(g.profile)]
+        proximal = gripper.PROFILE['finger_proximal_reach_m']
+        if g.grasp_height is not None:
+            candidates = [min(g.grasp_height, g.height - .004)]
+        else:
+            candidates = [g.waist] + [z1 - g.bottom_offset + gripper.TIP_X - .003
+                                      for _, z1, _ in reversed(g.profile)]
         for height in candidates:
-            if height < gripper.TIP_CLEARANCE + gripper.TIP_X or height >= g.height + gripper.TIP_X:
+            height = max(height, gripper.TIP_CLEARANCE + gripper.TIP_X)
+            if height >= g.height - .001:
                 continue
-            radius = g.radius_between(height - gripper.TIP_X,
-                                      height + gripper.PROFILE['finger_proximal_reach_m'])
-            hold = 2 * radius - gripper.SQUEEZE
-            opening = 2 * radius + .006
-            if low <= hold and opening <= high:
+            contact = g.radius_between(height - .0015, height + .0015)
+            straddle = g.radius_between(height - gripper.TIP_X, height + proximal)
+            hold = 2 * contact - gripper.SQUEEZE
+            opening = 2 * straddle + .006
+            if low <= hold and opening <= high and contact > .0005:
                 return GraspPlan(z_grasp=board.top + height, gap_open=min(opening + .010, high),
                                  gap_hold=hold, off_open=np.zeros(3), off_hold=np.zeros(3))
         raise ValueError('No piece section fits the selected CAD gripper aperture and fingertip clearance')
