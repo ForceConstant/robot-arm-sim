@@ -232,6 +232,20 @@ class PickPlaceController:
         # set down along the tool axis, release, retreat
         self._phase('place_descend', place_pt, gap_hold, off_hold)
         arrived = self._descend(place_pt, gap_hold, off_hold, approach, on_step)
+        if not arrived and span_place is not None:
+            # Same gate as the grasp: this descent is judged on the executed tool
+            # point, and on the mirrored arm the moving jaw can swing into the
+            # destination's neighbours while the IK residual stays tiny. Measured
+            # on black g8-f6: both grasp spans failed, yet forcing the opposite
+            # placement span made the whole move succeed.
+            flipped_place = -np.asarray(span_place, dtype=float)
+            trial = env.ik.solve(env.data, place_pt, offset=off_hold, span=flipped_place)
+            if trial.position_error <= 0.008 and trial.tilt <= np.radians(30):
+                self._span = flipped_place
+                self._go(place_pt - approach * APPROACH_LENGTH, gap_hold, off_hold, 14, on_step)
+                if self._descend(place_pt, gap_hold, off_hold, approach, on_step):
+                    span_place = flipped_place
+                    arrived = True
         held = env.ik.tool_pose(env.data, off_hold)[0]
         if not arrived or float(np.linalg.norm(held - place_pt)) > RELEASE_TOLERANCE:
             # A tracking failure here used to fall through to the release: the
