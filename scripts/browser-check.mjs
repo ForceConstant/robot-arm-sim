@@ -7,6 +7,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1100}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const status=async()=>await (await page.request.get(base+'/api/status')).json();
 async function until(fn,message,timeout=45000){const end=Date.now()+timeout;while(Date.now()<end){const s=await status();if(await fn(s))return s;await new Promise(r=>setTimeout(r,150))}throw Error(message)}
+async function waitForDisplayedJoint(side,index){await page.waitForFunction(async({side,index})=>{const s=await(await fetch('/api/status')).json();const expected=(s.joints[side][index]*180/Math.PI).toFixed(2)+'°';return document.querySelectorAll('#joints-'+side+' .joint-row')[index]?.querySelector('span:last-child')?.textContent===expected},{side,index},{timeout:15000})}
 try{
  await page.goto(base);
  await until(s=>s.ready,'Simulator did not initialize');
@@ -20,9 +21,7 @@ try{
  const beforeJog=(await status()).joints.white[0];
  await page.keyboard.down('a');await page.waitForTimeout(450);await page.keyboard.up('a');
  const afterJog=await until(s=>Math.abs(s.joints.white[0]-beforeJog)>0.005,'Keyboard jog did not change the live joint position');
- const shownJog=afterJog.joints.white[0]*180/Math.PI;
- await page.waitForFunction(value=>document.querySelector('#joints-white .joint-row:nth-child(1) span:last-child').textContent===value,
-   shownJog.toFixed(2)+'°');
+ await waitForDisplayedJoint('white',0);
  await page.waitForFunction(()=>document.querySelector('#main-camera').naturalWidth>0);
  assert.equal(await page.locator('#main-camera').evaluate(e=>e.naturalWidth),800);
  for(const camera of ['overview','top','white_wrist','black_wrist']){const r=await page.request.get(base+'/api/frame/'+camera+'.jpg');assert.equal(r.status(),200);const bytes=await r.body();assert.equal(bytes[0],255);assert.equal(bytes[1],216)}
@@ -40,9 +39,7 @@ try{
    'Joint snapshot did not update during automated movement');
  const automatedSide=['white','black'].find(side=>afterAuto.joints[side].some((v,i)=>Math.abs(v-beforeAuto[side][i])>0.005));
  const automatedIndex=afterAuto.joints[automatedSide].findIndex((v,i)=>Math.abs(v-beforeAuto[automatedSide][i])>0.005);
- const automatedDegrees=afterAuto.joints[automatedSide][automatedIndex]*180/Math.PI;
- await page.waitForFunction(({side,index,value})=>document.querySelectorAll('#joints-'+side+' .joint-row')[index]?.querySelector('span:last-child')?.textContent===value,
-   {side:automatedSide,index:automatedIndex,value:automatedDegrees.toFixed(2)+'°'});
+ await waitForDisplayedJoint(automatedSide,automatedIndex);
  await page.locator('#pause').click();await until(s=>s.phase==='paused'&&!s.running,'Pause did not freeze');
  await new Promise(r=>setTimeout(r,300));const paused=await status();await new Promise(r=>setTimeout(r,300));assert.equal((await status()).sim_time,paused.sim_time);
  await page.locator('#start').click();await until(s=>s.running&&s.sim_time>paused.sim_time,'Resume reset or failed to advance');
