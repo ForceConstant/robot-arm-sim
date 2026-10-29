@@ -204,12 +204,13 @@ the report is reporting-only and is never available to a policy under test.
   is checked across five board locations, and board pose is randomized in the
   held-out sweeps. This qualifies the simulation transform chain, not an
   independently measured camera calibration or physical camera-to-tool mount.
-- Local regression passed (`35 passed, 4 skipped`). The release checklist is to
-  publish the versioned source/compose/checksums, rebuild only the authorized
-  `robot_arm` service, and retain receipts for the live version, browser
-  controls/cameras, and crowded-v1 suite. A failed live release check keeps the
-  deployment/release gate open without invalidating the simulator-only scope
-  above.
+- Local regression passed (`35 passed, 4 skipped`). Release complete as v1.10.8:
+  the versioned runtime bundle/compose/checksums are published, only the
+  authorized `robot_arm` service was rebuilt, the live NVIDIA renderer and
+  browser controls/cameras/mobile checks passed with no page errors, and the
+  live crowded-v3 suite passed 25/25. Receipts are
+  `.private/post-deploy-1.10.8.json` and
+  `.private/browser-check-1.10.8.json`.
 
 ## Priority 5 — establish the training platform and data boundary
 
