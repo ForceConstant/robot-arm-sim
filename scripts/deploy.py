@@ -33,7 +33,7 @@ def compose():
     dockerfile = (ROOT / "Dockerfile").read_text()
     return """services:
   simulation:
-    image: robot-arm-sim:1.9.3
+    image: robot-arm-sim:1.10.0
     build:
       context: .
       dockerfile_inline: |
@@ -82,7 +82,7 @@ def wait_job(job_id, timeout=15 * 60):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-verify", action="store_true",
-                        help="skip the post-deploy crowded-v1 run (debugging only)")
+                        help="skip the post-deploy crowded-v2 run (debugging only)")
     args = parser.parse_args()
     private = ROOT / ".private"
     private.mkdir(exist_ok=True)
@@ -135,7 +135,7 @@ def main():
     if args.no_verify:
         print("Post-deploy suite skipped by --no-verify")
         return
-    # Standing rule: every redeploy ends with the crowded-v1 suite against the
+    # Standing rule: every redeploy ends with the crowded-v2 suite against the
     # live build. Case failures are reported, not treated as a failed deploy.
     print("Waiting for deploy job...")
     print("Deploy job ended:", wait_job(result["jobId"]))

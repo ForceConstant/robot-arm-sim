@@ -88,8 +88,9 @@ is specific to Brian's HTPC LAN/GPU and embeds the [Dockerfile](Dockerfile).
 `python scripts/deploy.py` registers/uploads/builds only the `robot_arm` stack
 through Dockhand. It requires explicit infrastructure authorization; it is not
 an installation step for other users. Every deploy then waits for the job, waits
-for the new build to report ready, and runs the `crowded-v1` suite against it
-(5-6 minutes), writing `.private/post-deploy-<version>.json`. Case failures are
+for the new build to report ready, and runs the 24-case `crowded-v2` suite
+against it, including mirrored transfers to the far half and opposite corners,
+writing `.private/post-deploy-<version>.json`. Case failures are
 reported as data, not treated as a failed deploy. `--no-verify` skips the run
 for debugging only; `scripts/verify_deploy.py` can rerun it alone.
 

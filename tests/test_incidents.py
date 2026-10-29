@@ -22,7 +22,8 @@ from robot_web.torture import CASES, SUITE_VERSION
 def test_suite_cases_are_distinct_and_parseable():
     ids = [c.id for c in CASES]
     assert len(ids) == len(set(ids))
-    assert SUITE_VERSION == "crowded-v1"
+    assert SUITE_VERSION == "crowded-v2"
+    assert len(CASES) == 24
     for case in CASES:
         board = chess.Board(case.fen)
         assert board.is_valid()
@@ -34,8 +35,13 @@ def test_suite_cases_are_distinct_and_parseable():
         # illegal move as a capture and the case becomes a discard task.
         assert board.turn == (case.arm == "white"), case.id
         assert board.is_capture(move) is False, case.id
+        assert board.piece_at(move.to_square) is None, case.id
     # The two observed failures stay in the suite as regression cases.
     assert {"white-bishop", "black-bishop"} <= set(ids)
+    assert {"white-rook-corner", "black-rook-corner"} <= set(ids)
+    assert {"white-pawn-far", "black-pawn-far", "white-knight-far", "black-knight-far",
+            "white-bishop-far", "black-bishop-far", "white-queen-far", "black-queen-far",
+            "white-king-far", "black-king-far"} <= set(ids)
 
 
 def test_store_rejects_unknown_or_malformed_ids(tmp_path):

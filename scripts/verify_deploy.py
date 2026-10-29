@@ -1,4 +1,4 @@
-"""Post-deploy verification: wait for the new build, then run crowded-v1.
+"""Post-deploy verification: wait for the new build, then run crowded-v2.
 
 Case failures are data, not a deploy failure; a suite that never completes, a
 version mismatch, or a dead health endpoint is. Writes a receipt next to the
