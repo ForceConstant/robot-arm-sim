@@ -71,6 +71,10 @@ class DualArmEnv(ChessSimEnv):
             self.data.ctrl[context["actuators"]] = rest
             gripper.seed_coupled(self.model, self.data, ARM_PREFIX if side == 'white' else 'black:')
         super().reset(position, rng=rng)
+        # The shared reset path draws this bounded start when rng is supplied.
+        # Do not overwrite that draw with the nominal park pose here: both
+        # followers must begin each randomized case from the recorded jitter.
+        rest = self.layout.arm_start.to_array()
         for side, context in self._contexts.items():
             self.data.qpos[context["qpos"]] = rest
             self.data.ctrl[context["actuators"]] = rest

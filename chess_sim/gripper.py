@@ -79,7 +79,11 @@ if CUSTOM:
     # 0) sharing the value collapsed the pad band to a point and broke placement.
     PAD_REACH = PROFILE.get('pad_reach_m', PROFILE['tip_reach_m'])
     # Bare plastic, not the stock model's artificial high-friction pads.
-    SQUEEZE = .0005  # estimated preload; custom grasp calibration is not qualified
+    # The imported CAD geometry needs a stronger physical preload than the
+    # initial estimate: at 0.5 mm a pawn was picked but slipped from the jaws
+    # during the final horizontal carry. 2 mm retained it through the same
+    # dual-arm move; keep this as a real aperture reduction, not a success fudge.
+    SQUEEZE = .002
 
 
 def description() -> dict:

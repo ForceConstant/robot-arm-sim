@@ -438,7 +438,7 @@ class RandomizationConfig(Config):
     each can key on it instead of looking.
     """
 
-    board_shift: float = 0.010        # m on each axis - about a third of a square
+    board_shift: float = 0.005        # m on each axis - about a seventh of a square
     arm_joint_jitter: float = 0.10    # rad on each joint
     # Per-episode placement, off by default so the published results reproduce. The
     # first wide collection drew these once per 25-episode chunk - some three hundred

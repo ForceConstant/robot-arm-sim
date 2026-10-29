@@ -982,3 +982,70 @@ Adopted as a result:
 Still open: what actually happened on `f8b4`. The recorder stores candidate categories
 (path collision, gripper envelope, missed grasp, slip, release/retreat, tracking); a
 candidate is not a cause until triaged or separated by a controlled A/B.
+
+## 10. Repeatable crowded manipulation — v3 tool / 2026-10-29
+
+The archived `f4cc5169` trace is unavailable, and the matching live `g8f6` run
+still passes. A fresh, independently reset regression `black-knight-corner`
+(`b8c6`, from the position after `e2e4 e7e5`) reproduced a related failure
+with the v3 CAD gripper and printed Dubrovnik pack v5. At the existing 2 mm
+closure allowance it contacted the target with both jaws but lifted only
+0.02 mm; the piece stayed at its source (61.91 mm placement error). The trace
+showed the path reached the grasp, no neighbor moved, and the lift check aborted.
+This is a weak/missed grasp, not an unreachable transit or a place/release
+failure.
+
+A controlled same-start A/B changed one parameter at a time. Span rotations
+(+20/-20 degrees) and grasp-height changes (+/-4 mm) did not solve the miss;
+the negative-span trial contacted and disturbed the adjacent rook. Increasing
+the knight's physical closure allowance to 7 mm passed `b8c6` at 3.16 mm with
+no neighbor movement. A broader 2 mm versus 7 mm check passed all four existing
+white/black near/far knight anchors at both settings (0.64–2.02 mm). A 3.5 mm
+closure toppled the target in this particular corner case, so the measured
+7 mm value is stored specifically on the imported knight profile, not applied
+globally. This is an empirical simulator setting, not a physical squeeze-force
+calibration.
+
+The fixed regression set retains every `crowded-v2` case and adds this captured
+case as `crowded-v3` (25 total). `DualArmEnv.reset(rng=...)` now applies the
+bounded randomized joint start to both arms; previously the dual-arm reset
+silently replaced the randomized start with a nominal pose. Seeded trials use
+per-case `CRC32(case_id) XOR suite_seed`, board shifts up to 10 mm per axis and
+joint-start jitter up to 0.1 rad, and receipts retain per-case seeds and actual
+layout draws. Live seeded trial results are recorded separately from the fixed
+anchor receipt below after deployment.
+
+The incident recorder also had a type mismatch: `_slot_body` maps piece names
+to integer body IDs, while contact triage checked the integer against mapping
+keys. Real jaw/piece contact was therefore labeled `surface`. It now checks the
+body-ID values, and the recorder round-trip regression asserts a target-piece
+contact is preserved.
+
+The first full-range seeded repeat (suite seed `271828`) then exposed two real
+robustness misses: `g8f6` disturbed `f7` with board origin shifted
+`(-7.14, -9.32) mm`, and `b8c6` toppled at `(-2.19, +0.28) mm` with a
+`0.088 rad` arm-start deviation. Both reached the intended target with precise
+waypoints, so they were not IK reach failures. Controlled local replays using
+the same case seeds isolated the conditions: `g8f6` passed with board shift
+limited to 5 mm while retaining the same arm jitter; `b8c6` passed after its
+knight profile closure was increased from 7 to 9 mm. Raising `g8f6` closure to
+9 mm did not prevent the `f7` displacement, so it was not misdiagnosed as a
+weak grasp. The default bounded board perturbation is now ±5 mm per axis; the
+arm start remains ±0.1 rad. Three new live seeded repeats are required to
+qualify this measured envelope.
+
+A fresh local contact capture of the exact `g8f6` failure (`CRC32(case_id) XOR
+271828 = 681387102`) pinpoints the collision: after a successful lift/carry,
+the right CAD jaw touched `f7` during `place_descend` and `release` (19 contact
+records, peak force 0.122 N, minimum signed separation -1.49 mm), displacing the
+pawn by 20.2 mm. This is a destination-side gripper-envelope collision, not
+an unreachable target, grasp miss/slip, or failed retreat. The trace is retained
+at `.private/recaptured-g8f6-seed-681387102.zip`.
+
+The same incident set showed that recording categories had treated every
+non-target piece contact (including approach-phase contact) as a risk
+candidate; candidate labels are now phase-qualified while raw contact events
+remain in the trace. The incident ZIP route was also shadowed by the generic
+incident-ID route; the download route now precedes it, and the verification
+script archives every failed case immediately before recorder retention can
+prune it.

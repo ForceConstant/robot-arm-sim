@@ -50,8 +50,10 @@ LAN Docker build context, alongside the existing private gripper pack.
 
 `set.json` holds `scale="absolute"`, `name`, `uniform_source_scale`, and `pieces`
 keyed by lowercase type. Each piece contains `collision_meshes` relative to the
-pack root, `profile` slabs in metres, `mass_kg`, `center_mass_m`, and the full
-`inertia_kg_m2` tensor. Visuals and light texture live at `<type>/<type>.obj` and
+pack root, `profile` slabs in metres, optional `grasp_h_m`, `width_x_m`, `width_y_m`, and
+`grasp_squeeze_m` hints, plus `mass_kg`, `center_mass_m`, and the full
+`inertia_kg_m2` tensor. Grasp hints are simulation parameters, not physical
+force calibration. Visuals and light texture live at `<type>/<type>.obj` and
 `<type>/material_0.png`.
 
 The user-supplied set is imported at 50% on the unchanged 28 mm board. Approximate
@@ -61,5 +63,5 @@ These are geometry measurements, not a claim of reliable manipulation.
 
 Test source/pack geometry, reset/settling, both independent arms and real browser
 controls before deployment. New geometry invalidates old incident playback hashes
-by design. Run `crowded-v1` after every authorized redeploy; report individual
+by design. Run the complete `crowded-v3` fixed suite after every authorized redeploy; report individual
 manipulation failures as data, never hide or loosen the scoring.

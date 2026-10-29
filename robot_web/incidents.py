@@ -52,6 +52,16 @@ def runtime_signature(model_hash):
 DIAGNOSTIC_DEFAULTS = dict(diagnostic_phase="idle", diagnostic_target=None,
                            diagnostic_gap=None, diagnostic_ik=None, diagnostic_stall=None)
 
+CONTACT_CANDIDATE_PHASES = frozenset((
+    "close", "lift", "carry", "place", "place_descend", "release"))
+
+
+def contact_classification(is_piece, other_is_target, phase):
+    """Keep raw piece contact distinct from phase-qualified risk candidates."""
+    target = bool(is_piece and other_is_target and phase in CONTACT_CANDIDATE_PHASES)
+    candidate = bool(is_piece and not other_is_target and phase in CONTACT_CANDIDATE_PHASES)
+    return target, candidate
+
 
 def reset_diagnostics(env):
     """Blank the per-action diagnostics before a recording starts.
@@ -172,6 +182,9 @@ class Recording:
         self.path.mkdir()
         self.meta = dict(id=self.id, created=datetime.now(timezone.utc).isoformat(),
                          schema=2, model_signature=model_hash, runtime_signature=code_hash,
+                         # Runtime fingerprint is available in deployed builds
+                         # where the git checkout itself is not mounted.
+                         source_revision=code_hash,
                          mujoco_version=mujoco.__version__, state_spec=int(STATE_SPEC),
                          config=env.config.model_dump(mode='json'), initial=bookkeeping(env),
                          review_label='unreviewed', review_notes='', **metadata)
@@ -209,14 +222,18 @@ class Recording:
             # Only a piece counts as an unexpected grasp-phase contact. The board
             # and table are surfaces the jaws legitimately approach; keeping them
             # in the same bucket flagged every clean pick as suspicious.
-            is_piece = other_id in env._slot_body
-            expected = is_piece and other == self.target_body and phase in (
-                'close', 'lift', 'carry', 'place', 'place_descend', 'release')
+            # _slot_body maps stable piece names -> integer MuJoCo body IDs;
+            # testing the integer against its keys silently classified every
+            # real piece/jaw contact as a board-like surface.
+            is_piece = other_id in env._slot_body.values()
+            expected, candidate = contact_classification(
+                is_piece, other == self.target_body, phase)
             if key not in self.contacts and len(self.contacts) < 4096:
                 self.contacts[key] = dict(phase=phase, bodies=names, kind='piece' if is_piece else 'surface',
                     geoms=[env.model.geom(int(g)).name for g in (c.geom1,c.geom2)],
                     first_time=float(env.data.time), frame=max(0,len(self.states)-1),
-                    target_contact=expected, peak_force_N=float(np.linalg.norm(force[:3])),
+                    target_contact=expected, candidate=candidate,
+                    peak_force_N=float(np.linalg.norm(force[:3])),
                     minimum_distance_m=float(c.dist))
             elif key in self.contacts:
                 event=self.contacts[key]
@@ -273,8 +290,7 @@ class Recording:
             if float(result.get('error_mm') or 0) > self.env.config.tolerances.placement*1000:
                 categories.append('placement_error')
             if not result.get('waypoints_precise',True):categories.append('tracking_error')
-        unexpected=[c for c in self.contacts.values()
-                    if c.get('kind') == 'piece' and not c['target_contact']]
+        unexpected=[c for c in self.contacts.values() if c.get('candidate')]
         if unexpected:categories.append('unexpected_contact_candidate')
         stalls=[step.get('stall') for step in self.trace if step.get('stall')]
         if result and result.get('picked') is None and not success:

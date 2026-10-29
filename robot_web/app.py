@@ -76,6 +76,7 @@ class Control(BaseModel):
     reset: bool = False
     enable: bool = True
     suite: Literal["start", "stop"] = "start"
+    suite_seed: int | None = Field(default=None, ge=0, le=2**32 - 1)
     id: str | None = None
     frame: int | None = None
     play: bool = False
@@ -113,15 +114,6 @@ def incidents():
         return {"recording": lab.record_enabled, "rows": rows, "labels": list(LABELS)}
 
 
-@app.get("/api/incidents/{ident}")
-def incident(ident: str):
-    try:
-        with lab.lock:
-            return lab.recorder.read(ident)
-    except ValueError as exc:
-        raise HTTPException(404, str(exc)) from exc
-
-
 @app.get("/api/incidents/{ident}/trace")
 def incident_trace(ident: str):
     try:
@@ -140,6 +132,15 @@ def incident_zip(ident: str):
         raise HTTPException(404, str(exc)) from exc
     return Response(data, media_type="application/zip",
                     headers={"Content-Disposition": f'attachment; filename="incident-{ident}.zip"'})
+
+
+@app.get("/api/incidents/{ident}")
+def incident(ident: str):
+    try:
+        with lab.lock:
+            return lab.recorder.read(ident)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
 
 
 class Review(BaseModel):

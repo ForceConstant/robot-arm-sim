@@ -154,6 +154,7 @@ class PieceGeometry:
     profile: tuple        # ((z_bottom, z_top, radius), ...) in scaled mesh frame
     grasp_height: float | None = None   # measured neck above the base, if the set carries one
     grasp_width: float | None = None    # widest directional width at that neck (asymmetric pieces)
+    grasp_squeeze: float | None = None # per-piece closure allowance from the pack
 
     @property
     def waist(self) -> float:
@@ -274,6 +275,7 @@ def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
         profile=profile,
         grasp_height=_pack_grasp(piece.piece_type, piece_set, "grasp_h_m", scale),
         grasp_width=_pack_grasp(piece.piece_type, piece_set, "grasp_width_m", scale),
+        grasp_squeeze=_pack_grasp(piece.piece_type, piece_set, "grasp_squeeze_m", scale),
     )
 
 

@@ -15,15 +15,29 @@ from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask
 from chess_sim.dual import DualArmEnv
 from robot_web.incidents import (LABELS, Recording, Store, bookkeeping,
                                  DIAGNOSTIC_DEFAULTS, model_signature, physics_state,
-                                 reset_diagnostics, restore, runtime_signature)
+                                 reset_diagnostics, restore, runtime_signature,
+                                 contact_classification)
+from robot_web.app import app
 from robot_web.torture import CASES, SUITE_VERSION
+
+
+def test_contact_risk_candidates_are_phase_qualified():
+    assert contact_classification(True, False, "approach") == (False, False)
+    assert contact_classification(True, False, "carry") == (False, True)
+    assert contact_classification(True, True, "carry") == (True, False)
+    assert contact_classification(False, False, "carry") == (False, False)
+
+
+def test_incident_download_route_precedes_generic_id_route():
+    paths = [route.path for route in app.routes]
+    assert paths.index("/api/incidents/{ident}.zip") < paths.index("/api/incidents/{ident}")
 
 
 def test_suite_cases_are_distinct_and_parseable():
     ids = [c.id for c in CASES]
     assert len(ids) == len(set(ids))
-    assert SUITE_VERSION == "crowded-v2"
-    assert len(CASES) == 24
+    assert SUITE_VERSION == "crowded-v3"
+    assert len(CASES) == 25
     for case in CASES:
         board = chess.Board(case.fen)
         assert board.is_valid()
@@ -42,6 +56,7 @@ def test_suite_cases_are_distinct_and_parseable():
     # The two observed failures stay in the suite as regression cases.
     assert {"white-bishop", "black-bishop"} <= set(ids)
     assert {"white-rook-corner", "black-rook-corner"} <= set(ids)
+    assert {"black-knight-corner"} <= set(ids)
     assert {"white-pawn-far", "black-pawn-far", "white-knight-far", "black-knight-far",
             "white-bishop-far", "black-bishop-far", "white-queen-far", "black-queen-far",
             "white-king-far", "black-king-far"} <= set(ids)
@@ -87,8 +102,11 @@ def test_recording_round_trip(env, tmp_path):
     manifest = json.loads((store.root / meta["id"] / "manifest.json").read_text())
     assert manifest["model_signature"] == model_hash
     assert manifest["runtime_signature"] == code_hash
+    assert manifest["source_revision"] == code_hash
     assert manifest["initial"]["position"] == book["position"]
     trace = json.loads((store.root / meta["id"] / "trace.json").read_text())
+    contacts = json.loads((store.root / meta["id"] / "contacts.json").read_text())
+    assert any(c["kind"] == "piece" and c["target_contact"] for c in contacts)
     assert len(trace) == manifest["frames"]
     assert {"phase", "actual_tcp", "actual_gap_m"} <= set(trace[0])
     # Phases must be real labels, not the placeholder from before execution.

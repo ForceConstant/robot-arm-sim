@@ -88,7 +88,7 @@ is specific to Brian's HTPC LAN/GPU and embeds the [Dockerfile](Dockerfile).
 `python scripts/deploy.py` registers/uploads/builds only the `robot_arm` stack
 through Dockhand. It requires explicit infrastructure authorization; it is not
 an installation step for other users. Every deploy then waits for the job, waits
-for the new build to report ready, and runs the 24-case `crowded-v2` suite
+for the new build to report ready, and runs the 25-case `crowded-v3` suite
 against it, including mirrored transfers to the far half and opposite corners,
 writing `.private/post-deploy-<version>.json`. Case failures are
 reported as data, not treated as a failed deploy. `--no-verify` skips the run
@@ -356,7 +356,7 @@ sim-to-real gap is unmeasured.
   debugging; `ChessSimEnv` renders the robot cameras by default and
   `EpisodeRecorder` refuses an env without them.
 - **The board moves.** It is a mocap body, so `reset(rng=...)` can shift it up to
-  10 mm on each axis between episodes and the collision geometry moves with it —
+  5 mm on each axis between episodes and the collision geometry moves with it —
   as a static world geom its contact bounds stay where the model was compiled,
   and pieces fall through the strip it was moved onto.
 - **Contact with the table and the board** carries near-unit impedance

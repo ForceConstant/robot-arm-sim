@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 import chess
 
-SUITE_VERSION = 'crowded-v2'
+SUITE_VERSION = 'crowded-v3'
 
 @dataclass(frozen=True)
 class Case:
@@ -54,6 +54,8 @@ CASES = [
          'Knight transfer across the board to the far quadrant'),
     Case('black-knight-far', 'black', position(turn=chess.BLACK), 'g8b3',
          'Mirrored knight transfer across the board'),
+    Case('black-knight-corner', 'black', position(['e2e4', 'e7e5'], turn=chess.BLACK), 'b8c6',
+         'Retained corner-knight missed-grasp regression; uses measured knight squeeze'),
     Case('white-bishop-far', 'white', position(), 'f1a6',
          'Bishop transfer to the far-side edge'),
     Case('black-bishop-far', 'black', position(turn=chess.BLACK), 'f8h3',

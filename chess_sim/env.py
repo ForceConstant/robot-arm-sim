@@ -29,7 +29,7 @@ from .scene import (ARM_PREFIX, FILL_LIGHT_DIFFUSE, key_diffuse, lookat_xyaxes, 
                     export_xml, piece_slots)
 from .tasks import AnyTask, CaptureTask, MoveTask, Task, TaskFamily
 
-# candidate jaw-span directions: the moving jaw opens along one board axis
+# Candidate jaw-span directions: the moving jaw opens along one board axis.
 SPAN_DIRECTIONS = (np.array([0.0, 1.0]), np.array([0.0, -1.0]),
                    np.array([1.0, 0.0]), np.array([-1.0, 0.0]))
 GRASP_HEIGHT = 0.016      # tool height above the board used to map out reachable squares
@@ -181,6 +181,11 @@ class ChessSimEnv:
 
     # -- lifecycle -----------------------------------------------------------
 
+    @staticmethod
+    def home_pose() -> np.ndarray:
+        """Nominal parked joint pose; dual-arm scenes override this to park clear."""
+        return arm_rest_pose().to_array()
+
     def reset(self, position: str | chess.Board = START_FEN, rng=None) -> Observation:
         """Lay out a position (FEN board field, full FEN or board) and park the arm.
 
@@ -223,7 +228,7 @@ class ChessSimEnv:
             x, y = self.board.graveyard_slot(i)
             self._place(slot, x, y, self.board.table_top)
 
-        start = arm_rest_pose().to_array()
+        start = self.home_pose().copy()
         if rng is not None:
             jitter = self.config.randomization.arm_joint_jitter
             ranges = self.model.actuator_ctrlrange[self._actuators]

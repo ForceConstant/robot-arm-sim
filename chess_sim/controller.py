@@ -29,6 +29,9 @@ SERVO_ROUNDS_PRECISE = 11
 SERVO_ROUNDS_TRANSIT = 2
 SERVO_ROUND_STEPS = 8
 SETTLE_STEPS = 12            # control steps holding the closed jaws before lifting
+# Extra physical closure for an emergency source-return with the imported
+# parallel CAD tool; ordinary grasps retain the calibrated grasp-plan squeeze.
+RECOVERY_EXTRA_SQUEEZE = 0.0015
 
 
 @dataclass(frozen=True)
@@ -71,7 +74,8 @@ def grasp_plan(geometry, board) -> GraspPlan:
             # the circular estimate drives the jaws into it.
             contact = (0.5 * g.grasp_width) if g.grasp_width else g.radius_between(height - .0015, height + .0015)
             straddle = g.radius_between(height - gripper.TIP_X, height + proximal)
-            hold = 2 * contact - gripper.SQUEEZE
+            squeeze = gripper.SQUEEZE if g.grasp_squeeze is None else g.grasp_squeeze
+            hold = 2 * contact - squeeze
             opening = 2 * straddle + .006
             if low <= hold and opening <= high and contact > .0005:
                 return GraspPlan(z_grasp=board.top + height, gap_open=min(opening + .010, high),
@@ -294,15 +298,19 @@ class PickPlaceController:
         env, board = self.env, self.env.board
         env.diagnostic_stall = 'place_descend'
         self._span = span_grasp
+        recovery_gap = gap_hold
+        if gripper.CUSTOM:
+            aperture_min = gripper.PROFILE['aperture_range_m'][0]
+            recovery_gap = max(aperture_min, gap_hold - RECOVERY_EXTRA_SQUEEZE)
         carry_z = board.top + TRANSIT
         here = env.ik.tool_pose(env.data, off_hold)[0]
         safe = np.array([here[0], here[1], carry_z])
-        self._phase('abort_return', safe, gap_hold, off_hold)
-        self._line(here, safe, gap_hold, off_hold, on_step, segments=3)
+        self._phase('abort_return', safe, recovery_gap, off_hold)
+        self._line(here, safe, recovery_gap, off_hold, on_step, segments=3)
         above_src = np.array([px, py, carry_z])
-        self._line(safe, above_src, gap_hold, off_hold, on_step, segments=3)
+        self._line(safe, above_src, recovery_gap, off_hold, on_step, segments=3)
         approach = self._approach_axis(grasp_pt, off_hold)
-        ok = self._descend(grasp_pt, gap_hold, off_hold, approach, on_step)
+        ok = self._descend(grasp_pt, recovery_gap, off_hold, approach, on_step)
         self._span = span_place
         self._phase('abort_release', grasp_pt, gap_open, off_open)
         self._go(grasp_pt, gap_open, off_hold, 8, on_step)

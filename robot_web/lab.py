@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import random
 import shutil
 import threading
 import time
@@ -95,6 +96,8 @@ class Lab:
         self.recording = None
         self.record_enabled = True
         self.current_case = None
+        self.current_case_seed = None
+        self.current_case_layout = None
         self.suite = None
         self.replay = None
         self.replay_request = None
@@ -140,6 +143,7 @@ class Lab:
                     "suite": None if self.suite is None else
                         {"version": self.suite["version"], "index": self.suite["index"],
                          "total": len(CASES), "phase": self.suite["phase"],
+                         "seed": self.suite.get("seed"),
                          "results": list(self.suite["results"])},
                     "observation_cameras": ["white_wrist", "black_wrist"] +
                         (["top"] if self.observations == "all" else []),
@@ -209,7 +213,7 @@ class Lab:
                 choice = options.get("suite", "start")
                 if choice == "start":
                     self.suite = {"version": SUITE_VERSION, "index": 0, "phase": "running",
-                                  "results": []}
+                                  "seed": options.get("suite_seed"), "results": []}
                     self.running, self.stop_requested, self.step_requested = True, False, False
                     self.log(f"Torture suite {SUITE_VERSION}: {len(CASES)} independent cases")
                 elif choice == "stop":
@@ -546,7 +550,12 @@ class Lab:
                             {"action": payload["kind"], "task": payload,
                              "arm": env.active_side, "case_id": self.current_case,
                              "move": self.state.get("current_move"), "speed": self.speed,
-                             "gripper": gripper.description(), **(extra or {})},
+                             "gripper": gripper.description(),
+                             **({"suite_seed": self.suite.get("seed"),
+                                 "case_seed": self.current_case_seed,
+                                 "layout": self.current_case_layout}
+                                if self.current_case is not None and self.suite else {}),
+                             **(extra or {})},
                             self._frames())
         except Exception as exc:      # recording must never block a physical action
             self.log("Recording could not start: " + str(exc), "error")
@@ -675,6 +684,9 @@ class Lab:
             if self.shutdown.is_set() or self.stop_requested or not self.running or \
                     suite["phase"] != "running":
                 suite["phase"] = "stopped"
+                self.current_case = None
+                self.current_case_seed = None
+                self.current_case_layout = None
                 self.running = False
                 return
             case = CASES[suite["index"]]
@@ -689,9 +701,18 @@ class Lab:
             move = chess.Move.from_uci(case.move)
             # Fixed draw per case: the suite is a regression check, so the same
             # case must see the same servo noise on every build.
-            seed = zlib.crc32(case.id.encode()) & 0xffffffff
-            self.env._noise_rng = np.random.default_rng(seed)
-            self.env.reset(self.game.fen())
+            case_seed = zlib.crc32(case.id.encode()) & 0xffffffff
+            if suite.get("seed") is not None:
+                case_seed = (case_seed ^ int(suite["seed"])) & 0xffffffff
+                layout_rng = random.Random(case_seed)
+            else:
+                layout_rng = None
+            self.env._noise_rng = np.random.default_rng(case_seed)
+            self.env.reset(self.game.fen(), rng=layout_rng)
+            layout = {"board_origin_m": list(self.env.layout.board_origin),
+                      "arm_start_rad": self.env.layout.arm_start.to_array().tolist()}
+            self.current_case_seed = case_seed
+            self.current_case_layout = layout
             self.env.select_arm(case.arm)
             self.env.position = self.game.copy()
             # Every case must start from a fully placed board. A missing source
@@ -707,7 +728,9 @@ class Lab:
             if self.env._square_slot.get(move.from_square) is None:
                 self.log(f"{case.id}: source square still missing ({slots} slots); skipping", "error")
                 suite["results"].append({"case": case.id, "description": case.description,
-                    "move": case.move, "arm": case.arm, "success": False, "error_mm": None,
+                    "move": case.move, "arm": case.arm, "seed": case_seed,
+                    "suite_seed": suite.get("seed"), "layout": layout,
+                    "success": False, "error_mm": None,
                     "slots": slots, "categories": ["setup_error"],
                     "message": "source square missing after reset", "recording": None})
                 suite["index"] += 1
@@ -717,7 +740,9 @@ class Lab:
             self.state["last_result"] = None      # this case owns its verdict, not the last one
             self._render(force=True)
             record = {"case": case.id, "description": case.description, "move": case.move,
-                      "arm": case.arm, "success": False, "error_mm": None, "slots": slots,
+                      "arm": case.arm, "seed": case_seed, "suite_seed": suite.get("seed"),
+                      "layout": layout,
+                      "success": False, "error_mm": None, "slots": slots,
                       "categories": [], "message": "", "recording": None}
             try:
                 self._execute_on(self.env, move, self._checkpoint, report=True)
@@ -749,6 +774,8 @@ class Lab:
             suite["index"] += 1
         suite["phase"] = "complete"
         self.current_case = None
+        self.current_case_seed = None
+        self.current_case_layout = None
         self.running = False
         passed = sum(1 for r in suite["results"] if r["success"])
         with self.lock:

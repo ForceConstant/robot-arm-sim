@@ -30,10 +30,13 @@ def request(base, path, method="GET", payload=None, raw=None):
 
 
 def compose():
-    dockerfile = (ROOT / "Dockerfile").read_text()
-    return """services:
+    version = (ROOT / "robot_web" / "__init__.py").read_text().split('"')[1]
+    dockerfile = (ROOT / "Dockerfile").read_text().replace(
+        'org.opencontainers.image.version="1.10.3"',
+        f'org.opencontainers.image.version="{version}"')
+    return f"""services:
   simulation:
-    image: robot-arm-sim:1.10.3
+    image: robot-arm-sim:{version}
     build:
       context: .
       dockerfile_inline: |
@@ -82,16 +85,16 @@ def wait_job(job_id, timeout=15 * 60):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-verify", action="store_true",
-                        help="skip the post-deploy crowded-v2 run (debugging only)")
+                        help="skip the post-deploy crowded-v3 run (debugging only)")
     args = parser.parse_args()
     private = ROOT / ".private"
     private.mkdir(exist_ok=True)
     # A private CAD payload is uploaded only to the authorized LAN build
     # context. Never add it to Git, public release archives or a registry image.
-    private_assets = Path(os.environ.get('ROBOT_GRIPPER_ASSETS', private / 'gripper-assets'))
+    private_assets = Path(os.environ.get('ROBOT_GRIPPER_ASSETS', private / 'gripper-assets-v3'))
     if not (private_assets / 'profile.json').is_file():
         raise RuntimeError('Supply the private gripper asset pack before deploying this custom-tool stack')
-    piece_assets = Path(os.environ.get("ROBOT_PIECE_ASSETS", private / "piece-assets"))
+    piece_assets = Path(os.environ.get("ROBOT_PIECE_ASSETS", private / "piece-assets-v5"))
     if not (piece_assets / "set.json").is_file():
         raise RuntimeError("Supply the local printed-piece pack before deploying")
     content = compose()
