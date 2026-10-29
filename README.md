@@ -73,13 +73,16 @@ physically validated. Full pick/place optimization is explicitly deferred.
 
 ### Run
 
-Install Python 3.12 and the pinned `requirements.lock` into an isolated virtual
-environment. Install Stockfish separately (`STOCKFISH_PATH=/usr/games/stockfish`
-in the Docker image). Without it, only the opening/capture replay is available.
+The simulator and development environment target Python 3.11, which is already
+provided by the OpenClaw container. From the repository root, create/sync the
+project venv and launch with it; this does not install another Python runtime.
+Install Stockfish separately (`STOCKFISH_PATH=/usr/games/stockfish` in the
+Docker image). Without it, only the opening/capture replay is available.
 
 ```sh
+scripts/ensure_venv.sh
 MUJOCO_GL=egl ROBOT_DATA_DIR=/tmp/robot-arm-data \
-  python -m uvicorn robot_web.app:app --host 0.0.0.0 --port 8098
+  .venv/bin/python -m uvicorn robot_web.app:app --host 0.0.0.0 --port 8098
 ```
 
 Docker builds the dependencies and Stockfish into the image; startup does not
@@ -340,8 +343,10 @@ python examples/push_dataset.py --root datasets/lerobot/chess_mc --collection so
 ```
 
 `training/` wraps steps 1–3 as unattended shell scripts with every setting in
-`training/settings.env`. Steps 2–5 need the VLA environment (Python 3.12 with
-`lerobot`); point `PYTHONPATH` at this repo so they can import `chess_sim`.
+`training/settings.env`. The isolated CUDA/LeRobot training image remains on its
+own pinned Python 3.12 stack; steps 2–5 need that VLA environment. It is separate
+from local simulator development and does not require a host Python 3.12 install.
+Point `PYTHONPATH` at this repo so training scripts can import `chess_sim`.
 
 ## Hardware
 

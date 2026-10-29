@@ -28,6 +28,7 @@ from .reach import MAX_IK_ERROR, MAX_TILT, ReachMap
 from .scene import (ARM_PREFIX, FILL_LIGHT_DIFFUSE, key_diffuse, lookat_xyaxes, mast_lens, overhead_camera, PieceSlot, arm_rest_pose, build_arm, build_scene,
                     export_xml, piece_slots)
 from .tasks import AnyTask, CaptureTask, MoveTask, Task, TaskFamily
+from .vision_geometry import Localization
 
 # Candidate jaw-span directions: the moving jaw opens along one board axis.
 SPAN_DIRECTIONS = (np.array([0.0, 1.0]), np.array([0.0, -1.0]),
@@ -364,7 +365,8 @@ class ChessSimEnv:
     # -- scripted expert -----------------------------------------------------
 
     def execute(self, task: Task, on_step: OnStep | None = None,
-                override=None) -> TaskResult:
+                override=None, observed_source_xy: tuple[float, float] | None = None,
+                reobserve_source: Callable[[], Localization | None] | None = None) -> TaskResult:
         """Carry out a task with the scripted expert and score it.
 
         This plans against the simulator state, so it is a demonstrator, not an
@@ -386,13 +388,32 @@ class ChessSimEnv:
             target, target_z = tray, self.board.table_top
 
         precise = self.controller.pick_place(slot, target, on_step, target_z=target_z,
-                                            override=override)
+                                            override=override, source_xy=observed_source_xy,
+                                            reobserve_source=reobserve_source)
         for _ in range(int(self.config.control.release_seconds * self.control_hz)):
             self.apply_action(self._current_action(), on_step)
         result = self.evaluate(task, before, steps=self._step_count - started,
                                waypoints_precise=bool(precise))
         self._commit(task, result)
         return result
+
+    def execute_localized(self, task: Task, localization: Localization,
+                          on_step: OnStep | None = None,
+                          max_sigma_m: float = 0.004,
+                          min_confidence: float = 0.7,
+                          reobserve_source: Callable[[], Localization | None] | None = None) -> TaskResult:
+        """Execute from a camera-derived source point, abstaining on uncertainty.
+
+        The detector's pixel and calibration are upstream; simulator truth is
+        not consulted to choose the grasp coordinate. The evaluator still uses
+        physical simulated state after the attempt, as in all task scoring.
+        """
+        if not localization.acceptable(max_sigma_m=max_sigma_m,
+                                       min_confidence=min_confidence):
+            raise ValueError("localized target uncertainty/confidence exceeds grasp gate")
+        return self.execute(task, on_step=on_step,
+                            observed_source_xy=localization.world_xy,
+                            reobserve_source=reobserve_source)
 
     def move(self, from_square, to_square, on_step: OnStep | None = None) -> TaskResult:
         return self.execute(MoveTask(from_square=square_at(from_square),
@@ -556,6 +577,23 @@ class ChessSimEnv:
             cam.elevation = float(orbit['elevation'])
             self._renderer.update_scene(self.data, camera=cam)
         return self._renderer.render()
+
+    def render_segmentation(self, camera: Camera | str = Camera.TOP) -> np.ndarray:
+        """Render MuJoCo object IDs for geometric occlusion masking.
+
+        The returned two-channel integer image is renderer metadata, not a
+        controller observation of object poses. Callers may mask known robot
+        geometry while retaining ordinary RGB frames for localization.
+        """
+        if self._renderer is None:
+            width, height = self.config.control.image_size
+            self._renderer = mujoco.Renderer(self.model, height=height, width=width)
+        self._renderer.enable_segmentation_rendering()
+        try:
+            self._renderer.update_scene(self.data, camera=str(camera))
+            return self._renderer.render()
+        finally:
+            self._renderer.disable_segmentation_rendering()
 
     def orbit_default(self) -> dict:
         """Starting free-camera view, framed on the board from the external pose."""

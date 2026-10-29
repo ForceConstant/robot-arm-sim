@@ -165,20 +165,51 @@ the report is reporting-only and is never available to a policy under test.
 
 ## Priority 4 — camera-targeted pickup of off-center pieces
 
-- Add controlled tests where an upright piece is deliberately displaced from
-  the square center. Sweep offsets and orientations within a declared test
-  envelope, including camera/viewpoint and board-pose variation; retain a
-  centered-piece baseline and evaluate held-out layouts.
-- Implement the non-learned foundations first: camera intrinsics, board-plane
-  registration, camera-to-arm/tool transform, piece-base/contact-point
-  localization, and a bounded approach/grasp plan that uses the observed piece
-  location rather than the nominal square center. Re-observe after motion and
-  report uncertainty instead of attempting a low-confidence grasp.
-- Measure localization error, grasp success, collateral displacement, and
-  false/abstained targets against simulator truth in the evaluator only. Derive
-  the acceptable offset envelope from the measured perception, gripper, and
-  clearance error budget; do not treat a learned policy as a substitute for
-  calibration or collision-safe control. Repeat on physical hardware later.
+- **Status: complete for the qualified fixed-overhead simulation envelope; no
+  learned-policy training is required.** The task may name the source square
+  and piece type. General piece/color recognition and learned occupancy remain
+  Priority 6; independent physical camera/tool calibration and hardware trials
+  remain sim-to-real work.
+- **Implementation:** `chess_sim/vision_geometry.py` maps RGB pixel locations
+  through the model camera intrinsics/extrinsics and shared board/arm world frame
+  to the piece's base plane, propagating both pixel and visible-height parallax
+  uncertainty. `chess_sim/vision.py` detects a task-selected piece against an
+  empty-scene reference and supports an exclusion mask. The environment can
+  render object-ID segmentation; the benchmark masks robot geometry before
+  re-observing so arm pixels cannot masquerade as the piece. The controller
+  accepts observed source XY, returns to the parked observation pose, and
+  abstains on missing/uncertain or >4 mm inconsistent re-observations. Simulator
+  truth is used only to create controlled cases and score outcomes, never as a
+  detector/controller input.
+- **Qualified envelope and evidence (2026-10-29):** two fixed-rig held-out
+  sweeps (seeds 20261029 and 412829; 36 total cases) cover all six chess-piece
+  types, eight source layouts, centered and ±4/±6 mm offsets, varied yaw, and
+  board translation/side variation up to ±5 mm plus yaw up to ±5°. There were 28
+  detections / 8 safe initial abstentions; initial localization error averaged
+  1.24 mm (max 4.95 mm). Re-observation error averaged 1.29 mm (max 5.23 mm).
+  Of the 28 accepted detections, 21 complete moves succeeded; the 7 movement
+  failures were separately recorded at lift (5) or place descent (2). There were
+  zero false targets and zero collateral displacements. The max-error king case
+  still completed successfully. Receipts: `.private/vision-rig-heldout-24.json`
+  and `.private/vision-rig-heldout-seed2.json`.
+- **View-limit evaluation:** a separate 12-case randomized-camera sweep (seed
+  912407) detected 9 cases, completed 6 moves, and recorded zero collateral
+  displacements. Initial error reached 5.30 mm and re-observation could differ
+  by as much as 27.93 mm; the controller safely rejected the inconsistent
+  observation. Randomized oblique views are therefore explicitly outside the
+  supported envelope, not qualified by the fixed-rig result. Receipt:
+  `.private/vision-random-height-uncertainty.json`.
+- **Calibration boundary:** simulated intrinsics/extrinsics are taken from the
+  MuJoCo camera model; the board and arm share its world frame. Plane round-trip
+  is checked across five board locations, and board pose is randomized in the
+  held-out sweeps. This qualifies the simulation transform chain, not an
+  independently measured camera calibration or physical camera-to-tool mount.
+- Local regression passed (`35 passed, 4 skipped`). The release checklist is to
+  publish the versioned source/compose/checksums, rebuild only the authorized
+  `robot_arm` service, and retain receipts for the live version, browser
+  controls/cameras, and crowded-v1 suite. A failed live release check keeps the
+  deployment/release gate open without invalidating the simulator-only scope
+  above.
 
 ## Priority 5 — establish the training platform and data boundary
 

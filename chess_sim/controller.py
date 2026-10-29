@@ -133,7 +133,9 @@ class PickPlaceController:
     def pick_place(self, slot: PieceSlot, target_xy: tuple[float, float],
                    on_step: StepCallback | None = None,
                    source_z: float | None = None, target_z: float | None = None,
-                   override: "PlanOverride | None" = None) -> bool:
+                   override: "PlanOverride | None" = None,
+                   source_xy: tuple[float, float] | None = None,
+                   reobserve_source: Callable[[], object | None] | None = None) -> bool:
         """Move `slot`'s piece so its axis stands on `target_xy`. True if all
         waypoints executed within tolerance (final outcome is verified by env).
 
@@ -144,7 +146,10 @@ class PickPlaceController:
         env, board, g = self.env, self.env.board, slot.geometry
         env.diagnostic_stall = None      # per action, not per session: a stall must
         env.diagnostic_ik = None         # never leak into the next action's record
-        px, py, _ = env.piece_position(slot)
+        # A perception-driven caller supplies its observed localization here;
+        # the normal expert path keeps the historical simulator-state target.
+        px, py = (env.piece_position(slot)[:2] if source_xy is None
+                  else np.asarray(source_xy, dtype=float))
         plan = grasp_plan(g, board)
         override = override or PlanOverride()
         z_grasp, gap_open, gap_hold = plan.z_grasp + override.grasp_dz, plan.gap_open, plan.gap_hold
@@ -176,6 +181,29 @@ class PickPlaceController:
         self._span = span_grasp
         self._phase('transit', grasp_pt, gap_open, off_open)
         self._go(np.array([px, py, max(board.top, source_z) + TRANSIT]), gap_open, off_open, 22, on_step)
+        if reobserve_source is not None:
+            # The arm can still occlude the source from the transit waypoint.
+            # Return along the known approach path to the parked observation pose
+            # before taking a new frame. The callback consumes pixels/calibration,
+            # not simulator piece pose.
+            self._phase('vision_reobserve_park', None, gap_open, off_open)
+            self._move_joints(env.home_pose()[:5], gap_open, on_step)
+            observed = reobserve_source()
+            if observed is None or not observed.acceptable():
+                self.env.diagnostic_stall = 'vision_reobserve_abstain'
+                return False
+            if np.linalg.norm(np.asarray(observed.world_xy) - (px, py)) > 0.004:
+                # A second confident-looking but inconsistent component is
+                # often an occluding arm link, not piece motion. Do not let it
+                # redirect a grasp; retreat and surface the disagreement.
+                self.env.diagnostic_stall = 'vision_reobserve_inconsistent'
+                self._go(np.array([px, py, board.top + TRANSIT]), gap_open,
+                         off_open, 10, on_step)
+                return False
+            px, py = observed.world_xy
+            grasp_pt[:2] = (px, py)
+            self._go(np.array([px, py, max(board.top, source_z) + TRANSIT]),
+                     gap_open, off_open, 8, on_step)
         approach = self._approach_axis(grasp_pt, off_open)
         self._phase('approach', grasp_pt, gap_open, off_open)
         self._go(grasp_pt - approach * APPROACH_LENGTH, gap_open, off_open, 14, on_step)
@@ -351,6 +379,18 @@ class PickPlaceController:
         action[5] = gripper.gap_to_angle(gap)
         for _ in range(steps):
             self.env.apply_action(action, on_step)
+
+    def _move_joints(self, target: np.ndarray, gap: float, on_step,
+                     steps: int = 18) -> None:
+        """Interpolate a short, known-clear return to the parked observation pose."""
+        start = self.env.arm_joint_positions()[:5].copy()
+        grip = gripper.gap_to_angle(gap)
+        for index in range(1, steps + 1):
+            fraction = index / steps
+            self.env.apply_action(np.append(start + (target - start) * fraction, grip), on_step)
+        parked = np.append(target, grip)
+        for _ in range(18):
+            self.env.apply_action(parked, on_step)
 
     def _descend(self, target, gap, offset, approach, on_step) -> bool:
         return self._line(target - approach * APPROACH_LENGTH, target, gap, offset,

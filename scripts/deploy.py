@@ -7,6 +7,7 @@ import argparse
 import io
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -31,9 +32,9 @@ def request(base, path, method="GET", payload=None, raw=None):
 
 def compose():
     version = (ROOT / "robot_web" / "__init__.py").read_text().split('"')[1]
-    dockerfile = (ROOT / "Dockerfile").read_text().replace(
-        'org.opencontainers.image.version="1.10.3"',
-        f'org.opencontainers.image.version="{version}"')
+    dockerfile = re.sub(
+        r'(org\.opencontainers\.image\.version=)"[^"]+"',
+        rf'\1"{version}"', (ROOT / "Dockerfile").read_text())
     return f"""services:
   simulation:
     image: robot-arm-sim:{version}
