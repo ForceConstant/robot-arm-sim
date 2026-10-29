@@ -5,11 +5,10 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLCHAIN="$ROOT/.toolchain"
 UV_VERSION="0.13.6"
 UV_BIN="$TOOLCHAIN/uv"
-PYTHON_INSTALL_DIR="$TOOLCHAIN/python"
-PYTHON_BIN_DIR="$TOOLCHAIN/bin"
+BASE_PYTHON="${PYTHON311:-/usr/bin/python3.11}"
 VENV="$ROOT/.venv"
 
-mkdir -p "$TOOLCHAIN" "$PYTHON_BIN_DIR"
+mkdir -p "$TOOLCHAIN"
 
 if [[ ! -x "$UV_BIN" ]]; then
     archive="$TOOLCHAIN/uv.tar.gz"
@@ -20,26 +19,24 @@ if [[ ! -x "$UV_BIN" ]]; then
     rm -f "$archive"
 fi
 
-export UV_PYTHON_INSTALL_DIR="$PYTHON_INSTALL_DIR"
-export UV_PYTHON_BIN_DIR="$PYTHON_BIN_DIR"
 export UV_LINK_MODE=copy
-export PATH="$PYTHON_BIN_DIR:$PATH"
-"$UV_BIN" python install 3.12
-PYTHON="$($UV_BIN python find 3.12)"
+if [[ ! -x "$BASE_PYTHON" ]] || ! "$BASE_PYTHON" -c 'import sys; assert sys.version_info[:2] == (3, 11)' >/dev/null 2>&1; then
+    echo "Python 3.11 is required; expected executable: $BASE_PYTHON" >&2
+    exit 1
+fi
+EXPECTED_BASE="$($BASE_PYTHON -c 'import sys; print(sys.base_prefix)')"
 
 valid_venv=false
 if [[ -x "$VENV/bin/python" ]]; then
-    if "$VENV/bin/python" -c 'import sys; assert sys.version_info[:2] == (3, 12)' >/dev/null 2>&1; then
+    if "$VENV/bin/python" -c 'import sys; assert sys.version_info[:2] == (3, 11)' >/dev/null 2>&1; then
         venv_base="$($VENV/bin/python -c 'import sys; print(sys.base_prefix)')"
-        case "$venv_base/" in
-            "$PYTHON_INSTALL_DIR"/*) valid_venv=true ;;
-        esac
+        [[ "$venv_base" == "$EXPECTED_BASE" ]] && valid_venv=true
     fi
 fi
 
 if [[ "$valid_venv" != true ]]; then
-    echo "Rebuilding stale or non-project Python 3.12 venv: $VENV"
-    "$UV_BIN" venv --clear --python "$PYTHON" "$VENV"
+    echo "Rebuilding stale or non-system Python 3.11 venv: $VENV"
+    "$UV_BIN" venv --clear --python "$BASE_PYTHON" "$VENV"
 fi
 
 "$UV_BIN" pip sync --python "$VENV/bin/python" \

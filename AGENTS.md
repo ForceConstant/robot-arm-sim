@@ -27,9 +27,9 @@ These simulated arms do not imply buying a second physical follower.
 - Runtime dependencies are pinned in `requirements.lock`; test-only dependencies
   are pinned separately in `requirements-test.lock`.
 - At the start of a session that needs project Python, run
-  `scripts/ensure_venv.sh`. It checks/rebuilds `.venv` against a persistent
-  project-local Python 3.12 toolchain; never point it at an interpreter under
-  `/tmp`. Then run `MUJOCO_GL=egl .venv/bin/python -m pytest -q tests`.
+  `scripts/ensure_venv.sh`. It checks/rebuilds `.venv` against the container's
+  system Python 3.11; never point it at an interpreter under `/tmp`. Then run
+  `MUJOCO_GL=egl .venv/bin/python -m pytest -q tests`.
 - Exercise real browser loading, camera images, start/pause/resume/stop/reset,
   wrist-only observation contract and mobile overflow. Prefer Playwright from
   the shared Dockhand checkout when available.
