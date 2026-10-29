@@ -1,6 +1,6 @@
 [project]
 name = "chess_sim"
-version = "1.10.0"
+version = "1.10.1"
 description = "MuJoCo framework for an SO-101 arm playing chess: sim-ready assets, scripted expert, datasets, policy evaluation"
 requires-python = ">=3.11"
 dependencies = [
