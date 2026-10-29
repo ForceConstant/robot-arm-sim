@@ -18,10 +18,23 @@ try{
   const degrees=(await status()).joints[side][i]*180/Math.PI;
   assert.equal(await jointRows(side).nth(i).locator('span').nth(1).textContent(),degrees.toFixed(2)+'°');
  }
- const beforeJog=(await status()).joints.white[0];
- await page.keyboard.down('a');await page.waitForTimeout(450);await page.keyboard.up('a');
- const afterJog=await until(s=>Math.abs(s.joints.white[0]-beforeJog)>0.005,'Keyboard jog did not change the live joint position');
- await waitForDisplayedJoint('white',0);
+ // Left hand drives the tool in x/y/z; the wrist stays vertical and the elbow
+ // stays above the tool, so any arm joint may move.
+ const beforeJog=(await status()).joints.white;
+ await page.keyboard.down('w');await page.waitForTimeout(500);await page.keyboard.up('w');
+ const afterJog=await until(s=>s.joints.white.some((v,i)=>Math.abs(v-beforeJog[i])>0.005),'Cartesian teleop did not move the arm');
+ const jogIndex=afterJog.joints.white.findIndex((v,i)=>Math.abs(v-beforeJog[i])>0.005);
+ await waitForDisplayedJoint('white',jogIndex);
+ const manual=await status();
+ assert.ok(manual.manual&&manual.manual.elbow_mm>35,'Teleop reported an elbow-down pose');
+ assert.ok(manual.manual.tilt_deg<10,'Teleop reported a non-vertical wrist');
+ // Right hand turns the wrist and opens/closes the jaws without moving the tool.
+ const beforeRoll=(await status()).joints.white[4];
+ await page.keyboard.down('ArrowRight');await page.waitForTimeout(400);await page.keyboard.up('ArrowRight');
+ await until(s=>Math.abs(s.joints.white[4]-beforeRoll)>0.01,'Wrist-roll arrow did not turn the wrist');
+ const beforeGrip=(await status()).joints.white[5];
+ await page.keyboard.down('ArrowUp');await page.waitForTimeout(300);await page.keyboard.up('ArrowUp');
+ await until(s=>Math.abs(s.joints.white[5]-beforeGrip)>0.01,'Gripper arrow did not change the jaw gap');
  await page.waitForFunction(()=>document.querySelector('#main-camera').naturalWidth>0);
  assert.equal(await page.locator('#main-camera').evaluate(e=>e.naturalWidth),800);
  for(const camera of ['overview','top','white_wrist','black_wrist']){const r=await page.request.get(base+'/api/frame/'+camera+'.jpg');assert.equal(r.status(),200);const bytes=await r.body();assert.equal(bytes[0],255);assert.equal(bytes[1],216)}
@@ -53,6 +66,6 @@ try{
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'/tmp/robot-arm-lab-mobile.png',fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.deepEqual(errors,[]);
- const final=await status();await fs.writeFile(process.env.RECEIPT_PATH||'/tmp/robot-arm-browser-check.json',JSON.stringify({base,version:final.version,renderer:final.renderer,phase:final.phase,checks:['12 actual joint angles across both arms','keyboard jog updates live angle readout','automated motion updates live angle readout','4 real JPEG views','start','pause freezes clock','resume advances clock','stop','reset','sensor selection','CSRF','mobile layout'],errors},null,2));
+ const final=await status();await fs.writeFile(process.env.RECEIPT_PATH||'/tmp/robot-arm-browser-check.json',JSON.stringify({base,version:final.version,renderer:final.renderer,phase:final.phase,checks:['12 actual joint angles across both arms','cartesian teleop moves the arm, wrist stays vertical, elbow stays up','wrist-roll and gripper arrow keys update live angles','automated motion updates live angle readout','4 real JPEG views','start','pause freezes clock','resume advances clock','stop','reset','sensor selection','CSRF','mobile layout'],errors},null,2));
  console.log('Browser checks passed:',base,'renderer:',final.renderer);
 }finally{await browser.close()}

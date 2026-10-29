@@ -3,11 +3,27 @@
 <title>Robot Arm · Chess Lab</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1117;--panel:#121c26;--line:#263544;--text:#ecf2f7;--muted:#95a8ba;--teal:#49c6c3;--orange:#f3a061;--red:#fb8181}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}button,select{font:inherit}button,select,a.download{border:1px solid var(--line);border-radius:9px;background:#192735;color:var(--text);padding:10px 14px}button{cursor:pointer}button:hover{border-color:var(--teal)}button:disabled{opacity:.4;cursor:default}.primary{background:var(--teal);border-color:var(--teal);color:#082425;font-weight:750}.danger{color:var(--red)}header{max-width:1500px;margin:auto;padding:28px 28px 20px;display:flex;justify-content:space-between;gap:20px;align-items:center}.eyebrow{text-transform:uppercase;letter-spacing:.17em;color:var(--teal);font-size:11px;font-weight:700}h1{font-size:27px;letter-spacing:-.04em;margin:3px 0}header p{margin:0;color:var(--muted)}.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.badge{padding:5px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;white-space:nowrap}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:7px}main{max-width:1500px;margin:auto;padding:0 28px 28px}.toolbar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:18px}.buttons,.speed{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.speed label{color:var(--muted);font-size:13px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}.card-head{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--line);gap:10px}.card-head h2{font-size:14px;margin:0}.card-head select{padding:5px 8px;font-size:12px}.live{font-size:11px;letter-spacing:.08em;color:var(--teal)}.main-view{position:relative;background:#060b10;aspect-ratio:4/3}.main-view img{width:100%;height:100%;object-fit:contain;display:block}.overlay{position:absolute;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}.pill{background:#07121ddd;border:1px solid #ffffff20;border-radius:7px;padding:5px 10px;font:12px ui-monospace,monospace}.wrist-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.wrist-grid img{width:100%;aspect-ratio:4/3;object-fit:contain;display:block;background:#060b10}.white-arm{color:var(--teal)}.black-arm{color:var(--orange)}aside{display:flex;flex-direction:column;gap:14px;min-width:0}.body{padding:16px}.status-title{font-size:22px;font-weight:700;text-transform:capitalize;margin-bottom:4px}#message{color:var(--muted);font-size:13px;overflow-wrap:anywhere;min-height:38px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}.stat{border-top:1px solid var(--line);padding-top:10px}.stat strong{display:block;font-size:19px}.stat small{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.field{margin-bottom:14px}.field:last-child{margin:0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field select{width:100%;font-size:13px}.note{color:var(--muted);font-size:12px;margin:10px 0 0}.tech{font:11px/1.6 ui-monospace,monospace;color:var(--muted);overflow-wrap:anywhere}.board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;max-width:290px;margin:auto}.square{display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;color:#111;text-shadow:0 1px 1px #fff7}.light{background:#e4d9bf}.dark{background:#8c9b8b}.square.move{box-shadow:inset 0 0 0 3px #49c6c3}.history{max-height:175px;overflow:auto;display:grid;grid-template-columns:28px 1fr 1fr;gap:5px 8px;font:12px ui-monospace,monospace}.history .empty{grid-column:1/-1;color:var(--muted)}.log{max-height:210px;overflow:auto;font:11px/1.7 ui-monospace,monospace}.log div{padding:5px 0;border-bottom:1px solid #ffffff08;overflow-wrap:anywhere}.log time{color:var(--muted)}.log .error{color:var(--red)}.bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.download{font-size:11px;padding:4px 8px!important;text-decoration:none}#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#3f252b;border:1px solid var(--red);padding:12px 18px;border-radius:10px;max-width:90vw;z-index:10}footer{color:var(--muted);font-size:11px;padding-top:20px}.incidents{margin-top:14px}.inc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}table.inc{width:100%;border-collapse:collapse;font:12px ui-monospace,monospace}.tag{display:inline-block;padding:1px 6px;border:1px solid var(--line);border-radius:9px;font-size:10px;margin:1px 2px 1px 0}.tag.bad{border-color:var(--red);color:var(--red)}.tag.good{border-color:var(--teal);color:var(--teal)}.mini{font-size:11px;padding:4px 8px!important}.view-hint{font-size:11px;color:var(--muted);margin-top:8px}input[type=range]{width:100%;accent-color:var(--teal)}@media(max-width:950px){.inc-grid{grid-template-columns:1fr}}.hidden{display:none!important}.fault{color:var(--red)}@media(min-width:1200px){.main-view{aspect-ratio:16/10}.main-view img{object-fit:contain}}@media(max-width:950px){.layout{grid-template-columns:1fr}aside{display:grid;grid-template-columns:1fr 1fr}.board-card{grid-row:span 2}header{align-items:flex-start}.badges{max-width:210px}}@media(max-width:580px){header{padding:20px 16px;display:block}.badges{justify-content:flex-start;max-width:none;margin-top:12px}main{padding:0 12px 20px}.toolbar{padding:12px}.buttons button{padding:9px 10px;font-size:13px}aside{display:flex}.wrist-grid,.bottom{gap:10px}.card-head{padding:10px}.card-head h2{font-size:12px}h1{font-size:25px}.overlay{left:8px;right:8px;bottom:8px}.pill{font-size:10px}.square{font-size:30px}}
+.teleop-card{margin-top:14px}.teleop-body{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:18px}.teleop-hand .eyebrow{margin-bottom:6px}.teleop-keys{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font:11px/1.5 ui-monospace,monospace;color:var(--muted)}.teleop-keys span{color:var(--text);white-space:nowrap}.teleop-read{font:11px/1.6 ui-monospace,monospace;border-left:1px solid var(--line);padding-left:14px;display:flex;flex-direction:column;gap:4px}#kbd-last{color:var(--muted);overflow-wrap:anywhere}#kbd-blocked{color:var(--teal)}#kbd-limits{color:#d8b45f;min-height:1.4em}@media(max-width:950px){.teleop-body{grid-template-columns:1fr}.teleop-read{border-left:0;border-top:1px solid var(--line);padding:10px 0 0}}
 .joint-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.joint-arm{min-width:0}.joint-arm h3{font-size:12px;margin:0 0 6px}.joint-row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid #ffffff0c;font:11px/1.5 ui-monospace,monospace}.joint-row span:first-child{color:var(--muted);overflow-wrap:anywhere}.joint-row span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
 </style></head><body>
 <header><div><div class="eyebrow">Robot Arm / Simulation</div><h1>Chess Lab</h1><p>Two SO101 arms. One shared board.</p></div><div class="badges"><span class="badge"><i class="dot"></i><span id="connection">Connecting</span></span><span class="badge">SIMULATION ONLY</span><span class="badge" id="version">v1.0.0</span></div></header>
 <main><section class="toolbar" aria-label="Simulation controls"><div class="buttons"><button id="start" class="primary">▶ Start</button><button id="pause">Ⅱ Pause</button><button id="step">↦ One turn</button><button id="stop" class="danger">■ Stop</button><button id="reset">↺ Reset</button></div><div class="speed"><label for="speed">Target speed</label><select id="speed"><option value="0.5">0.5×</option><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option><option value="8">8×</option></select></div></section>
 <div class="layout"><div><section class="card"><div class="card-head"><h2>Live scene <span class="live">/ PHYSICS</span></h2><select id="camera" aria-label="Main camera"><option value="overview">Both arms · overview</option><option value="iso_ne">Isometric · front right</option><option value="iso_nw">Isometric · front left</option><option value="iso_se">Isometric · back right</option><option value="iso_sw">Isometric · back left</option><option value="right">Side · right (+X)</option><option value="left">Side · left (−X)</option><option value="white_side">Side · white (−Y)</option><option value="black_side">Side · black (+Y)</option><option value="top">Overhead · debug view</option><option value="white_wrist">White wrist</option><option value="black_wrist">Black wrist</option></select></div><div class="main-view"><img id="main-camera" alt="Live two-arm MuJoCo chess scene"><div class="overlay"><span id="camera-label" class="pill">OVERVIEW</span><span id="sim-time" class="pill">t 0.00 s</span></div></div></section>
+<section class="card teleop-card">
+  <div class="card-head"><h2>Teleop <span class="live">/ KEYBOARD</span></h2><span class="live">ARM: <span id="kbd-arm">white</span></span></div>
+  <div class="body teleop-body">
+    <div class="teleop-hand"><div class="eyebrow">Left hand · move the tool</div>
+      <div class="teleop-keys"><span>W / S</span>forward / back<span>A / D</span>left / right<span>Q / E</span>lower / raise</div></div>
+    <div class="teleop-hand"><div class="eyebrow">Right hand · tool</div>
+      <div class="teleop-keys"><span>← / →</span>rotate wrist<span>↑ / ↓</span>open / close jaws</div></div>
+    <div class="teleop-read">
+      <div id="kbd-last">idle</div>
+      <div id="kbd-blocked">ready</div>
+      <div id="kbd-limits"></div>
+    </div>
+  </div>
+  <p class="note" style="padding:0 16px 14px">M switches arm. Every step solves IK that keeps the wrist vertical and the elbow above the tool; an elbow-down or unreachable step is refused, not snapped to.</p>
+</section>
 <div class="wrist-grid"><section class="card"><div class="card-head"><h2 class="white-arm">WHITE / WRIST</h2><span class="live">RGB</span></div><img id="white-camera" alt="White arm wrist-camera view"></section><section class="card"><div class="card-head"><h2 class="black-arm">BLACK / WRIST</h2><span class="live">RGB</span></div><img id="black-camera" alt="Black arm wrist-camera view"></section></div>
 <div class="bottom"><section class="card"><div class="card-head"><h2>Move history</h2><a class="download" href="/api/game.pgn">PGN ↓</a></div><div id="history" class="body history"></div></section><section class="card"><div class="card-head"><h2>Run log</h2></div><div id="events" class="body log"></div></section></div></div>
 <aside><section class="card"><div class="body"><div class="eyebrow">Simulation state</div><div id="phase" class="status-title">Initializing</div><div id="message">Loading the two-arm scene and camera renderer…</div><div class="stats"><div class="stat"><strong id="ply">0</strong><small>Verified plies</small></div><div class="stat"><strong id="turn">—</strong><small>To move</small></div><div class="stat"><strong id="error">—</strong><small>Error / mm</small></div></div></div></section>
@@ -61,57 +77,48 @@ $('suite-start').onclick=()=>control('suite',{suite:'start'});
 $('suite-stop').onclick=()=>control('suite',{suite:'stop'});
 async function poll(){try{const r=await fetch('/api/status');if(!r.ok)throw Error('Disconnected');update(await r.json())}catch(e){online=false;$('connection').textContent='Disconnected';for(const id of ['start','pause','stop','reset','step'])$(id).disabled=true}incTick=(incTick+1)%8;if(incTick===0&&suiteless())loadIncidents();setTimeout(poll,700)}poll();
 </script>
-<div id="manual-hud" style="position:fixed;right:14px;bottom:14px;z-index:60;font:12px/1.55 ui-monospace,monospace;background:rgba(8,10,12,.84);color:#dfe3e8;padding:10px 12px;border-radius:8px;border:1px solid #2a3038;min-width:250px">
-  <div style="display:flex;justify-content:space-between;gap:10px"><b>MANUAL</b><span id="kbd-arm">white</span></div>
-  <div id="kbd-last" style="margin-top:4px;color:#9aa7b4">idle</div>
-  <div id="kbd-blocked" style="margin-top:6px;color:#8fbf9f">ready</div>
-  <div id="kbd-limits" style="color:#d8b45f;min-height:1.4em"></div>
-  <div style="margin-top:8px;color:#8b949e;line-height:1.7">
-    <div>A / Q &nbsp;shoulder pan</div>
-    <div>S / W &nbsp;shoulder lift</div>
-    <div>D / E &nbsp;elbow flex</div>
-    <div>F / R &nbsp;wrist flex</div>
-    <div>G / T &nbsp;wrist roll</div>
-    <div>Z / X &nbsp;gripper</div>
-    <div>M &nbsp;switch arm</div>
-  </div>
-</div>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id)};
-  var PAIRS=[
-    {dn:'KeyA',up:'KeyQ',joint:0,label:'shoulder_pan'},
-    {dn:'KeyS',up:'KeyW',joint:1,label:'shoulder_lift'},
-    {dn:'KeyD',up:'KeyE',joint:2,label:'elbow_flex'},
-    {dn:'KeyF',up:'KeyR',joint:3,label:'wrist_flex'},
-    {dn:'KeyG',up:'KeyT',joint:4,label:'wrist_roll'},
-    {dn:'KeyZ',up:'KeyX',joint:5,label:'gripper'}
-  ];
-  var DQ=0.035, held={}, arm='white', busy=false;
-  function heldPair(){
-    for(var i=0;i<PAIRS.length;i++){
-      var pr=PAIRS[i];
-      if(held[pr.dn])return {joint:pr.joint,dir:1,label:pr.label};
-      if(held[pr.up])return {joint:pr.joint,dir:-1,label:pr.label};
-    }
-    return null;
+  var STEP=0.002, ZSTEP=0.0015, ROLL=0.07, GRIP=0.0015, TICK=90;
+  var held={}, arm='white', busy=false;
+  // The arms face each other: "forward" is toward the board, and "left" is the
+  // operator's left standing behind that arm, so both axes mirror per side.
+  function axes(side){
+    var s=side==='white'?1:-1;
+    return {fwd:s, left:-s};
+  }
+  function command(){
+    var a=axes(arm), dx=0, dy=0, dz=0, droll=0, dgrip=0;
+    if(held.KeyW) dy+=a.fwd;
+    if(held.KeyS) dy-=a.fwd;
+    if(held.KeyA) dx+=a.left;
+    if(held.KeyD) dx-=a.left;
+    if(held.KeyQ) dz-=1;
+    if(held.KeyE) dz+=1;
+    if(held.ArrowLeft) droll-=1;
+    if(held.ArrowRight) droll+=1;
+    if(held.ArrowUp) dgrip+=1;
+    if(held.ArrowDown) dgrip-=1;
+    if(!dx&&!dy&&!dz&&!droll&&!dgrip)return null;
+    return {action:'jog',arm:arm,dx:dx*STEP,dy:dy*STEP,dz:dz*ZSTEP,droll:droll*ROLL,dgrip:dgrip*GRIP};
   }
   function show(m){
     if(!m)return;
-    var unit=m.unit==='deg'?'°':'mm';
-    $('kbd-last').textContent='last step · '+(m.joint||'tool')+'  '+m.requested_mm+unit+' → '+m.achieved_mm+unit;
+    $('kbd-last').textContent='tool '+m.requested_mm.toFixed(1)+'mm → '+m.achieved_mm.toFixed(1)
+      +'mm · elbow '+m.elbow_mm.toFixed(0)+'mm · tilt '+m.tilt_deg.toFixed(1)
+      +'° · roll '+m.roll_deg.toFixed(0)+'° · grip '+m.grip_mm.toFixed(0)+'mm';
     var b=$('kbd-blocked');
     b.textContent=m.blocked?('BLOCKED · '+m.blocked):'ok';
     b.style.color=m.blocked?'#e0705f':'#8fbf9f';
     $('kbd-limits').textContent=(m.near_limit&&m.near_limit.length)?('near limit: '+m.near_limit.join(', ')):'';
   }
-  function step(){
+  function tick(){
     if(busy)return;
-    var h=heldPair();
-    if(!h)return;
+    var body=command();
+    if(!body)return;
     busy=true;
-    fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json','x-robot-lab':'1'},
-      body:JSON.stringify({action:'jog',arm:arm,joint:h.joint,dq:DQ*h.dir})})
+    fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json','x-robot-lab':'1'},body:JSON.stringify(body)})
       .then(function(r){ if(!r.ok){throw new Error('HTTP '+r.status)} return r.json()})
       .then(function(d){ show(d.manual) })
       .catch(function(e){
@@ -120,16 +127,14 @@ async function poll(){try{const r=await fetch('/api/status');if(!r.ok)throw Erro
       })
       .finally(function(){ busy=false });
   }
+  var KEYS={KeyW:1,KeyA:1,KeyS:1,KeyD:1,KeyQ:1,KeyE:1,ArrowLeft:1,ArrowRight:1,ArrowUp:1,ArrowDown:1};
   addEventListener('keydown',function(ev){
-    if(ev.repeat)return;
-    if(ev.code==='KeyM'){ arm = arm==='white'?'black':'white'; $('kbd-arm').textContent=arm; return }
-    for(var i=0;i<PAIRS.length;i++){
-      if(ev.code===PAIRS[i].dn||ev.code===PAIRS[i].up){ held[ev.code]=true; ev.preventDefault(); return }
-    }
+    if(ev.code==='KeyM'){ arm=arm==='white'?'black':'white'; $('kbd-arm').textContent=arm; return }
+    if(KEYS[ev.code]){ held[ev.code]=true; ev.preventDefault() }
   });
   addEventListener('keyup',function(ev){ delete held[ev.code] });
   addEventListener('blur',function(){ held={} });
-  setInterval(step,90);
+  setInterval(tick,TICK);
 })();
 </script>
 </body></html>

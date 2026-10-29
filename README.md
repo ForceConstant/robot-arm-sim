@@ -56,6 +56,12 @@ See [the tool-pack contract](docs/PRIVATE_TOOL_PACK.md) for mounting and testing
 
 - Two distinct SO101 follower models on opposite sides of one 32-piece board.
 - Browser UI with Start, Pause/Resume, Stop, Reset, one-turn stepping and target speed.
+- Two-hand keyboard teleoperation of the selected arm: the left hand drives the
+  tool point (W/S forward-back, A/D left-right, Q/E lower-raise) and the right
+  hand turns the wrist (left/right arrows) and opens/closes the jaws (up/down
+  arrows). Every step is solved so the wrist stays vertical and the elbow stays
+  above the tool; a pose that would fold the elbow down is refused with a
+  BLOCKED readout rather than snapped to.
 - Overview, overhead-debug and independent white/black wrist-camera views.
 - Stockfish self-play driver and deterministic opening/capture test modes.
 - Wrist-only versus overhead-plus-wrists observation contract for future
@@ -99,7 +105,9 @@ for debugging only; `scripts/verify_deploy.py` can rerun it alone.
 
 The web service remains running when the simulation is stopped. Use the browser
 controls for run control, or Dockhand to stop/start the entire container. Pause
-resumes in place; Stop cancels a run and the next Start resets. Configure the
+resumes in place; Stop cancels a run and the next Start resets. Press M to switch
+the teleoperated arm; the HUD reports achieved motion, elbow clearance, wrist
+tilt, wrist roll and jaw gap for each step. Configure the
 driver, initial scene and observations only while stopped; Apply resets the scene.
 
 State/health: `/api/status`, `/health`. Selected sensor contract:

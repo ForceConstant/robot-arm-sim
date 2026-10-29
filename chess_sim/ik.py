@@ -126,6 +126,9 @@ class So101Ik:
         self._arm_site = arm_site
         self._arm_qpos = np.array([arm_model.jnt_qposadr[j] for j in arm_joints])
         self._arm_dof = np.array([arm_model.jnt_dofadr[j] for j in arm_joints])
+        self._elbow_body = mujoco.mj_name2id(arm_model, mujoco.mjtObj.mjOBJ_BODY, prefix + "lower_arm")
+        if self._elbow_body < 0:
+            raise ValueError("SO-101 lower arm body not found in the arm model (check prefix)")
         # plan the roll a little inside its range: a target exactly on the joint
         # limit is one the position servo cannot settle on, and a span in the
         # roll's unreachable arc would otherwise be planned right onto the limit
@@ -175,6 +178,16 @@ class So101Ik:
         data = self.configuration.data
         mat = data.site_xmat[self._arm_site].reshape(3, 3)
         return data.site_xpos[self._arm_site] + mat @ offset, mat
+
+    def clearance(self, q: np.ndarray) -> float:
+        """Elbow height above the tool point at joint angles `q`, in meters.
+
+        Teleoperation keeps this positive: an elbow level with the tool sweeps
+        the forearm across the pieces instead of over them.
+        """
+        self._set_arm(q)
+        data = self.configuration.data
+        return float(data.xpos[self._elbow_body][2] - data.site_xpos[self._arm_site][2])
 
     def _set_arm(self, q: np.ndarray) -> None:
         full = self.arm.qpos0.copy()     # every other dof (the gripper) at its default

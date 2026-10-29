@@ -55,6 +55,10 @@ VIEWS = {
     "white_wrist": ("camera", Camera.WRIST),
     "black_wrist": ("camera", Camera.WRIST_BLACK),
 }
+# Teleoperation refuses a step whose planned pose leaves the elbow closer than
+# this to the tool point. Across the reachable workspace the solver bottoms out
+# around 45 mm, so this only rejects a genuinely folded, elbow-down pose.
+ELBOW_CLEARANCE = 0.035
 SCENARIOS = {"standard": chess.STARTING_FEN,
              "capture": "4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1"}
 
@@ -194,13 +198,15 @@ class Lab:
                 if self.replay is not None:
                     self.replay_request = ("live", None, False)
             elif action == "jog":
-                # Manual gamepad step. Staged here and consumed by the physics
+                # One teleoperation step. Staged here and consumed by the physics
                 # worker thread: HTTP never touches MuJoCo, and one request moves
                 # the arm one step, so a dropped controller stops the arm dead.
                 self.jog_request = {"dx": options.get("dx", 0.0), "dy": options.get("dy", 0.0),
-                                    "dz": options.get("dz", 0.0), "grip": options.get("grip"),
-                                    "arm": options.get("arm"),
-                                    "joint": options.get("joint"), "dq": options.get("dq", 0.0)}
+                                    "dz": options.get("dz", 0.0),
+                                    "droll": options.get("droll", 0.0),
+                                    "dgrip": options.get("dgrip", 0.0),
+                                    "grip": options.get("grip"),
+                                    "arm": options.get("arm")}
                 self.running = False
                 self.stop_requested = False
                 self.state.update(phase="manual", message="Manual jog")
@@ -366,13 +372,19 @@ class Lab:
         self.last_tick = time.monotonic()
 
     def _jog(self):
-        """Apply one manual Cartesian step, on the physics thread.
+        """Apply one teleoperation step, on the physics thread.
+
+        The operator drives the tool point in world x/y/z; IK keeps the approach
+        axis vertical, so the wrist always points straight down, and the step is
+        refused when the only pose that reaches the target drops the elbow near
+        the tool's height (the forearm would sweep through the pieces), when the
+        wrist cannot stay vertical, or when the IK residual is too large. Snapping
+        to the nearest reachable pose is what makes a teleoperated arm feel like
+        it is fighting you. The wrist roll and the jaw gap are commanded
+        separately, in the same step.
 
         Reports requested vs achieved motion so the UI's BLOCKED lamp reflects
-        what the arm actually did, not merely that a command was accepted. A
-        step whose IK residual is too large is refused outright: snapping to the
-        nearest reachable pose is what makes a teleoperated arm feel like it is
-        fighting you.
+        what the arm actually did, not merely that a command was accepted.
         """
         req, self.jog_request = self.jog_request, None
         if req is None:
@@ -384,27 +396,38 @@ class Lab:
         except Exception:
             pass
         prefix = "black:" if side == "black" else "so101:"
-        if req.get("joint") is not None:
-            self._jog_joint(env, side, prefix, req)
-            return
         zeros = np.zeros(3)
+        joints = np.asarray(env.arm_joint_positions(), dtype=float)
         start, _ = env.ik.tool_pose(env.data, zeros)
         delta = np.array([req.get("dx") or 0.0, req.get("dy") or 0.0, req.get("dz") or 0.0],
                          dtype=float)
-        target = start + delta
+        droll = float(req.get("droll") or 0.0)
+        dgrip = float(req.get("dgrip") or 0.0)
         requested = float(np.linalg.norm(delta))
         blocked, achieved, solution = None, 0.0, None
+        clearance = env.ik.clearance(joints[:5])
+        tilt = 0.0
         if requested > 0.0:
-            sol = env.ik.solve(env.data, target)
+            sol = env.ik.solve(env.data, start + delta)
+            tilt = float(np.degrees(sol.tilt))
+            clearance = env.ik.clearance(sol.q)
             if sol.position_error > 0.002:
                 blocked = "unreachable"
+            elif tilt > 10.0:
+                blocked = "wrist not vertical"
+            elif clearance < ELBOW_CLEARANCE:
+                blocked = "elbow down"
             else:
                 solution = np.asarray(sol.q, dtype=float)
         if blocked is None:
-            joints = np.asarray(env.arm_joint_positions(), dtype=float)
-            q = solution if solution is not None else joints[:5]
-            grip = req.get("grip")
-            gap = (gripper.angle_to_gap(float(joints[5])) if grip is None else float(grip))
+            q = (solution if solution is not None else joints[:5]).copy()
+            if droll:
+                q[4] = min(max(q[4] + droll, float(env.ik.lower[4])), float(env.ik.upper[4]))
+            joint = env.model.joint(prefix + "gripper")
+            lo, hi = float(joint.range[0]), float(joint.range[1])
+            gap = gripper.angle_to_gap(float(joints[5])) + dgrip
+            gap = min(max(gap, min(gripper.angle_to_gap(lo), gripper.angle_to_gap(hi))),
+                      max(gripper.angle_to_gap(lo), gripper.angle_to_gap(hi)))
             env.apply_action(np.concatenate([q, [gripper.gap_to_angle(gap)]]))
             now, _ = env.ik.tool_pose(env.data, zeros)
             achieved = float(np.linalg.norm(now - start))
@@ -412,7 +435,6 @@ class Lab:
                 blocked = "contact"
         # The white arm is built as `so101:` and the black one as `black:`; `side`
         # is the logical name, so map it rather than assuming side + ':'.
-        prefix = "black:" if side == "black" else "so101:"
         near = []
         for jn in ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll"):
             joint = env.model.joint(prefix + jn)
@@ -422,46 +444,15 @@ class Lab:
             lo, hi = float(joint.range[0]), float(joint.range[1])
             if min(value - lo, hi - value) < 0.10:
                 near.append(jn)
+        live = np.asarray(env.arm_joint_positions(), dtype=float)
         with self.lock:
             self.state.update(manual={"arm": side, "blocked": blocked,
                                       "requested_mm": round(requested * 1000, 2),
                                       "achieved_mm": round(achieved * 1000, 2),
-                                      "near_limit": near})
-        self._render(force=True)
-
-    def _jog_joint(self, env, side, prefix, req):
-        """Step one servo by a key-pair press (joint space, not Cartesian)."""
-        names = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper")
-        idx = max(0, min(len(names) - 1, int(req["joint"])))
-        dq = float(req.get("dq") or 0.0)
-        joints = np.asarray(env.arm_joint_positions(), dtype=float).copy()
-        joint = env.model.joint(prefix + names[idx])
-        lo, hi = (float(joint.range[0]), float(joint.range[1])) if joint.limited else (-1e9, 1e9)
-        before = float(joints[idx])
-        after = min(max(before + dq, lo), hi)
-        joints[idx] = after
-        blocked = None
-        moved = abs(after - before)
-        if dq != 0.0 and moved < 1e-9:
-            blocked = "joint limit"
-        else:
-            env.apply_action(joints)
-            realised = abs(float(env.arm_joint_positions()[idx]) - before)
-            if dq != 0.0 and realised < 0.25 * abs(dq):
-                blocked = "contact"
-        near = []
-        for jn in names[:5]:
-            other = env.model.joint(prefix + jn)
-            if not other.limited:
-                continue
-            value = float(env.data.qpos[other.qposadr[0]])
-            if min(value - float(other.range[0]), float(other.range[1]) - value) < 0.10:
-                near.append(jn)
-        with self.lock:
-            self.state.update(manual={"arm": side, "joint": names[idx], "unit": "deg",
-                                      "blocked": blocked,
-                                      "requested_mm": round(float(np.degrees(dq)), 2),
-                                      "achieved_mm": round(float(np.degrees(after - before)), 2),
+                                      "elbow_mm": round(clearance * 1000, 1),
+                                      "tilt_deg": round(tilt, 1),
+                                      "roll_deg": round(float(np.degrees(live[4])), 1),
+                                      "grip_mm": round(gripper.angle_to_gap(float(live[5])) * 1000, 1),
                                       "near_limit": near})
         self._render(force=True)
 

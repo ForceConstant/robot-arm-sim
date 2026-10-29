@@ -88,9 +88,12 @@ class Control(BaseModel):
     dz: float = Field(default=0.0, ge=-0.05, le=0.05)
     grip: float | None = Field(default=None, ge=0.0, le=0.06)
     arm: Literal["white", "black"] | None = None
-    # Keyboard joint jog: one servo per key pair (A/Q, S/W, D/E, F/R, G/T, Z/X).
-    joint: int | None = Field(default=None, ge=0, le=5)
-    dq: float = Field(default=0.0, ge=-0.20, le=0.20)
+    # Keyboard teleoperation: the tool point moves in world x/y/z and IK keeps
+    # the wrist pointing straight down. The wrist roll and jaw gap are separate
+    # deltas applied in the same step, so the right hand can turn and grip while
+    # the left hand steers.
+    droll: float = Field(default=0.0, ge=-0.20, le=0.20)
+    dgrip: float = Field(default=0.0, ge=-0.02, le=0.02)
 
 
 @app.post("/api/control")

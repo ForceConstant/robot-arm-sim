@@ -43,7 +43,7 @@ def test_running_configuration_is_rejected(lab):
 def test_running_suite_exclusively_owns_control(lab):
     lab.suite = {"phase": "running", "index": 0, "results": []}
     lab.running = True
-    for action, options in (("start", {}), ("jog", {"joint": 0, "dq": 0.1}),
+    for action, options in (("start", {}), ("jog", {"dx": 0.002, "droll": 0.07}),
                             ("reset", {}), ("speed", {"speed": 2.0}),
                             ("suite", {"suite": "start"})):
         with pytest.raises(ValueError, match="exclusive control"):
@@ -68,6 +68,12 @@ def test_api_control_bounds_and_sensor_contract(lab, monkeypatch):
                        json={"action": "start"}).status_code == 403
     assert client.post("/api/control", headers=headers,
                        json={"action": "speed", "speed": 999}).status_code == 422
+    # Teleop deltas are clamped: a step larger than the arm can absorb is a bug,
+    # not a valid command.
+    assert client.post("/api/control", headers=headers,
+                       json={"action": "jog", "droll": 9}).status_code == 422
+    assert client.post("/api/control", headers=headers,
+                       json={"action": "jog", "dgrip": 9}).status_code == 422
     data = client.get("/api/observations").json()
     assert set(data["cameras"]) == {"white_wrist", "black_wrist"}
     assert "fen" not in data and "pieces" not in data
