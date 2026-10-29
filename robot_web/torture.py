@@ -67,9 +67,9 @@ CASES = [
          'Queen transfer to the far-side outer files'),
     Case('black-queen-far', 'black', position(turn=chess.BLACK), 'd8a4',
          'Mirrored queen transfer to the far-side outer files'),
-    Case('white-king-far', 'white', position(), 'e1h5',
-         'King transfer across files to the white arm\'s far-file reach boundary'),
-    Case('black-king-far', 'black', position(turn=chess.BLACK), 'e8a4',
-         'Mirrored king transfer across files to the black arm\'s far-file boundary'),
+    Case('white-king-far', 'white', position(), 'e1f5',
+         'King transfer to the far rank without triggering castling semantics'),
+    Case('black-king-far', 'black', position(turn=chess.BLACK), 'e8d4',
+         'Mirrored king transfer to the far rank without triggering castling semantics'),
 ]
 # Rook/queen/king moves intentionally ignore chess legality: physical tasks only.

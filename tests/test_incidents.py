@@ -36,6 +36,9 @@ def test_suite_cases_are_distinct_and_parseable():
         assert board.turn == (case.arm == "white"), case.id
         assert board.is_capture(move) is False, case.id
         assert board.piece_at(move.to_square) is None, case.id
+        # Long illegal king moves are classified by python-chess as castling;
+        # the suite must not trigger an unrelated second rook manipulation.
+        assert not board.is_castling(move), case.id
     # The two observed failures stay in the suite as regression cases.
     assert {"white-bishop", "black-bishop"} <= set(ids)
     assert {"white-rook-corner", "black-rook-corner"} <= set(ids)
