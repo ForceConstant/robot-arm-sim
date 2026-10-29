@@ -9,6 +9,7 @@ so_arm_repo/
 # python / tooling
 __pycache__/
 *.pyc
+.toolchain/
 
 # local agent notes
 .claude/
