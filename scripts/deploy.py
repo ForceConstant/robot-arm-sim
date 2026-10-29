@@ -139,10 +139,11 @@ def main():
     if args.no_verify:
         print("Post-deploy suite skipped by --no-verify")
         return
-    # Standing rule: every redeploy ends with the crowded-v2 suite against the
+    # Standing rule: every redeploy ends with the crowded-v3 suite against the
     # live build. Case failures are reported, not treated as a failed deploy.
     print("Waiting for deploy job...")
     print("Deploy job ended:", wait_job(result["jobId"]))
+    sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ROOT / "scripts"))
     from verify_deploy import verify
     version = (ROOT / "robot_web" / "__init__.py").read_text().split('"')[1]
