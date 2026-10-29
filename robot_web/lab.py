@@ -147,6 +147,16 @@ class Lab:
 
     def command(self, action, **options):
         with self.lock:
+            # A suite owns the single physics worker and its per-action result
+            # fields until it finishes. Letting Start/jog/reset through here
+            # could replace `self.suite` or queue a second controller request
+            # while the active suite loop still owns the same MuJoCo world.
+            # Stop remains available as the explicit cancellation path.
+            if self.suite is not None and self.suite.get("phase") == "running":
+                stopping_suite = action == "stop" or (
+                    action == "suite" and options.get("suite", "start") == "stop")
+                if not stopping_suite:
+                    raise ValueError("The crowded suite has exclusive control until it completes")
             if action == "configure":
                 if self.running or self.state["phase"] == "paused":
                     raise ValueError("Stop or reset before changing the game configuration")

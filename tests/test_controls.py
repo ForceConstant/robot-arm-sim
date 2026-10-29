@@ -40,6 +40,22 @@ def test_running_configuration_is_rejected(lab):
         lab.command("configure", mode="opening")
 
 
+def test_running_suite_exclusively_owns_control(lab):
+    lab.suite = {"phase": "running", "index": 0, "results": []}
+    lab.running = True
+    for action, options in (("start", {}), ("jog", {"joint": 0, "dq": 0.1}),
+                            ("reset", {}), ("speed", {"speed": 2.0}),
+                            ("suite", {"suite": "start"})):
+        with pytest.raises(ValueError, match="exclusive control"):
+            lab.command(action, **options)
+    assert lab.suite["phase"] == "running"
+    assert lab.running
+    assert lab.jog_request is None
+    # A stop is the one permitted command, so a real user can still cancel.
+    lab.command("stop")
+    assert lab.stop_requested
+
+
 def test_api_control_bounds_and_sensor_contract(lab, monkeypatch):
     module = importlib.import_module("robot_web.app")
     monkeypatch.setattr(module, "lab", lab)
