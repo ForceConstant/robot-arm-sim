@@ -32,9 +32,16 @@ try{
  const beforeRoll=(await status()).joints.white[4];
  await page.keyboard.down('ArrowRight');await page.waitForTimeout(400);await page.keyboard.up('ArrowRight');
  await until(s=>Math.abs(s.joints.white[4]-beforeRoll)>0.01,'Wrist-roll arrow did not turn the wrist');
+ // The parked jaw is already at its widest aperture, so close first and fall
+ // back to opening only when the build parks it closed instead.
  const beforeGrip=(await status()).joints.white[5];
- await page.keyboard.down('ArrowUp');await page.waitForTimeout(300);await page.keyboard.up('ArrowUp');
- await until(s=>Math.abs(s.joints.white[5]-beforeGrip)>0.01,'Gripper arrow did not change the jaw gap');
+ for(const key of ['ArrowDown','ArrowUp']){
+  await page.keyboard.down(key);await page.waitForTimeout(300);await page.keyboard.up(key);
+  const moved=await until(s=>Math.abs(s.joints.white[5]-beforeGrip)>0.01,'Gripper arrow did not change the jaw gap',12000).catch(()=>null);
+  if(moved)break;
+ }
+ const gripNow=(await status()).joints.white[5];
+ assert.ok(Math.abs(gripNow-beforeGrip)>0.01,'Gripper arrows did not change the jaw gap');
  await page.waitForFunction(()=>document.querySelector('#main-camera').naturalWidth>0);
  assert.equal(await page.locator('#main-camera').evaluate(e=>e.naturalWidth),800);
  for(const camera of ['overview','top','white_wrist','black_wrist']){const r=await page.request.get(base+'/api/frame/'+camera+'.jpg');assert.equal(r.status(),200);const bytes=await r.body();assert.equal(bytes[0],255);assert.equal(bytes[1],216)}
