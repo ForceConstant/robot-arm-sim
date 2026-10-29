@@ -1049,3 +1049,90 @@ remain in the trace. The incident ZIP route was also shadowed by the generic
 incident-ID route; the download route now precedes it, and the verification
 script archives every failed case immediately before recorder retention can
 prune it.
+
+---
+
+## 11. Scripted-expert baseline — 2026-10-29
+
+Priority 2 asked for the expert's own bar, measured rather than inferred from
+collection runs. `tools/benchmark_expert.py` now does that:
+
+```sh
+ROBOT_PIECE_SET=printed ROBOT_PIECE_ASSETS="$PWD/.private/piece-assets-v5" \
+  MUJOCO_GL=egl python tools/benchmark_expert.py \
+    --moves 40 --captures 20 --seeds 271828 314159 161803 \
+    --piece-sets default printed --out .private/expert-baseline.json
+```
+
+| | |
+| --- | --- |
+| Host | Linux x64 (Unraid), Python 3.12, MuJoCo 3.17.0, CPU physics |
+| Rendering | none - the expert plans against simulator state |
+| Episodes | 360 = 3 seeds x 2 piece sets x (40 moves + 20 captures) |
+| Positions | fresh `PositionConfig` draws, 2-8 pieces besides the kings |
+| Envelope | board origin +/-5 mm per axis, arm start +/-0.1 rad |
+| Piece sets | `default` (vendored) and `printed` (private pack v5) |
+| Rule | `env.evaluate`: 11 mm, upright, nothing else disturbed; 30 mm tray for captures |
+
+### Results
+
+| set | moves | captures | total |
+| --- | --- | --- | --- |
+| default | 116/120 (97%) | 59/60 (98%) | **175/180 (97%, 94-99%)** |
+| printed | 113/120 (94%) | 44/60 (73%) | **157/180 (87%, 82-91%)** |
+| both | 229/240 (95%) | 103/120 (86%) | **332/360 (92.2%, 89.0-94.6%)** |
+
+Per seed: **108/120 (90%)**, **114/120 (95%)**, **110/120 (92%)**. Median
+placement error 1.5 mm overall (moves 1.3 mm, captures 2.2 mm); the named piece
+was engaged in 353/360 episodes and 2 episodes displaced a neighbour.
+
+By piece type over both sets: king 183/185 (99%), rook 39/40 (98%), bishop
+24/24, queen 16/18 (89%), knight 20/27 (74%), pawn 50/66 (76%). The weakness is
+not uniform - it is the printed set:
+
+| printed piece | result | median error |
+| --- | --- | --- |
+| king | 90/91 (99%) | 1.5 mm |
+| rook | 20/20 (100%) | 1.1 mm |
+| bishop | 12/12 (100%) | 2.2 mm |
+| queen | 8/9 (89%) | 1.6 mm |
+| knight | **7/14 (50%, 27-73%)** | 28.6 mm |
+| pawn | **20/34 (59%, 42-74%)** | 7.8 mm |
+
+For comparison, the vendored set scored 13/13 on knights and 30/32 (94%) on
+pawns. Failure reasons over all 28 failures: placement error 9, still on the
+board 8, piece fell 6, missed the tray 4, disturbed other pieces 1. **Every
+still-on-board capture (8), every fall (6) and every wrong-piece pick (7) was
+on the printed set.** The 7 wrong-piece episodes were five printed-knight
+captures/moves, one printed-knight move and one printed-pawn capture.
+
+### What this establishes
+
+- **The aggregate hides the deployed geometry.** The vendored set is at 97% and
+  the printed pack at 87%; captures are 98% against 73%. A policy comparison
+  must be paired by piece set and task family, not against one 92% or against
+  the earlier 30/30 and 24/24 collection figures.
+- **Captures dominate the failures** (17 of 28), and 8 never left the board -
+  a failed grasp/transport, not a placement miss. Printed knights (50%) and
+  pawns (59%) are the measured weak cells; the two-colour vendored set shows
+  none of it, so the cause is likely the imported mesh/profile or the
+  single-mesh black tint rather than the capture task alone.
+- **Simulator truth is not a grounding guarantee.** Seven tries grasped a
+  different piece even though the expert plans from exact poses; crowding can
+  still put the wrong body between the jaws.
+- **Seed spread is not signal.** 90/95/92% across seeds, with overlapping
+  intervals - single-seed differences of a few episodes say nothing.
+
+### Limits
+
+Only tasks the expert's own reach/clearance check calls executable were
+sampled, so this is the ceiling on feasible tasks, not all legal chess moves.
+Board turn and sideways offset were held nominal: the measured envelope is the
+supported +/-5 mm and +/-0.1 rad one, not the wider turn/side envelope. The
+printed pack uses one light mesh per type with a black tint, so colour-specific
+geometry is not distinguishable from tint. These are simulated contacts - not
+hardware fit, friction or squeeze-force qualification.
+
+Receipts: `.private/expert-baseline.json` (every episode with seed, set, task,
+piece, error and reason), `.private/expert-baseline.md` and
+`.private/expert-baseline-run.log`.

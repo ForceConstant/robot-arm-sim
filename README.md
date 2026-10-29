@@ -155,6 +155,28 @@ placement error 5.3 mm. Rollout sampling alone flips about a quarter of
 identical positions, so smaller comparisons say nothing — see
 [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md) §6.
 
+The expert's own bar, measured over randomized placements and both piece sets
+([§11](docs/EXPERIMENTS.md)), is **332/360 (92.2%)**: moves 229/240 (95%),
+captures 103/120 (86%). It is not uniform — the vendored set scored 175/180
+(97%) against the deployed printed pack's 157/180 (87%), with printed captures
+at 73% and printed knights at 50%. Compare a policy against the matching piece
+set and task family, not the aggregate.
+
+### Scripted-expert baseline
+
+`tools/benchmark_expert.py` scores the expert itself over randomized placements
+and piece sets, reporting per task family, per piece type, per piece set and per
+seed — not one aggregate rate. Every verdict still comes from `env.evaluate`;
+the task metadata used to slice the report is reporting-only and must never be
+handed to a policy under test.
+
+```bash
+ROBOT_PIECE_SET=printed ROBOT_PIECE_ASSETS="$PWD/.private/piece-assets-v5" \
+  MUJOCO_GL=egl python tools/benchmark_expert.py \
+    --moves 40 --captures 20 --seeds 271828 314159 161803 \
+    --piece-sets default printed --out .private/expert-baseline.json
+```
+
 ## The package
 
 ```

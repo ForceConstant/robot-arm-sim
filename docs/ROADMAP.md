@@ -1,9 +1,10 @@
 # Simulation and training roadmap
 
 Reconciled 2026-10-29 against the current source, live release, training scripts,
-and experiment log. Priority 1, **make crowded manipulation repeatable**, is
-complete on live v1.10.6; measured results are in [`EXPERIMENTS.md`](EXPERIMENTS.md)
-and CAD/import assumptions are kept with the private tool pack.
+and experiment log. Priority 1, **make crowded manipulation repeatable**, and
+Priority 2, **measure the scripted-control baseline**, are complete on live
+v1.10.6/v1.10.7; measured results are in [`EXPERIMENTS.md`](EXPERIMENTS.md) and
+CAD/import assumptions are kept with the private tool pack.
 
 ## Baseline — what is already working
 
@@ -21,6 +22,14 @@ and CAD/import assumptions are kept with the private tool pack.
   MolmoAct2 baseline and DAgger checkpoint are evaluated; their paired
   300-position scores were 227/300 and 233/300 respectively. See the experiment
   log for task-family breakdowns and known evaluation limits.
+- **Scripted-expert baseline measured (2026-10-29):** 332/360 (**92.2%**, 95% CI
+  89.0–94.6%) over three seeds, board ±5 mm per axis and arm start ±0.1 rad,
+  with the vendored and deployed printed piece sets. Moves 229/240 (95%),
+  captures 103/120 (86%). The vendored set scored 175/180 (97%) and the printed
+  set 157/180 (87%); the gap is captures (98% vs 73%) concentrated in printed
+  knights (7/14) and pawns (20/34). All 7 wrong-piece picks, 8 still-on-board
+  captures and 6 falls were on the printed set. Details in
+  [`EXPERIMENTS.md`](EXPERIMENTS.md) §11; `tools/benchmark_expert.py` reruns it.
 - Latest Onshape revision `4dca0986f24304c301118aa4` is captured and imported
   into private pack v3: healthy assembly, three moving mates, one fixed camera
   mount, 19 mm travel per jaw, unchanged jaw/gear meshes, and updated base/mount
@@ -107,12 +116,33 @@ and CAD/import assumptions are kept with the private tool pack.
    finger-envelope checks pass the fixed and seeded suites. Physical clearance,
    friction, and safe squeeze force remain outside this simulation gate.
 
-## Priority 2 — measure the scripted-control baseline
+## Priority 2 — measure the scripted-control baseline — complete
 
-- Score the existing scripted expert across randomized placements and piece
-  sets. Keep simulator truth confined to the evaluator whenever testing a
-  camera-driven controller or policy. Report per-task/per-piece results and
-  seeds, not only an aggregate pass rate.
+1. **Complete — randomized-placement and piece-set baseline.**
+   `tools/benchmark_expert.py` (core: `chess_sim/benchmark.py`) scores the
+expert over fresh `PositionConfig` draws (2–8 pieces besides the kings), board
+origin ±5 mm per axis, arm start ±0.1 rad, and both the vendored `default` set
+and the deployed `printed` pack v5, across seeds 271828, 314159 and 161803.
+Every verdict comes from `env.evaluate`; the task/piece metadata used to slice
+the report is reporting-only and is never available to a policy under test.
+2. **Complete — measured result.** 332/360 (92.2%, 95% CI 89.0–94.6%), median
+   placement error 1.5 mm, named piece 353/360, 2 neighbour disturbances. Moves
+   229/240 (95%); captures 103/120 (86%). By set: default 175/180 (97%), printed
+   157/180 (87%). The difference is captures (98% default vs 73% printed),
+   concentrated in printed knights (7/14, 50%) and pawns (20/34, 59%). Every
+   wrong-piece pick (7), still-on-board capture (8) and fall (6) was on the
+   printed set.
+3. **Complete — reported per task, per piece, per set, per seed.** The report
+   carries per-task (source→target), per-piece-type, per-piece-set, per-seed and
+   cross-tabulated tables with Wilson intervals and failure reasons; raw
+   per-episode receipts are retained in `.private/expert-baseline.json`. Per-seed
+   scores were 90/95/92% with overlapping intervals, so seed differences are not
+   evidence. Recorded in [`EXPERIMENTS.md`](EXPERIMENTS.md) §11.
+4. **Scope limit.** This is a truth-driven, simulated ceiling on tasks the
+   expert's own reach/clearance check calls executable — not all legal moves,
+   not the wider board-turn envelope, and not hardware or physical-fit
+   qualification. Compare a learned policy only against the matching piece set
+   and task family.
 
 ## Priority 3 — make verified incident corrections reusable — complete
 
