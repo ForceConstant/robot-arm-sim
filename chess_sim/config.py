@@ -118,7 +118,9 @@ class BoardConfig(Config):
     border: float = 0.015          # wood border around the 8x8 field
     thickness: float = 0.012       # board slab thickness
     table_top: float = 0.43        # table height above the floor
-    arm_gap: float = 0.08          # distance from board edge to arm base center
+    # Keep the near-side back rank outside the SO-101's measured inner reach;
+    # the old 80 mm standoff put d/e-file grasp targets ~110 mm from the shoulder.
+    arm_gap: float = 0.12          # distance from board edge to arm base center
     arm_riser: float = 0.06        # pedestal height under the arm base
     arm_side: str = "white"       # the dual-arm scene mirrors the black mount
     # where the board's centre sits on the table; the arm, camera mast, tray and
