@@ -271,6 +271,47 @@ per-configuration reports, server logs and resource samples; remote copies and
 portable tools/models remain in Brian's dedicated home directory for reuse.
 Priority 5 remains **in progress**, not training- or robot-policy-qualified.
 
+## Available compute roles (local vs hosted)
+
+Three distinct capabilities, not substitutes:
+
+| Role | Where it can run | What it is good for | What it cannot satisfy |
+| --- | --- | --- | --- |
+| BC-250 local Vulkan inference | This box, user-local runtime | Quantized VLM/LLM perception, descriptions, turn-based observation, local-only data | Not yet a VLA/action runtime; not training |
+| GTX 1060 3 GB + simulator host | HTPC Docker stack | MuJoCo rendering, physics, scripted expert, crowded-v3 suite | Large-model inference; ~30 GB training recipes |
+| Command Code GOAT plan (hosted API) | Remote provider | General LLM/VLM reasoning, planning, labeling QA, evaluation scoring, code/config authoring, triage summaries | Local inference, real-time servo loops, private-data-free operation |
+
+### Command Code GOAT plan as a general LLM/VLM resource
+
+Brian noted the plan can serve general LLM/VLM tasks, not only coding. Live
+check 2026-10-30 (read-only usage endpoint):
+
+- Plan `individual-goat`, **active**, renews **2026-11-07**.
+- **$53.10 of $70** monthly credits remaining (**75.9%**), with **27.4%** of the
+  billing period left — currently pacing better than straight-line.
+- Rolling **5-hour** window: **$0.09 / $14** used (0.7%).
+- Rolling **weekly** window: **$1.54 / $35** used (4.4%), resets 2026-11-05.
+- Billing-period totals: 7,471 requests, $17.22, 100% success, ~802M tokens.
+- Credits are **per-model allowances** in the GOAT plan, while the credits
+  endpoint reports one pooled remaining figure; heavy models can exhaust their
+  own allowance before the pooled number looks low. Verify per-model headroom
+  before assigning a heavy model to a bulk job.
+
+**How it fits Priority 5:** the GOAT plan is a **hosted complement**, not a
+deployment path. It can help with work that is not latency- or privacy-bound:
+instruction/curriculum drafting, dataset and label QA, failure-triage summaries,
+report generation, evaluation harness code, and general reasoning about the
+simulation. It does **not** satisfy the local-inference requirement, cannot run
+servo control, and must not receive private recordings, CAD/printed assets,
+camera frames or checkpoints without an explicit transfer decision. Network
+round-trip latency also rules it out for 10 Hz or action-chunk replenishment;
+a turn-based planner/observer role would need its own measured latency and
+failure-handling gate.
+
+Practical split: local BC-250 for perception and any robot-adjacent inference;
+GOAT plan for offboard reasoning, authoring and analysis; GTX host for the
+simulator and scripted baselines.
+
 ## How LLM/MoE results relate to the robot-control models
 
 - **LLM**: text/token input to text/token output. Good for reasoning and

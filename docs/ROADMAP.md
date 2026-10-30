@@ -256,6 +256,15 @@ the report is reporting-only and is never available to a policy under test.
   hardware maximum, calibrated perception or learned robot-controller pass.
   Initial cache-enabled 35B run remains a recorded memory-guard failure.
   [Exact scope and receipts](../training/BC250_CAPABILITY.md#live-experiments--2026-10-30).
+- **Hosted GOAT plan available for general LLM/VLM work (Brian, 2026-10-30):**
+  the Command Code GOAT subscription is an active hosted option for general
+  reasoning, planning, labeling QA, evaluation scoring and authoring — not a
+  robot deployment path. Live check: $53.10/$70 monthly credits remaining
+  (75.9%), 5h $0.09/$14, weekly $1.54/$35; per-model allowances still cap
+  heavy models. Never send private recordings, CAD/printed assets, camera
+  frames or checkpoints off-LAN without an explicit transfer decision; cloud
+  round-trip rules it out for 10 Hz control. Local BC-250 remains the
+  robot-adjacent inference target.
 - **Colab candidate (Brian's suggestion):** prepared
   [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
   identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
