@@ -175,6 +175,78 @@ visual synchronization/calibration from frame counts alone. Export **only the
 explicit train paths**; the legacy recursive exporter does not enforce this
 manifest. Do not point it at a common parent containing held-out recordings.
 
+## Free-tier Colab only — Brian, 2026-10-30
+
+Brian confirmed **no paid Colab account and no compute units**; free tier is the
+training host. Consequences, from the current Colab FAQ and the measured model
+size:
+
+- **Hardware is not chosen.** Free tier typically allocates a **T4 16 GB**, but
+  GPU type, session length and availability vary and are not guaranteed.
+  **T4 is Turing: fp16 works, bf16 does not.** Any recipe written for
+  bf16/A100 needs an fp16 + loss-scaling path instead.
+- **Session limits.** Roughly 12 h maximum and idle disconnection; a long run
+  will be interrupted. Every pilot must checkpoint to persistent storage and
+  resume, not assume one continuous session.
+- **No remote or distributed workers.** SSH shells, remote desktops, web-UI
+  driving, distributed workers and similar patterns are disallowed on free
+  managed runtimes. HIL-SERL's separate actor/learner servers cannot be the free
+  tier design; an in-process, single-session loop is required.
+- **Ephemeral disk.** The VM filesystem is deleted with the runtime. Datasets,
+  checkpoints and receipts must live in Drive or another persistent store, and
+  Drive is slow with many small files (archive, do not mount-and-stream).
+
+### Memory arithmetic: the current recipe cannot run on a T4
+
+`allenai/MolmoAct2-SO100_101` reports **5,442,196,272 parameters**. Weights only:
+
+| Precision | Weights | On a 16 GB T4 |
+| --- | --- | --- |
+| FP32 | 20.27 GiB | does not fit |
+| bf16 | 10.14 GiB | fits, but T4 cannot compute bf16 |
+| fp16 | 10.14 GiB | fits; needs loss scaling |
+| 4-bit | ~2.5 GiB | fits, quantization unvalidated |
+
+Full fine-tuning adds AdamW state (two FP32 moments ≈ 40.5 GiB) plus gradients,
+master weights and activations. **Full-parameter fine-tuning of this checkpoint
+is impossible on a 16 GB T4 at any batch size.** The inherited batch-8,
+~30 GB recipe assumed a 32 GB RTX 5090 and is not portable to free Colab.
+
+`examples/train_policy.py` today exposes batch, accumulation, workers, steps and
+scheduler overrides but **no adapter, quantization or frozen-backbone option** —
+it is a full fine-tune. `chess_sim/policies.py` can already *load* a PEFT
+adapter at inference (`use_peft`), so adapter-shaped checkpoints are compatible
+with the evaluation path; the missing piece is producing one.
+
+### What a free-tier pilot would have to be
+
+1. **Parameter-efficient training**: LoRA/QLoRA adapters on attention
+   projections (and optionally the action expert) with the backbone frozen, or a
+   frozen-backbone action-expert-only run. LoRA in fp16 on a T4 is the realistic
+   ceiling; 4-bit QLoRA is the roomier option but adds bitsandbytes and its own
+   numerical risk.
+2. **Micro-batch 1 with gradient accumulation** to a small effective batch, and
+   gradient checkpointing.
+3. **Checkpoint every few dozen steps to Drive**, resumable, with truncation
+   validation; treat each session as disposable.
+4. **A genuinely bounded pilot**: ~20 optimizer steps on audited task data,
+   recording loss, gradient finiteness, peak allocated/reserved memory, step
+   time, checkpoint save and reload agreement.
+5. **Held-out evaluation after reload** — the current evaluator runs in one
+   process with a single policy copy, which suits a 16 GB card.
+
+### Data-transfer scope
+
+- The **public** `XvKuoMing/so101_chess` dataset is already published; using it
+  discloses nothing new.
+- Our **private** recordings, camera frames, CAD/printed assets and checkpoints
+  are LAN-only by default. Uploading them to Drive/Colab needs an explicit
+  decision from Brian; this document records the requirement, not consent.
+
+**Priority 5 stays in progress.** Selecting free-tier Colab removes the
+"which host" question and replaces it with a concrete one: add adapter training
+to the trainer, or choose a smaller policy for the pilot.
+
 ## Bounded pilots and completion gates
 
 1. Local collection/data pilot: two `e2e4` episodes, seed 20261030, plus one
@@ -238,6 +310,7 @@ control, distributed workers and “chess training.” Our task is robot
 manipulation, not chess-engine training, but do not assume an exemption or
 plan a free remote actor/learner worker. Paid-tier/compute-unit availability
 and budget are pending Brian's answer. No subscription or resources purchased.
+**Updated 2026-10-30:** Brian confirmed free tier only — see "Free-tier Colab only" below.
 
 [`notebooks/colab_preflight.ipynb`](notebooks/colab_preflight.ipynb) reports
 GPU/VRAM, versions and disk; runs 20 tiny synthetic optimizer steps, tests exact

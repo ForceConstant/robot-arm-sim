@@ -272,6 +272,17 @@ the report is reporting-only and is never available to a policy under test.
   actual-task training remain unverified. Paid/free tier and compute budget
   await confirmation. HIL-SERL's Panda tutorial is relevant future architecture,
   not a drop-in SO101 environment; details in the platform document.
+- **Training host decided: free-tier Colab (Brian, 2026-10-30).** No paid plan
+  or compute units. Constraints: T4-class 16 GB typically, no bf16 on Turing,
+  ~12 h sessions with idle disconnects, no SSH/remote/distributed workers,
+  ephemeral disk. MolmoAct2 is 5.442B parameters — 10.14 GiB in fp16/bf16
+  weights and ~40 GiB of AdamW state — so **full fine-tuning cannot fit a T4**.
+  The current trainer is full fine-tune only; `chess_sim/policies.py` can load
+  PEFT adapters but nothing produces one yet. A free-tier pilot therefore needs
+  an adapter (LoRA/QLoRA) or frozen-backbone option, micro-batch 1 with
+  accumulation, and Drive-backed resumable checkpoints. Public dataset use
+  discloses nothing new; uploading private recordings/CAD still needs an
+  explicit decision.
 - **Still required:** select a locally deployable model/runtime and training
   host, confirm storage/access, then pass selected-host runtime preflight, a
   bounded optimizer/checkpoint pilot and the local deployment gates above. The upstream RTX 5090 is
