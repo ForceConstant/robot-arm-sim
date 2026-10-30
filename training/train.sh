@@ -28,6 +28,10 @@ exec $PY -u examples/train_policy.py \
   $([ -n "${INIT_FROM:-}" ] && echo --init-from "$INIT_FROM") \
   $([ -n "${LR_SCALE:-}" ] && echo --lr-scale "$LR_SCALE") \
   $([ -n "${POLICY_FLAGS:-}" ] && echo --policy-flags $POLICY_FLAGS) \
+  $([ "${PEFT:-0}" = "1" ] && echo --peft --peft-r "${PEFT_R:-16}") \
+  $([ -n "${PEFT_ALPHA:-}" ] && echo --peft-alpha "$PEFT_ALPHA") \
+  $([ -n "${PEFT_TARGET_MODULES:-}" ] && echo --peft-target-modules "$PEFT_TARGET_MODULES") \
+  $([ -n "${MIXED_PRECISION:-}" ] && echo --mixed-precision "$MIXED_PRECISION") \
   $([ -n "${EVAL_SCENES:-}" ] && echo --eval-scenes "$EVAL_SCENES") \
   $([ -n "${EVAL_HOME_EPISODES:-}" ] && echo --eval-home-episodes "$EVAL_HOME_EPISODES") \
   $([ -n "${HOLD_OUT_PIECE_SETS:-}" ] && echo --eval-exclude-piece-sets $HOLD_OUT_PIECE_SETS) \
