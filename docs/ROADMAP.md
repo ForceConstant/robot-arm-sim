@@ -214,6 +214,29 @@ the report is reporting-only and is never available to a policy under test.
 
 ## Priority 5 — establish the training platform and data boundary
 
+- **In progress (2026-10-30):** platform/data rules and a fail-closed recording
+  auditor are implemented in [`training/PLATFORM_AND_DATA.md`](../training/PLATFORM_AND_DATA.md)
+  and `tools/audit_training_data.py`. Whole sessions/layout groups cannot cross
+  splits; simulator/real origins remain separate and private. Local regression:
+  **41 passed, 4 skipped**, including six data-boundary tests.
+- **Recording/data pilot passed:** 3/3 verified physical-contact moves; two
+  train recordings and one independent held-out recording. Full audit accepted
+  all three: 648 frames, 620,193 bytes, no errors. Receipts:
+  `.private/priority5-pilot/manifest.json` and `audit.json`. This is a
+  recording-integrity pilot, **not** an optimizer/checkpoint training pilot.
+- **Live platform evidence:** the simulator workspace has a GTX 1060 3 GB and
+  no torch/LeRobot training stack; preflight correctly failed. Brian powered on
+  Bazzite and proposed using it: live probe shows BC-250 gfx1013, 8 GiB reserved
+  VRAM plus 7.5 GiB CPU-visible RAM from one shared 16 GB pool, no installed
+  ROCm/PyTorch training stack. Community native-build training is plausible for
+  small perception models, not proof this box works or capacity for the
+  approximately 30 GB MolmoAct2 recipe. No OS/driver/firmware changes made.
+- **Still required:** choose small-model BC-250 qualification versus a separate
+  NVIDIA training host, confirm storage/access, then pass selected-host runtime
+  preflight and a bounded optimizer/checkpoint pilot. The upstream RTX 5090 is
+  not confirmed available. Do not mark this priority complete on data checks
+  or recording-only pilot evidence.
+
 - Before another substantial training run, choose and document the training
   machine/runtime, available accelerator and memory, storage for datasets and
   checkpoints, software/container environment, and how results move to the

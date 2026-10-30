@@ -4,6 +4,13 @@ Everything needed to train the SO-101 chess policy on another machine. The
 settings here were chosen by measurement; `settings.env` carries the reasoning
 inline and `../docs/EXPERIMENTS.md` has the numbers behind each one.
 
+## Platform qualification (Priority 5)
+
+Read [PLATFORM_AND_DATA.md](PLATFORM_AND_DATA.md) before using the historical
+recipes below. The upstream RTX 5090 is not a confirmed available training host.
+Keep simulator and real recordings separate and audit whole-session/layout splits
+before exporting. The current workspace is not qualified for MolmoAct2 training.
+
 ## What is being trained
 
 A VLA policy (MolmoAct2, fine-tuned from `allenai/MolmoAct2-SO100_101`) that
