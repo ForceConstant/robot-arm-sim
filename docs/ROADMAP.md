@@ -212,115 +212,40 @@ the report is reporting-only and is never available to a policy under test.
   `.private/post-deploy-1.10.8.json` and
   `.private/browser-check-1.10.8.json`.
 
-## Priority 5 — establish the training platform and data boundary
+## Priority 5 — establish the local platform and data boundary — complete
 
-- **Current direction (Brian, 2026-10-30; supersedes cloud choices below):**
-  stop pursuing Colab/Kaggle. Optimize for **BC-250 as the primary local ML
-  target**, retaining the GTX 1060 simulator/data host. Start with sustained
-  task-perception qualification of the passing 35B Vulkan configuration using
-  **one wrist camera for real-time IRL operation** (Brian's confirmed setup);
-  independently qualify local training/action-policy operators and memory
-  before an optimizer/checkpoint pilot. No cloud preflight is pending from
-  Brian. No kernel/firmware change or training success is implied.
-  [Local optimization gates](../training/BC250_CAPABILITY.md#local-optimization-order).
+**Closed 2026-10-30 for bounded platform/data qualification.** The implementation
+direction is **frozen pretrained vision + calibrated geometry/IK/scripted
+control**, not mandatory large-network fine-tuning. BC-250 remains the primary
+local ML target; GTX 1060 retains simulation. One wrist camera is the IRL input.
+The largest-practical-local-model preference is preserved by the passing 35B VLM.
 
-- **BC-250 continuation measured (2026-10-30):** one-camera 35B strict-JSON
-  repeat tests pass **20/20 with 5 s idle**, p50/p95 **1.463/1.469 s** at
-  128 image tokens, peak **79 C**, >=1.21 GiB CPU headroom. Both unpaced
-  256/128-budget tests hit the **85 C** guard; continuous operation is not
-  qualified. Tinygrad/WebGPU on the existing RADV driver passes **20 FP32
-  AdamW steps** for **838 and 1,062,918 parameters**, exact checkpoint reload
-  and identical resumed updates, peak **55/58 C**, no swap growth. No ROCm,
-  host changes, robot-task training or MolmoAct2 compatibility pass implied.
-  [Receipts, scope and next gates](../training/BC250_LOCAL_TESTS.md).
+- **Frozen vision platform:** pinned 35B Qwen Vulkan artifacts; 20/20 strict-JSON
+  paced requests previously passed. New 4/4 read-only simulator-wrist JPEG fetches
+  over LAN plus inference complete in 1.445–1.498 s, peak 72 C. Physical exposure,
+  frame freshness and chess recognition accuracy are not measured. Keep >=5 s
+  idle, memory/thermal guards and no continuous-operation claim: unpaced runs
+  still fail at 85 C.
+- **Data/storage:** all 3 simulator recordings/648 frames re-audited; independent
+  whole-session/layout train/test groups, private LAN-only storage and transfers,
+  simulator/real provenance kept separate. No real-camera dataset is claimed.
+- **Actual-task optimizer pilot:** 17,542-parameter FP32 wrist-feature/joint/task
+  MLP; 32 training and 16 held-out observations; 20 AdamW updates, finite gradients,
+  exact model/optimizer reload and resumed update, plus an independent-process
+  inference-only artifact reload with identical held-out predictions. Guarded
+  runs pass without swap growth or host changes. This is actual recording
+  ingestion and GPU optimization, not the prior synthetic-only test.
+- **Model rejected for control:** held-out MSE 0.01572 rad² is worse than the
+  zero-delta baseline 0.002867 rad². No learned actions were sent to the arm or
+  simulator. Platform success is not policy quality or grasp success.
 
-- **Local inference required (Brian, 2026-10-30):** all selected models must
-  run locally, with BC-250 now the primary target; cloud training is no longer
-  pursued and does not become an inference dependency. **Brian superseded the small-first
-  recommendation: investigate BC-250 GPU/APU capabilities, then find the largest
-  practical local model.** MolmoAct2 remains a candidate; local fit is unmeasured.
-  [BC-250 research](../training/BC250_CAPABILITY.md) distinguishes large quantized
-  LLM evidence from robot-policy compatibility and compares the RTX 5080. Before substantial training, test exact-size
-  model operators/capacity locally. Completion also requires the trained local
-  artifact's peak RAM/VRAM under concurrent simulator load, p50/p95 latency,
-  checkpoint reload/output agreement and held-out evaluation receipts. See
-  [local budgets and gates](../training/PLATFORM_AND_DATA.md#deployment-first-constraint--brian-2026-10-30).
-
-- **In progress (2026-10-30):** platform/data rules and a fail-closed recording
-  auditor are implemented in [`training/PLATFORM_AND_DATA.md`](../training/PLATFORM_AND_DATA.md)
-  and `tools/audit_training_data.py`. Whole sessions/layout groups cannot cross
-  splits; simulator/real origins remain separate and private. Local regression:
-  **41 passed, 4 skipped**, including six data-boundary tests.
-- **Recording/data pilot passed:** 3/3 verified physical-contact moves; two
-  train recordings and one independent held-out recording. Full audit accepted
-  all three: 648 frames, 620,193 bytes, no errors. Receipts:
-  `.private/priority5-pilot/manifest.json` and `audit.json`. This is a
-  recording-integrity pilot, **not** an optimizer/checkpoint training pilot.
-- **Live platform evidence:** the simulator workspace has a GTX 1060 3 GB and
-  no torch/LeRobot training stack; preflight correctly failed. Brian powered on
-  Bazzite and proposed using it: live probe shows BC-250 gfx1013, 8 GiB reserved
-  VRAM plus 7.5 GiB CPU-visible RAM from one shared 16 GB pool, no installed
-  ROCm/PyTorch training stack. Community native-build training is plausible for
-  small perception models, not proof this box works or capacity for the
-  approximately 30 GB MolmoAct2 recipe. No OS/driver/firmware changes made.
-- **Measured BC-250 local inference (2026-10-30):** official portable Vulkan
-  runtime installed user-locally with verified hash. Gemma 3 27B IQ3_XXS passes
-  a bounded **text-only** smoke/reload (63/63 layers GPU-offloaded, ~20 tokens/s,
-  >=1.50 GiB CPU headroom). Four vision configurations stop on memory guards;
-  no Gemma image response or VLA pass. Gemma vision work reached 84 C.
-  **Qwen3.5-35B-A3B IQ2_M vision smoke completed** after disabling optional
-  server prompt/context caches: 7/7 requests, both color controls correct,
-  real camera descriptions 1.97–2.10 s; >=1.07 GiB CPU headroom, peak 76 C.
-  Separate reload/pair probe completed 4/4; paired wrist images took 3.34 s,
-  >=1.18 GiB headroom, peak 75 C. Largest successfully tested VLM so far, not a
-  hardware maximum, calibrated perception or learned robot-controller pass.
-  Initial cache-enabled 35B run remains a recorded memory-guard failure.
-  [Exact scope and receipts](../training/BC250_CAPABILITY.md#live-experiments--2026-10-30).
-- **Hosted GOAT plan available for general LLM/VLM work (Brian, 2026-10-30):**
-  the Command Code GOAT subscription is an active hosted option for general
-  reasoning, planning, labeling QA, evaluation scoring and authoring — not a
-  robot deployment path. Live check: $53.10/$70 monthly credits remaining
-  (75.9%), 5h $0.09/$14, weekly $1.54/$35; per-model allowances still cap
-  heavy models. Never send private recordings, CAD/printed assets, camera
-  frames or checkpoints off-LAN without an explicit transfer decision; cloud
-  round-trip rules it out for 10 Hz control. Local BC-250 remains the
-  robot-adjacent inference target.
-- **Historical Colab candidate (no longer pursued):** prepared
-  [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
-  identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
-  round-trip without private uploads. Syntax verified; cloud execution and
-  actual-task training remain unverified. Brian confirmed free tier only; the first attempt received no GPU. HIL-SERL's Panda tutorial is relevant future architecture,
-  not a drop-in SO101 environment; details in the platform document.
-- **Historical free-tier Colab choice (superseded by BC-250 direction above).** No paid plan
-  or compute units. Constraints: T4-class 16 GB typically, no bf16 on Turing,
-  ~12 h sessions with idle disconnects, no SSH/remote/distributed workers,
-  ephemeral disk. MolmoAct2 is 5.442B parameters — 10.14 GiB in fp16/bf16
-  weights and ~40 GiB of AdamW state — so **full fine-tuning cannot fit a T4**.
-  The MolmoAct2 recipe **already** trains through the policy's own adapter mode
-  (`--policy.train_mode_vlm=lora`, rank 64, ~737M trainable of 5.6B), so adapter
-  training did not need to be invented; an added duplicate `--peft` path was
-  removed after review. The T4 blocker is footprint (~10.1 GiB frozen weights
-  plus ~8-10 GiB of optimizer state, ~21-23 GiB before activations). Levers are a
-  lower `--policy.lora_rank` or a smaller policy; there is no upstream
-  `train_expert_only` flag. Added and command-construction-tested: a
-  `--mixed-precision fp16|bf16|no` override (Turing cannot compute bf16) and
-  `training/settings.free_tier_colab.env` (20 steps, micro-batch 1, accumulation
-  8, LoRA rank 8, fp16). Regression **49 passed / 4 skipped**; no GPU run yet.
-  bounded optimizer/checkpoint pilot and the local deployment gates above. The upstream RTX 5090 is
-  not confirmed available. Do not mark this priority complete on data checks
-  or recording-only pilot evidence.
-
-- Before another substantial training run, choose and document the training
-  machine/runtime, available accelerator and memory, storage for datasets and
-  checkpoints, software/container environment, and how results move to the
-  simulator or eventual arm. The existing training notes record an RTX 5090
-  32 GB host; confirm its availability for future runs rather than assuming it
-  is the selected/available platform. Do not assume the BC-250 AMD GPU supports
-  the current CUDA-oriented training stack.
-- Separate simulator-generated labels/episodes from real-camera data. Decide
-  which data remain local and how held-out capture sessions/layouts are kept
-  out of training. Complete preflight, dataset/action-label checks, and a
-  bounded pilot before committing long GPU time or storage.
+[Acceptance, artifact hashes, metrics, scope and reproduction](../training/PRIORITY5_ACCEPTANCE.md).
+The earlier demand for final trained-controller qualification is **not claimed
+passed**: with large-network training no longer prerequisite to the selected
+architecture, final perception quality belongs to Priority 6, state inference to 7,
+optional learned control to 8, and physical readiness to 10. These remain open.
+The pilot does not replace our calibrated controller or qualify MolmoAct2,
+LeRobot/PyTorch training, continuous VLM service, or a physical robot.
 
 ## Priority 6 — train/evaluate board registration and occupancy/color perception
 

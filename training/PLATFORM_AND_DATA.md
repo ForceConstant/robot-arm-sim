@@ -1,6 +1,15 @@
 # Training platform and data boundary
 
-Priority 5 acceptance record, 2026-10-30. **Not yet qualified for an actual-task policy training run.**
+Priority 5 platform/data qualification is **complete for bounded local use**, 2026-10-30.
+See [Priority 5 acceptance](PRIORITY5_ACCEPTANCE.md) for the current scope and actual-task pilot. The frozen-vision
+and calibrated-control direction does not require a large-network training host.
+The tiny GPU action-data pilot passed infrastructure checks but failed held-out
+quality and is **not an approved controller**. Final task quality remains open.
+
+**Status precedence:** this acceptance supersedes older "Priority 5 in progress"
+and missing-pilot statements below. Historical CUDA/cloud recipes and prior
+requirements are retained as research, not pending user actions. No assertion
+below qualifies MolmoAct2 or grants permission for host-stack changes.
 
 ## Current platform direction — BC-250 local, 2026-10-30
 

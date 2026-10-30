@@ -4,7 +4,13 @@ Everything needed to train the SO-101 chess policy on another machine. The
 settings here were chosen by measurement; `settings.env` carries the reasoning
 inline and `../docs/EXPERIMENTS.md` has the numbers behind each one.
 
-## Platform qualification (Priority 5)
+## Platform qualification (Priority 5 — complete for bounded local use)
+
+Current implementation direction: **frozen pretrained vision + calibrated
+geometry/IK/scripted control**. Large-network training is not a prerequisite.
+The audited tiny actual-task GPU pilot, exact resume and independent inference
+reload now pass; its held-out accuracy fails and the model is not for control.
+See [acceptance and remaining task-quality gates](PRIORITY5_ACCEPTANCE.md).
 
 Read [PLATFORM_AND_DATA.md](PLATFORM_AND_DATA.md) before using the historical
 recipes below. The upstream RTX 5090 is not a confirmed available training host.

@@ -15,6 +15,15 @@ recipes and preflight requests are historical, not pending user actions. The
 GOAT plan remains optional for general reasoning/authoring, not model training
 or robot control. No new GPU purchase is selected.
 
+**2026-10-30 closure:** [Priority 5 platform/data acceptance](PRIORITY5_ACCEPTANCE.md)
+is complete for bounded local use. Frozen vision plus calibrated control is the
+implementation direction; the largest practical VLM preference is retained.
+A tiny actual-task GPU pilot passes optimizer/reload/inference mechanics but
+fails held-out generalization and must not control the arm. Earlier in-progress
+statements below describe historical measurements, not current milestone status.
+Sustained task perception remains Priority 6; learned motor policies are optional
+Priority 8 work, not a prerequisite to calibrated chess control.
+
 ### Local optimization order
 
 1. Start with the measured **Qwen3.5-35B-A3B IQ2_M Vulkan vision** configuration,

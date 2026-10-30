@@ -21,7 +21,14 @@ def snapshot():
             temperatures.append(int((folder / 'temp1_input').read_text()) / 1000)
     if not temperatures:
         raise RuntimeError('AMD GPU temperature is unavailable; refusing unmonitored run')
+    resources = {}
+    for kind in ('vram', 'gtt'):
+        paths = list(Path('/sys/class/drm').glob(f'card*/device/mem_info_{kind}_used'))
+        if not paths:
+            raise RuntimeError(f'Driver {kind} accounting unavailable')
+        resources[f'{kind}_used_bytes'] = sum(int(path.read_text()) for path in paths)
     return {
+        **resources,
         'cpu_available_bytes': mem['MemAvailable'],
         'swap_used_bytes': mem['SwapTotal'] - mem['SwapFree'],
         'gpu_edge_c': max(temperatures),

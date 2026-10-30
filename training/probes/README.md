@@ -61,3 +61,16 @@ mixed precision, a PyTorch/LeRobot backend, or MolmoAct2's action expert. The
 existing CUDA-oriented trainer cannot use Tinygrad without implementation and
 operator-compatibility work. Do not extrapolate capacity or tokens/actions per
 second from these results.
+
+## Actual-recording pilot (separate from the synthetic probe)
+
+`bc250_task_pilot.py` uses the same pinned user-space backend. Export locally
+with `tools/export_bc250_task_pilot.py`; it runs the full provenance/media audit
+before reducing the wrist stream to 8x8 RGB features. Only recorded joints and
+instructed source/destination square coordinates supplement pixels. No FEN or
+oracle piece positions enter observations. Use fresh output paths and the
+resource guard, which now records driver-total VRAM/GTT usage as well.
+
+See [exact commands and measured acceptance](../PRIORITY5_ACCEPTANCE.md).
+This model failed held-out accuracy, must stay offline, and is not wired into
+robot control. Do not confuse its small measured footprint with a large VLA.

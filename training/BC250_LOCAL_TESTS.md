@@ -115,7 +115,10 @@ Private receipts under `.private/bc250-investigation/receipts/`:
 - `webgpu-final-smoke` / `webgpu-final-guard`
 - `webgpu-guard-timeout-check`
 
-**Priority 5 remains in progress.** Next gates: varied single-camera scene
+**Historical status superseded:** Priority5 platform/data qualification is now
+complete with the [actual-task pilot and acceptance](PRIORITY5_ACCEPTANCE.md).
+The tiny model failed held-out quality and is not for control. Remaining
+Priority6/8 deployment-quality gates: varied single-camera scene
 quality plus capture/LAN timing; sustainable thermal/duty-cycle envelope; and
 a compatible real training/action-policy path followed by an audited-task
 optimizer/checkpoint pilot. No physical robot is controlled by these probes.
