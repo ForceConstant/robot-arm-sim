@@ -14,9 +14,10 @@ before exporting. The current workspace is not qualified for MolmoAct2 training.
 ## Deployment requirement (current direction)
 
 Brian requires inference on the existing GTX 1060 3 GB or BC-250. Colab may
-accelerate training, but cannot be a required inference service. Prefer small
-CPU-capable perception plus calibrated planning/control first; the MolmoAct2
-recipe below is historical, not the selected deployment architecture. Qualify
+accelerate training, but cannot be a required inference service. Brian requests
+the **largest practical local model**, starting with BC-250 capability research,
+not a small-model-first strategy. MolmoAct2 remains a candidate; the recipe below
+is historical, not a qualified local deployment. See [BC-250 research](BC250_CAPABILITY.md). Qualify
 exact-size model operators/capacity locally before substantial training and the
 final artifact's memory, latency, reload and held-out behavior afterward. See
 [deployment gates](PLATFORM_AND_DATA.md#deployment-first-constraint--brian-2026-10-30).

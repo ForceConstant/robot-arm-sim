@@ -216,10 +216,11 @@ the report is reporting-only and is never available to a policy under test.
 
 - **Local inference required (Brian, 2026-10-30):** all selected models must
   run on the existing GTX 1060 3 GB host or BC-250; Colab may train them but
-  does not become an inference dependency. Prefer small CPU-capable perception
-  plus calibrated geometry/state tracking and bounded scripted/IK control.
-  MolmoAct2 is historical research, not the default deployment model; its local
-  inference fit is unmeasured. Before substantial training, test exact-size
+  does not become an inference dependency. **Brian superseded the small-first
+  recommendation: investigate BC-250 GPU/APU capabilities, then find the largest
+  practical local model.** MolmoAct2 remains a candidate; local fit is unmeasured.
+  [BC-250 research](../training/BC250_CAPABILITY.md) distinguishes large quantized
+  LLM evidence from robot-policy compatibility and compares the RTX 5080. Before substantial training, test exact-size
   model operators/capacity locally. Completion also requires the trained local
   artifact's peak RAM/VRAM under concurrent simulator load, p50/p95 latency,
   checkpoint reload/output agreement and held-out evaluation receipts. See

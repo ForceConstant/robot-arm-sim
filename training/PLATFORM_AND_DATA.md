@@ -12,14 +12,15 @@ historical ~30 GB training peak alone neither proves nor disproves inference
 fit, but no MolmoAct2 local-fit measurement exists. Treat that recipe as
 historical research, not the selected production architecture.
 
-Recommended first path: calibrated board geometry + a small occupancy/color
-CNN (CPU-capable inference) + legal-state tracking + existing bounded IK and
-scripted control. Piece-type recognition is a separate later scope. Candidate
-learned motor alternatives are a small state-conditioned MLP or compact
-image-conditioned action-chunking policy; neither is selected or qualified.
-HIL-SERL is a learning workflow, not evidence that its particular policy fits.
-Keep oracle labels out of inference inputs. Local CPU inference is acceptable
-if its measured latency meets the task, without modifying Bazzite's gaming OS.
+**Superseding direction from Brian:** start big and find the largest practical
+model that can run locally, rather than selecting small perception first.
+Investigate BC-250 hardware/runtime limits before shrinking the architecture.
+Keep MolmoAct2 and larger supported VLM/VLA candidates under consideration;
+there is no evidence yet of their final local compatibility or latency.
+Small models and calibrated/scripted control remain comparators/fallbacks, not
+the chosen ceiling. HIL-SERL is a learning workflow, not proof of model fit.
+Keep oracle labels out of inference inputs. See
+[BC-250 research and qualification path](BC250_CAPABILITY.md).
 
 Before substantial task training, select the local deployment host, framework,
 model architecture, input resolution and action contract; exercise an exact-size
@@ -29,17 +30,20 @@ capacity failures. Then run the trained checkpoint through these gates:
 - **Memory/concurrency:** measure peak process RAM and total GPU usage with
   actual camera inputs, preprocessing, model, action buffers, simulator rendering
   and normal concurrent services active. Do not use the full 3 GB as the model
-  budget or stop other consumers to pass. Provisional NVIDIA target: model/runtime
-  incremental peak <=1 GiB, while retaining >=512 MiB total GPU free; reduce
-  model/resolution or use CPU if co-running workloads cannot meet this. These
-  are initial engineering budgets, not measured fit. On BC-250 measure the
-  shared physical pool and host headroom, not VRAM+GTT addition; prefer CPU
-  fallback until a GPU inference backend passes numerical/operator checks.
+  budget or stop other consumers to pass. The previous <=1 GiB incremental
+  NVIDIA target was an assistant-proposed budget, not Brian's requirement, and
+  is withdrawn: search the available capacity with measured host/rendering
+  headroom instead. On BC-250 account for one shared physical pool, not
+  VRAM+GTT addition. Qualify GPU backends rather than assuming CPU-only use.
+  Large-model search may use BC-250 inference with simulation on the GTX host;
+  test network/camera/action latency and bounded-command handling separately.
+
 - **Latency:** report warm-up, p50/p95 end-to-end preprocessing+inference+decode
   latency and sustained throughput. Provisional settled-board perception target
-  is p95 <=500 ms. A 10 Hz motor policy needs p95 <=100 ms per replenishment
-  cycle, or a documented action-chunk/async design proven to avoid buffer
-  underruns. Interpolate bounded targets locally; late/invalid output must stop
+  is p95 <=500 ms (proposal, not a model exclusion rule). An unchunked
+  10 Hz motor policy needs p95 <=100 ms per replenishment cycle. Larger models
+  may use slower stop-observe-plan-execute or chunked/async control, with
+  measured task completion time and no action-buffer underruns. Interpolate bounded targets locally; late/invalid output must stop
   or abstain, not replay stale commands. These targets still need measurement.
 - **Artifact compatibility:** save/reload the inference-only checkpoint and
   processor configs on the actual local runtime; compare outputs within a
@@ -108,8 +112,9 @@ is not a support commitment for BC-250/Bazzite.
 **Recommendation:** candidate for bounded small occupancy/color perception
 experiments, not the inherited approximately 30 GB MolmoAct2 recipe. Keep its
 working gaming OS/kernel/firmware unchanged while choosing scope; a container
-cannot supply missing host-driver fixes. Brian now requires local inference on existing hardware; favor small
-perception models and consider Colab only for training. The exact model/runtime
+cannot supply missing host-driver fixes. Brian now requires local inference on existing hardware and explicitly
+requests the largest practical model; investigate BC-250 capacity first and
+consider Colab for training. The exact model/runtime
 and training host are still unselected. No training-host selection, memory-split change, install or reboot
 has been assumed from the power-on.
 
