@@ -44,6 +44,22 @@ Evaluation draws the same variation (`--nominal-layout` turns it off).
 Success is the rule the scripted expert is held to: the piece ends within
 **11 mm** of the target square, upright, nothing else displaced.
 
+## Free-tier Colab pilot (adapter, not full fine-tune)
+
+A full fine-tune of MolmoAct2 (~10.1 GiB of fp16 weights plus ~40 GiB of AdamW
+state) cannot fit a 16 GB T4, which is what a free Colab session typically
+allocates. The trainer now takes LeRobot's adapter configuration:
+
+```bash
+SETTINGS=training/settings.free_tier_colab.env training/train.sh
+```
+
+That run is deliberately tiny: 20 optimizer steps, micro-batch 1 with 8-step
+accumulation, two checkpoints, LoRA rank 16, `--mixed-precision fp16` (Turing
+cannot compute bf16). It proves the dataloader, reverse pass, checkpoint save
+and reload on whatever GPU the session actually got — it is not a training run.
+See [PLATFORM_AND_DATA.md](PLATFORM_AND_DATA.md#free-tier-colab-only--brian-2026-10-30).
+
 ## Run it
 
 ```bash

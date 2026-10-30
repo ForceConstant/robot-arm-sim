@@ -280,8 +280,10 @@ the report is reporting-only and is never available to a policy under test.
   The trainer now exposes LeRobot's `PeftConfig` (LoRA method, rank, alpha,
   target modules, full-training modules) and a `--mixed-precision` override, so
   an adapter run is constructible; five new tests cover the flags and the full
-  regression is 46 passed / 4 skipped. Command construction only — no GPU run
-  yet, so fit is still an arithmetic expectation. A free-tier pilot therefore needs
+  regression is 49 passed / 4 skipped, plus `training/settings.free_tier_colab.env`
+  (20 steps, micro-batch 1, accumulation 8, LoRA r16, fp16). Command
+  construction and settings only — no GPU run yet, so fit is still an
+  arithmetic expectation. A free-tier pilot therefore needs
   an adapter (LoRA/QLoRA) or frozen-backbone option, micro-batch 1 with
   accumulation, and Drive-backed resumable checkpoints. Public dataset use
   discloses nothing new; uploading private recordings/CAD still needs an
