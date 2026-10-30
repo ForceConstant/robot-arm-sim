@@ -14,11 +14,16 @@ def values():
     return out
 
 
-def test_uses_the_models_own_adapter_mode_and_fp16():
+def test_uses_a_reduced_rank_and_fp16():
     v = values()
-    assert "--policy.train_mode_vlm=lora" in v["POLICY_FLAGS"]
     assert "--policy.lora_rank=" in v["POLICY_FLAGS"]
     assert v["MIXED_PRECISION"] == "fp16"      # a T4 cannot compute bf16
+
+
+def test_does_not_repeat_a_flag_the_recipe_already_sets():
+    """The recipe emits train_mode_vlm itself; repeating it duplicates the flag."""
+    v = values()
+    assert "train_mode_vlm" not in v["POLICY_FLAGS"]
 
 
 def test_is_a_bounded_pilot_not_a_long_run():
