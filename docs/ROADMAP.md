@@ -231,6 +231,13 @@ the report is reporting-only and is never available to a policy under test.
   ROCm/PyTorch training stack. Community native-build training is plausible for
   small perception models, not proof this box works or capacity for the
   approximately 30 GB MolmoAct2 recipe. No OS/driver/firmware changes made.
+- **Colab candidate (Brian's suggestion):** prepared
+  [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
+  identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
+  round-trip without private uploads. Syntax verified; cloud execution and
+  actual-task training remain unverified. Paid/free tier and compute budget
+  await confirmation. HIL-SERL's Panda tutorial is relevant future architecture,
+  not a drop-in SO101 environment; details in the platform document.
 - **Still required:** choose small-model BC-250 qualification versus a separate
   NVIDIA training host, confirm storage/access, then pass selected-host runtime
   preflight and a bounded optimizer/checkpoint pilot. The upstream RTX 5090 is

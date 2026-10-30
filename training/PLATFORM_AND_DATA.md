@@ -155,3 +155,49 @@ Private receipts: `.private/priority5-pilot/manifest.json`, `audit.json`, and
 `.private/priority5-preflight.log`. These tiny recordings do not estimate
 full-resolution dataset storage or GPU training throughput. No LeRobot export,
 optimizer step, checkpoint or learned-policy evaluation was run.
+
+## Colab and HIL-SERL candidates — 2026-10-30
+
+Brian suggested Colab and the official HIL-SERL simulation guide.
+
+**Colab recommendation:** a managed NVIDIA runtime is more practical for
+CUDA-oriented experiments than modifying the BC-250 gaming host. Actual GPU,
+free VRAM, Python/torch versions, disk and session budget must be measured;
+no specific GPU is guaranteed even on paid plans. A T4 16 GB or L4 24 GB does
+not fit the unchanged approximately 30 GB batch-8 recipe; an allocated A100
+40 GB is a plausible candidate, not a measured training pass. Smaller models
+or changed microbatch/accumulation need their own pilot. High-RAM runtime
+settings refer to CPU RAM, not VRAM.
+
+The [official Colab FAQ](https://research.google.com/colaboratory/faq.html)
+explains variable resources, idle/session limits, ephemeral VMs, and paid
+compute-unit limits. Free-tier restrictions specifically include remote
+control, distributed workers and “chess training.” Our task is robot
+manipulation, not chess-engine training, but do not assume an exemption or
+plan a free remote actor/learner worker. Paid-tier/compute-unit availability
+and budget are pending Brian's answer. No subscription or resources purchased.
+
+[`notebooks/colab_preflight.ipynb`](notebooks/colab_preflight.ipynb) reports
+GPU/VRAM, versions and disk; runs 20 tiny synthetic optimizer steps, tests exact
+checkpoint reload and one resumed step, and writes a JSON receipt. It uses
+preinstalled torch and neither mounts Drive nor installs packages or uploads
+private data. Notebook JSON/Python syntax was checked locally; **it has not
+been executed in Colab**. It does not replace the actual-task training pilot,
+LeRobot imports, EGL qualification or persistent-storage selection. Brian must
+open it in his Colab account and return its JSON report to qualify allocated
+resources. Persistent checkpoint storage and a specific cloud-data transfer
+manifest must be selected before real training data leaves the LAN.
+
+**HIL-SERL:** the [official simulation guide](https://huggingface.co/docs/lerobot/main/en/hilserl_sim)
+provides MuJoCo `gym_hil` environments for Franka Panda cube pickup, keyboard/
+gamepad interventions and separate actor/learner processes on NVIDIA/CUDA.
+It is not a ready-made SO101 chess environment or a MolmoAct2 training recipe.
+Our scene needs a compatible environment/processor adapter, observation and
+action contract, physical-success rewards/termination/reset, replay/intervention
+collection and held-out baseline comparison. Preserve contact-based verdicts,
+keep oracle labels out of vision inputs, and disable Hub upload (the tutorial
+example enables it). The guide follows LeRobot `main`; qualify a separately
+pinned HIL-SERL runtime rather than assume compatibility with historical
+commit `2774d9b`. Headless colocated actor/learner may be investigated after
+the platform gate; interactive LAN-to-Colab HIL networking is unverified.
+The link informs a later bounded RL comparison, not completion of Priority 9.
