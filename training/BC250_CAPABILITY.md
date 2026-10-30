@@ -4,7 +4,8 @@ Research/inventory: 2026-10-30. Brian's direction is **start big, determine the
 largest practical locally runnable model**. This supersedes the assistant's
 small-perception-first recommendation and arbitrary 1 GiB inference budget.
 Model size is the search objective; working robot observations/actions, quality,
-latency and stability remain acceptance gates. No new GPU purchase is selected.
+latency and stability remain acceptance gates. No new GPU purchase is selected. Live experiments below supersede the initial
+read-only inventory where explicitly noted.
 
 ## Bottom line
 
@@ -144,7 +145,73 @@ Investigate its dependencies and action-chunk timing before selecting a port.
 6. Select Colab/local training only after deployment feasibility. Priority 5
    remains in progress pending model/runtime selection and measured local plus
    training pilots. No host changes, installs, model downloads or training were
-   performed for this research pass.
+   performed for the original research pass; subsequent live probes are below.
+
+## Live experiments — 2026-10-30, 35B probe pending
+
+Brian authorized continuing the investigation. Installed **only** the official
+portable llama.cpp b12002 Vulkan archive into a dedicated home-directory tree;
+no system package, service, driver, firmware, CU mask, memory split or kernel
+setting was changed. Official archive SHA-256:
+`5ba166def192e8be3ffd99aa187fe1bae9c484d2d085aa85b6c3db8b1bc0bf37`,
+upstream commit `418f905a4efe910d2a75636bbe65d48eca38790a`.
+
+Downloaded pinned `bartowski/google_gemma-3-27b-it-GGUF` revision
+`4a05c54413bd0d87d77a97af403266f69cec0ee6`:
+`google_gemma-3-27b-it-IQ3_XXS.gguf` (10,716,240,512 bytes) and its FP16 image
+projector (857,739,168 bytes); both match publisher LFS SHA-256. Simulator
+screenshots stayed on the LAN/private storage. No robot command was generated
+or executed, no camera/FEN truth supplied as model input, no training performed.
+
+All probes used one localhost-only server and bounded requests. Supervision
+stopped on CPU MemAvailable <768 MiB for three samples, swap growth >512 MiB,
+GPU edge >=85 C, or time budget expiry. These are conservative experiment gates,
+not hardware capacities. Monitored 1-second samples can miss transient peaks.
+
+| Gemma 3 27B IQ3_XXS configuration | Observed outcome |
+| --- | --- |
+| GPU vision, 2048 context, mmap | Stopped during load after ~0.87 GiB sampled swap growth |
+| GPU vision, 2048 context, non-mmap | Model/projector loaded, but CPU headroom fell to ~0.36 GiB; stopped |
+| CPU vision, 1024 context, non-mmap | Ready in 22.1 s; stopped as decoding began, headroom ~0.66 GiB |
+| GPU vision, 512 context, Q8 KV, batch 32 | Ready in 19.0 s; correct short text answer, then image processing dropped headroom to ~0.73 GiB; stopped. Peak sampled GPU edge 84 C |
+| Text-only, 512 context, Q8 KV, batch 32 | **Bounded text smoke completed**; reload smoke also completed |
+
+**What genuinely worked:** logs confirm Vulkan backend and **63/63 layers
+GPU-offloaded** for the text-only reload. GPU model buffer 10,213.55 MiB plus
+924 MiB Vulkan_Host model buffer demonstrate why weights-file size alone is
+insufficient. Three text requests took 0.62, 3.50 and 1.87 s, with decode
+approximately **20.0–20.7 tokens/s** (4, 64 and 28 predicted tokens). This is a
+short smoke sample, not sustained throughput. Counting output deliberately hit
+the 64-token cap and did not finish counting to 30; do not score it as a
+successful instruction task. The square-extraction answer had the right squares
+but Markdown fences despite a JSON-only request. No robot-policy quality pass.
+
+The text-only run retained >=**1.50 GiB CPU MemAvailable**, added ~17 MiB swap
+and peaked at **78 C**. Independent reload retained >=1.66 GiB, answered the
+same arithmetic prompt with identical text, and logs establish GPU offload.
+This is exact text agreement, not full logits/numerical equivalence. Initial
+failed loads had already moved idle OS pages to swap: later runs began with
+about 1.2 GiB swap in use, so their small additional swap is **not** evidence of
+zero cumulative impact or a controlled loading-mode A/B. Test servers were
+removed on completion/abort; one early abort needed forced process cleanup.
+
+**What did not work:** none of the four vision configurations completed an
+image response under the selected memory guards. Therefore there is no measured
+image-to-answer latency, color-control pass, successful 27B VLM deployment,
+checkpoint quality pass or VLA qualification. This does not prove every 27B
+vision architecture/quantization impossible. GPU temperature approached the
+experiment limit during vision work, so sustained thermal headroom is also open.
+
+**Next, running:** pinned `unsloth/Qwen3.5-35B-A3B-GGUF` revision
+`bc014a17be43adabd7066b7a86075ff935c6a4e2`, IQ2_M weights plus FP16 projector,
+12,290,897,216 bytes total. A separate download verifies publisher hashes before
+trying its different MoE/vision architecture, 1024 context, Q8 KV, batch 32,
+bounded image tokens and the same resource/thermal guards. No result yet.
+
+Private evidence: `.private/bc250-investigation/receipts/` holds the six
+per-configuration reports, server logs and resource samples; remote copies and
+portable tools/models remain in Brian's dedicated home directory for reuse.
+Priority 5 remains **in progress**, not training- or robot-policy-qualified.
 
 ## Sources
 

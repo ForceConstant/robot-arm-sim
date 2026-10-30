@@ -243,6 +243,13 @@ the report is reporting-only and is never available to a policy under test.
   ROCm/PyTorch training stack. Community native-build training is plausible for
   small perception models, not proof this box works or capacity for the
   approximately 30 GB MolmoAct2 recipe. No OS/driver/firmware changes made.
+- **Measured BC-250 local inference (2026-10-30):** official portable Vulkan
+  runtime installed user-locally with verified hash. Gemma 3 27B IQ3_XXS passes
+  a bounded **text-only** smoke/reload (63/63 layers GPU-offloaded, ~20 tokens/s,
+  >=1.50 GiB CPU headroom). Four vision configurations stop on memory guards;
+  no image response or VLA pass. Vision work reached 84 C. A 35B MoE vision
+  artifact is downloading for a different-architecture test; results pending.
+  [Exact scope and receipts](../training/BC250_CAPABILITY.md#live-experiments--2026-10-30-35b-probe-pending).
 - **Colab candidate (Brian's suggestion):** prepared
   [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
   identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
