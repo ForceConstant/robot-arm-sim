@@ -268,6 +268,26 @@ class TrainConfig(Config):
     # varying for one run, such as --policy.train_expert_only=false
     extra_flags: tuple[str, ...] = ()
 
+    # --- parameter-efficient fine-tuning (free-tier Colab / small cards) ------
+    # A full fine-tune of MolmoAct2 needs ~10.1 GiB of fp16 weights plus ~40 GiB
+    # of AdamW state, so it cannot fit a 16 GiB T4 at any batch size. LeRobot's
+    # train config takes a `peft` block (see lerobot/configs/default.py
+    # PeftConfig); these fields surface it. PEFT is rejected under sharded
+    # training, which is fine for one GPU.
+    peft: bool = False
+    peft_method: str = "LORA"
+    peft_r: int = 16
+    peft_alpha: float | None = None
+    # module-name suffixes, or "all-linear"; None lets the policy pick its default
+    peft_target_modules: str | None = None
+    # modules stored in full beside the adapter (newly created layers such as
+    # action-state projections); empty means the policy's own default
+    peft_full_training_modules: tuple[str, ...] = ()
+
+    # accelerate's own flag: bf16 on Ampere+, fp16 on Turing (a free-tier T4
+    # cannot compute bf16 at all), or "no" for fp32
+    mixed_precision: str = "bf16"
+
     @property
     def base(self) -> str:
         return self.base_checkpoint or self.recipe.base
@@ -304,8 +324,23 @@ class TrainConfig(Config):
             f"--save_freq={self.save_every}", "--env_eval_freq=-1",
             f"--output_dir={self.output_dir}",
             *self._learning_rates(),
+            *self.peft_flags(),
             *self.extra_flags,
         ]
+
+    def peft_flags(self) -> list[str]:
+        """`--peft.*` overrides for adapter training; empty for a full fine-tune."""
+        if not self.peft:
+            return []
+        flags = [f"--peft.method_type={self.peft_method}", f"--peft.r={self.peft_r}"]
+        if self.peft_alpha is not None:
+            flags.append(f"--peft.lora_alpha={self.peft_alpha:g}")
+        if self.peft_target_modules:
+            flags.append(f"--peft.target_modules={self.peft_target_modules}")
+        if self.peft_full_training_modules:
+            flags.append("--peft.full_training_modules=" +
+                         "[" + ",".join(self.peft_full_training_modules) + "]")
+        return flags
 
     def _learning_rates(self) -> list[str]:
         if self.lr_scale == 1.0:
@@ -314,13 +349,19 @@ class TrainConfig(Config):
                 for name, rate in self.recipe.learning_rates.items()]
 
     def resume_command(self, steps: int) -> list[str]:
-        """Continue the run to `steps` total; everything else comes from the saved config."""
+        """Continue the run to `steps` total; everything else comes from the saved config.
+
+        The adapter flags are repeated: the saved config still needs the adapter
+        re-applied to the base policy before the optimizer state can load, and
+        re-specifying identical values is idempotent.
+        """
         return self._launcher() + [f"--config_path={self.last_train_config}", "--resume=true",
-                                   f"--steps={steps}", f"--save_freq={self.save_every}"]
+                                   f"--steps={steps}", f"--save_freq={self.save_every}",
+                                   *self.peft_flags()]
 
     def _launcher(self) -> list[str]:
         return [os.path.expanduser(self.accelerate), "launch", "--num_processes=1",
-                "--mixed_precision=bf16", "-m", self.recipe.train_module]
+                f"--mixed_precision={self.mixed_precision}", "-m", self.recipe.train_module]
 
     def complete_checkpoints(self) -> list[str]:
         """Step directories a run can resume from, newest last.

@@ -212,11 +212,18 @@ master weights and activations. **Full-parameter fine-tuning of this checkpoint
 is impossible on a 16 GB T4 at any batch size.** The inherited batch-8,
 ~30 GB recipe assumed a 32 GB RTX 5090 and is not portable to free Colab.
 
-`examples/train_policy.py` today exposes batch, accumulation, workers, steps and
-scheduler overrides but **no adapter, quantization or frozen-backbone option** —
-it is a full fine-tune. `chess_sim/policies.py` can already *load* a PEFT
-adapter at inference (`use_peft`), so adapter-shaped checkpoints are compatible
-with the evaluation path; the missing piece is producing one.
+`examples/train_policy.py` exposed batch, accumulation, workers, steps and
+scheduler overrides but **no adapter option** until 2026-10-30. It now passes
+`--peft`, `--peft-r`, `--peft-alpha`, `--peft-target-modules` and
+`--peft-full-training-modules` through to LeRobot's `PeftConfig`, plus
+`--mixed-precision fp16|bf16|no` for a T4. `chess_sim/policies.py` already
+*loads* PEFT adapters at inference (`use_peft`), so adapter-shaped checkpoints
+stay compatible with the evaluation path.
+
+This is verified at **command-construction** level only (five tests, full
+regression 46 passed / 4 skipped). No adapter run has happened on a GPU yet, so
+"LoRA fits a T4" remains an arithmetic expectation, not a measurement. 4-bit
+QLoRA is still unimplemented and would add bitsandbytes.
 
 ### What a free-tier pilot would have to be
 

@@ -277,8 +277,11 @@ the report is reporting-only and is never available to a policy under test.
   ~12 h sessions with idle disconnects, no SSH/remote/distributed workers,
   ephemeral disk. MolmoAct2 is 5.442B parameters — 10.14 GiB in fp16/bf16
   weights and ~40 GiB of AdamW state — so **full fine-tuning cannot fit a T4**.
-  The current trainer is full fine-tune only; `chess_sim/policies.py` can load
-  PEFT adapters but nothing produces one yet. A free-tier pilot therefore needs
+  The trainer now exposes LeRobot's `PeftConfig` (LoRA method, rank, alpha,
+  target modules, full-training modules) and a `--mixed-precision` override, so
+  an adapter run is constructible; five new tests cover the flags and the full
+  regression is 46 passed / 4 skipped. Command construction only — no GPU run
+  yet, so fit is still an arithmetic expectation. A free-tier pilot therefore needs
   an adapter (LoRA/QLoRA) or frozen-backbone option, micro-batch 1 with
   accumulation, and Drive-backed resumable checkpoints. Public dataset use
   discloses nothing new; uploading private recordings/CAD still needs an

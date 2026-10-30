@@ -128,6 +128,17 @@ def main():
     ap.add_argument("--eval-max-steps", type=int, default=450)
     ap.add_argument("--eval-fixed-camera", default=None,
                     help="the camera a --fixed-camera collection held ('rig' or 'side'), for both checks")
+    ap.add_argument("--peft", action="store_true",
+                    help="train adapters over frozen weights instead of a full fine-tune; "
+                         "the only way this checkpoint fits a 16 GB card")
+    ap.add_argument("--peft-r", type=int, default=16, help="adapter rank")
+    ap.add_argument("--peft-alpha", type=float, default=None, help="LoRA alpha (default: PEFT's)")
+    ap.add_argument("--peft-target-modules", default=None,
+                    help="module suffixes or 'all-linear'; default lets the policy choose")
+    ap.add_argument("--peft-full-training-modules", nargs="*", default=[],
+                    help="modules stored in full beside the adapter, e.g. newly created projections")
+    ap.add_argument("--mixed-precision", choices=["bf16", "fp16", "no"], default="bf16",
+                    help="accelerate precision; a T4 cannot compute bf16, use fp16 there")
     args = ap.parse_args()
 
     settings = {"recipe": RECIPES[args.policy], "dataset_root": args.root, "repo_id": args.repo_id,
@@ -140,6 +151,12 @@ def main():
         settings["init_from"] = args.init_from
     if args.lr_scale != 1.0:
         settings["lr_scale"] = args.lr_scale
+    if args.peft:
+        settings.update(peft=True, peft_r=args.peft_r, peft_alpha=args.peft_alpha,
+                        peft_target_modules=args.peft_target_modules,
+                        peft_full_training_modules=tuple(args.peft_full_training_modules))
+    if args.mixed_precision != "bf16":
+        settings["mixed_precision"] = args.mixed_precision
     config = TrainConfig(**settings)
     best_path = os.path.join(args.out, BEST)
     best = CheckpointScore.load(best_path)
