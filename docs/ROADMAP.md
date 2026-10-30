@@ -247,17 +247,49 @@ optional learned control to 8, and physical readiness to 10. These remain open.
 The pilot does not replace our calibrated controller or qualify MolmoAct2,
 LeRobot/PyTorch training, continuous VLM service, or a physical robot.
 
-## Priority 6 — train/evaluate board registration and occupancy/color perception
+## Priority 6 — board registration and occupancy/color perception — complete
 
-- Treat board registration (camera intrinsics, board pose, and camera-to-arm
-  geometry) as a calibrated geometry problem first, not a single learned task.
-  If learned registration is later justified, evaluate it independently from
-  object classification.
-- Train/evaluate square occupancy and piece color from top/wrist views, with
-  explicit unknown/low-confidence outcomes. Include occlusions, hands/shadows,
-  board pose/lighting variation, and held-out physical capture sessions when
-  available. Compare predictions with simulator truth in evaluation only; the
-  controller must not read oracle piece poses or FEN during the vision test.
+**Closed 2026-10-30 for the qualified fixed-overhead-rig envelope.** Board
+registration is treated as calibrated geometry, not a learned task. The camera
+intrinsics/extrinsics, known square size and board-surface height are
+calibration inputs; one overhead frame supplies the residual board pose. The
+checker-saddle response gives a coarse pose, an edge-consistency term fixes the
+lattice's one-square phase, and a local Nelder–Mead refinement returns origin,
+yaw and square size. A low-score fit abstains rather than labelling the wrong
+pixels.
+
+Perception samples rectified per-square patches, estimates each square's empty
+background from same-colour neighbours, and classifies `empty` / `white` /
+`black` / `unknown` with a small NumPy MLP over colour, texture, gradient and
+empty-reference difference features. A session's empty-board frame is a
+calibration observation, never piece truth. Top and wrist views are both
+evaluated; the wrist view uses the top-view board pose plus the calibrated
+camera-to-arm chain.
+
+- **Qualified envelope:** published overhead rig; board square/height known;
+  board placement within about ±12 mm and ±2.5° of nominal (registration
+  searches ±16 mm / ±4.5°); sparse positions (two kings plus 2–8 extra pieces);
+  board/camera fixed within a session.
+- **Held-out result** (`seed 9001`, 8 sessions × 5 positions, 5 sessions
+  registered, 3 rejected by the gate): registration median 1.42 mm / max
+  1.92 mm origin error, max 1.43° yaw. Top view on unoccluded squares: 96.0%
+  coverage, 99.4% answered accuracy, 95.8% occupied accuracy, 99.9% empty
+  accuracy, 0.55% confident errors. Natural arm occlusion: 90.6% abstention.
+  Wrist: 97.8% answered accuracy, 88.2% occupied accuracy, 99.9% coverage.
+  Shadow stress: 98.4% accuracy.
+- **Limits:** registration accepted 5/8 held-out sessions; rejected sessions
+  are reported, not silently used. Synthetic opaque occluders are only 22.5%
+  abstained (natural arm occlusion is 90.6%), so a hand/foreign-object detector
+  remains open. The empty reference is valid only while board and camera stay
+  fixed. Camera calibration is simulated, not independently physical. Sparse
+  positions only; crowded boards and move/state inference remain Priority 7/8.
+  No physical capture session is claimed.
+- **Implementation:** `chess_sim/board_registration.py`,
+  `chess_sim/perception.py`, `chess_sim/perception_data.py`,
+  `tools/train_perception.py`, `tools/benchmark_perception.py`; model artifact
+  `chess_sim/assets/perception/model.json`. Local regression passed
+  **67 passed, 4 skipped**. Receipt `training/PERCEPTION_ACCEPTANCE.md`, private
+  receipts `.private/perception/heldout-v8.json` and `training-v8.json`.
 
 ## Priority 7 — infer move/state changes from observations
 

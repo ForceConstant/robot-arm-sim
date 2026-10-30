@@ -184,3 +184,10 @@ container; elsewhere the driver's own EGL is enough.
   so pieces do not get knocked over in the first place; if the task returns,
   the instruction has to name the piece type, since several may be loose at
   once, and that needs actual recognition.
+
+## Priority 6 — perception
+
+Board registration and occupancy/colour perception are qualified for the
+fixed-overhead-rig envelope. See [PERCEPTION_ACCEPTANCE.md](PERCEPTION_ACCEPTANCE.md)
+for the measured result, limits and reproduction. Train with
+`tools/train_perception.py`; evaluate with `tools/benchmark_perception.py`.

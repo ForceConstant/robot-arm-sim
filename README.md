@@ -22,6 +22,19 @@ arithmetic fit estimate for a 5.44B policy (10.1 GiB of fp16 weights; ~40 GiB of
 AdamW state for a full fine-tune, so a 16 GB T4 cannot full-finetune it).
 It is a compute smoke test, not task training.
 
+## Perception milestone — board registration and occupancy/colour (Priority 6)
+
+A calibrated overhead camera, a known board size/height and one empty-board
+reference per session are enough to register the board and classify all 64
+squares as empty, white, black or unknown. On held-out sessions the unoccluded
+top view answered 96% of squares at 99.4% accuracy; the wrist view answered
+99.9% at 97.8%. Natural arm occlusion abstains 90.6%. Board registration is
+1.42 mm median error; 5 of 8 held-out appearance draws passed the registration
+gate (the rest abstained). No FEN, piece pose or simulator truth is read at
+inference.
+
+[Acceptance, limits, receipts and reproduction](training/PERCEPTION_ACCEPTANCE.md)
+
 ## Environment-first milestone (v1.0.0)
 
 ### Incident recording, replay and the torture suite (v1.2.0)

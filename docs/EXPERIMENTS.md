@@ -1136,3 +1136,71 @@ hardware fit, friction or squeeze-force qualification.
 Receipts: `.private/expert-baseline.json` (every episode with seed, set, task,
 piece, error and reason), `.private/expert-baseline.md` and
 `.private/expert-baseline-run.log`.
+
+## 12. Board registration and occupancy/colour perception — 2026-10-30
+
+The first perception task that is not acceptable as a scripted expert. A
+calibrated overhead camera, known square size and surface height, board
+placement within ±12 mm and ±2.5°, and one empty-board frame per session are
+the calibration inputs. Registration and classification never read a FEN,
+piece pose or simulator transform; truth is used only to label training data
+and to score the held-out run.
+
+### Method
+
+- **Registration:** multi-scale checker-saddle response → coarse pose grid →
+  edge-consistency term (playing-field edge has alternating colour inside,
+  uniform border outside) to resolve the one-square lattice period →
+  Nelder–Mead refinement. A fit below score 0.40 or coverage 0.80 abstains.
+- **Perception:** rectified 16×16 patches per square; expected empty colour
+  from same-parity diagonal neighbours; 34 features covering colour, texture,
+  gradient, parity, view and empty-reference differences; a 32-unit tanh MLP
+  over standardised features; four classes including explicit `unknown`.
+  Near-black/blank frames and out-of-frame squares also abstain.
+- **Training:** 10 sessions × 12 positions, 11,220 rows (7,680 top, 3,540
+  wrist); whole-session train/validation split (8/2). Labels: 8,016 empty,
+  417 white, 459 black, 2,328 unknown. Validation coverage 81.2%, answered
+  accuracy 98.1%, confident-error rate 1.58%.
+
+### Held-out result (seed 9001, 8 sessions × 5 positions)
+
+Only 5 sessions passed the registration gate; the 3 rejected sessions are
+reported as abstentions, not silently used.
+
+| Metric | Result |
+| --- | --- |
+| Registration origin error | 1.42 mm median, 1.92 mm max |
+| Registration yaw error | 0.49° median, 1.43° max |
+| Within 5 mm and 1° | 80% |
+| Top, unoccluded | 96.0% coverage, 99.4% answered accuracy, 95.8% occupied, 99.9% empty |
+| Top confident errors (unoccluded) | 6 / 1,100 (0.55%) |
+| Natural arm occlusion | 90.6% abstention |
+| Wrist | 99.9% coverage, 97.8% answered accuracy, 88.2% occupied, 98.9% empty |
+| Shadow stress | 98.4% answered accuracy |
+| Synthetic opaque occluders | 22.5% abstention — weak |
+
+### What this establishes
+
+- A calibrated geometric board pose is enough to rectify square patches well:
+  unoccluded top-view occupancy and colour are 99.4% accurate at 96% coverage,
+  and the wrist view adds an independent 97.8%.
+- The **empty-reference difference** is the feature that makes colour matching
+  survivable. Without it, a white piece on a light square is nearly invisible;
+  the same small model collapsed toward `unknown` in earlier runs.
+- The registration phase is the bottleneck, not the classifier: 3 of 8 held-out
+  sessions were rejected by the confidence gate. A wrong one-square pose would
+  make every label wrong, so abstaining is the correct behavior.
+
+### Limits
+
+- Registration acceptance is 62.5% on held-out appearance draws; wider boards
+  near the frame edge and some lighting/board combinations fail the gate.
+- Synthetic opaque occluders are not reliably recognised as unknown (22.5%),
+  while natural robot-arm occlusion is (90.6%). A hand/foreign-object detector
+  remains open.
+- The empty reference must be recaptured if the board or camera moves.
+- Sparse positions only; crowded boards and move/state inference are not
+  claimed. Camera calibration is simulated, not physical.
+
+Receipt: `training/PERCEPTION_ACCEPTANCE.md`, private
+`.private/perception/heldout-v8.json` and `training-v8.json`.
