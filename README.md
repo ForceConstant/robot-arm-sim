@@ -5,6 +5,23 @@ of [qalby-tech/embryo_lab_chess_so101](https://github.com/qalby-tech/embryo_lab_
 Upstream project documentation follows below; it describes upstream work, not
 newly reproduced results for this fork. See [UPSTREAM.md](UPSTREAM.md).
 
+## Colab GPU preflight (free tier)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ForceConstant/robot-arm-sim/blob/main/training/notebooks/colab_preflight.ipynb)
+
+Run the hardware check on a free Colab GPU runtime, then hand the JSON report
+back to the project session:
+
+- **Open in Colab:** <https://colab.research.google.com/github/ForceConstant/robot-arm-sim/blob/main/training/notebooks/colab_preflight.ipynb>
+- **View the notebook on GitHub:** <https://github.com/ForceConstant/robot-arm-sim/blob/main/training/notebooks/colab_preflight.ipynb>
+
+The notebook installs nothing, mounts no Drive, uploads no data and fetches no
+weights. It reports the allocated GPU, VRAM, versions and free disk, runs 20
+synthetic optimizer steps with an exact checkpoint reload, and adds a pure
+arithmetic fit estimate for a 5.44B policy (10.1 GiB of fp16 weights; ~40 GiB of
+AdamW state for a full fine-tune, so a 16 GB T4 cannot full-finetune it).
+It is a compute smoke test, not task training.
+
 ## Environment-first milestone (v1.0.0)
 
 ### Incident recording, replay and the torture suite (v1.2.0)
