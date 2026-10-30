@@ -20,11 +20,15 @@ or robot control. No new GPU purchase is selected.
 1. Start with the measured **Qwen3.5-35B-A3B IQ2_M Vulkan vision** configuration,
    preserving pinned artifacts, disabled optional server caches and memory/
    temperature guards. This is the largest passing VLM tested, not a VLA pass.
-2. Benchmark sustained settled two-wrist observations: end-to-end capture,
+2. Benchmark sustained settled **single-camera wrist observations** for the
+   IRL setup (Brian, 2026-10-30): end-to-end capture,
    transport, preprocessing, inference and decode p50/p95; memory, swap and
    thermals; structured occupancy/color outputs and abstentions against held-out
    truth. Keep oracle labels out of inputs. Tune image/context/token budgets
    against measured task quality, not caption plausibility or text-token rate.
+   The two-wrist simulator probes remain historical/optional stress evidence,
+   not the real-time deployment requirement. Do not halve paired-image latency
+   to estimate single-camera performance; measure the actual input contract.
 3. Keep guarded calibrated geometry/IK motion separate from multi-second vision
    calls. This is a comparison/control path, not completion of learned-policy
    work. Preserve the largest-practical-model preference; step down only when

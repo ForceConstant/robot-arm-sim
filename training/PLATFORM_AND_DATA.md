@@ -8,6 +8,9 @@ Brian ended the cloud-host search. **Optimize for BC-250 as the primary local
 ML target**, with the GTX 1060 host retained for simulation/data. Colab/Kaggle
 sections below are historical alternatives, not selected hosts or pending user
 actions. See the [local optimization order](BC250_CAPABILITY.md#local-optimization-order).
+The real-time IRL observation contract is **one wrist camera**, not the two
+views in the simulator recording/probe evidence. Qualify actual single-camera
+latency and task quality; paired-view receipts are not the deployment target.
 Training/action-policy support remains unqualified; no host kernel/firmware
 changes are implied.
 

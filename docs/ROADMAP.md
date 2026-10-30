@@ -217,7 +217,8 @@ the report is reporting-only and is never available to a policy under test.
 - **Current direction (Brian, 2026-10-30; supersedes cloud choices below):**
   stop pursuing Colab/Kaggle. Optimize for **BC-250 as the primary local ML
   target**, retaining the GTX 1060 simulator/data host. Start with sustained
-  task-perception qualification of the passing 35B Vulkan configuration;
+  task-perception qualification of the passing 35B Vulkan configuration using
+  **one wrist camera for real-time IRL operation** (Brian's confirmed setup);
   independently qualify local training/action-policy operators and memory
   before an optimizer/checkpoint pilot. No cloud preflight is pending from
   Brian. No kernel/firmware change or training success is implied.
