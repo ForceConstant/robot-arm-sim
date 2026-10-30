@@ -13,8 +13,10 @@ before exporting. The current workspace is not qualified for MolmoAct2 training.
 
 ## Deployment requirement (current direction)
 
-Brian requires inference on the existing GTX 1060 3 GB or BC-250. Colab may
-accelerate training, but cannot be a required inference service. Brian requests
+Brian selected **BC-250 as the primary local ML target** and ended the cloud
+training-host search (2026-10-30). Retain the GTX 1060 simulator/data host.
+Cloud recipes below are historical, not the execution path. See the
+[local optimization order](BC250_CAPABILITY.md#local-optimization-order). Brian requests
 the **largest practical local model**, starting with BC-250 capability research,
 not a small-model-first strategy. MolmoAct2 remains a candidate; the recipe below
 is historical, not a qualified local deployment. See [BC-250 research](BC250_CAPABILITY.md). Qualify
@@ -44,7 +46,7 @@ Evaluation draws the same variation (`--nominal-layout` turns it off).
 Success is the rule the scripted expert is held to: the piece ends within
 **11 mm** of the target square, upright, nothing else displaced.
 
-## Free-tier Colab pilot
+## Historical free-tier Colab pilot (not selected)
 
 A free Colab session typically gets a 16 GB T4 and cannot compute bf16. Full
 fine-tuning of MolmoAct2 (~10.1 GiB of fp16 weights plus ~40 GiB of AdamW state)

@@ -1,5 +1,9 @@
 # Kaggle free-tier investigation — 2026-10-30
 
+**Superseded:** Brian ended cloud-host exploration and selected BC-250 as the
+primary local ML target. The steps below are reference only, not pending actions.
+See [current direction](BC250_CAPABILITY.md#local-optimization-order).
+
 Brian's first free Colab attempt received **no GPU allocation**. This is an
 allocation failure, not a model-fit or notebook-compute failure. No paid Colab
 account or compute units are available. Kaggle is a candidate, not yet a

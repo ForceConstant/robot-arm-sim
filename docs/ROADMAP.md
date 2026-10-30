@@ -214,9 +214,18 @@ the report is reporting-only and is never available to a policy under test.
 
 ## Priority 5 — establish the training platform and data boundary
 
+- **Current direction (Brian, 2026-10-30; supersedes cloud choices below):**
+  stop pursuing Colab/Kaggle. Optimize for **BC-250 as the primary local ML
+  target**, retaining the GTX 1060 simulator/data host. Start with sustained
+  task-perception qualification of the passing 35B Vulkan configuration;
+  independently qualify local training/action-policy operators and memory
+  before an optimizer/checkpoint pilot. No cloud preflight is pending from
+  Brian. No kernel/firmware change or training success is implied.
+  [Local optimization gates](../training/BC250_CAPABILITY.md#local-optimization-order).
+
 - **Local inference required (Brian, 2026-10-30):** all selected models must
-  run on the existing GTX 1060 3 GB host or BC-250; Colab may train them but
-  does not become an inference dependency. **Brian superseded the small-first
+  run locally, with BC-250 now the primary target; cloud training is no longer
+  pursued and does not become an inference dependency. **Brian superseded the small-first
   recommendation: investigate BC-250 GPU/APU capabilities, then find the largest
   practical local model.** MolmoAct2 remains a candidate; local fit is unmeasured.
   [BC-250 research](../training/BC250_CAPABILITY.md) distinguishes large quantized
@@ -265,14 +274,13 @@ the report is reporting-only and is never available to a policy under test.
   frames or checkpoints off-LAN without an explicit transfer decision; cloud
   round-trip rules it out for 10 Hz control. Local BC-250 remains the
   robot-adjacent inference target.
-- **Colab candidate (Brian's suggestion):** prepared
+- **Historical Colab candidate (no longer pursued):** prepared
   [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
   identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
   round-trip without private uploads. Syntax verified; cloud execution and
-  actual-task training remain unverified. Paid/free tier and compute budget
-  await confirmation. HIL-SERL's Panda tutorial is relevant future architecture,
+  actual-task training remain unverified. Brian confirmed free tier only; the first attempt received no GPU. HIL-SERL's Panda tutorial is relevant future architecture,
   not a drop-in SO101 environment; details in the platform document.
-- **Training host decided: free-tier Colab (Brian, 2026-10-30).** No paid plan
+- **Historical free-tier Colab choice (superseded by BC-250 direction above).** No paid plan
   or compute units. Constraints: T4-class 16 GB typically, no bf16 on Turing,
   ~12 h sessions with idle disconnects, no SSH/remote/distributed workers,
   ephemeral disk. MolmoAct2 is 5.442B parameters — 10.14 GiB in fp16/bf16

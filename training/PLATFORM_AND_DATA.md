@@ -2,11 +2,20 @@
 
 Priority 5 acceptance record, 2026-10-30. **Not yet qualified for a training run.**
 
+## Current platform direction — BC-250 local, 2026-10-30
+
+Brian ended the cloud-host search. **Optimize for BC-250 as the primary local
+ML target**, with the GTX 1060 host retained for simulation/data. Colab/Kaggle
+sections below are historical alternatives, not selected hosts or pending user
+actions. See the [local optimization order](BC250_CAPABILITY.md#local-optimization-order).
+Training/action-policy support remains unqualified; no host kernel/firmware
+changes are implied.
+
 ## Deployment-first constraint — Brian, 2026-10-30
 
 **Required:** trained models must run locally on the existing GTX 1060 3 GB
 host or BC-250 APU. Cloud inference and a hardware purchase are not the default.
-Colab is only a candidate training accelerator; a cloud training pass does not
+Colab was investigated and is no longer pursued; a cloud training pass does not
 qualify deployment. Training memory and inference memory are different: the
 historical ~30 GB training peak alone neither proves nor disproves inference
 fit, but no MolmoAct2 local-fit measurement exists. Treat that recipe as

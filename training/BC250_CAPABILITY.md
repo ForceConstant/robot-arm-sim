@@ -7,6 +7,43 @@ Model size is the search objective; working robot observations/actions, quality,
 latency and stability remain acceptance gates. No new GPU purchase is selected. Live experiments below supersede the initial
 read-only inventory where explicitly noted.
 
+## Current direction — BC-250 local (Brian, 2026-10-30)
+
+Stop pursuing Colab/Kaggle or other cloud training hosts. **BC-250 is the
+primary local ML target**; retain the GTX 1060 simulator/data host. Cloud
+recipes and preflight requests are historical, not pending user actions. The
+GOAT plan remains optional for general reasoning/authoring, not model training
+or robot control. No new GPU purchase is selected.
+
+### Local optimization order
+
+1. Start with the measured **Qwen3.5-35B-A3B IQ2_M Vulkan vision** configuration,
+   preserving pinned artifacts, disabled optional server caches and memory/
+   temperature guards. This is the largest passing VLM tested, not a VLA pass.
+2. Benchmark sustained settled two-wrist observations: end-to-end capture,
+   transport, preprocessing, inference and decode p50/p95; memory, swap and
+   thermals; structured occupancy/color outputs and abstentions against held-out
+   truth. Keep oracle labels out of inputs. Tune image/context/token budgets
+   against measured task quality, not caption plausibility or text-token rate.
+3. Keep guarded calibrated geometry/IK motion separate from multi-second vision
+   calls. This is a comparison/control path, not completion of learned-policy
+   work. Preserve the largest-practical-model preference; step down only when
+   measured memory, stability, task-quality or latency gates justify it.
+4. Qualify a BC-250 training/action-policy runtime before selecting a training
+   recipe. Vulkan inference does not supply PyTorch autograd or MolmoAct2's
+   custom action operators. Inspect native gfx1013/user-space options and
+   dependencies first. Any required kernel/driver/firmware replacement needs a
+   concrete change and recovery proposal; this decision alone does not
+   authorize replacing the working gaming stack. Do not relabel CUDA settings
+   as BC-250-compatible.
+5. Once runtime/operator support and measured capacity exist, run the bounded
+   local optimizer/checkpoint pilot, then qualify the final artifact locally.
+   If training remains infeasible, record the exact blocker and evaluate a
+   compatible candidate rather than making cloud allocation a dependency again.
+
+**Priority 5 remains in progress.** No sustained camera benchmark, GPU training
+pilot, VLA pass or host-stack change is claimed by this planning update.
+
 ## Bottom line
 
 BC-250 is a credible large **quantized inference** candidate and deserves testing.
@@ -143,7 +180,7 @@ Investigate its dependencies and action-chunk timing before selecting a port.
    needs seconds per observation, test stop-observe-plan-execute or safe action
    chunks; do not force every model into a small-policy 10 Hz synchronous loop.
    Shrink only when a measured gate fails or a smaller artifact performs better.
-6. Select Colab/local training only after deployment feasibility. Priority 5
+6. Qualify BC-250 local training only after deployment feasibility. Priority 5
    remains in progress pending model/runtime selection and measured local plus
    training pilots. No host changes, installs, model downloads or training were
    performed for the original research pass; subsequent live probes are below.
