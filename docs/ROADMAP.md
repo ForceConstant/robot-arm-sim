@@ -277,19 +277,16 @@ the report is reporting-only and is never available to a policy under test.
   ~12 h sessions with idle disconnects, no SSH/remote/distributed workers,
   ephemeral disk. MolmoAct2 is 5.442B parameters — 10.14 GiB in fp16/bf16
   weights and ~40 GiB of AdamW state — so **full fine-tuning cannot fit a T4**.
-  The trainer now exposes LeRobot's `PeftConfig` (LoRA method, rank, alpha,
-  target modules, full-training modules) and a `--mixed-precision` override, so
-  an adapter run is constructible; five new tests cover the flags and the full
-  regression is 49 passed / 4 skipped, plus `training/settings.free_tier_colab.env`
-  (20 steps, micro-batch 1, accumulation 8, LoRA r16, fp16). Command
-  construction and settings only — no GPU run yet, so fit is still an
-  arithmetic expectation. A free-tier pilot therefore needs
-  an adapter (LoRA/QLoRA) or frozen-backbone option, micro-batch 1 with
-  accumulation, and Drive-backed resumable checkpoints. Public dataset use
-  discloses nothing new; uploading private recordings/CAD still needs an
-  explicit decision.
-- **Still required:** select a locally deployable model/runtime and training
-  host, confirm storage/access, then pass selected-host runtime preflight, a
+  The MolmoAct2 recipe **already** trains through the policy's own adapter mode
+  (`--policy.train_mode_vlm=lora`, rank 64, ~737M trainable of 5.6B), so adapter
+  training did not need to be invented; an added duplicate `--peft` path was
+  removed after review. The T4 blocker is footprint (~10.1 GiB frozen weights
+  plus ~8-10 GiB of optimizer state, ~21-23 GiB before activations). Levers are a
+  lower `--policy.lora_rank` or a smaller policy; there is no upstream
+  `train_expert_only` flag. Added and command-construction-tested: a
+  `--mixed-precision fp16|bf16|no` override (Turing cannot compute bf16) and
+  `training/settings.free_tier_colab.env` (20 steps, micro-batch 1, accumulation
+  8, LoRA rank 8, fp16). Regression **49 passed / 4 skipped**; no GPU run yet.
   bounded optimizer/checkpoint pilot and the local deployment gates above. The upstream RTX 5090 is
   not confirmed available. Do not mark this priority complete on data checks
   or recording-only pilot evidence.

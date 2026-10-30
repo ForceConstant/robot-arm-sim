@@ -212,18 +212,34 @@ master weights and activations. **Full-parameter fine-tuning of this checkpoint
 is impossible on a 16 GB T4 at any batch size.** The inherited batch-8,
 ~30 GB recipe assumed a 32 GB RTX 5090 and is not portable to free Colab.
 
-`examples/train_policy.py` exposed batch, accumulation, workers, steps and
-scheduler overrides but **no adapter option** until 2026-10-30. It now passes
-`--peft`, `--peft-r`, `--peft-alpha`, `--peft-target-modules` and
-`--peft-full-training-modules` through to LeRobot's `PeftConfig`, plus
-`--mixed-precision fp16|bf16|no` for a T4. `chess_sim/policies.py` already
-*loads* PEFT adapters at inference (`use_peft`), so adapter-shaped checkpoints
-stay compatible with the evaluation path.
+**Correction (2026-10-30):** an earlier version of this note said the trainer
+had no adapter option. That was wrong. The MolmoAct2 recipe already runs
+`--policy.train_mode_vlm=lora` — LeRobot's own adapter mode, `lora_rank` 64,
+about **737M trainable of 5.6B** — and `chess_sim/policies.py` loads those
+adapters at inference. A second `--peft` path was added and then removed: it
+duplicated the policy's own mechanism and would have wrapped the model twice.
 
-This is verified at **command-construction** level only (five tests, full
-regression 46 passed / 4 skipped). No adapter run has happened on a GPU yet, so
-"LoRA fits a T4" remains an arithmetic expectation, not a measurement. 4-bit
-QLoRA is still unimplemented and would add bitsandbytes.
+What is actually missing for a 16 GB T4 is **footprint**, not existence of
+adapters:
+
+| Component | Approx. |
+| --- | --- |
+| Frozen fp16 weights | 10.1 GiB |
+| Optimizer state for 737M trainable (fp32 master + 2 moments) | ~8.3 GiB |
+| Gradients (fp16) | ~1.4 GiB |
+| Activations at micro-batch 1 (gradient checkpointing on) | 1–3 GiB |
+| **Total before any batch scaling** | **~21–23 GiB** |
+
+So the default `lora_rank` still does not fit a T4. The supported levers are a
+lower `--policy.lora_rank`, or a smaller policy. There is **no** upstream
+`train_expert_only` flag at the pinned commit — the comment in
+`chess_sim/training.py` that mentions one is stale and should not be relied on.
+
+Only two things were added to the trainer, both verified at command-construction
+level: a `--mixed-precision fp16|bf16|no` override (a T4 is Turing and cannot
+compute bf16 at all) and `training/settings.free_tier_colab.env`, a 20-step
+micro-batch-1 pilot using the policy's own LoRA at rank 8. Full regression:
+**49 passed, 4 skipped**. No GPU run has happened, so fit remains arithmetic.
 
 ### What a free-tier pilot would have to be
 

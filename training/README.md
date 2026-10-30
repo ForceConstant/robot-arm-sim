@@ -44,20 +44,23 @@ Evaluation draws the same variation (`--nominal-layout` turns it off).
 Success is the rule the scripted expert is held to: the piece ends within
 **11 mm** of the target square, upright, nothing else displaced.
 
-## Free-tier Colab pilot (adapter, not full fine-tune)
+## Free-tier Colab pilot
 
-A full fine-tune of MolmoAct2 (~10.1 GiB of fp16 weights plus ~40 GiB of AdamW
-state) cannot fit a 16 GB T4, which is what a free Colab session typically
-allocates. The trainer now takes LeRobot's adapter configuration:
+A free Colab session typically gets a 16 GB T4 and cannot compute bf16. Full
+fine-tuning of MolmoAct2 (~10.1 GiB of fp16 weights plus ~40 GiB of AdamW state)
+cannot fit that card, and even its default LoRA mode (~737M trainable) lands
+around 21-23 GiB with optimizer state.
+
+`training/settings.free_tier_colab.env` shrinks the run to a bounded pilot:
 
 ```bash
 SETTINGS=training/settings.free_tier_colab.env training/train.sh
 ```
 
-That run is deliberately tiny: 20 optimizer steps, micro-batch 1 with 8-step
-accumulation, two checkpoints, LoRA rank 16, `--mixed-precision fp16` (Turing
-cannot compute bf16). It proves the dataloader, reverse pass, checkpoint save
-and reload on whatever GPU the session actually got — it is not a training run.
+20 optimizer steps, micro-batch 1 with 8-step accumulation, the policy's own
+LoRA at `lora_rank=8`, `--mixed-precision fp16`, two checkpoints. It proves the
+dataloader, reverse pass, checkpoint save and reload on whatever GPU the session
+actually got. Rank 8 fitting a T4 is an untested expectation, not a measurement.
 See [PLATFORM_AND_DATA.md](PLATFORM_AND_DATA.md#free-tier-colab-only--brian-2026-10-30).
 
 ## Run it
