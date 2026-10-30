@@ -50,6 +50,15 @@ pilot, VLA pass or host-stack change is claimed by this planning update.
 
 ## Bottom line
 
+**Continuation measured:** single-wrist 35B strict-JSON repeats pass **20/20**
+with 5 s idle: 256 image tokens p50/p95 **2.115/2.149 s**, peak **81 C**;
+128 tokens **1.463/1.469 s**, peak **79 C**. Back-to-back runs at both budgets
+hit the **85 C** guard; continuous thermals remain unresolved. A user-space
+**Tinygrad/WebGPU/RADV training path passed** 20 FP32 AdamW steps for 838- and
+1,062,918-parameter synthetic networks, exact checkpoint reload and identical
+resumed updates. Not PyTorch/LeRobot or large-VLA training qualification.
+No host-stack changes. [Full measurements and scope](BC250_LOCAL_TESTS.md).
+
 BC-250 is a credible large **quantized inference** candidate and deserves testing.
 It is not a drop-in RTX 5080, CUDA accelerator, or equivalent training platform.
 Matching the headline 16 GB does not mean equal usable memory or performance.

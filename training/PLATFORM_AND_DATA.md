@@ -1,6 +1,6 @@
 # Training platform and data boundary
 
-Priority 5 acceptance record, 2026-10-30. **Not yet qualified for a training run.**
+Priority 5 acceptance record, 2026-10-30. **Not yet qualified for an actual-task policy training run.**
 
 ## Current platform direction — BC-250 local, 2026-10-30
 
@@ -11,8 +11,12 @@ actions. See the [local optimization order](BC250_CAPABILITY.md#local-optimizati
 The real-time IRL observation contract is **one wrist camera**, not the two
 views in the simulator recording/probe evidence. Qualify actual single-camera
 latency and task quality; paired-view receipts are not the deployment target.
-Training/action-policy support remains unqualified; no host kernel/firmware
-changes are implied.
+Small-network GPU training now passes through **Tinygrad/WebGPU/Vulkan**:
+20 FP32 AdamW steps up to 1.063M parameters with exact checkpoint/resume checks.
+The real PyTorch/LeRobot action-policy path and audited-task pilot remain
+unqualified. Single-camera 35B repeats pass 20/20 with 5 s idle, down to p50
+1.463 s at 128 image tokens; unpaced runs hit the 85 C guard. No host-stack
+changes. [Measured continuation](BC250_LOCAL_TESTS.md).
 
 ## Deployment-first constraint — Brian, 2026-10-30
 

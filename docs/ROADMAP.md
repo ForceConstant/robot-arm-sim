@@ -224,6 +224,16 @@ the report is reporting-only and is never available to a policy under test.
   Brian. No kernel/firmware change or training success is implied.
   [Local optimization gates](../training/BC250_CAPABILITY.md#local-optimization-order).
 
+- **BC-250 continuation measured (2026-10-30):** one-camera 35B strict-JSON
+  repeat tests pass **20/20 with 5 s idle**, p50/p95 **1.463/1.469 s** at
+  128 image tokens, peak **79 C**, >=1.21 GiB CPU headroom. Both unpaced
+  256/128-budget tests hit the **85 C** guard; continuous operation is not
+  qualified. Tinygrad/WebGPU on the existing RADV driver passes **20 FP32
+  AdamW steps** for **838 and 1,062,918 parameters**, exact checkpoint reload
+  and identical resumed updates, peak **55/58 C**, no swap growth. No ROCm,
+  host changes, robot-task training or MolmoAct2 compatibility pass implied.
+  [Receipts, scope and next gates](../training/BC250_LOCAL_TESTS.md).
+
 - **Local inference required (Brian, 2026-10-30):** all selected models must
   run locally, with BC-250 now the primary target; cloud training is no longer
   pursued and does not become an inference dependency. **Brian superseded the small-first

@@ -11,6 +11,11 @@ recipes below. The upstream RTX 5090 is not a confirmed available training host.
 Keep simulator and real recordings separate and audit whole-session/layout splits
 before exporting. The current workspace is not qualified for MolmoAct2 training.
 
+**New local measurements:** 20/20 paced single-camera 35B requests and bounded
+FP32 GPU training through Tinygrad/WebGPU (up to 1.063M synthetic parameters)
+pass on the BC-250. Continuous thermals and real-policy training remain open.
+See [test results](BC250_LOCAL_TESTS.md) and [reproducible probes](probes/README.md).
+
 ## Deployment requirement (current direction)
 
 Brian selected **BC-250 as the primary local ML target** and ended the cloud
