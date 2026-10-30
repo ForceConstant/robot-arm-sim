@@ -11,7 +11,17 @@ recipes below. The upstream RTX 5090 is not a confirmed available training host.
 Keep simulator and real recordings separate and audit whole-session/layout splits
 before exporting. The current workspace is not qualified for MolmoAct2 training.
 
-## What is being trained
+## Deployment requirement (current direction)
+
+Brian requires inference on the existing GTX 1060 3 GB or BC-250. Colab may
+accelerate training, but cannot be a required inference service. Prefer small
+CPU-capable perception plus calibrated planning/control first; the MolmoAct2
+recipe below is historical, not the selected deployment architecture. Qualify
+exact-size model operators/capacity locally before substantial training and the
+final artifact's memory, latency, reload and held-out behavior afterward. See
+[deployment gates](PLATFORM_AND_DATA.md#deployment-first-constraint--brian-2026-10-30).
+
+## Historical MolmoAct2 task and recipe
 
 A VLA policy (MolmoAct2, fine-tuned from `allenai/MolmoAct2-SO100_101`) that
 executes one instruction per episode against a simulated board:

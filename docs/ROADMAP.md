@@ -214,6 +214,17 @@ the report is reporting-only and is never available to a policy under test.
 
 ## Priority 5 — establish the training platform and data boundary
 
+- **Local inference required (Brian, 2026-10-30):** all selected models must
+  run on the existing GTX 1060 3 GB host or BC-250; Colab may train them but
+  does not become an inference dependency. Prefer small CPU-capable perception
+  plus calibrated geometry/state tracking and bounded scripted/IK control.
+  MolmoAct2 is historical research, not the default deployment model; its local
+  inference fit is unmeasured. Before substantial training, test exact-size
+  model operators/capacity locally. Completion also requires the trained local
+  artifact's peak RAM/VRAM under concurrent simulator load, p50/p95 latency,
+  checkpoint reload/output agreement and held-out evaluation receipts. See
+  [local budgets and gates](../training/PLATFORM_AND_DATA.md#deployment-first-constraint--brian-2026-10-30).
+
 - **In progress (2026-10-30):** platform/data rules and a fail-closed recording
   auditor are implemented in [`training/PLATFORM_AND_DATA.md`](../training/PLATFORM_AND_DATA.md)
   and `tools/audit_training_data.py`. Whole sessions/layout groups cannot cross
@@ -238,9 +249,9 @@ the report is reporting-only and is never available to a policy under test.
   actual-task training remain unverified. Paid/free tier and compute budget
   await confirmation. HIL-SERL's Panda tutorial is relevant future architecture,
   not a drop-in SO101 environment; details in the platform document.
-- **Still required:** choose small-model BC-250 qualification versus a separate
-  NVIDIA training host, confirm storage/access, then pass selected-host runtime
-  preflight and a bounded optimizer/checkpoint pilot. The upstream RTX 5090 is
+- **Still required:** select a locally deployable model/runtime and training
+  host, confirm storage/access, then pass selected-host runtime preflight, a
+  bounded optimizer/checkpoint pilot and the local deployment gates above. The upstream RTX 5090 is
   not confirmed available. Do not mark this priority complete on data checks
   or recording-only pilot evidence.
 

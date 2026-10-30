@@ -2,6 +2,63 @@
 
 Priority 5 acceptance record, 2026-10-30. **Not yet qualified for a training run.**
 
+## Deployment-first constraint — Brian, 2026-10-30
+
+**Required:** trained models must run locally on the existing GTX 1060 3 GB
+host or BC-250 APU. Cloud inference and a hardware purchase are not the default.
+Colab is only a candidate training accelerator; a cloud training pass does not
+qualify deployment. Training memory and inference memory are different: the
+historical ~30 GB training peak alone neither proves nor disproves inference
+fit, but no MolmoAct2 local-fit measurement exists. Treat that recipe as
+historical research, not the selected production architecture.
+
+Recommended first path: calibrated board geometry + a small occupancy/color
+CNN (CPU-capable inference) + legal-state tracking + existing bounded IK and
+scripted control. Piece-type recognition is a separate later scope. Candidate
+learned motor alternatives are a small state-conditioned MLP or compact
+image-conditioned action-chunking policy; neither is selected or qualified.
+HIL-SERL is a learning workflow, not evidence that its particular policy fits.
+Keep oracle labels out of inference inputs. Local CPU inference is acceptable
+if its measured latency meets the task, without modifying Bazzite's gaming OS.
+
+Before substantial task training, select the local deployment host, framework,
+model architecture, input resolution and action contract; exercise an exact-size
+initialized/exported model there to catch unsupported operators and gross
+capacity failures. Then run the trained checkpoint through these gates:
+
+- **Memory/concurrency:** measure peak process RAM and total GPU usage with
+  actual camera inputs, preprocessing, model, action buffers, simulator rendering
+  and normal concurrent services active. Do not use the full 3 GB as the model
+  budget or stop other consumers to pass. Provisional NVIDIA target: model/runtime
+  incremental peak <=1 GiB, while retaining >=512 MiB total GPU free; reduce
+  model/resolution or use CPU if co-running workloads cannot meet this. These
+  are initial engineering budgets, not measured fit. On BC-250 measure the
+  shared physical pool and host headroom, not VRAM+GTT addition; prefer CPU
+  fallback until a GPU inference backend passes numerical/operator checks.
+- **Latency:** report warm-up, p50/p95 end-to-end preprocessing+inference+decode
+  latency and sustained throughput. Provisional settled-board perception target
+  is p95 <=500 ms. A 10 Hz motor policy needs p95 <=100 ms per replenishment
+  cycle, or a documented action-chunk/async design proven to avoid buffer
+  underruns. Interpolate bounded targets locally; late/invalid output must stop
+  or abstain, not replay stale commands. These targets still need measurement.
+- **Artifact compatibility:** save/reload the inference-only checkpoint and
+  processor configs on the actual local runtime; compare outputs within a
+  documented tolerance. GTX 1060 is Pascal: do not assume modern CUDA wheels,
+  BF16, FlashAttention or low-bit kernels work. Start with supported ordinary
+  operators/FP32; FP16, quantization and alternate export backends need separate
+  numerical, latency and held-out-quality qualification, not parameter-count
+  estimates. Quantization is an option, not a promise of fit.
+- **Task quality:** run the final local artifact on untouched held-out sessions
+  and layouts; report perception confusion/unknowns or motor right-piece,
+  grasp/carry/place, disturbance and abstention metrics as appropriate. Compare
+  against the matching scripted baseline; physical deployment remains gated
+  by independent calibration and guarded hardware trials.
+
+Priority 5 now includes local deployment qualification, not just a remote
+optimizer/checkpoint pilot. Priority 6 supplies the perception training/evaluation;
+Priority 5 must establish the selected model/runtime's measured local feasibility
+without claiming Priority 6 task quality or physical readiness complete.
+
 ## Platform decision and measured preflight
 
 - The RTX 5090 32 GB / Python 3.12 / CUDA 12.8 setup in the inherited training
@@ -51,9 +108,9 @@ is not a support commitment for BC-250/Bazzite.
 **Recommendation:** candidate for bounded small occupancy/color perception
 experiments, not the inherited approximately 30 GB MolmoAct2 recipe. Keep its
 working gaming OS/kernel/firmware unchanged while choosing scope; a container
-cannot supply missing host-driver fixes. A direction question is pending:
-qualify small perception models here versus select a separate NVIDIA host for
-MolmoAct2. No training-host selection, memory-split change, install or reboot
+cannot supply missing host-driver fixes. Brian now requires local inference on existing hardware; favor small
+perception models and consider Colab only for training. The exact model/runtime
+and training host are still unselected. No training-host selection, memory-split change, install or reboot
 has been assumed from the power-on.
 
 ## Local-only boundary
@@ -141,8 +198,8 @@ manifest. Do not point it at a common parent containing held-out recordings.
    bounded hardware gates are independent.
 
 **Priority 5 remains in progress until the host/storage/access are confirmed,
-selected-host preflight and optimizer/checkpoint pilot pass, and receipts are
-recorded.** No long run, purchases, cloud resources or deployment are implied.
+selected-host preflight and optimizer/checkpoint pilot pass, the selected
+artifact passes local deployment gates above, and receipts are recorded.** No long run, purchases, cloud resources or deployment are implied.
 
 ## Local pilot receipt
 
