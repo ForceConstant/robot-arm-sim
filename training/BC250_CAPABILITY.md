@@ -38,7 +38,8 @@ There is no measured largest robot-policy model on Brian's machine yet.
 - No `llama-cli`, `llama-bench` or `rocminfo` on PATH, no GGUF found in the bounded
   home-directory scan, no BC-250 ROCm flush module parameters. Earlier system
   Python probe lacked torch/numpy. Alternate environments may exist; no model
-  inference, allocation stress or optimizer benchmark was run on this host.
+  inference, allocation stress or optimizer benchmark had been run at that
+  initial read-only inventory; subsequent experiments are below.
 
 ## RTX 5080 comparison (desktop card, not laptop)
 
@@ -147,7 +148,7 @@ Investigate its dependencies and action-chunk timing before selecting a port.
    training pilots. No host changes, installs, model downloads or training were
    performed for the original research pass; subsequent live probes are below.
 
-## Live experiments — 2026-10-30, 35B probe pending
+## Live experiments — 2026-10-30
 
 Brian authorized continuing the investigation. Installed **only** the official
 portable llama.cpp b12002 Vulkan archive into a dedicated home-directory tree;
@@ -202,16 +203,113 @@ checkpoint quality pass or VLA qualification. This does not prove every 27B
 vision architecture/quantization impossible. GPU temperature approached the
 experiment limit during vision work, so sustained thermal headroom is also open.
 
-**Next, running:** pinned `unsloth/Qwen3.5-35B-A3B-GGUF` revision
-`bc014a17be43adabd7066b7a86075ff935c6a4e2`, IQ2_M weights plus FP16 projector,
-12,290,897,216 bytes total. A separate download verifies publisher hashes before
-trying its different MoE/vision architecture, 1024 context, Q8 KV, batch 32,
-bounded image tokens and the same resource/thermal guards. No result yet.
+### 35B MoE vision outcome: bounded smoke completed after cache changes
 
-Private evidence: `.private/bc250-investigation/receipts/` holds the six
+Pinned `unsloth/Qwen3.5-35B-A3B-GGUF` revision
+`bc014a17be43adabd7066b7a86075ff935c6a4e2`, IQ2_M weights plus FP16 projector,
+12,290,897,216 bytes total, both publisher SHA-256 verified. Model weights hash
+`187b5bbb81d7ec1dc228cb04120302cc0d486cb3c988501af87e5f02e15ace0e`;
+projector hash `a516ab92e8240da4734d68352bdfba84c16e830ee40010b8fac80d69c77272ff`.
+
+The first run described the overhead scene and both wrist views in 2.51, 2.06
+and 2.08 seconds, then crossed the CPU-headroom guard on a repeated image.
+Logs showed retained prompt/context snapshots growing to about 0.5 GiB; the
+server's default RAM prompt-cache budget was 8192 MiB. Preserve this failed run,
+not just the corrected result.
+
+With **optional server prompt/context caches disabled**, the same artifact
+completed **7/7 requests**: one text sanity check, overhead, each wrist, overhead
+repeat, and two reversed color-layout controls. Both color controls were
+correct; overhead text repeated exactly. This demonstrates image-sensitive
+execution, not calibrated recognition or chess-piece accuracy.
+
+- Load: **19.06 s**. All **41/41 language-model layers GPU-offloaded**; the
+  vision encoder also reports **Vulkan0**.
+- Real simulator camera requests: **1.97–2.10 s**, excluding model load but
+  including request serialization, image processing, prompt processing and
+  response generation on the inference host. Images were captured beforehand;
+  this does not include live camera capture or network transfer from the sim.
+- Text decode during these camera descriptions: **87.6–88.2 tokens/s** for
+  34–39-token responses. This is short decode, **not actions/s** or sustained
+  throughput. Synthetic color controls took ~0.98 s each.
+- Minimum CPU MemAvailable: **1.07 GiB**; peak GPU edge **76 C**; incremental
+  swap ~**60 MiB** against that run's already-swapped baseline. GPU model buffer
+  10,519.97 MiB plus 333.44 MiB Vulkan_Host model buffer. Driver VRAM/GTT counters
+  remain categories within shared memory, not extra physical capacity.
+
+A separate **reload + paired-wrist probe completed 4/4 requests**. Two wrist
+images in one request took **3.34 s**; overhead took 2.09 s and 2.07 s, matching
+the prior overhead description exactly after model reload. Minimum CPU
+MemAvailable **1.18 GiB**, peak edge **75 C**, incremental swap ~24 MiB.
+This checks a two-image input's gross feasibility, not synchronized streaming,
+all future contexts, hours of operation or numerical/logit equivalence.
+
+Reproducible server settings (besides pinned local model/projector paths):
+
+```text
+-ngl 99 --fit off -c 1024 -np 1 -b 32 -ub 32 -fa on -t 4
+--load-mode none --no-warmup --mtmd-batch-max-tokens 256
+--image-max-tokens 256 -ctk q8_0 -ctv q8_0
+--chat-template-kwargs {"enable_thinking":false}
+--cache-ram 0 --ctx-checkpoints 0 --no-cache-idle-slots
+--host 127.0.0.1 --no-webui
+```
+
+These are application flags, **not** host driver/firmware/kernel/CU/memory-split
+changes. Context is only 1024 tokens and images are token-bounded. Long context,
+higher image resolution, longer answers and continuous operation remain open.
+Low-bit weight quality has not been compared with the original model.
+
+**Current conclusion:** 35B MoE is the largest vision model **tested successfully
+so far** on this BC-250, not a proven maximum and not a robot-control policy.
+The next domain gate is held-out camera/task quality and an actual robot-policy
+runtime/training pilot; neither a camera description nor GGUF success qualifies
+MolmoAct2's custom action expert or the inherited CUDA/LeRobot recipe.
+
+Private evidence: `.private/bc250-investigation/receipts/` holds the Gemma and Qwen
 per-configuration reports, server logs and resource samples; remote copies and
 portable tools/models remain in Brian's dedicated home directory for reuse.
 Priority 5 remains **in progress**, not training- or robot-policy-qualified.
+
+## How LLM/MoE results relate to the robot-control models
+
+- **LLM**: text/token input to text/token output. Good for reasoning and
+  high-level plans; ordinary text inference does not test camera handling.
+- **MoE**: sparse architecture, not a separate task category. The tested
+  35B-A3B stores roughly 35B total parameters while activating roughly 3B per
+  token. All experts must still be available in memory/storage; offloading
+  them changes performance. LLMs, VLMs and VLAs can each be dense or MoE.
+- **VLM**, including the tested Qwen3.5 artifact: adds an image encoder and
+  image-token processing to language generation. Can describe a scene, but
+  descriptions alone are not calibrated geometry, reliable state estimates
+  or executable motor commands.
+- **VLA**, the inherited MolmoAct2 SO101 path (~5.44B total): images + task
+  instruction + joint state feed a model trained to output actions. Vision,
+  language conditioning, action normalization and a flow-matching action expert
+  must all execute. Several action-refinement steps may reuse cached visual/text
+  context; they are not necessarily full repeated language-backbone passes.
+  Output is a chunk of future joint targets, not a chat response. The simulator
+  adapter consumes the checkpoint's action horizon (default 30), uses 10 Hz
+  target data and interpolates the six joint targets into control periods.
+- The **current scripted expert** is geometry/IK and planning, not a trained
+  neural policy. Its contact/grasp metrics remain the comparison baseline.
+  HIL-SERL is a training workflow, not a claim that a generic LLM is a controller.
+
+BC-250's strongest fast-GGUF evidence concerns quantized token generation.
+That backend does not automatically implement MolmoAct2's action expert or
+PyTorch operators. Dense parameter count, active MoE parameters, quantization,
+vision resolution and action horizon are different resource axes: a 5.44B
+FP16 VLA may need more memory than a 35B low-bit MoE and has a different latency
+profile. Quantizing the action path also needs task-quality validation, not
+just fluent text or language-model perplexity.
+
+The useful control metric is **image/state to validated action chunk latency**,
+plus memory, deadline handling, right-piece/grasp/place success and collateral
+disturbance on held-out trials. ~88 text tokens/s does not mean 88 motor steps/s.
+The measured paired-image description takes 3.34 s: potentially useful for a
+turn-based observer/planner, not a 10 Hz per-step loop. Chunked/asynchronous or
+stop-observe-plan-execute control must be evaluated with the actual policy;
+do not infer its timing by dividing chat tokens by action count.
 
 ## Sources
 

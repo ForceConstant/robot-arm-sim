@@ -247,9 +247,15 @@ the report is reporting-only and is never available to a policy under test.
   runtime installed user-locally with verified hash. Gemma 3 27B IQ3_XXS passes
   a bounded **text-only** smoke/reload (63/63 layers GPU-offloaded, ~20 tokens/s,
   >=1.50 GiB CPU headroom). Four vision configurations stop on memory guards;
-  no image response or VLA pass. Vision work reached 84 C. A 35B MoE vision
-  artifact is downloading for a different-architecture test; results pending.
-  [Exact scope and receipts](../training/BC250_CAPABILITY.md#live-experiments--2026-10-30-35b-probe-pending).
+  no Gemma image response or VLA pass. Gemma vision work reached 84 C.
+  **Qwen3.5-35B-A3B IQ2_M vision smoke completed** after disabling optional
+  server prompt/context caches: 7/7 requests, both color controls correct,
+  real camera descriptions 1.97–2.10 s; >=1.07 GiB CPU headroom, peak 76 C.
+  Separate reload/pair probe completed 4/4; paired wrist images took 3.34 s,
+  >=1.18 GiB headroom, peak 75 C. Largest successfully tested VLM so far, not a
+  hardware maximum, calibrated perception or learned robot-controller pass.
+  Initial cache-enabled 35B run remains a recorded memory-guard failure.
+  [Exact scope and receipts](../training/BC250_CAPABILITY.md#live-experiments--2026-10-30).
 - **Colab candidate (Brian's suggestion):** prepared
   [`colab_preflight.ipynb`](../training/notebooks/colab_preflight.ipynb) to
   identify allocated GPU/VRAM and exercise a tiny synthetic optimizer/checkpoint
