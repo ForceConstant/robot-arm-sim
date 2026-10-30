@@ -177,6 +177,11 @@ manifest. Do not point it at a common parent containing held-out recordings.
 
 ## Free-tier Colab only — Brian, 2026-10-30
 
+**Allocation update:** Brian's first attempt received no GPU. Free Colab is
+therefore an unqualified candidate, not a secured training host. See the
+[Kaggle free-tier investigation](KAGGLE_FREE_TIER.md) for the recommended next
+candidate and the distinction between two T4s and one 32 GB device.
+
 Brian confirmed **no paid Colab account and no compute units**; free tier is the
 training host. Consequences, from the current Colab FAQ and the measured model
 size:
@@ -266,9 +271,9 @@ micro-batch-1 pilot using the policy's own LoRA at rank 8. Full regression:
   are LAN-only by default. Uploading them to Drive/Colab needs an explicit
   decision from Brian; this document records the requirement, not consent.
 
-**Priority 5 stays in progress.** Selecting free-tier Colab removes the
-"which host" question and replaces it with a concrete one: add adapter training
-to the trainer, or choose a smaller policy for the pilot.
+**Priority 5 stays in progress.** The policy already has adapter training;
+the next gate is an actual GPU allocation followed by a measured footprint
+and optimizer/checkpoint pilot, not adding another adapter mechanism.
 
 ## Bounded pilots and completion gates
 
