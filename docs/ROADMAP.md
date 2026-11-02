@@ -291,14 +291,39 @@ camera-to-arm chain.
   **67 passed, 4 skipped**. Receipt `training/PERCEPTION_ACCEPTANCE.md`, private
   receipts `.private/perception/heldout-v8.json` and `training-v8.json`.
 
-## Priority 7 — infer move/state changes from observations
+## Priority 7 — infer move/state changes from observations — complete
 
-- Separately evaluate move-state inference: compare settled observations with
-  legal successor states from the last confirmed position, including captures,
-  ambiguous/incomplete moves, occlusion, and board changes. Preserve chess
-  history/rights that cannot be recovered from an image. Require a unique,
-  sufficiently confident match or an explicit abstain/ask-for-help outcome;
-  occupancy classification alone is not move understanding.
+**Closed 2026-11-02 for the qualified fixed-overhead-rig envelope with settled
+observations and sparse positions.** See
+[`training/MOVE_INFERENCE_ACCEPTANCE.md`](../training/MOVE_INFERENCE_ACCEPTANCE.md).
+
+- `chess_sim/move_inference.py` compares the last confirmed position with every
+  legal successor. A move is returned only when exactly one successor is
+  verified and no other legal move remains possible under unobserved squares.
+  Outcomes are explicitly `confirmed`, `unchanged`, `ambiguous`, `insufficient`
+  or `unexplained`; the previous board is never mutated. A confirmation pushes
+  the move so castling/en-passant/half-move history is preserved.
+- Promotion is reported as `ambiguous` with `promotion_required` rather than
+  guessed. En passant and castling use the history on the previous board. A
+  confident board change that no legal move explains is `unexplained`.
+- `perception.recover_reference_empty()` optionally recovers *empty* squares
+  that match the session's empty-board reference; it never guesses white or
+  black. `merge_observations()` fuses top/wrist views without letting either
+  override a confident disagreement.
+- Held-out rendered benchmark (`seed 7001`, 3 sessions, 35 cases, top view):
+  **13/13 accepted moves correct, 0 false confirmations**, 37.1% coverage,
+  22/35 abstentions, 15/15 expected-abstain cases honoured. Fused top+wrist was
+  11/11 correct at 31.4% coverage. The low coverage is the hard arm shadow
+  leaving a changed square `unknown`; the module abstains rather than guesses.
+- En passant and promotion require every changed square to be visible. In the
+  held-out run en passant abstained (one changed square hidden) and one
+  promotion returned the intended ask-for-piece outcome. Both are covered by
+  exact unit tests. Sparse positions only; no full-game recovery, crowded-board
+  evaluation, physical capture or live web-UI integration.
+- Code: `tools/benchmark_move_inference.py`, `tests/test_move_inference.py`,
+  `tests/test_perception.py`; regression **86 passed, 4 skipped**. Private
+  receipts `.private/move-inference/heldout-top.json` and
+  `heldout-fused.json`.
 
 ## Priority 8 — reassess learned motor-policy grounding
 

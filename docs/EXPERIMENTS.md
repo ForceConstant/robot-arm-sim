@@ -1204,3 +1204,44 @@ reported as abstentions, not silently used.
 
 Receipt: `training/PERCEPTION_ACCEPTANCE.md`, private
 `.private/perception/heldout-v8.json` and `training-v8.json`.
+
+## 13. Move/state inference from observations — 2026-11-02
+
+Priority 7 closes the move/state-inference task for the fixed-overhead-rig
+envelope. The previous confirmed `chess.Board` is the only history; an
+observation is 64 labels (`empty`/`white`/`black`/`unknown`). Every legal
+successor is a hypothesis. A successor is verified only when every changed
+square is observed with support and no confident deviation elsewhere is
+unexplained. A move is returned only when exactly one successor is verified and
+no other legal move remains possible under hidden squares. Otherwise the result
+is `ambiguous`, `insufficient` or `unexplained`; promotion returns
+`promotion_required` instead of guessing a queen.
+
+Held-out rendered benchmark, seed 7001, 3 sessions, 35 cases, top view, arm
+parked clear at shoulder-pan -1.0 rad:
+
+| Metric | Result |
+| --- | --- |
+| Accepted (`confirmed` / `unchanged`) | 13 |
+| Accepted correct | 13 / 13 |
+| False confirmations | 0 |
+| Coverage | 37.1% |
+| Abstentions | 22 / 35 |
+| Expected abstentions honoured | 15 / 15 |
+
+Simple quiet moves 6/9 accepted correct, captures 2/2, castling 2/3, unchanged
+3/3, all six illegal board changes returned `unexplained`, and all six hidden
+changed-square cases abstained. En passant 0/3 and promotion 0/3 accepted:
+en passant had one changed square `unknown`, and promotion is intentionally an
+ask-for-piece outcome. Fused top+wrist was 11/11 correct at 31.4% coverage and
+was not better than top-only.
+
+The limiting factor is the hard arm shadow on the overhead view: it leaves
+roughly 20 empty squares `unknown`. An opt-in reference-empty recovery recovers
+empty squares that match the session's empty-board frame, but shadowed pieces
+can change apparent colour and are left `unknown`. The low coverage is
+therefore abstention, not error: there were no false confirmations.
+
+Regression **86 passed, 4 skipped**. Acceptance:
+`training/MOVE_INFERENCE_ACCEPTANCE.md`; receipts
+`.private/move-inference/heldout-top.json` and `heldout-fused.json`.

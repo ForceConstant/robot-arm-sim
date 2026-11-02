@@ -59,6 +59,46 @@ class SquarePrediction:
         return self.label in ("white", "black")
 
 
+_REFERENCE_ABS_DELTA = FEATURE_NAMES.index("ref_abs_delta_luma")
+_REFERENCE_CHANGED = FEATURE_NAMES.index("ref_fraction_changed")
+
+
+def recover_reference_empty(predictions: list[SquarePrediction],
+                           features: np.ndarray, *,
+                           max_abs_delta_luma: float = 0.02,
+                           max_changed_fraction: float = 0.05,
+                           confidence: float = 0.95) -> list[SquarePrediction]:
+    """Recover ``empty`` on squares that match the session's empty reference.
+
+    A hard shadow can make an empty square look unknown even though it is
+    pixel-wise identical to the same square in the empty-board calibration
+    frame.  This only ever recovers *empty*; it never guesses white or black,
+    because shadowed pieces can change apparent colour.  The reference frame
+    must be an empty board at the same pose and lighting.
+
+    This is opt-in: :func:`predict_board` keeps its conservative default.
+    """
+    recovered: list[SquarePrediction] = []
+    for prediction in predictions:
+        square = prediction.square
+        if prediction.label != "unknown":
+            recovered.append(prediction)
+            continue
+        abs_delta = float(features[square, _REFERENCE_ABS_DELTA])
+        changed = float(features[square, _REFERENCE_CHANGED])
+        if abs_delta <= max_abs_delta_luma and changed <= max_changed_fraction:
+            row = np.full(len(CLASSES), (1.0 - confidence) / (len(CLASSES) - 1))
+            row[CLASSES.index("empty")] = confidence
+            recovered.append(SquarePrediction(
+                square=square, label="empty", confidence=confidence,
+                probabilities=tuple(float(value) for value in row),
+                valid_fraction=prediction.valid_fraction,
+                features=prediction.features))
+        else:
+            recovered.append(prediction)
+    return recovered
+
+
 def _bilinear_rgb(image: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """Sample an H x W x 3 image at sub-pixel coordinates, clamped at the edges."""
     height, width = image.shape[:2]
@@ -556,11 +596,14 @@ def predict_board(frame: np.ndarray, calibration: CameraCalibration,
                   registration: BoardRegistration, model: PerceptionModel,
                   *, view: str = "top", patch: int = 16,
                   min_confidence: float | None = None,
-                  reference_frame: np.ndarray | None = None) -> list[SquarePrediction]:
+                  reference_frame: np.ndarray | None = None,
+                  recover_empty: bool = False) -> list[SquarePrediction]:
     """Classify all 64 squares from pixels, calibration and board geometry only.
 
     ``reference_frame`` is an optional empty-board frame from the same session
-    and pose.  It is a calibration observation, not piece truth.
+    and pose.  It is a calibration observation, not piece truth.  With
+    ``recover_empty``, squares that match that reference closely and
+    were otherwise ``unknown`` become ``empty``; white/black are never guessed.
     """
     image = np.asarray(frame)
     luminance = image.astype(np.float32) @ np.array([0.299, 0.587, 0.114],
@@ -593,6 +636,8 @@ def predict_board(frame: np.ndarray, calibration: CameraCalibration,
             valid_fraction=float(valid_fraction[square]),
             features=tuple(float(value) for value in features[square]),
         ))
+    if recover_empty and reference is not None:
+        results = recover_reference_empty(results, features)
     return results
 
 

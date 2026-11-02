@@ -7,8 +7,9 @@ from chess_sim.board_registration import register_board
 from chess_sim.config import Camera, EnvConfig
 from chess_sim.env import ChessSimEnv
 from chess_sim.perception import (CLASSES, FEATURE_COUNT, FEATURE_NAMES, MODEL_PATH,
-                                  PerceptionModel, board_patches, calibrate_threshold,
-                                  expected_background, predict_board,
+                                  PerceptionModel, SquarePrediction, board_patches,
+                                  calibrate_threshold, expected_background,
+                                  predict_board, recover_reference_empty,
                                   square_features)
 from chess_sim.vision_geometry import CameraCalibration
 
@@ -136,3 +137,33 @@ def test_confidence_threshold_calibration_honours_an_error_budget():
     assert 0.4 <= threshold <= 0.99
     assert operating["confident_errors"] == 0
     assert operating["coverage"] > 0
+
+
+def test_reference_empty_recovery_only_recovers_empty_and_only_on_a_match():
+    features = np.zeros((64, FEATURE_COUNT), dtype=np.float32)
+    unknown = (0.0, 0.0, 0.0, 1.0)
+    predictions = [SquarePrediction(square, "unknown", 0.9, unknown, 1.0)
+                   for square in range(64)]
+    predictions[1] = SquarePrediction(1, "white", 0.8,
+                                      (0.0, 0.8, 0.1, 0.1), 1.0)
+    features[2, FEATURE_NAMES.index("ref_abs_delta_luma")] = 0.5
+    features[3, FEATURE_NAMES.index("ref_fraction_changed")] = 0.9
+
+    recovered = recover_reference_empty(predictions, features)
+    assert recovered[0].label == "empty"
+    assert recovered[0].confidence >= 0.9
+    assert recovered[1].label == "white"
+    assert recovered[2].label == "unknown"
+    assert recovered[3].label == "unknown"
+    # Only the empty class is ever recovered from the reference.
+    assert all(item.label in ("empty", "white", "unknown") for item in recovered)
+
+
+def test_reference_empty_recovery_is_opt_in():
+    features = np.zeros((64, FEATURE_COUNT), dtype=np.float32)
+    predictions = [SquarePrediction(square, "unknown", 0.9,
+                                    (0.0, 0.0, 0.0, 1.0), 1.0)
+                   for square in range(64)]
+    assert all(item.label == "unknown"
+               for item in recover_reference_empty(predictions, features,
+                                                   max_abs_delta_luma=-1.0))
