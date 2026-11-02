@@ -1,12 +1,98 @@
-# Simulation and training roadmap
+# Chess robot — simulation-first delivery roadmap
 
-Reconciled 2026-10-29 against the current source, live release, training scripts,
-and experiment log. Priority 1, **make crowded manipulation repeatable**, and
-Priority 2, **measure the scripted-control baseline**, are complete on live
-v1.10.6/v1.10.7; measured results are in [`EXPERIMENTS.md`](EXPERIMENTS.md) and
-CAD/import assumptions are kept with the private tool pack.
+**Updated 2026-11-02. Canonical delivery plan.** This replaces the old priority
+list and the earlier hardware-first build sequence. Phases 0–7 retain their
+identifiers and measured, scope-limited completion evidence below. **Next: Phase
+8.** Later phases are planned, not completed. Historical acceptance filenames
+such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
 
-## Baseline — what is already working
+## Final working version
+
+One physical follower arm plays a complete human-versus-robot game from a
+human-confirmed setup, using **only its wrist camera** for operational vision:
+find the board relative to the arm, locate an off-center piece for a clear grasp,
+infer the opponent's move, choose a legal reply with Stockfish, execute it and
+visually verify it. Handle captures, castling and en passant; promotion may ask
+the human to exchange the piece and verify the result. Ambiguity or faults pause
+for recovery rather than inventing a state. Save/reload games without losing
+castling/en-passant rights or replaying an interrupted move.
+
+**Complete all core software and feature qualification in simulation before
+integrating autonomous software with the real arm.** Existing manual LeLab
+teleoperation is a bench fact, not an exception granting autonomous integration.
+Measuring printed parts for the digital twin is not robot integration. Simulated
+success never passes a physical gate.
+
+### Selected roles and policy plan
+
+- **Raspberry Pi 4:** direct USB connection to follower/servo adapter and wrist
+  camera; timestamped captures, joint feedback, finite bounded command execution,
+  local limits/watchdog, stop/hold and explicit re-arm. No large-model training.
+- **BC-250:** central perception, registration, game coordinator/Stockfish,
+  planning, and model inference during play; training host where the actual
+  runtime/model passes qualification. Training and gameplay need not run at the
+  same time. Shared 16 GB is one physical pool, not additive CPU/GPU budgets.
+- **HTPC GTX 1060:** retain simulator/rendering/data generation. Test the selected
+  single-follower product layout, not just cooperative two-arm coverage. The
+  existing two-arm scene remains a regression/debug fixture, not a second-arm
+  purchase or a solution to single-arm reach.
+- **Vision baseline:** OpenCV geometry for lens/board/hand–eye transforms;
+  compact segmentation/keypoints for piece base/grasp region and occupancy/color;
+  legal-successor comparison for move inference. Known piece geometry or multiple
+  settled views resolve parallax; one RGB frame is not an exact 3D measurement.
+- **Learned manipulation:** qualify **goal-conditioned ACT** as the minimum
+  action-policy baseline. Supply explicit source/destination in calibrated frames,
+  state and wrist images; vanilla ACT is not language-directed by default. Use
+  bounded final approach/grasp/place correction, compared with guarded IK/scripted
+  control. Neither policy replaces Stockfish or independent verification.
+- **Capacity comparison:** preserve Brian's largest-practical-local-model
+  direction in parallel with the ACT baseline. SmolVLA, MolmoAct2 or a larger VLA
+  needs an exact-runtime fit and a falsifiable improvement hypothesis. A 35B
+  language/vision inference pass proves neither VLA action support nor precision.
+  The inherited SmolVLA recipe failed; do not call it a fresh proven alternative.
+
+## How to close a phase
+
+Every phase must deliver software or answer a named downstream decision with a
+reproducible experiment. Record inputs, held-out seeds/sessions/layouts, runtime
+and model hashes, per-case outcomes, failures, timing/memory/thermals, and links
+in [EXPERIMENTS.md](EXPERIMENTS.md). Set numeric tolerances **before** evaluation;
+future targets below are proposed acceptance targets, not measured results.
+A failed experiment can close a feasibility decision with a documented fallback,
+but cannot close a required product capability. Do not weaken gates silently.
+No next-stage physical work until the simulation release gate passes.
+
+### Phase sequence
+
+- **0–7 — complete foundations:** imported tool; crowded regressions; scripted
+  baseline; reusable corrections; off-center targeting; local platform/data;
+  sparse fixed-rig perception; sparse move inference. Limits remain below.
+- **8 — product digital twin and acceptance contract.**
+- **9 — wrist-only board calibration and full-board observation.**
+- **10 — grasp localization and robust printed-piece manipulation.**
+- **11 — BC-250 ACT / larger-policy runtime decision.**
+- **12 — audited training, corrections and local-policy comparison.**
+- **13 — complete simulated game coordinator and UI.**
+- **14 — simulated recovery, soak tests and release candidate.**
+- **15 — Pi/BC-250 service boundary against fake hardware.**
+- **16 — physical fixture and camera/arm calibration.**
+- **17 — guarded real manipulation and real-data adaptation.**
+- **18 — complete real games and product acceptance.**
+- **19–21 — simulation-first extensions:** loose-piece setup, avatar, emotes.
+
+Dependencies: 8 → 9 → 10; 11 can run after 8, with 12 requiring 10+11.
+13 consumes 9+10+12 (a measured rejection may select scripted control).
+14 → 15 → **hardware boundary** → 16 → 17 → 18. Extension software/simulation
+qualification happens before its physical rollout, never by testing first on
+hardware. No new purchases, cloud uploads or host-driver changes are authorized
+by this planning document.
+
+## Historical foundation evidence — measured scope, not current live status
+
+The release/version statements below describe their dated qualification runs;
+this documentation refactor did not query or change the live service. Later
+measurements in each phase supersede earlier counts. Completed means the named
+bounded experiment passed, not that the final product gate passed.
 
 - **Live simulator v1.10.6:** latest Onshape pack source revision
   `4dca0986f24304c301118aa4`, with **0–38 mm** aperture. Fixed `crowded-v3`
@@ -49,7 +135,7 @@ CAD/import assumptions are kept with the private tool pack.
   simulator is healthy and ready; the last seeded suite is complete. The profile still labels the CAD grasp model
   uncalibrated; fixed and seeded suite success is not hardware qualification.
 
-## Priority 0 — qualify the imported CAD tool
+## Phase 0 — qualify the imported CAD tool — complete (simulation)
 
 1. **Deployment and simulated-suite gates are complete:** live v1.10.6 reports the
    v3 source revision and 0–38 mm aperture; local tests pass 28/28, browser
@@ -77,7 +163,7 @@ CAD/import assumptions are kept with the private tool pack.
    pass, and live crowded-v3 passed 25/25 plus 75/75 seeded cases. Preserve the
    rollback pack; this does not qualify the mechanism physically.
 
-## Priority 1 — make crowded manipulation repeatable
+## Phase 1 — make crowded manipulation repeatable — complete (bounded suite)
 
 1. **Complete — knight transit/IK failure triaged by recapturing the route.**
    Historical recording `f4cc5169` remains unavailable, so no claim is made
@@ -116,7 +202,7 @@ CAD/import assumptions are kept with the private tool pack.
    finger-envelope checks pass the fixed and seeded suites. Physical clearance,
    friction, and safe squeeze force remain outside this simulation gate.
 
-## Priority 2 — measure the scripted-control baseline — complete
+## Phase 2 — measure the scripted-control baseline — complete
 
 1. **Complete — randomized-placement and piece-set baseline.**
    `tools/benchmark_expert.py` (core: `chess_sim/benchmark.py`) scores the
@@ -144,7 +230,7 @@ the report is reporting-only and is never available to a policy under test.
    qualification. Compare a learned policy only against the matching piece set
    and task family.
 
-## Priority 3 — make verified incident corrections reusable — complete
+## Phase 3 — make verified incident corrections reusable — complete
 
 - `examples/export_incident_corrections.py` exports only linked incident
   corrections whose source is a recorded failure; by default the correction
@@ -163,12 +249,12 @@ the report is reporting-only and is never available to a policy under test.
   corrections, not visual-policy examples. Full visual DAgger capture remains
   future work.
 
-## Priority 4 — camera-targeted pickup of off-center pieces
+## Phase 4 — camera-targeted pickup of off-center pieces
 
 - **Status: complete for the qualified fixed-overhead simulation envelope; no
   learned-policy training is required.** The task may name the source square
   and piece type. General piece/color recognition and learned occupancy remain
-  Priority 6; independent physical camera/tool calibration and hardware trials
+  Phase 6; independent physical camera/tool calibration and hardware trials
   remain sim-to-real work.
 - **Implementation:** `chess_sim/vision_geometry.py` maps RGB pixel locations
   through the model camera intrinsics/extrinsics and shared board/arm world frame
@@ -212,7 +298,7 @@ the report is reporting-only and is never available to a policy under test.
   `.private/post-deploy-1.10.8.json` and
   `.private/browser-check-1.10.8.json`.
 
-## Priority 5 — establish the local platform and data boundary — complete
+## Phase 5 — establish the local platform and data boundary — complete
 
 **Closed 2026-10-30 for bounded platform/data qualification.** The implementation
 direction is **frozen pretrained vision + calibrated geometry/IK/scripted
@@ -242,12 +328,12 @@ The largest-practical-local-model preference is preserved by the passing 35B VLM
 [Acceptance, artifact hashes, metrics, scope and reproduction](../training/PRIORITY5_ACCEPTANCE.md).
 The earlier demand for final trained-controller qualification is **not claimed
 passed**: with large-network training no longer prerequisite to the selected
-architecture, final perception quality belongs to Priority 6, state inference to 7,
-optional learned control to 8, and physical readiness to 10. These remain open.
+architecture, final perception quality belongs to Phase 6, state inference to 7,
+learned-control qualification to 11–12, and physical readiness to 16–18. These remain open.
 The pilot does not replace our calibrated controller or qualify MolmoAct2,
 LeRobot/PyTorch training, continuous VLM service, or a physical robot.
 
-## Priority 6 — board registration and occupancy/color perception — complete
+## Phase 6 — board registration and occupancy/color perception — complete
 
 **Closed 2026-10-30 for the qualified fixed-overhead-rig envelope.** Board
 registration is treated as calibrated geometry, not a learned task. The camera
@@ -282,7 +368,7 @@ camera-to-arm chain.
   abstained (natural arm occlusion is 90.6%), so a hand/foreign-object detector
   remains open. The empty reference is valid only while board and camera stay
   fixed. Camera calibration is simulated, not independently physical. Sparse
-  positions only; crowded boards and move/state inference remain Priority 7/8.
+  positions only; move/state inference is boundedly complete in Phase 7; wrist-only and crowded-board qualification remain Phase 9.
   No physical capture session is claimed.
 - **Implementation:** `chess_sim/board_registration.py`,
   `chess_sim/perception.py`, `chess_sim/perception_data.py`,
@@ -291,7 +377,7 @@ camera-to-arm chain.
   **67 passed, 4 skipped**. Receipt `training/PERCEPTION_ACCEPTANCE.md`, private
   receipts `.private/perception/heldout-v8.json` and `training-v8.json`.
 
-## Priority 7 — infer move/state changes from observations — complete
+## Phase 7 — infer move/state changes from observations — complete
 
 **Closed 2026-11-02 for the qualified fixed-overhead-rig envelope with settled
 observations and sparse positions.** See
@@ -325,48 +411,329 @@ observations and sparse positions.** See
   receipts `.private/move-inference/heldout-top.json` and
   `heldout-fused.json`.
 
-## Priority 8 — reassess learned motor-policy grounding
+## Phase 8 — freeze the product digital twin and acceptance contract
 
-- Reassess unseen-instruction grounding and the failed wide-distribution
-  training attempts in [`EXPERIMENTS.md`](EXPERIMENTS.md). Any continuation
-  needs a held-out paired evaluation and grasp-aware metrics (right piece,
-  untouched/knocked/carried, success), not loss or median placement error
-  alone. Keep visual targeting and safe execution gates independent of policy
-  scores.
+**Outcome:** a reproducible scene/configuration and test manifest representing
+our single physical follower, printed board/pieces, NormaCore tool, wrist camera
+and reachable capture/staging tray. Depends on completed foundations, not a new
+hardware commissioning session.
 
-## Priority 9 — consider batched rollout/RL only if justified
+- Record actual board pitch/thickness and per-type assembled M6-weighted masses;
+  unknown measurements remain parameters with bounded sensitivity sweeps, not
+  invented facts. Replace unweighted PLA estimates when measurements arrive.
+  Capture COM/inertia, friction/contact uncertainty, jaw compliance and camera/
+  cable envelopes; preserve CAD provenance and private-asset boundaries.
+- Map every square and tray destination through approach, grasp, lift, transit
+  and descent on **one follower**, including neighbor clearance. Two arms jointly
+  reaching four corners does not prove this. Compare base/riser/board layouts;
+  surface any unreachable legal move as a blocking design decision.
+- Freeze observation/action units, joint order, timestamps, camera poses, board
+  transforms, supported perturbations and independent physical-success evaluator.
+  Inventory script, perception, policy and game interfaces plus regression IDs.
+- **Exit:** committed config + reach/clearance report + product test matrix; all
+  required paths have a feasible design or an explicit blocking redesign. Do not
+  carry an unreachable square forward as silently excluded gameplay.
 
-- Only if the preceding baselines support it, build the planned batched
-  rollout/RL loop and compare architectures on the same held-out set. Do not
-  spend another long GPU run until the dataset, action labels, schedule,
-  evaluator, and selected compute platform pass their preflight checks.
+## Phase 9 — wrist-only calibration and complete-board perception
 
-## Priority 10 — physical sim-to-real gates (blocked until the rig exists)
+**Outcome:** locate a shifted board relative to the arm and obtain trustworthy
+observations using only wrist images and measured joints. Depends on 8.
 
-- Build and measure the physical fixture; calibrate board squares, board pose,
-  arm height/mount, tray, and overhead/wrist cameras against the simulated
-  config.
-- Check CAD fit, rack engagement, jaw travel, servo limits/torque, camera
-  clearance, and printed-part masses/friction on the bench. Current values are
-  CAD or actuator estimates, not measured hardware facts.
-- Run guarded calibration moves and validate camera-based success detection
-  before attempting longer tasks. Log real failures with the same replayable
-  evidence as simulation.
+- Implement lens calibration inputs, hand–eye/tool frames and board-plane pose
+  estimation (OpenCV corners/edges; printable fiducials are an optional method).
+  Do not read simulator board/camera truth at inference; use it only for labels
+  and scoring. Re-register after board shifts; invalidate stale empty references.
+- Plan settled scan poses/multiple unchanged-scene views covering all 64 squares.
+  Train/evaluate occupancy/color and hand/foreign-object/occlusion rejection on
+  crowded starting positions, sparse/endgames, lighting, shadows, board movement
+  and camera uncertainty, with session/layout-separated holdouts.
+- Connect legal move inference; handle captures whose destination stays occupied,
+  castling, en passant, unchanged boards, invalid rearrangements and promotion
+  ambiguity. A fused overhead view is an ablation, never the product input.
+- **Exit:** camera-only board pose and complete-turn reports with errors,
+  coverage, false confirmations and abstentions. Initial target: registration
+  within 2 mm XY / 1° yaw on ≥95% of in-envelope held-out sessions; ≥95% turn
+  resolution after at most three scans, zero false move confirmations in ≥200
+  held-out turns, and all deliberate invalid/occluded cases safely rejected.
+  Check that measured error fits the Phase 10 grasp-clearance budget; tighten
+  these targets if it does not. Current 37.1% move coverage does not pass.
 
-## Deferred scope
+## Phase 10 — precise grasps and reliable printed-piece execution
 
-- Full legal-game support for castling, en passant, and promotion.
-- Identifying an unknown piece by type/color and recovering pieces lying on
-  their side; the current learned tasks name source squares and the scripted
-  grasp expert cannot recover toppled pieces.
-- Public release of private CAD geometry. The private tool pack may be included
-  only in the authorized LAN deployment bundle.
+**Outcome:** convert actual piece position within a square into a reliable,
+clearance-aware move, not a square-center assumption. Depends on 8–9.
 
-## Release gate
+- Add segmentation/keypoints/base/contact geometry, piece-specific grasp heights,
+  knight yaw/approach choices and uncertainty; compare known geometry with extra
+  wrist views. Reject unreachable, uncertain or neighbor-colliding grasps.
+- Implement observe → approach → re-observe → grasp → verify lift → transport →
+  place → retract → verify. Tune physical closure/contact parameters honestly;
+  retain collisions/slips, not welds, teleportation or forgiving success labels.
+- Include weighted mass/friction sensitivity, all six types/colors, both sides
+  of the board, ±off-center placements, dense starting layouts, captures/tray,
+  castling paths, en-passant removal and interrupted compound moves.
+- **Exit:** held-out ≥300 paired cases covering these buckets; proposed target
+  ≥99% complete transactions with **zero wrong-piece picks or collateral moves**
+  and all failed/uncertain outcomes detected before game-state commit. Record
+  per-type/task/crowding results, not only a favorable aggregate. Physical
+  realism and Phase 14 full-game tests remain separate gates.
 
-For every requested simulator release: run the local regression suite, build
-and deploy only the authorized `robot_arm` stack, verify the exact live version
-and cameras/controls, then run the complete crowded-v3 fixed suite and record
-its receipt. For repeatability qualification, run the three bounded seeded
-crowded-v3 suites and retain per-case receipts and failure archives. Individual
-case failures are diagnostics—not a green manipulation qualification.
+## Phase 11 — qualify BC-250 training and policy execution
+
+**Outcome:** a measured runtime/model selection for phases 12–18, not a promise
+that nominal model memory fits. Depends on 8; may run beside vision development.
+
+- Pin exact ACT implementation, backbone, image size, chunk length, goal encoding,
+  precision and runtime. Test full initialized forward/backward/optimizer steps
+  at batch 1–2, finite gradients, save/reload and exact resumed update; then an
+  actual audited task-data pilot. Tinygrad/WebGPU toy-network success is not ACT.
+- Route A: investigate patched ROCm/PyTorch compatibility without changing the
+  gaming kernel/firmware/driver stack under this plan. Host changes need separate
+  authorization. Route B: assess a Tinygrad/WebGPU ACT port, accounting for the
+  vision backbone, transformer, loss, optimizer and checkpoint parity—not just
+  a small MLP. CPU is a measurable fallback, not assumed sufficiently fast.
+- In the same capability study, test the largest practical local VLA/action
+  artifact, stepping down on measured operator/memory/latency/thermal failure.
+  Keep frozen VLM scene interpretation separate from precision action control.
+- Benchmark final local preprocessing → inference → action decoding, warm-up,
+  p50/p95, joint/camera transport and chunk replenishment under expected concurrent
+  load. Define chunk execution period and memory reserve first. Delayed/stale
+  results must trigger bounded hold/replan; the Pi servo loop stays local.
+- **Exit:** reproducible compatibility/resource receipt and selected runtime or
+  explicit rejected paths. Sustain ≥30 minutes without thermal cutoff, swap
+  growth or missing action-buffer deadlines under the selected schedule. The
+  current paced 1.45–1.50 s VLM pass / unpaced 85°C failure does not qualify this.
+  No training-time estimate until measured throughput exists.
+
+## Phase 12 — train and compare goal-conditioned ACT
+
+**Outcome:** choose the product manipulation controller on held-out task results.
+Depends on 10–11; a justified no-policy decision retains the scripted controller.
+
+- Collect simulated wrist/state/explicit-goal demonstrations using verified
+  successes and synchronized executed actions. Split entire sessions/layouts;
+  keep oracle FEN/object poses/verdicts as labels/evaluation only. Never export
+  private raw assets/datasets by tutorial defaults.
+- Start with bounded final-approach/grasp/place skills, expand by piece, approach,
+  crowding, offsets, capture and tray. Size data using learning curves and bucket
+  coverage, not a promise that 50 episodes covers chess. Store true failures and
+  linked corrections separately from imitation-positive demonstrations.
+- Train ACT on the qualified BC-250 route; audit wrong-piece, grasp, lift, transit,
+  release and collateral failures. Shorten/replan action chunks based on measured
+  latency/drift. Incident state-only traces need synchronized images before
+  visual DAgger. RL/batched rollouts are conditional on a specific demonstrated
+  residual problem, rewards/resets and local runtime support.
+- Compare scripted control, ACT and any justified VLA on the same untouched
+  ≥300-case positions/rollout seeds and identical success criteria. SmolVLA needs
+  a new localization/conditioning/data hypothesis before spending another run.
+- **Exit:** inference-only artifact + processor/goal/action config, exact reload,
+  local resource/thermal receipt and paired per-family/type/crowding scores.
+  Adopt learned control only if it meets Phase 10/14 gates and provides a measured
+  benefit; otherwise record rejection and ship the qualified scripted path. If
+  BC-250 training fails, leave ACT training blocked/rejected—do not silently move
+  it to cloud or claim the tiny pilot qualified it.
+
+## Phase 13 — integrated simulated chess application
+
+**Outcome:** a usable end-to-end game with the selected controller. Depends on
+9–10 and controller decision in 12.
+
+- Implement coordinator states: setup-confirmed, await-human, scan, resolve,
+  engine-plan, execute, verify, recover, paused and game-over. Wire perception
+  and move inference into the browser UI; show uncertainty, phase and reasons.
+- Use Stockfish/UCI and python-chess for legal moves/history. Separate planned,
+  executed and committed positions; use transaction IDs and observation versions.
+  Captures remove the opponent before placement; castling/en passant have explicit
+  multi-action plans and partial-failure reconciliation. Human-assisted promotion
+  must verify exchanged type before resuming.
+- Add PGN/session save/load with turn, castling, en-passant and interrupted-action
+  state; never infer historical rights from images alone. Provide turn-complete,
+  stop, scan/retry, correct-position and resume controls.
+- **Exit:** scripted integration scenarios cover ordinary turns, every special
+  rule, invalid human moves, promotion choice, save/resume and partial transaction
+  failure. Play full simulated games with wrist-only observations and no hidden
+  oracle inputs to the operational coordinator.
+
+## Phase 14 — recovery and simulation release candidate
+
+**Outcome:** qualify the whole core product before connecting physical hardware.
+Depends on 13. Single-move success is not full-game reliability.
+
+- Inject missed picks, slip, fallen/displaced neighbors, board movement, hand
+  intrusion, bad/old frames, model timeout, engine/service crash, pause/stop and
+  interrupted capture/castling. Reconcile visually; retry only bounded safe
+  operations, otherwise require explicit human correction/re-arm.
+- Run an untouched ≥20-game suite, including dense openings and seeded special-
+  move scenarios, plus ≥500 robot transactions across sessions. Proposed target:
+  ≥95% games completed without an unplanned intervention, ≥99% successful
+  transactions, zero undetected board-state divergence or wrong-piece actions;
+  every injected fault detected and contained. Report interventions and retries.
+- **Exit:** versioned simulation release, per-game PGNs/incidents, regression
+  receipts and sustained BC-250 inference under representative load. Every
+  required gate passes; unresolved geometry/vision/compute failures block hardware
+  integration. Existing browser/control/crowded-v3 release checks remain required.
+
+## Phase 15 — Pi / BC-250 boundary using fake hardware
+
+**Outcome:** production transport software tested without moving the real arm.
+Depends on 14; all captures/feedback/servos are mocked or simulated.
+
+- Define versioned snapshot/joint/command schemas with frames, units, timestamps,
+  sequence IDs, expiry, bounded segments and acknowledgements. Pi-side executor
+  owns queue limits, local watchdog and stop/hold; BC-250 owns planning/models.
+- Exercise fake USB/camera loss, stale/duplicate/out-of-order commands, Wi-Fi
+  delay/drop, BC-250 sleep/reboot, queue exhaustion and explicit reconnect/re-arm.
+  Reconnection never resumes an interrupted move by itself.
+- **Exit:** repeatable two-service simulated acceptance suite and latency budget;
+  zero expired/duplicate command execution, deterministic local watchdog behavior,
+  no raw conversational/model output reaching servo commands. ARM64 packaging
+  can be built/tested without opening actual serial devices. Physical deployment
+  starts only at 16; this phase does not authorize a Pi install or reflash.
+
+## Phase 16 — physical commissioning and measured calibration
+
+**Outcome:** validate the selected fixture, wrist camera and local executor on
+real hardware. **Hard prerequisite: 14–15 passed.** Existing LeLab assembly and
+teleoperation remain self-reported; earlier bench gates are still required.
+
+- Verify single-arm fixture, stop/hold, leader-disconnect, limits/speeds, power,
+  USB topology and cable strain relief. Measure jaw fit/backlash/aperture, camera
+  clearance, weighted masses/friction and all required workspace/tray paths.
+- Calibrate joints, lens/distortion, hand–eye/tool contact, board plane/origin/
+  orientation/height and grasp offsets. A wrist image does not recalibrate joint
+  zeros. Compare measured frames to sim; test low-confidence registration refusal.
+- Deploy the tested Pi executor/camera service and BC-250 coordinator with explicit
+  hardware enable. Validate local stop/watchdog/network loss before task moves.
+- **Exit:** saved calibration/versioned physical config, independent measured
+  pose/registration checks within the Phase 9/10 error budget, safe fault tests,
+  repeated light-object picks and full empty-board path verification. Return
+  discrepancies to the simulator instead of compensating with oracle constants.
+
+## Phase 17 — guarded real pick/place and adaptation
+
+**Outcome:** transfer the simulated skills to actual pieces. Depends on 16.
+
+- Begin one piece / empty board at conservative motion settings, then all types,
+  offsets, tray captures, dense neighbors and special-move sub-actions. Verify
+  lift and placement from real wrist images before committing state.
+- Keep real capture sessions separate from synthetic data; audit lens/exposure,
+  timestamps, synchronization and domain shift. Fine-tune perception/ACT only if
+  failure evidence supports it, using the qualified local training path and
+  held-out real sessions. Re-evaluate the exported artifact on BC-250.
+- **Exit:** held-out ≥100 physical transactions across all six types and move/
+  capture families meeting the Phase 10 target, zero wrong-piece/collateral
+  actions and no undetected failure. Every fault stops/reconciles correctly;
+  failed gates return to simulation/data refinement, not longer live games.
+
+## Phase 18 — physical complete games and final acceptance
+
+**Outcome:** the final working core chess robot. Depends on 17.
+
+- Repeat the complete human-turn → wrist observation → legal inference →
+  Stockfish → verified execution cycle in ≥10 real games across sessions;
+  explicitly exercise castling, en passant, assisted promotion and save/resume.
+- Verify ≥95% unassisted completion target over a rolling ≥20-game acceptance
+  window (the first ten are a commissioning checkpoint), zero undetected state
+  divergence, bounded recovery and logs sufficient to reproduce every incident.
+  Include long-session thermals, Wi-Fi loss, stale frames and BC-250 sleep tests.
+- **Exit:** documented supported board/piece/layout envelope, launch/stop/recover
+  workflow, calibration backup, model/runtime versions, game receipts and known
+  limitations. No dependence on a second arm, debug overhead camera, Internet
+  service or unqualified training stack for normal play.
+
+## Phase 19 — autonomous setup from loose pieces
+
+**Outcome:** inventory, identify, grasp and arrange all 32 pieces. First qualify
+software in simulation; physical rollout depends on 18 and the same new-feature
+gates as 16–18. This is not required for the human-confirmed-setup core release.
+
+- Start with upright separated, unsorted pieces in a reachable staging area;
+  recognize type/color (shape versus visible identifiers is a measured decision),
+  assign destinations, plan access-preserving placement order and verify inventory.
+- Then explicitly qualify sideways, touching/overlapping and stacked pieces:
+  singulation/reorientation and tool feasibility are new work, not silently
+  excluded requirements or capabilities implied by the upright increment.
+- **Exit:** ≥20 held-out complete setups per claimed supported increment, no
+  missing/duplicate/wrong-type placements left undetected, with success rate,
+  interventions and unreachable/unknown-object refusal reported.
+
+## Phase 20 — screen avatar and bounded conversation
+
+**Outcome:** game-aware display on an existing screen first, no purchase implied.
+Prototype/qualify with simulated game events before hardware rollout.
+
+- Feed trusted coordinator events/evaluation to expressions and dialogue; keep
+  chess facts/rules authoritative and generated text out of motor commands.
+- **Exit:** event/replay tests for normal play, uncertainty, recovery and game-over;
+  display/model failures never stall or override the chess/motion coordinator.
+
+## Phase 21 — safe game-aware arm emotes
+
+**Outcome:** a collision-checked empty-gripper gesture library. Qualify simulation
+first; physical rollout requires measured gesture volume and Phase 18 readiness.
+
+- Coordinator arbitrates gestures against task motion; require hands clear,
+  empty tool, local limits/watchdog, cooldowns/hysteresis and robot-perspective
+  evaluation triggers. Re-observe after moving the wrist camera.
+- **Exit:** every gesture passes collision/fault/preemption tests and measured
+  physical clearance before activation; no gesture during a pick, uncertain state
+  or interrupted transaction. Personality never gains raw servo authority.
+
+## Experiment lessons carried forward
+
+The chronological log is retained unchanged; this index turns its lessons into
+future gates. Historical upstream RTX 5090/two-camera results are **not** local
+BC-250 or wrist-only qualifications.
+
+- [EXPERIMENTS §4.1–4.6, §5.1–5.5](EXPERIMENTS.md): falling training loss is not
+  task success; audit next-state/action-label conventions and command-rate
+  interpolation. Narrow instruction success does not prove wide grounding.
+  Historical 6,095 demonstrations/70k steps and 47-hour 5090 run are not an ACT
+  budget estimate. Carry into 11–12.
+- [§4.7–4.10, §5.6–5.7, §6](EXPERIMENTS.md): 227/300 baseline versus 233/300
+  correction checkpoint is not a blanket improvement; use paired seeds and
+  confidence/failure breakdowns. More captures did not fix blind action chunks;
+  transit-only noise omitted grasp/release corrections and success filtering hid
+  hard cases. Preserve schedules on resume; record synchronized corrections from
+  actual failure states. Carry into 10–12 and 14.
+- [§4.11–4.14](EXPERIMENTS.md): SmolVLA ended at 1/48 on the tested recipe;
+  wide-distribution MolmoAct2 attempts collapsed/failed to take off. Avoid repeating
+  long runs without new grounding/data/runtime evidence. Carry into 11–12.
+- [§7–10](EXPERIMENTS.md): preserve preflights, media/data audits, exclusive
+  worker ownership, incident archives and classified contact diagnostics. ±7–9 mm
+  board shifts caused destination-jaw neighbor collision; only ±5 mm was qualified.
+  Tool geometry/clearance failures need geometry changes, not more demonstrations.
+- [§11](EXPERIMENTS.md): scripted expert 332/360 is an oracle-driven ceiling on
+  prefiltered sparse tasks; printed captures 73% versus default 98% exposes a real
+  piece-set gap. Fixed-suite 100% is not full-board/full-game reliability. Phase 10
+  must remeasure weighted printed pieces and the single-arm product layout.
+- [§12–13](EXPERIMENTS.md): 5/8 registration sessions accepted; top perception
+  99.4% answered accuracy and 96% coverage exclude occlusion/rejected sessions.
+  Synthetic-occluder rejection was only 22.5%; move coverage 37.1%. Wrist fusion
+  reduced it to 31.4%, so extra views need qualified selection/consistency, not
+  blind fusion. Carry into 9, 13–14.
+- [BC250_LOCAL_TESTS](../training/BC250_LOCAL_TESTS.md) and
+  [Phase 5 acceptance](../training/PRIORITY5_ACCEPTANCE.md): paced frozen-VLM
+  inference and tiny actual-task GPU optimization pass, but the MLP loses to
+  hold-position. Continuous thermals, real ACT/VLA operators/training and action
+  accuracy remain open. Shared RAM, measured latency and thermal stability govern
+  selection; no stock ROCm/PyTorch support is assumed.
+- [GRASP_PRINTED](GRASP_PRINTED.md), [PRINTED_PIECES](PRINTED_PIECES.md),
+  [REACH](REACH.md), [PRIVATE_TOOL_PACK](PRIVATE_TOOL_PACK.md) preserve per-piece
+  geometry, imported scale, reach assumptions and private CAD provenance. Added
+  M6 ballast invalidates the unweighted mass assumptions. Carry into 8, 10, 16.
+
+## Release and evidence rules
+
+Documentation-only refactors do not require runtime rebuild/deploy. For runtime
+changes use repository AGENTS.md: local regression, versioned bundle/compose/
+checksums, deploy only authorized `robot_arm`, verify exact live version,
+cameras/controls and complete crowded-v3 fixed suite. Repeatability claims require
+all three bounded seeded suites and per-case failure archives. Future product
+qualification additionally requires the wrist-only/single-arm and game gates above;
+the legacy crowded suite is necessary, not sufficient.
+
+Public git contains code, docs and compact nonprivate receipts only. Keep private
+CAD, raw recordings, credentials and checkpoints out of public commits. The log
+and historical acceptance reports preserve their original names/numbers; current
+status and phase numbering come from this roadmap, not stale historical prose.

@@ -2,10 +2,14 @@
 
 ## Current scope
 
-Brian's explicit priority (2026-10-27): **set up the environment first; do not
-optimize pick-and-place or full-game reliability yet.** The initial environment
-is a two-follower-arm MuJoCo scene, browser controls/views and a Dockhand stack.
-These simulated arms do not imply buying a second physical follower.
+Current delivery authority: `docs/ROADMAP.md` (Brian, 2026-11-02). Completed
+Phases 0–7 are bounded foundations; Phase 8 is next. Develop and qualify core
+software in simulation before real autonomous integration. Product target is
+one follower with wrist-only vision, Pi 4 direct camera/servo I/O and watchdog,
+and BC-250 central processing/model inference/training where qualified. Existing
+two-arm simulation remains a debug/regression fixture, not proof of single-arm
+reach or permission to buy another follower. Follow the phase requested by the
+user; the roadmap is not authorization to implement all future phases at once.
 
 ## Invariants
 

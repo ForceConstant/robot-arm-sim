@@ -4,7 +4,7 @@ Everything needed to train the SO-101 chess policy on another machine. The
 settings here were chosen by measurement; `settings.env` carries the reasoning
 inline and `../docs/EXPERIMENTS.md` has the numbers behind each one.
 
-## Platform qualification (Priority 5 — complete for bounded local use)
+## Platform qualification (Phase 5 — complete for bounded local use)
 
 Current implementation direction: **frozen pretrained vision + calibrated
 geometry/IK/scripted control**. Large-network training is not a prerequisite.
@@ -34,6 +34,22 @@ is historical, not a qualified local deployment. See [BC-250 research](BC250_CAP
 exact-size model operators/capacity locally before substantial training and the
 final artifact's memory, latency, reload and held-out behavior afterward. See
 [deployment gates](PLATFORM_AND_DATA.md#deployment-first-constraint--brian-2026-10-30).
+
+## Current policy delivery gates
+
+The [canonical roadmap](../docs/ROADMAP.md) supersedes historical priority numbers.
+Phase 11 qualifies complete ACT forward/backward/resume and inference on BC-250;
+Phase 12 trains and compares explicit-goal ACT against scripted control and any
+justified larger VLA. Tinygrad/WebGPU toy/MLP results do not qualify ACT. Patched
+ROCm/PyTorch is an investigation route, not permission to change gaming drivers.
+A Tinygrad ACT port needs full-model parity, not just an optimizer smoke test.
+
+Raspberry Pi 4 owns direct camera/servo connection and bounded local execution;
+BC-250 owns central processing, qualified model inference and feasible training.
+HTPC/GTX 1060 remains the simulator/data host. All product software is qualified
+in simulation before autonomous physical integration. SmolVLA's inherited recipe
+ended at 1/48; retry only with a new hypothesis and paired evaluation. Keep the
+largest-practical-local-model study distinct from the minimum ACT baseline.
 
 ## Historical MolmoAct2 task and recipe
 
