@@ -3,7 +3,7 @@
 ## Current scope
 
 Current delivery authority: `docs/ROADMAP.md` (Brian, 2026-11-02). Completed
-Phases 0–7 are bounded foundations; Phase 8 is next. Develop and qualify core
+Phases 0–8 are bounded foundations; Phase 9 is next. Develop and qualify core
 software in simulation before real autonomous integration. Product target is
 one follower with wrist-only vision, Pi 4 direct camera/servo I/O and watchdog,
 and BC-250 central processing/model inference/training where qualified. Existing

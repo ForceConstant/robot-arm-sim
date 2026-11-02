@@ -1245,3 +1245,49 @@ therefore abstention, not error: there were no false confirmations.
 Regression **86 passed, 4 skipped**. Acceptance:
 `training/MOVE_INFERENCE_ACCEPTANCE.md`; receipts
 `.private/move-inference/heldout-top.json` and `heldout-fused.json`.
+
+---
+
+## Phase 8 — product digital twin and acceptance contract (2026-11-02)
+
+**Inputs:** Brian measured the printed board at **28 mm square pitch, 3.2 mm
+slab, 15 mm labelled border** and the assembled rook at **4.8 g including one
+M6 nut**. Other piece masses remain unmeasured. Single follower, white side,
+80 mm board edge-to-arm-base gap, 60 mm riser, 30 Hz.
+
+**Config:** `hardware/product_twin.json` (schema
+`chess-robot-product-twin/1`), validated by `chess_sim/product.py`; the
+contract is `docs/PRODUCT_CONTRACT.md`, the matrix is
+`docs/PRODUCT_TEST_MATRIX.md`, and the generated report is
+`docs/PHASE8_QUALIFICATION.md` plus
+`reports/phase8_product_qualification.json`.
+
+**Tool result:** the NormaCore custom PLA parallel jaw failed **11/64** squares
+in the Phase 8 path map and spot executions at e1, c1, d1 and h8 on this board.
+The stock SO-101 pinch gripper passed the same checks and is the frozen product
+tool. The custom jaw is retained as a rejected candidate pending a revised
+geometry; no purchase or physical change was made.
+
+**Execution result:** one deterministic pick/place per square, retried with
+king/rook when the first piece failed:
+
+- first attempt **59/64**;
+- square path feasible **64/64** after retry;
+- tray destinations **4/4**;
+- the five first-attempt failures were pawns at a1, c3, a7, g7 and e8; each
+  passed the same square with king and rook, so they are pawn-grasp reliability
+  inputs for Phase 10, not reach exclusions.
+
+**Geometry scan (advisory):** empty board **60/64**, crowded start **58/64**;
+all residuals are extreme-corner transit-IK cases, named in the report. The
+actual execution above is the Phase 8 gate. Layout comparison: 80 mm/60 mm is
+the only tested layout with 64/64 reach; 60 mm loses the near rank and 100 mm
+loses the far corners.
+
+**Mass model:** the rook is the only measured assembled piece (4.8 g). Its
+COM/inertia are a bounded 2–4 mm bottom point-mass model, not a measured
+tensor. Other pieces use unweighted PLA nominal plus an explicit 0–5 g
+sensitivity range; no midpoint is presented as a measurement.
+
+**Verdict:** Phase 8 exit met for the selected stock tool. No physical arm,
+servo, camera or purchase was touched.

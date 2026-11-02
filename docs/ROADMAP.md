@@ -1,9 +1,9 @@
 # Chess robot — simulation-first delivery roadmap
 
 **Updated 2026-11-02. Canonical delivery plan.** This replaces the old priority
-list and the earlier hardware-first build sequence. Phases 0–7 retain their
+list and the earlier hardware-first build sequence. Phases 0–8 retain their
 identifiers and measured, scope-limited completion evidence below. **Next: Phase
-8.** Later phases are planned, not completed. Historical acceptance filenames
+9.** Later phases are planned, not completed. Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
 
 ## Final working version
@@ -67,7 +67,7 @@ No next-stage physical work until the simulation release gate passes.
 - **0–7 — complete foundations:** imported tool; crowded regressions; scripted
   baseline; reusable corrections; off-center targeting; local platform/data;
   sparse fixed-rig perception; sparse move inference. Limits remain below.
-- **8 — product digital twin and acceptance contract.**
+- **8 — product digital twin and acceptance contract — complete 2026-11-02.**
 - **9 — wrist-only board calibration and full-board observation.**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — BC-250 ACT / larger-policy runtime decision.**
@@ -413,8 +413,25 @@ observations and sparse positions.** See
 
 ## Phase 8 — freeze the product digital twin and acceptance contract
 
+**Status: complete 2026-11-02.** Committed evidence:
+[`hardware/product_twin.json`](../hardware/product_twin.json),
+[`docs/PRODUCT_CONTRACT.md`](PRODUCT_CONTRACT.md),
+[`docs/PRODUCT_TEST_MATRIX.md`](PRODUCT_TEST_MATRIX.md),
+[`docs/PHASE8_QUALIFICATION.md`](PHASE8_QUALIFICATION.md) and
+[`reports/phase8_product_qualification.json`](../reports/phase8_product_qualification.json).
+
+Measured board: 28 mm squares, 15 mm labelled border, 3.2 mm slab, 254 mm
+overall. One white-side follower at an 80 mm board gap and 60 mm riser. Rook
+mass is the single measured assembled value, 4.8 g including one M6 nut; all
+other assembled masses remain explicit ranges, not invented facts.
+
+**Tool decision:** the stock SO-101 pinch gripper is selected. The NormaCore
+custom PLA parallel jaw was rejected for this 28 mm board: it failed 11/64
+squares in the path map and spot executions at e1, c1, d1 and h8. Reconsider it
+only after a revised jaw passes the same matrix.
+
 **Outcome:** a reproducible scene/configuration and test manifest representing
-our single physical follower, printed board/pieces, NormaCore tool, wrist camera
+our single physical follower, printed board/pieces, selected tool, wrist camera
 and reachable capture/staging tray. Depends on completed foundations, not a new
 hardware commissioning session.
 
@@ -430,9 +447,13 @@ hardware commissioning session.
 - Freeze observation/action units, joint order, timestamps, camera poses, board
   transforms, supported perturbations and independent physical-success evaluator.
   Inventory script, perception, policy and game interfaces plus regression IDs.
-- **Exit:** committed config + reach/clearance report + product test matrix; all
-  required paths have a feasible design or an explicit blocking redesign. Do not
-  carry an unreachable square forward as silently excluded gameplay.
+- **Exit (met 2026-11-02):** committed config + reach/clearance report + product
+  test matrix. Actual execution succeeded from all 64 squares with at least one
+  piece type, and from all 4 tray slots. First-pass pawn failures at a1, c3, a7,
+  g7 and e8 passed the same squares with king/rook; they are Phase 10
+  grasp-reliability inputs, not silently excluded squares. Geometry scan
+  residuals at extreme corners are named in the report and are not hidden
+  gameplay exclusions. No blocking redesign remains for the selected stock tool.
 
 ## Phase 9 — wrist-only calibration and complete-board perception
 

@@ -1,0 +1,413 @@
+{
+  "schema": "chess-robot-product-twin/1",
+  "frozen_at": "2026-11-02",
+  "sources": {
+    "board_and_rook": "Brian, 2026-11-02 IRL: 28 mm square pitch, 3.2 mm slab, 15 mm labelled border, rook 4.8 g assembled including one M6 nut",
+    "base_geometry": "hardware/dimensions.json and the rig diagrams: 430 mm table, 60 mm riser, 80 mm board-edge-to-arm gap",
+    "piece_geometry": "private printed Dubrovnik 1960 pack at 50% mesh scale (MakerWorld 406463); geometry is not redistributed by this config",
+    "tool": "stock SO-101 pinch gripper supplied with the kit; the NormaCore custom parallel jaw was measured and rejected for this 28 mm board (see tool_selection)",
+    "camera": "simulator candidate wrist-camera pose from scene.WRIST_CAMERA_CUSTOM; physical lens, focus and mount are unmeasured",
+    "evaluator": "chess_sim.config.ToleranceConfig, the same rule env.evaluate uses"
+  },
+  "robot": {
+    "model": "SO-101 follower",
+    "arms": 1,
+    "arm_side": "white",
+    "joint_order": [
+      "shoulder_pan",
+      "shoulder_lift",
+      "elbow_flex",
+      "wrist_flex",
+      "wrist_roll",
+      "gripper"
+    ],
+    "dof": 6,
+    "control_hz": 30,
+    "image_size": [
+      640,
+      480
+    ]
+  },
+  "board": {
+    "square_mm": 28.0,
+    "border_mm": 15.0,
+    "thickness_mm": 3.2,
+    "labels": true,
+    "playing_field_mm": 224.0,
+    "overall_mm": 254.0,
+    "measurement": "IRL, Brian 2026-11-02",
+    "border_assumption": "15 mm on all four sides; no extra outer trim was reported"
+  },
+  "mount": {
+    "table_top_mm": 430.0,
+    "arm_riser_mm": 60.0,
+    "board_edge_to_arm_base_mm": 80.0,
+    "arm_base_from_board_centre_mm": [
+      0.0,
+      -207.0
+    ],
+    "footprint_mm": [
+      110.9,
+      72.0
+    ]
+  },
+  "tool": {
+    "kind": "stock",
+    "name": "Stock SO-101 pinch gripper",
+    "source_microversion": "kit-supplied",
+    "aperture_mm": [
+      0.0,
+      144.6
+    ],
+    "tip_reach_mm": 8.0,
+    "finger_halfwidth_mm": 8.0,
+    "squeeze_mm": 2.5,
+    "servo_mass_g": 55.0,
+    "camera_mass_g": 15.0
+  },
+  "camera": {
+    "operational": [
+      "wrist"
+    ],
+    "debug": [
+      "top"
+    ],
+    "wrist_pos_mm": [
+      -75.0,
+      45.0,
+      12.0
+    ],
+    "wrist_target_mm": [
+      0.0,
+      0.0,
+      12.0
+    ],
+    "wrist_up": [
+      -1.0,
+      0.0,
+      0.0
+    ],
+    "wrist_fovy_deg": 75.0,
+    "image_size": [
+      640,
+      480
+    ],
+    "provenance": "stock SO-101 kit wrist-camera pose from scene.WRIST_CAMERA; physical lens, focus and mount remain unmeasured"
+  },
+  "tray": {
+    "slots": 4,
+    "first_slot_from_board_centre_mm": [
+      -160.0,
+      -100.0
+    ],
+    "slot_pitch_mm": 40.0,
+    "surface": "table"
+  },
+  "pieces": {
+    "pawn": {
+      "count_per_side": 8,
+      "measured": false,
+      "unweighted_pla": {
+        "mass_g": 0.6257266212998366,
+        "com_mm": [
+          0.0018637908447177952,
+          -0.008107070388527133,
+          9.355014035080497
+        ],
+        "inertia_kg_m2": [
+          [
+            3.6213609960544634e-08,
+            -3.0963284573589737e-13,
+            3.5742455700631734e-13
+          ],
+          [
+            -3.0963284573589737e-13,
+            3.624510799493899e-08,
+            -4.637041122167285e-11
+          ],
+          [
+            3.5742455700631734e-13,
+            -4.637041122167285e-11,
+            1.440335915329931e-08
+          ]
+        ]
+      },
+      "assembled": null,
+      "assembled_includes": null,
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "mass_range_g": [
+        0.625726621,
+        5.625726621
+      ],
+      "added_mass_com_z_mm": 3.0,
+      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+    },
+    "rook": {
+      "count_per_side": 2,
+      "measured": true,
+      "unweighted_pla": {
+        "mass_g": 1.4853662910024181,
+        "com_mm": [
+          -0.0018542932918117106,
+          -0.003080086468925381,
+          11.618139080607362
+        ],
+        "inertia_kg_m2": [
+          [
+            1.0761174833322042e-07,
+            -9.445738934630458e-13,
+            -5.972766827959066e-13
+          ],
+          [
+            -9.445738934630458e-13,
+            1.0764210232497383e-07,
+            -5.664055095308463e-11
+          ],
+          [
+            -5.972766827959066e-13,
+            -5.664055095308463e-11,
+            4.098504483985173e-08
+          ]
+        ]
+      },
+      "assembled": {
+        "mass_g": 4.8,
+        "com_mm": [
+          -0.0005738134894352136,
+          -0.0009531367946488392,
+          5.6668944336468225
+        ],
+        "inertia_kg_m2": [
+          [
+            1.8379419593093326e-07,
+            -9.504321610524043e-13,
+            1.5794264712508393e-11
+          ],
+          [
+            -9.504321610524043e-13,
+            1.838245437186031e-07,
+            -2.941326976760448e-11
+          ],
+          [
+            1.5794264712508393e-11,
+            -2.941326976760448e-11,
+            4.098505809759851e-08
+          ]
+        ]
+      },
+      "assembled_includes": "1 x M6 steel nut, bottom-weighted",
+      "nut_mass_g": 3.314633709,
+      "nut_model_z_mm": 3.0,
+      "nut_model_z_range_mm": [
+        2.0,
+        4.0
+      ],
+      "provenance": "assembled 4.8 g measured by Brian 2026-11-02 including one M6 nut; nut height, COM and inertia are a bounded bottom-point-mass model, not a physical measurement"
+    },
+    "knight": {
+      "count_per_side": 2,
+      "measured": false,
+      "unweighted_pla": {
+        "mass_g": 1.5585401701236037,
+        "com_mm": [
+          0.005724452590622439,
+          0.36346035472566457,
+          11.990009352072802
+        ],
+        "inertia_kg_m2": [
+          [
+            1.3504796400378873e-07,
+            -1.5348467071156902e-13,
+            -2.6810497343744076e-12
+          ],
+          [
+            -1.5348467071156902e-13,
+            1.2831424580497618e-07,
+            -1.7264079025674452e-09
+          ],
+          [
+            -2.6810497343744076e-12,
+            -1.7264079025674452e-09,
+            4.377227050236821e-08
+          ]
+        ]
+      },
+      "assembled": null,
+      "assembled_includes": null,
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "mass_range_g": [
+        1.55854017,
+        6.55854017
+      ],
+      "added_mass_com_z_mm": 3.0,
+      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+    },
+    "bishop": {
+      "count_per_side": 2,
+      "measured": false,
+      "unweighted_pla": {
+        "mass_g": 1.0750128040198372,
+        "com_mm": [
+          0.00395462572077983,
+          0.004894699016494287,
+          11.89417772645077
+        ],
+        "inertia_kg_m2": [
+          [
+            1.1639443125422076e-07,
+            -2.773910757473351e-12,
+            -1.7762752444262375e-10
+          ],
+          [
+            -2.773910757473351e-12,
+            1.1642464948331464e-07,
+            -2.469757865606648e-10
+          ],
+          [
+            -1.7762752444262375e-10,
+            -2.469757865606648e-10,
+            2.7443036852556053e-08
+          ]
+        ]
+      },
+      "assembled": null,
+      "assembled_includes": null,
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "mass_range_g": [
+        1.075012804,
+        6.075012804
+      ],
+      "added_mass_com_z_mm": 3.0,
+      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+    },
+    "queen": {
+      "count_per_side": 1,
+      "measured": false,
+      "unweighted_pla": {
+        "mass_g": 1.937302213322428,
+        "com_mm": [
+          0.001697332807258706,
+          -0.0031426087797314438,
+          14.02567179905931
+        ],
+        "inertia_kg_m2": [
+          [
+            2.7294474532649516e-07,
+            -1.0369929766137412e-12,
+            7.263309579257246e-13
+          ],
+          [
+            -1.0369929766137412e-12,
+            2.729782762375849e-07,
+            -6.952123164243574e-11
+          ],
+          [
+            7.263309579257246e-13,
+            -6.952123164243574e-11,
+            5.8092076308942555e-08
+          ]
+        ]
+      },
+      "assembled": null,
+      "assembled_includes": null,
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "mass_range_g": [
+        1.937302213,
+        6.937302213
+      ],
+      "added_mass_com_z_mm": 3.0,
+      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+    },
+    "king": {
+      "count_per_side": 1,
+      "measured": false,
+      "unweighted_pla": {
+        "mass_g": 2.5528960370494493,
+        "com_mm": [
+          0.005866229458862522,
+          -0.002693125736932061,
+          17.60529163657933
+        ],
+        "inertia_kg_m2": [
+          [
+            4.830836046537903e-07,
+            -5.501835349200101e-13,
+            -1.7096518621012238e-12
+          ],
+          [
+            -5.501835349200101e-13,
+            4.831150488707536e-07,
+            -9.215967829202358e-11
+          ],
+          [
+            -1.7096518621012238e-12,
+            -9.215967829202358e-11,
+            7.357643998986814e-08
+          ]
+        ]
+      },
+      "assembled": null,
+      "assembled_includes": null,
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "mass_range_g": [
+        2.552896037,
+        7.552896037
+      ],
+      "added_mass_com_z_mm": 3.0,
+      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+    }
+  },
+  "perturbations": {
+    "board_shift_mm": 5.0,
+    "arm_joint_jitter_rad": 0.1,
+    "supported": [
+      "board origin +/-5 mm per axis",
+      "arm start +/-0.1 rad per joint"
+    ],
+    "excluded_until_phase_9": [
+      "board yaw",
+      "board sideways offset",
+      "camera pose variation",
+      "unseen board relocation"
+    ]
+  },
+  "evaluator": {
+    "placement_mm": 11.0,
+    "tray_mm": 30.0,
+    "disturbance_mm": 10.0,
+    "upright_min": 0.85,
+    "rule": "env.evaluate: destination error < placement, upright above upright_min, no other piece moved > disturbance; captures must leave the field, land within tray tolerance and stay upright"
+  },
+  "interfaces": {
+    "scripted_control": "chess_sim.controller.PickPlaceController.pick_place",
+    "episode_api": "chess_sim.env.ChessSimEnv.reset/execute/evaluate",
+    "observation": "chess_sim.env.Observation: time seconds, 6 joint positions/velocities in radians, uint8 HxWx3 camera frames",
+    "action": "6-element vector in JOINTS order: five arm joints radians, gripper joint angle radians",
+    "dataset_convention": "chess_sim.conventions.SO101_DEGREES for exported LeRobot-compatible data; simulator actions stay radians",
+    "perception": "chess_sim.board_registration, chess_sim.perception, chess_sim.move_inference (Phase 9/10 inputs)",
+    "policy": "chess_sim.policies and chess_sim.rollout (Phase 11/12)",
+    "game_state": "python-chess Board; full coordinator/UI is Phase 13",
+    "recorder": "chess_sim.recorder.EpisodeRecorder, 30 fps, ROBOT_CAMERAS"
+  },
+  "tool_selection": {
+    "selected": "stock",
+    "rejected": [
+      {
+        "kind": "cad_parallel",
+        "name": "NormaCore custom PLA parallel jaw",
+        "result": "11/64 squares failed the Phase 8 path map, and spot executions failed at e1, c1, d1 and h8 on the measured 28 mm board; the stock tool passed the same spot checks.",
+        "evidence": "docs/PHASE8_QUALIFICATION.md and reports/phase8_custom_tool_qualification.json"
+      }
+    ]
+  }
+}
