@@ -220,6 +220,13 @@ card is at its thermal ceiling at one-third of the batch-8 rate.
 achievable within an 85 °C guard on this card, and neither is a reduced-batch or
 duty-cycled envelope.
 
+**Post-service retest (2026-11-03 18:10):** after cleaning the heatsink and
+replacing the thermal paste, the same guarded ramp test is transformed — idle
+**43 °C** (was 56), and 20 s at ~60 W reaches only **62 °C** (previously 80 °C at
+1.5 s). The fan still sits at 0 % below its threshold, so the improvement is the
+die-to-heatsink path, not fan speed. A 30-minute batch-8 soak is now the
+acceptance run.
+
 **Service task (Brian, 2026-11-03):** clean the heatsink/fan and replace the
 thermal paste. Post-service acceptance: steady state at or below 78 °C under the
 batch-8 training load with the fan below 100 %, and a clean 30-minute soak
