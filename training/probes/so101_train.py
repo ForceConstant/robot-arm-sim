@@ -360,7 +360,7 @@ def main():
         "samples": len(samples), "train": len(train), "test": len(test),
         "decode_s": round(decode_s, 1), "steps": step, "start_step": start_step,
         "elapsed_s": round(time.monotonic() - t0, 1),
-        "samples_per_s": round(len(train) * max(1, step - start_step) / max(1e-6, time.monotonic() - t0), 2),
+        "samples_per_s": round((step - start_step) * args.batch / max(1e-6, time.monotonic() - t0), 2),
         "loss_first": round(history[0], 4) if history else None,
         "loss_last": round(history[-1], 4) if history else None,
         "test_mse_deg2": round(mse, 3), "hold_mse_deg2": round(hold, 3),
