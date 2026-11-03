@@ -155,6 +155,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", type=Path, default=Path("/data/so101/full"))
     ap.add_argument("--camera", default="wrist", choices=("top", "wrist"))
+    ap.add_argument("--device", default="cuda", choices=("cuda", "cpu"))
     ap.add_argument("--episodes", type=int, default=40)
     ap.add_argument("--selection", choices=("random", "first"), default="random",
                     help="first = lowest episode indices (already-downloaded smoke tests)")
@@ -191,6 +192,10 @@ def main():
         with urllib.request.urlopen(url, timeout=60) as r, open(name, "wb") as f:
             f.write(r.read())
     from act_runtime import load_act, config, loss
+
+    dev = torch.device(args.device)
+    if dev.type == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("cuda requested but unavailable")
 
     episodes, rows, data_files = load_index(args.root, args.camera)
     episodes.sort(key=lambda e: e["episode_index"])
@@ -249,20 +254,21 @@ def main():
         imgs = torch.from_numpy(np.stack([r["image"] for r in rows_]).astype(np.float32) / 255).permute(0, 3, 1, 2)
         imgs = (imgs - torch.tensor(img_mean)[None, :, None, None]) / torch.tensor(img_std)[None, :, None, None]
         return {
-            "observation.images": [imgs.cuda()],
-            "observation.state": ((torch.from_numpy(np.stack([r["state"] for r in rows_])) - torch.tensor(st_mean)) / torch.tensor(st_std)).cuda(),
-            "observation.environment_state": torch.from_numpy(np.stack([r["goal"] for r in rows_])).cuda(),
-            "action": ((torch.from_numpy(np.stack([r["action"] for r in rows_])) - torch.tensor(ac_mean)) / torch.tensor(ac_std)).cuda(),
-            "action_is_pad": torch.from_numpy(np.stack([r["pad"] for r in rows_])).cuda(),
+            "observation.images": [imgs.to(dev)],
+            "observation.state": ((torch.from_numpy(np.stack([r["state"] for r in rows_])) - torch.tensor(st_mean)) / torch.tensor(st_std)).to(dev),
+            "observation.environment_state": torch.from_numpy(np.stack([r["goal"] for r in rows_])).to(dev),
+            "action": ((torch.from_numpy(np.stack([r["action"] for r in rows_])) - torch.tensor(ac_mean)) / torch.tensor(ac_std)).to(dev),
+            "action_is_pad": torch.from_numpy(np.stack([r["pad"] for r in rows_])).to(dev),
         }
 
     torch.manual_seed(20261103)
-    torch.cuda.manual_seed_all(20261103)
-    model = load_act("/tmp/modeling_act.py")(config()).cuda()
+    if dev.type == "cuda":
+        torch.cuda.manual_seed_all(20261103)
+    model = load_act("/tmp/modeling_act.py")(config()).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4, foreach=False)
     start_step = 0
     if args.resume:
-        ckpt = torch.load(args.resume, map_location="cuda", weights_only=False)
+        ckpt = torch.load(args.resume, map_location=dev, weights_only=False)
         model.load_state_dict(ckpt["model"])
         if "optimizer" in ckpt:
             opt.load_state_dict(ckpt["optimizer"])
@@ -271,7 +277,8 @@ def main():
         ac_mean, ac_std = ckpt["action_mean"], ckpt["action_std"]
 
     monitor = Monitor(args.out, args.temp_limit)
-    monitor.start()
+    if dev.type == "cuda":
+        monitor.start()
     metrics = (args.out / "metrics.jsonl").open("w")
     history, t0 = [], time.monotonic()
     stop_at = t0 + args.minutes * 60 if args.minutes else None
@@ -338,7 +345,7 @@ def main():
                 "dataset_revision": "969ae3a886b2038dfa349a768cbf8a9d57dde583"}, ckpt_path)
 
     reloaded = load_act("/tmp/modeling_act.py")(config()).cuda()
-    rck = torch.load(ckpt_path, map_location="cuda", weights_only=False)
+    rck = torch.load(ckpt_path, map_location=dev, weights_only=False)
     reloaded.load_state_dict(rck["model"])
     reloaded.eval()
 
@@ -358,11 +365,11 @@ def main():
         "loss_last": round(history[-1], 4) if history else None,
         "test_mse_deg2": round(mse, 3), "hold_mse_deg2": round(hold, 3),
         "beats_hold": bool(mse < hold),
-        "gpu_peak_c": monitor.peak, "temp_limit_c": args.temp_limit,
+        "gpu_peak_c": monitor.peak if dev.type == "cuda" else None, "temp_limit_c": args.temp_limit,
         "duty_train_s": args.duty_train, "duty_cool_s": args.duty_cool,
         "reload_exact": reload_exact,
         "checkpoint_MB": round(ckpt_path.stat().st_size / 1e6, 1),
-        "dataset_rows": rows, "selection": args.selection,
+        "dataset_rows": rows, "selection": args.selection, "device": args.device,
     }
     (args.out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary), flush=True)
