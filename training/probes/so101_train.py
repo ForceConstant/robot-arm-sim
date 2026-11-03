@@ -165,6 +165,10 @@ def main():
     ap.add_argument("--minutes", type=float, default=0.0, help="run until this wall time instead of --steps")
     ap.add_argument("--lr", type=float, default=1e-5)
     ap.add_argument("--temp-limit", type=float, default=85.0)
+    ap.add_argument("--duty-train", type=float, default=0.0,
+                    help="seconds of training per duty cycle (0 = continuous)")
+    ap.add_argument("--duty-cool", type=float, default=60.0,
+                    help="seconds of idle cooling per duty cycle")
     ap.add_argument("--resume", type=Path)
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
@@ -272,6 +276,7 @@ def main():
     history, t0 = [], time.monotonic()
     stop_at = t0 + args.minutes * 60 if args.minutes else None
     step = start_step
+    phase_start = time.monotonic()
     while True:
         if stop_at is not None:
             if time.monotonic() >= stop_at:
@@ -280,6 +285,13 @@ def main():
             break
         if monitor.abort:
             raise RuntimeError(f"GPU temperature reached {args.temp_limit} C")
+        if args.duty_train > 0 and time.monotonic() - phase_start >= args.duty_train:
+            cool_until = time.monotonic() + args.duty_cool
+            print(json.dumps({"duty_cool_s": args.duty_cool,
+                              "step": step, "temp_c": gpu_sample().get("temp_c")}), flush=True)
+            while time.monotonic() < cool_until:
+                time.sleep(5)
+            phase_start = time.monotonic()
         idx = rng.choice(len(train), size=min(args.batch, len(train)), replace=False)
         b = to_batch([train[i] for i in idx])
         opt.zero_grad(set_to_none=True)
@@ -347,6 +359,7 @@ def main():
         "test_mse_deg2": round(mse, 3), "hold_mse_deg2": round(hold, 3),
         "beats_hold": bool(mse < hold),
         "gpu_peak_c": monitor.peak, "temp_limit_c": args.temp_limit,
+        "duty_train_s": args.duty_train, "duty_cool_s": args.duty_cool,
         "reload_exact": reload_exact,
         "checkpoint_MB": round(ckpt_path.stat().st_size / 1e6, 1),
         "dataset_rows": rows, "selection": args.selection,
