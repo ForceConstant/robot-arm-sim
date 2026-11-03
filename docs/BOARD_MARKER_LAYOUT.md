@@ -27,13 +27,19 @@ projects to ~44.7 px (7.4 px/module) and a 30 mm marker to ~33.5 px
 * Reach probes pass: a1→a2, b1→b2, h1→h2, h8→h7 complete at 0.8–1.4 mm with no
   arm-to-board contact.
 * Registration works from the border markers (0.88 mm / 0.10° in a smoke run).
-* **Open question, not a border verdict.** The all-types square scan scores
-  51/64 here, but the *unchanged* 254 mm/15 mm layout scores 52/64 on the same
-  scan, failing the same near-rank squares (a1–g1, b2, c2, d2) with IK error
-  8–13 mm against an 8 mm gate. So this scan does not implicate the border; it
-  exposes a pre-existing near-rank limitation of the arm/tool under the
-  stricter all-six-types criterion. The historical 64/64 receipt counted "at
-  least one piece type per square, with king/rook retries", which is weaker.
+* **Open question, not a border verdict.** On the same all-types scan this
+  layout scored 51/64 while the unchanged 254 mm/15 mm layout scored 52/64,
+  failing the same near-rank squares with IK error 8–13 mm against an 8 mm
+  gate; the border was therefore not implicated. The historical 64/64 receipt
+  counted "at least one piece type per square, with king/rook retries", which is
+  weaker than every type passing.
+* **Seeding fix.** `grasp_span` now retries each jaw-span direction from a
+  warm start (same target, no tool offset) and a fixed set of fallback postures,
+  because the local QP can miss a reachable target from one seed. That lifted
+  the all-types scan from 52/64 to **56/64** on the unchanged layout. The eight
+  remaining squares fail per *piece type*, not per square: every one is
+  reachable from an arbitrary posture (b1 at 0.0 mm), so what remains is a
+  global IK fallback rather than a geometric limit.
 
 ## What that means for the overhang argument
 

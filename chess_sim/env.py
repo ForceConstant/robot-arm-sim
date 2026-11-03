@@ -686,18 +686,56 @@ class ChessSimEnv:
         return sorted(((d, self.jaw_clearance(xy, d, exclude)) for d in SPAN_DIRECTIONS),
                       key=lambda o: -o[1])
 
+    # Deterministic fallback seeds for the local IK. A near-rank target can be
+    # reachable from one posture and not another, and mink's QP is a local solver;
+    # the first seed (zero delta) keeps the previous single-shot behaviour.
+    SPAN_SEED_OFFSETS = (
+        (0.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.35, -0.35, 0.0, 0.0),
+        (0.0, -0.35, 0.35, 0.0, 0.0),
+        (0.35, 0.25, -0.2, 0.0, 0.0),
+        (-0.35, 0.25, -0.2, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 3.141592653589793),
+    )
+    # Fixed quasi-random retry seeds in [0, 1]^5, mapped onto the joint ranges
+    # only after the cheap local seeds fail.  Deterministic, so a run is
+    # reproducible; 16 draws reach the near-rank posture b1/c1 need.
+    SPAN_RANDOM_SEEDS = np.random.default_rng(20261103).uniform(size=(16, 5))
+
     def grasp_span(self, point, offset, exclude: PieceSlot | None = None) -> np.ndarray | None:
         """Jaw-span direction to work at world `point` (tool point `offset`): the
         direction with the most clearance that the arm can realize with the tool
         near vertical and without folding into itself. None when no direction has
-        both clearance and a solution."""
-        for direction, margin in self.span_options(point[:2], exclude):
-            if margin < 0:
-                break
-            res = self.ik.solve(self.data, point, offset=offset, span=direction)
-            if res.position_error <= MAX_IK_ERROR and res.tilt <= MAX_TILT:
-                return direction
-        return None
+        both clearance and a solution.
+
+        Each direction is retried from a few deterministic postures before it is
+        rejected, because the local IK can miss a reachable target from one seed.
+        The arm is left exactly as it was found.
+        """
+        limits = self.model.actuator_ctrlrange[self._actuators][:5]
+        current = self.data.qpos[self._joint_qpos[:5]].copy()
+        seeds = [current] + [
+            np.clip(current + np.asarray(delta, dtype=float), limits[:, 0], limits[:, 1])
+            for delta in self.SPAN_SEED_OFFSETS[1:]]
+        seeds += [limits[:, 0] + u * (limits[:, 1] - limits[:, 0])
+                  for u in self.SPAN_RANDOM_SEEDS]
+        try:
+            for direction, margin in self.span_options(point[:2], exclude):
+                if margin < 0:
+                    break
+                # Warm start: the same target with no tool offset often lands in
+                # the basin the offset solve needs, at the cost of one extra solve.
+                warm = self.ik.solve(self.data, point, offset=np.zeros(3), span=direction)
+                for seed in [current, warm.q] + seeds[1:]:
+                    self.data.qpos[self._joint_qpos[:5]] = seed
+                    mujoco.mj_forward(self.model, self.data)
+                    res = self.ik.solve(self.data, point, offset=offset, span=direction)
+                    if res.position_error <= MAX_IK_ERROR and res.tilt <= MAX_TILT:
+                        return direction
+            return None
+        finally:
+            self.data.qpos[self._joint_qpos[:5]] = current
+            mujoco.mj_forward(self.model, self.data)
 
     # -- export --------------------------------------------------------------
 
