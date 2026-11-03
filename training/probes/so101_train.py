@@ -128,11 +128,12 @@ def collect_frames(root: Path, camera: str, episodes, per_ep: int):
     key = f"videos/observation.images.{camera}"
     by_file = {}
     for e in episodes:
-        by_file.setdefault(e[key + "/file_index"], []).append(e)
+        by_file.setdefault((int(e[key + "/chunk_index"]), int(e[key + "/file_index"])), []).append(e)
 
     frames = {e["episode_index"]: [] for e in episodes}
-    for file_index, group in by_file.items():
-        path = root / f"videos/observation.images.{camera}/chunk-000/file-{file_index:03d}.mp4"
+    for (chunk_index, file_index), group in by_file.items():
+        path = (root / f"videos/observation.images.{camera}"
+                / f"chunk-{chunk_index:03d}" / f"file-{file_index:03d}.mp4")
         if not path.exists():
             continue
         ranges = [(float(e[key + "/from_timestamp"]), float(e[key + "/to_timestamp"]),
