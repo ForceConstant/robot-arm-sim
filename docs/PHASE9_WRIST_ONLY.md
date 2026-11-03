@@ -1,8 +1,9 @@
 # Phase 9 — wrist-only calibration and complete-board perception
 
 **Status: in progress (2026-11-03).** Registration and the scan/calibration
-software are complete and measured inside the stated envelope; turn resolution
-is **not** yet at the exit gate, so Phase 9 stays open.
+software are complete and measured inside the stated envelope. Turn resolution
+reached **94.0%** with the oblique scan plan — one point below the 95% gate — so
+Phase 9 stays open.
 
 ## What was built
 
@@ -12,7 +13,7 @@ is **not** yet at the exit gate, so Phase 9 stays open.
 | Reference epochs | `chess_sim/wrist_calibration.py` | `ReferenceEpoch` clears empty-board references on any new registration, recalibration or timestamp reversal. Warping a stale reference is not permitted. |
 | Printed fiducial mat | `chess_sim/fiducials.py` | Four 40 mm ArUco `DICT_4X4_50` markers (ids 0–3) on a 0.5 mm mat under the slab, built as geometry (not a texture) so a face-mapping flip cannot silently move the markers. |
 | Board pose from markers | `chess_sim/fiducials.py` | Per-view planar PnP seeds, one bounded least-squares fit over every detected corner, RMS gate; abstains below two markers or above 1.2 px RMS. |
-| Scan planning | `tools/plan_wrist_scan.py` | Wrist-lens targets solved for near-vertical camera poses inside hard joint limits, scored by the arm's own occlusion, then greedy set cover. Committed plan: `chess_sim/assets/wrist_scan_plan.json` (7 poses; every square clear in ≥2, median 4). |
+| Scan planning | `tools/plan_wrist_scan.py` | Wrist-lens targets solved inside hard joint limits — a vertical grid plus tilted, board-facing views — scored by the arm's own occlusion and lens-to-square distance, then greedy set cover. Committed plan: `chess_sim/assets/wrist_scan_plan.json` (6 poses, 3 tilted; every square clear in ≥3, median 5). |
 | Multi-pose perception | `chess_sim/wrist_scan.py` | Per-view `predict_board`, element-wise median of class probabilities (a median rejects one occluded view's confident mistake), unknown below the model threshold. |
 | Wrist model | `tools/train_perception_wrist.py` | Trained on the product scene at the scan poses with natural arm self-occlusion; occluded/out-of-frame squares are labelled `unknown`, never guessed. |
 | Held-out benchmark | `tools/benchmark_phase9.py` | Session-separated registration and turn evaluation; simulator truth only builds cases and scores them. |
@@ -36,49 +37,52 @@ Registration (`--sessions 8`), each session a fresh board pose and lighting:
 | --- | --- | --- |
 | Sessions registered | 8/8 | — |
 | Within 2 mm XY and 1° yaw | 8/8 (100%) | ≥95% — **pass** |
-| Worst XY error | 0.49 mm | — |
-| Worst yaw error | 0.06° | — |
-| Markers seen per session | 1–2 of 4 at the accepted pose | — |
+| Worst XY error | 0.80 mm | — |
+| Worst yaw error | 0.09° | — |
 
-Turns (`--sessions 8 --turns 25`, 200 held-out turns):
+Turns (`--sessions 8 --turns 25`, 200 held-out turns, oblique plan):
 
 | Metric | Result | Gate |
 | --- | --- | --- |
-| Resolved after ≤3 scans | 145/200 (72.5%) | ≥95% — **fail** |
+| Resolved after ≤3 scans | 188/200 (94.0%) | ≥95% — **fail by 1 point** |
 | False move confirmations | 0/200 | 0 — **pass** |
-| Abstentions | 56, all `insufficient` | — |
-| Turns needing a second scan | 0 | — |
-| Turns resolving on scan 3 | 56 | — |
+| Abstentions | 13, all `insufficient` | — |
+| Turns resolving on the first scan | 187/200 | — |
 | Deliberate invalid rearrangements rejected | 16/16 | all — **pass** |
-| Deliberate occluded cases abstained | 9/10 | all — one correct confirmation, see note |
+| Deliberate occluded cases | 30/31 safe (abstained or unregistered); one returned the correct move | all — see note |
 
-All 56 abstentions are `insufficient`, i.e. the changed squares were not
-observed well enough — not confident contradictions. Roughly 8–19 squares per
-board remain `unknown` after fusion, because the arm covers that part of the
-board in every pose that reaches it. Rescanning does not help: the same seven
-poses produce the same occlusion.
+By category: quiet 176/188, capture 11/11, promotion 1/1, invalid 16/16.
+The 13 abstentions each left 15–61 squares `unknown` on a crowded board.
 
-Note: the first run reported one invalid rearrangement as `confirmed`. The
-generator had compared full FENs, so a rearrangement differing only in move
-clocks passed the "illegal" test while being piece-identical to a legal
-successor. It now compares piece placement only; the corrected run
-(`heldout-8x25-v2.json`) rejects 16/16. One occluded case returned the correct
-move instead of abstaining: the restricted pose subset still observed the
-changed squares, so this is a case-construction limit, not a false
-confirmation.
+Plan comparison, same 200-turn suite:
+
+| Plan | Poses | Views per square (min / median) | Resolution |
+| --- | --- | --- | --- |
+| Vertical only | 7 | 2 / 4 | 72.5% |
+| Vertical + oblique | 6 | 3 / 5 | **94.0%** |
+
+Note: in the first vertical-only run one invalid rearrangement was reported
+`confirmed`; the generator had compared full FENs, so a rearrangement differing
+only in move clocks passed the "illegal" test while being piece-identical to a
+legal successor. It now compares piece placement only, and rejects 16/16. The
+single "unsafe" occluded case returned the correct move rather than abstaining:
+the restricted pose subset still observed the changed squares, so it is a
+case-construction limit, not a false confirmation.
 
 ## Why it is not complete
 
-1. **Coverage per pose.** Seven near-vertical poses leave 8–19 squares hidden
-   behind the arm on crowded boards. The Phase 9 exit needs ≥95% turn
-   resolution; 72% is the direct consequence.
-2. **No oblique views yet.** Every planned pose is close to vertical. Side
-   views would see under the wrist for the near ranks but were not qualified
-   here, and would need their own distortion/registration check.
+1. **One point short.** 94.0% needs 190/200; the shortfall is the 13 crowded
+   boards whose remaining `unknown` band is 15–61 squares. More poses or a
+   better fusion weight (per-view patch quality) are the obvious next levers.
+2. **Occluded-case construction.** Restricting the scan to poses that hide a
+   square is measured by segmentation coverage; a square can still be readable
+   through a grazing patch, so such cases occasionally resolve correctly
+   instead of abstaining. Tighten by requiring the square's patch to be
+   `unknown` in every active view before scoring the case.
 3. **Reference sensitivity.** A square that matches its empty reference in a
-   view is either empty or occluded; the fusion therefore relies on having
-   enough genuinely clear views per square. With 2–4 clear views per square
-   this is marginal on the crowded boards.
+   view is either empty or occluded, so the fusion depends on enough genuinely
+   clear views. The oblique plan raises that from 2–4 to 3–5 per square, which
+   is what produced the jump.
 
 ## Reproduction
 

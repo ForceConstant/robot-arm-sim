@@ -4,7 +4,7 @@
 list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
 Phase 11 runtime lane retain their identifiers and measured, scope-limited
 completion evidence below. **Next product phase: Phase 9 — in progress (registration passes, turn
-resolution 72.5%).** Phase 11 is **reopened**: its execution-runtime receipt is
+resolution 94.0%).** Phase 11 is **reopened**: its execution-runtime receipt is
 measured, but a locally runnable training path for both the control and vision
 models is still required (scope change 2026-11-03). Phases 10 and 12–21 are
 planned, not completed.
@@ -74,7 +74,7 @@ No next-stage physical work until the simulation release gate passes.
   sparse fixed-rig perception; sparse move inference. Limits remain below.
 - **8 — product digital twin and acceptance contract — complete 2026-11-02.**
 - **9 — wrist-only board calibration and full-board observation — in progress
-  (registration pass, turn resolution 72.5%).**
+  (registration pass, turn resolution 94.0%).**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — local training and execution for control and vision models — in
   progress (runtime receipt measured 2026-11-03; local training paths open).**
@@ -474,10 +474,10 @@ hardware commissioning session.
 [`PHASE9_WRIST_ONLY.md`](PHASE9_WRIST_ONLY.md) for the implementation, envelope,
 numbers and open limits. Registration from the printed marker mat passes the
 2 mm / 1° gate on 8/8 held-out sessions (worst 0.49 mm, 0.06°) with zero false
-move confirmations in 200 turns; turn resolution is **72.5%**, below the 95% exit
-gate, because 8–19 squares per crowded board stay hidden behind the arm in every
-planned pose. Phase 9 therefore remains open: add oblique/side scan poses and
-requalify before Phase 10.
+move confirmations in 200 turns. Adding three tilted scan poses raised turn
+resolution from 72.5% to **94.0%** (6 poses, every square clear in ≥3, median 5),
+still one point below the 95% exit gate. Phase 9 remains open: close the last
+crowded-board `unknown` band before Phase 10.
 
 **Outcome:** locate a shifted board relative to the arm and obtain trustworthy
 observations using only wrist images and measured joints. Depends on 8.

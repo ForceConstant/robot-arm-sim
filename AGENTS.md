@@ -29,7 +29,7 @@ user; the roadmap is not authorization to implement all future phases at once.
   joints. Never feed simulator camera or board truth to inference; the checker
   fit stays only as a marker-free ablation. Empty references are epoch-bound and
   must be re-captured after any re-registration. Measured: registration 8/8
-  within 2 mm/1°, 0 false confirmations in 200 turns, turn resolution 72.5%
+  within 2 mm/1°, 0 false confirmations in 200 turns, turn resolution 94.0%
   (gate 95%) — see `docs/PHASE9_WRIST_ONLY.md`.
 
 - Phase 11 runtime evidence: `docs/PHASE11_RUNTIME_QUALIFICATION.md`. This is a

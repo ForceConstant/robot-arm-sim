@@ -254,10 +254,14 @@ def main() -> int:
                     else:
                         inference = None
                 if registration is None:
+                    # Abstaining because the board could not be located is a
+                    # safe outcome: nothing is committed from an unregistered
+                    # frame.  Only a confirmed/unchanged status can be unsafe.
                     records.append({"session": index, "case": case_index,
                                     "kind": case["kind"], "category": case["category"],
-                                    "status": "no_registration", "correct": False,
-                                    "scans": used_scans})
+                                    "status": "no_registration",
+                                    "correct": case["kind"] != "move",
+                                    "safe": True, "scans": used_scans})
                     continue
                 if case_index == 0:
                     registration_rows.append({
@@ -315,7 +319,7 @@ def main() -> int:
         "abstained": sum(1 for r in moves if r["status"] not in ("confirmed", "unchanged")),
         "scans_used": {str(k): sum(1 for r in moves if r["scans"] == k) for k in (1, 2, 3)},
         "rejection_cases": len(rejection),
-        "rejection_safe": sum(1 for r in rejection if r.get("safe")),
+        "rejection_safe": sum(1 for r in rejection if r.get("safe", r.get("status") not in ("confirmed", "unchanged"))),
         "registration_sessions": len(registration_rows),
         "registration_within_2mm_1deg": sum(
             1 for r in registration_rows

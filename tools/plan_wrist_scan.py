@@ -33,15 +33,18 @@ from chess_sim.vision_geometry import CameraCalibration
 SCHEMA = "robot-arm-wrist-scan-plan/1"
 
 
-def solve_pose(env, target, seed: int) -> tuple[np.ndarray, float, float]:
-    """Near-vertical wrist camera with the lens at ``target``.
+def solve_pose(env, target, seed: int, direction=None) -> tuple[np.ndarray, float, float]:
+    """Wrist camera with the lens at ``target`` looking along ``direction``.
 
     The wrist camera looks along the gripper's approach axis, so a board-facing
     view needs a bent wrist, not the grasp pose.  The search therefore runs on
     the arm-only model (cheap, same camera mount), seeded from the grasp IK and
     bounded by the scene's actuator limits, then verified on the full model.
+    ``direction`` is the unit view axis; vertical (0,0,-1) by default.
     """
     target = np.asarray(target, dtype=float)
+    look = np.array([0.0, 0.0, -1.0]) if direction is None else np.asarray(direction, dtype=float)
+    look = look / np.linalg.norm(look)
     data, model = env.data, env.model
     cid = model.camera(str(Camera.WRIST)).id
     limits = np.asarray(model.actuator_ctrlrange[env._actuators][:5], dtype=float)
@@ -51,7 +54,7 @@ def solve_pose(env, target, seed: int) -> tuple[np.ndarray, float, float]:
         mujoco.mj_forward(model, data)
         direction = -data.cam_xmat[cid].reshape(3, 3)[:, 2]
         return (100.0 * float(np.sum((data.cam_xpos[cid] - target) ** 2))
-                + 3.0 * float(np.sum((direction - np.array([0.0, 0.0, -1.0])) ** 2)))
+                + 3.0 * float(np.sum((direction - look) ** 2)))
 
     bounds = [(float(lo), float(hi)) for lo, hi in limits]
     result = differential_evolution(cost, bounds, seed=seed, popsize=10,
@@ -75,7 +78,12 @@ def score_pose(env, joints, registration) -> tuple[np.ndarray, np.ndarray]:
     covered = square_mask_fraction(mask, camera, registration)
     frame = env.render(Camera.WRIST).copy()
     _, valid = board_patches(frame, camera, registration)
-    clear = (covered < 0.08) & (valid > 0.95)
+    # Keep only squares the lens actually resolves: a far, grazing view can be
+    # unoccluded and in-frame yet too small to classify reliably.
+    points = np.array([registration.square_center(i) + (registration.board_z,)
+                       for i in range(64)])
+    distance = np.linalg.norm(points - data.cam_xpos[model.camera(str(Camera.WRIST)).id], axis=1)
+    clear = (covered < 0.08) & (valid > 0.95) & (distance < 0.42)
     return clear, covered
 
 
@@ -104,34 +112,88 @@ def main() -> int:
     parser.add_argument("--heights", default="0.16,0.22,0.28")
     parser.add_argument("--extent", type=float, default=0.15)
     parser.add_argument("--grid", type=int, default=5)
+    parser.add_argument("--oblique", action="store_true",
+                        help="also search tilted board-facing views")
+    parser.add_argument("--azimuths", type=int, default=8)
+    parser.add_argument("--elevations", default="30,45,60")
+    parser.add_argument("--radii", default="0.18,0.26")
+    parser.add_argument("--reuse-plan", default="",
+                        help="score these existing poses first and keep them")
     parser.add_argument("--save-dir", default=".private/phase9/plan")
     args = parser.parse_args()
 
     env = ChessSimEnv(layout_env_config("printed", cameras=()))
     try:
         env.reset("8/8/8/8/8/8/8/8")
-        camera = CameraCalibration.from_mujoco(env.model, env.data, str(Camera.WRIST), 640, 480)
         from chess_sim.board_registration import BoardRegistration
         registration = BoardRegistration(env.board.origin, env.board.yaw, env.board.square,
                                          env.board.top, 1.0, 1.0)
-        targets = []
+        aim = np.array([env.board.origin[0], env.board.origin[1], env.board.top])
+        candidates: list[dict] = []
+
+        if args.reuse_plan:
+            for pose in json.loads(Path(args.reuse_plan).read_text())["poses"]:
+                joints = np.asarray(pose["joints"], dtype=float)
+                env.data.qpos[env._joint_qpos] = joints
+                mujoco.mj_forward(env.model, env.data)
+                camera = CameraCalibration.from_mujoco(env.model, env.data, str(Camera.WRIST), 640, 480)
+                candidates.append({
+                    "kind": "reused", "name": pose["name"], "joints": joints,
+                    "position": np.asarray(camera.camera_position),
+                    "direction": -np.asarray(camera.camera_rotation).reshape(3, 3)[:, 2],
+                })
+
         for height in (float(v) for v in args.heights.split(",")):
             for gx in np.linspace(-args.extent, args.extent, args.grid):
                 for gy in np.linspace(-args.extent, args.extent, args.grid):
-                    targets.append((float(gx), float(gy), env.board.top + height))
+                    candidates.append({
+                        "kind": "vertical",
+                        "position": np.array([gx, gy, env.board.top + height]),
+                        "direction": np.array([0.0, 0.0, -1.0]),
+                    })
+
+        if args.oblique:
+            for elevation in (float(v) for v in args.elevations.split(",")):
+                for radius in (float(v) for v in args.radii.split(",")):
+                    for index in range(args.azimuths):
+                        theta = 2.0 * math.pi * index / args.azimuths
+                        tilt = math.radians(elevation)
+                        offset = np.array([math.sin(tilt) * math.cos(theta),
+                                           math.sin(tilt) * math.sin(theta),
+                                           math.cos(tilt)])
+                        position = aim + radius * offset
+                        if position[2] - env.board.top < 0.06:
+                            continue
+                        if max(abs(position[0]), abs(position[1])) > 0.40:
+                            continue
+                        direction = aim - position
+                        candidates.append({
+                            "kind": "oblique",
+                            "position": position,
+                            "direction": direction / np.linalg.norm(direction),
+                        })
+
         rows, meta = [], []
-        for index, target in enumerate(targets):
-            joints, clearance, gap = solve_pose(env, target, seed=1000 + index)
-            if clearance < 0.10 or gap > 0.005:
-                continue
+        for index, candidate in enumerate(candidates):
+            if "joints" in candidate:
+                joints, clearance, gap = candidate["joints"], 0.0, 0.0
+            else:
+                joints, clearance, gap = solve_pose(
+                    env, candidate["position"], seed=1000 + index,
+                    direction=candidate["direction"])
+                if clearance < 0.10 or gap > 0.005:
+                    continue
             clear, covered = score_pose(env, joints, registration)
             rows.append(clear)
-            meta.append({"target": target, "joints": joints.tolist(),
-                         "clearance_m": clearance,
+            meta.append({"kind": candidate["kind"],
+                         "joints": np.asarray(joints).tolist(),
+                         "position": np.asarray(candidate["position"]).tolist(),
+                         "clearance_m": clearance, "gap_m": gap,
                          "clear_squares": int(clear.sum()),
                          "occluded": int((covered > 0.05).sum())})
-            print(f"{index}/{len(targets)} clear={int(clear.sum())} occ={int((covered>0.05).sum())}",
-                  flush=True)
+            print(f"{index}/{len(candidates)} {candidate['kind']} clear={int(clear.sum())} "
+                  f"occ={int((covered > 0.05).sum())}", flush=True)
+
         chosen = greedy(rows, args.min_views)
         counts = np.sum([rows[i] for i in chosen], axis=0) if chosen else np.zeros(64, dtype=int)
         Path(args.save_dir).mkdir(parents=True, exist_ok=True)
@@ -144,11 +206,14 @@ def main() -> int:
             "schema": SCHEMA,
             "generated_at": "2026-11-03",
             "layout": "hardware/current_layout.json (90 mm gap, 30 mm riser, custom jaw v3)",
-            "method": "wrist-lens targets on a grid, near-vertical, inside hard joint limits; "
-                      "greedy set cover on arm occlusion",
+            "method": "wrist-lens targets solved inside hard joint limits "
+                      "(vertical grid plus tilted board-facing views); greedy set "
+                      "cover on arm occlusion and lens-to-square distance",
             "min_views": args.min_views,
-            "candidates": len(targets),
-            "poses": [{"name": f"v{i + 1}", "joints": meta[index]["joints"]}
+            "candidates": len(candidates),
+            "poses": [{"name": f"v{i + 1}", "kind": meta[index]["kind"],
+                       "joints": meta[index]["joints"],
+                       "camera_position": meta[index]["position"]}
                       for i, index in enumerate(chosen)],
             "coverage": [int(v) for v in counts],
             "covered_squares": int((counts >= args.min_views).sum()),
