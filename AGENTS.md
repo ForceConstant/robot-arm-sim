@@ -2,8 +2,9 @@
 
 ## Current scope
 
-Current delivery authority: `docs/ROADMAP.md` (Brian, 2026-11-02). Completed
-Phases 0–8 are bounded foundations; Phase 9 is next. Develop and qualify core
+Current delivery authority: `docs/ROADMAP.md` (Brian, 2026-11-03). Completed
+Phases 0–8 are bounded foundations and Phase 11's parallel runtime lane selects a
+CPU ACT fallback; **Phase 9 is next**. Develop and qualify core
 software in simulation before real autonomous integration. Product target is
 one follower with wrist-only vision, Pi 4 direct camera/servo I/O and watchdog,
 and BC-250 central processing/model inference/training where qualified. Existing
@@ -21,6 +22,13 @@ user; the roadmap is not authorization to implement all future phases at once.
   conservative 2-D clearance heuristic do not prove mechanical impossibility.
 - Tray qualification must assert distinct actual target coordinates. A reset
   clears capture bookkeeping and otherwise sends every capture to slot zero.
+
+- Phase 11 runtime evidence: `docs/PHASE11_RUNTIME_QUALIFICATION.md`. Full ACT
+  is qualified on BC-250 **CPU** only. Tinygrad/WebGPU ACT, the 450M SmolVLA
+  action artifact and the 5.44B MolmoAct2 artifact are rejected; do not cite the
+  old tiny-MLP or 35B-VLM receipts as ACT/VLA execution evidence. A fresh HTTP
+  JPEG is not a verified capture timestamp, so probe latency is not a
+  motion-safety claim.
 
 - Current interactive layout: `hardware/current_layout.json` / `docs/LAYOUT_OPTIMIZATION.md`
   (one follower via `ROBOT_ARM_COUNT=1`, 90 mm board-edge-to-base-frame gap,

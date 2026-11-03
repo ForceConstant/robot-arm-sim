@@ -1327,3 +1327,38 @@ asserts and records all four distinct target coordinates. Raw historical report
 retained and annotated. Default scan residuals and initial piece-grasp failures
 remain in the new JSON evidence. Public regression: 102 pass/5 skip; private
 custom printed pack: 107 pass; new receipt audits: 3 pass. No runtime deploy.
+
+
+## 14. BC-250 ACT/larger-policy runtime qualification — 2026-11-03
+
+Phase 11 asked for a measured runtime decision, not a controller. Full detail,
+commands and limits: [`PHASE11_RUNTIME_QUALIFICATION.md`](PHASE11_RUNTIME_QUALIFICATION.md).
+
+- **Pinned implementation:** LeRobot `2774d9b` ACT source,
+  SHA-256 `8d6229…3111`; ResNet-18, `dim_model` 512, 4+1 transformer layers, VAE,
+  30-step chunks (10 executed), 224x224 wrist RGB, 6-joint state, explicit
+  source/destination goal. FP32 CPU, 4 threads, torch 2.8.0+cpu.
+- **Data:** audited 3-episode historical fixture, 32 train / 16 test samples,
+  disjoint episodes/layouts, no oracle poses or FEN in observations. Deliberately
+  not a Phase 12 corpus.
+- **Passed:** batch-1 and batch-2 initialized forward/backward/AdamW; 20 updates
+  (~0.53 s per batch-2 step); exact checkpoint reload; **bit-identical resumed
+  update** including VAE/dropout RNG; independent inference-only reload matched
+  all held-out predictions. Peak RSS 1.80 GB; guard peak 52 C, 4.30 GB minimum
+  CPU availability, 156 MB swap growth during training only.
+- **Held-out quality is not a result:** 1.158 rad^2 versus 0.163 rad^2
+  hold-position after 20 random-init steps on one episode. No selection claim.
+- **Scheduled inference:** live simulator LAN status/JPEG -> preprocess ->
+  inference -> decode, 1.5 s replan period, 1.0 s deadline, zero swap-growth
+  gate. Result table in the phase document; every cycle also fails the
+  capture-age admission gate because the simulator publishes no capture
+  timestamp, so latency is a timing gate only.
+- **Rejected:** Tinygrad/WebGPU ACT bridge (all parameters transferred, then
+  `cumsum(dtype=...)` unimplemented in the positional embedding); SmolVLA 450M
+  action artifact (loads and is deterministic, but 5.40-5.49 s per chunk versus
+  the 1.0 s deadline); MolmoAct2 5.44B (21.77 GB F32; >=10.88 GB even at FP16
+  against 8.02 GB total CPU memory). Patched ROCm not attempted: kernel,
+  firmware and driver changes are a separate decision.
+- **Regression:** 113 pass/5 skip (clean HEAD worktree + Phase 11 files); 117 pass (custom tool + printed
+  pieces). Two interrupted soak attempts and the first strict-swap failure are
+  retained as evidence rather than deleted.

@@ -1,9 +1,11 @@
 # Chess robot — simulation-first delivery roadmap
 
-**Updated 2026-11-02. Canonical delivery plan.** This replaces the old priority
-list and the earlier hardware-first build sequence. Phases 0–8 retain their
-identifiers and measured, scope-limited completion evidence below. **Next: Phase
-9.** Later phases are planned, not completed. Historical acceptance filenames
+**Updated 2026-11-03. Canonical delivery plan.** This replaces the old priority
+list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
+Phase 11 runtime lane retain their identifiers and measured, scope-limited
+completion evidence below. **Next product phase: Phase 9.** Phase 11 is complete
+as a runtime decision only; Phases 10 and 12–21 are planned, not completed.
+Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
 
 ## Final working version
@@ -70,7 +72,8 @@ No next-stage physical work until the simulation release gate passes.
 - **8 — product digital twin and acceptance contract — complete 2026-11-02.**
 - **9 — wrist-only board calibration and full-board observation.**
 - **10 — grasp localization and robust printed-piece manipulation.**
-- **11 — BC-250 ACT / larger-policy runtime decision.**
+- **11 — BC-250 ACT / larger-policy runtime decision — complete 2026-11-03
+  (CPU ACT fallback selected; GPU routes and larger artifacts rejected).**
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -509,6 +512,19 @@ clearance-aware move, not a square-center assumption. Depends on 8–9.
 
 **Outcome:** a measured runtime/model selection for phases 12–18, not a promise
 that nominal model memory fits. Depends on 8; may run beside vision development.
+
+**Status: complete 2026-11-03 — see
+[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md).** Pinned
+full-size LeRobot ACT (51,565,446 parameters, ResNet-18, 224×224, 30-step
+chunks, VAE, FP32) passed batch-1/2 initialized steps, 20 AdamW updates on
+audited recordings, exact checkpoint reload, a bit-identical resumed update and
+an independent inference-only reload on the BC-250 **CPU**; 30-minute scheduled
+inference ran 1201 cycles over 30.0 min with p95 101 ms and no deadline or swap-growth violations; capture-age admission remains unverified.
+The Tinygrad/WebGPU ACT port was rejected in the forward graph, the 450M SmolVLA
+action artifact missed the 1.0 s deadline at 5.40–5.49 s per chunk, and the 5.44B
+MolmoAct2 artifact exceeded CPU memory before allocation. Patched ROCm was not
+attempted because it needs kernel/firmware/driver changes. This selects a
+runtime, not a controller: Phase 12 still owns training and paired comparison.
 
 - Pin exact ACT implementation, backbone, image size, chunk length, goal encoding,
   precision and runtime. Test full initialized forward/backward/optimizer steps

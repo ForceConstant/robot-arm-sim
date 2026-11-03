@@ -39,17 +39,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--seconds', type=int, default=300)
+    parser.add_argument('--swap-growth-mib', type=int, default=512)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
-    if not command or not 1 <= args.seconds <= 1200:
-        parser.error('provide a command after -- and a time limit of 1..1200 seconds')
+    if not command or not 1 <= args.seconds <= 7200 or args.swap_growth_mib < 0:
+        parser.error('provide a command after --, 1..7200 seconds, and nonnegative swap allowance')
     args.out.mkdir(parents=True, exist_ok=False)
     baseline = snapshot()
     report = {'baseline': baseline, 'command': command, 'abort_reason': [], 'samples': []}
     proc = None
     started = time.monotonic()
     low_samples = 0
+    def interrupted(signum, _frame):
+        raise InterruptedError(f'Probe interrupted by signal {signum}')
+    signal.signal(signal.SIGTERM, interrupted)
     try:
         if baseline['gpu_edge_c'] >= 85 or baseline['cpu_available_bytes'] < 768 * 2**20:
             raise RuntimeError('Insufficient baseline thermal or CPU-memory headroom')
@@ -58,13 +62,22 @@ def main():
                                     start_new_session=True)
             while True:
                 sample = snapshot()
+                try:
+                    status = Path(f'/proc/{proc.pid}/status').read_text().splitlines()
+                    for key in ('VmRSS', 'VmHWM'):
+                        sample[key + '_bytes'] = next(int(line.split()[1]) * 1024
+                            for line in status if line.startswith(key + ':'))
+                except (OSError, StopIteration):
+                    pass
                 sample['elapsed_s'] = time.monotonic() - started
                 report['samples'].append(sample)
+                with (args.out / 'samples.jsonl').open('a') as stream:
+                    stream.write(json.dumps(sample) + '\n')
                 low_samples = low_samples + 1 if sample['cpu_available_bytes'] < 768 * 2**20 else 0
                 if low_samples >= 3:
                     report['abort_reason'].append('CPU available below 768 MiB for three samples')
-                if sample['swap_used_bytes'] - baseline['swap_used_bytes'] > 512 * 2**20:
-                    report['abort_reason'].append('Swap grew over 512 MiB')
+                if sample['swap_used_bytes'] - baseline['swap_used_bytes'] > args.swap_growth_mib * 2**20:
+                    report['abort_reason'].append(f'Swap grew over {args.swap_growth_mib} MiB')
                 if sample['gpu_edge_c'] >= 85:
                     report['abort_reason'].append('GPU edge reached 85 C')
                 if sample['elapsed_s'] > args.seconds:

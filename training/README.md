@@ -38,11 +38,16 @@ final artifact's memory, latency, reload and held-out behavior afterward. See
 ## Current policy delivery gates
 
 The [canonical roadmap](../docs/ROADMAP.md) supersedes historical priority numbers.
-Phase 11 qualifies complete ACT forward/backward/resume and inference on BC-250;
-Phase 12 trains and compares explicit-goal ACT against scripted control and any
-justified larger VLA. Tinygrad/WebGPU toy/MLP results do not qualify ACT. Patched
-ROCm/PyTorch is an investigation route, not permission to change gaming drivers.
-A Tinygrad ACT port needs full-model parity, not just an optimizer smoke test.
+Phase 11 is complete as a **runtime** decision (2026-11-03): full-size pinned
+ACT trains, resumes and reloads exactly on the BC-250 **CPU**, and scheduled
+inference holds a 1.0 s deadline at ~0.08 s per cycle. The Tinygrad/WebGPU ACT
+bridge, the 450M SmolVLA action artifact (5.4 s/chunk) and the 5.44B MolmoAct2
+artifact (memory) were rejected; patched ROCm would need separate kernel,
+firmware and driver work. See
+[PHASE11_RUNTIME_QUALIFICATION.md](../docs/PHASE11_RUNTIME_QUALIFICATION.md).
+Phase 12 still trains and compares explicit-goal ACT against scripted control on
+the same held-out cases; a qualified runtime is not a qualified controller, and
+no training-time estimate exists until throughput is measured.
 
 Raspberry Pi 4 owns direct camera/servo connection and bounded local execution;
 BC-250 owns central processing, qualified model inference and feasible training.
