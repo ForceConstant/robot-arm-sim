@@ -181,33 +181,33 @@ capture/tray tasks, torch 2.9.1 (not the pinned 2.8.0), and one seed. The next
 run needs the full dataset (18 GB), the wrist camera, far more steps, and a
 held-out learning curve before any quality claim.
 
-## GTX 1060 cooling fault — Phase 11a thermal gate blocked (2026-11-03)
+## GTX 1060 thermal envelope — measured (2026-11-03)
 
-Brian noticed the card's fan was not visibly running. Direct measurement confirms
-it is not controlling temperature:
+Brian observed the fan turning. Direct sampling shows the fan **does** ramp, but
+late and weakly, and the card cannot hold a continuous training load:
 
-- **Idle:** 56–58 °C, fan **7–9 %**, 26.6 W, no throttle.
-- **Under load (FP32 matmul):** 56 → 84 °C in **1.6 s** at ~52 W, with the fan
-  still at **7–9 %**. There is no ramp at all, at any temperature tested.
-- **Training soak:** stepping at ~64 samples/s, the card reached **81–85 °C**
-  within the first minutes and reported throttle reason `0x20`
-  (SW thermal slowdown) at 80–83 °C; the 85 °C guard aborted the run.
+- **Idle:** 56 °C, fan **0 %**, 26 W.
+- **Ramp under load (1024² FP32 matmul, ~0.7 s bursts):** fan stays at **0 %**
+  from 56 °C through **83 °C** (about 4.4 s), then jumps to **71 %** at ~5 s and
+  settles around **58–61 %**. Temperature then sits at **81–83 °C** at only
+  ~40 W, with occasional spikes (one reached **87 °C** at 57 W, aborting the
+  test).
+- **Training soak (batch 8, ACT):** ~64 samples/s, 81–85 °C within the first
+  minutes, throttle reason `0x20` (SW thermal slowdown); the 85 °C guard aborted.
 
-A GTX 1060 at ~52 W should not climb 28 °C in under two seconds even with a
-stopped fan. Combined with the flat fan reading, this points to a **cooling
-hardware fault** — disconnected/failed fan, fan header, or lost heatsink contact
-— not a software curve or a harness problem. The training loop itself is healthy:
-loss falls, throughput holds, checkpoint reload is exact.
+Interpretation: the fan and heatsink are functioning, but the curve has a large
+deadband (0 % until ~80 °C) and tops out near 60 %, so the card stabilises at
+82–83 °C at low power and spikes above 85 °C under bursts. That is a marginal
+cooling path — dust, aged paste, restricted airflow, or a conservative fan
+profile — not a dead fan.
 
-**Consequence for Phase 11a:** the sustained-training thermal gate cannot pass on
-this card as it stands. No further GPU training should run on it until the fan
-and heatsink are physically checked. Software mitigations (fan curves, power
-caps) are not credible while the fan does not respond.
-
-Actions for the operator: power down, inspect the fan connector and header,
-confirm the fan spins when powered, check heatsink mounting and thermal paste,
-and re-test with the same guarded ramp before any training run.
-
+**Consequence for Phase 11a:** a *continuous* batch-8 training soak is not
+achievable within an 85 °C guard on this card. Options, in order of preference:
+physical cooling maintenance (clean/paste/airflow), a host-side fan curve or power
+cap (needs operator access), or a duty-cycled training envelope measured to stay
+under the limit. A duty-cycled run (batch 4, 60 s train / 90 s cool, 84 °C guard)
+is the bounded test of that last option. CPU training remains available as a
+fallback at ~3.8 samples/s.
 ## Rejected routes
 
 - **Tinygrad/WebGPU ACT port.** All 51.6M parameters transferred to the
