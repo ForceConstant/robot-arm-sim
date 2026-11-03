@@ -152,6 +152,35 @@ dataloader and video decode, which will be the next bottleneck; no convergence,
 held-out quality or checkpoint reload was tested here; and only the control model
 was exercised — the vision model still needs its own fit test.
 
+## Public-dataset training pilot on the GTX 1060 (2026-11-03)
+
+First end-to-end training run on real data, in a throwaway GPU container on the
+Unraid host (`torch 2.9.1+cu126`, nvidia runtime, 8 GiB host cap, 4 CPUs).
+Dataset: `XvKuoMing/so101_chess` at revision
+`969ae3a886b2038dfa349a768cbf8a9d57dde583` (LeRobot v3.0, 10 fps, 6,095
+episodes, 497,565 frames, 640×480), fetched into a named volume
+`phase11_data` (~280 MB: meta, one data shard, one top-camera video).
+
+- Slice used: **25 episodes**, 16 sampled observations each → **400 samples**
+  (320 train / 80 test, 5 whole held-out episodes). Top camera only; the wrist
+  stream was not downloaded.
+- Video decode: **one sequential pass**, 15.7 s for 12,627 frames, bucketed by
+  each episode's `from_timestamp`/`to_timestamp`. Seeking per episode returns
+  zero frames past the first episode in this file, so the loader must scan
+  sequentially.
+- Training: full ACT, FP32, batch 8, 200 AdamW steps in **25.4 s** →
+  **62.6 samples/s** (loss 85.0 → 4.09, min 3.51). Checkpoint 206.5 MB.
+- **Independent reload exact:** a fresh model loaded from the checkpoint
+  reproduces the trained model's predictions bit-for-bit.
+- **Held-out quality is not claimed:** 944.5 deg² versus 465.6 deg² for
+  hold-position on 5 unseen episodes. Twenty episodes and 200 steps overfit the
+  train split; this is a data-path/training-loop proof, not a policy result.
+
+Limits: top view only, 0.4% of the dataset, no wrist stream, no crowding or
+capture/tray tasks, torch 2.9.1 (not the pinned 2.8.0), and one seed. The next
+run needs the full dataset (18 GB), the wrist camera, far more steps, and a
+held-out learning curve before any quality claim.
+
 ## Rejected routes
 
 - **Tinygrad/WebGPU ACT port.** All 51.6M parameters transferred to the
