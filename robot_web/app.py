@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from . import __version__
 from .lab import Lab, VIEWS
 from .incidents import LABELS
-from .torture import CASES, SUITE_VERSION
+from .torture import CASES, SUITE_VERSION, LAYOUT_CASES, LAYOUT_VERSION
 
 lab = Lab()
 
@@ -75,7 +75,7 @@ class Control(BaseModel):
     distance: float | None = None
     reset: bool = False
     enable: bool = True
-    suite: Literal["start", "stop"] = "start"
+    suite: Literal["start", "stop", "layout"] = "start"
     suite_seed: int | None = Field(default=None, ge=0, le=2**32 - 1)
     id: str | None = None
     frame: int | None = None
@@ -162,10 +162,11 @@ def incident_label(ident: str, body: Review):
 
 
 @app.get("/api/suite")
-def suite():
-    return {"version": SUITE_VERSION,
+def suite(name: Literal['crowded','layout']='crowded'):
+    cases=LAYOUT_CASES if name=='layout' else CASES
+    return {"version": LAYOUT_VERSION if name=='layout' else SUITE_VERSION,
             "cases": [{"id": c.id, "arm": c.arm, "move": c.move,
-                       "description": c.description} for c in CASES]}
+                       "description": c.description} for c in cases]}
 
 
 @app.get("/api/frame/{camera}.jpg")

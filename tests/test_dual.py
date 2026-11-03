@@ -2,7 +2,7 @@ import chess
 import os
 import pytest
 
-from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, gripper
+from chess_sim import AppearanceConfig, BoardConfig, ControlConfig, EnvConfig, gripper
 from chess_sim.dual import DualArmEnv
 
 
@@ -28,8 +28,22 @@ def test_two_arms_and_collision_free_home(env):
         assert not (cross and c.dist < -0.001), names
 
 
+@pytest.fixture
+def legacy_crowded_env():
+    # Preserve this sequential regression's original fixture when runtime
+    # defaults change. The new mount has its own full-board/layout-v1 gates;
+    # an empty-board reach qualification does not qualify every crowded grasp.
+    e=DualArmEnv(EnvConfig(board=BoardConfig(arm_gap=.12,arm_riser=.06,thickness=.012),
+                          control=ControlConfig(cameras=()),
+                          appearance=AppearanceConfig(camera_mast=False,
+                              piece_set=os.environ.get('ROBOT_PIECE_SET','default'))))
+    yield e
+    e.close()
+
+
 @pytest.mark.skipif(not gripper.CUSTOM, reason="crowded manipulation regression is for the deployed CAD tool")
-def test_both_arms_physically_lift_and_place(env):
+def test_legacy_fixture_both_arms_physically_lift_and_place(legacy_crowded_env):
+    env=legacy_crowded_env
     env.reset()
     game = chess.Board()
     # Opening pawn pair plus real-contact transfers of each other piece class.

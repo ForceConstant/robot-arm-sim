@@ -40,6 +40,17 @@ def test_running_configuration_is_rejected(lab):
         lab.command("configure", mode="opening")
 
 
+def test_layout_suite_selects_its_own_cases_and_reports_total(lab):
+    from robot_web.torture import LAYOUT_CASES
+    lab.command('suite',suite='layout')
+    state=lab.snapshot()['suite']
+    assert state['version']=='layout-v1'
+    assert state['total']==len(LAYOUT_CASES)==16
+    assert lab.suite['cases'] is LAYOUT_CASES
+    lab.command('suite',suite='stop')
+    assert lab.suite['phase']=='stopped'
+
+
 def test_running_suite_exclusively_owns_control(lab):
     lab.suite = {"phase": "running", "index": 0, "results": []}
     lab.running = True

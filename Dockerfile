@@ -13,12 +13,13 @@ COPY requirements.lock /app/requirements.lock
 RUN pip install --no-cache-dir -r requirements.lock
 COPY chess_sim /app/chess_sim
 COPY robot_web /app/robot_web
+COPY hardware/product_twin.json /app/hardware/product_twin.json
 COPY deploy/entrypoint.sh /app/entrypoint.sh
 RUN useradd --uid 1000 --create-home robot && mkdir -p /data \
     && chown -R robot:robot /app /data && chmod +x /app/entrypoint.sh
 EXPOSE 8098
 LABEL org.opencontainers.image.source="https://github.com/ForceConstant/robot-arm-sim" \
-      org.opencontainers.image.version="1.10.7"
+      org.opencontainers.image.version="1.12.0"
 HEALTHCHECK --start-period=60s --interval=15s --timeout=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8098/health',timeout=3)"
 ENTRYPOINT ["/app/entrypoint.sh"]

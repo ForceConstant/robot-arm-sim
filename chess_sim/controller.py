@@ -224,6 +224,12 @@ class PickPlaceController:
                 if (trial.position_error <= 0.008 and trial.tilt <= np.radians(30)
                         and env.jaw_clearance(place_pt[:2], flipped, exclude=slot) >= 0):
                     span_place = flipped
+        if not ok:
+            # Never turn a failed positioning waypoint into a grasp at the
+            # neighbouring square. Retreat with open jaws and preserve failure.
+            self._abort_missed_grasp(px, py, gap_open, off_open, on_step)
+            env.diagnostic_stall = 'grasp_descend'
+            return False
         self._phase('close', grasp_pt, gap_hold, off_hold)
         self._go(grasp_pt, gap_hold, off_hold, 10, on_step)
         self._settle(SETTLE_STEPS, gap_hold, on_step)

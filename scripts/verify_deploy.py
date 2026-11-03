@@ -17,6 +17,7 @@ from pathlib import Path
 
 from chess_sim import gripper
 from chess_sim.dual import DualArmEnv
+from chess_sim.single import SingleFollowerEnv
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITE_TIMEOUT = 60 * 25
@@ -81,7 +82,8 @@ def verify(base, expected_version, speed=8.0, receipt_dir=None, seed=None):
     final, elapsed = run_suite(base, speed, seed)
     results = (final.get("suite") or {}).get("results", [])
     suite = final.get("suite") or {}
-    nominal_home = DualArmEnv.home_pose().tolist()
+    env_type=SingleFollowerEnv if (status.get('layout') or {}).get('arm_count')==1 else DualArmEnv
+    nominal_home = env_type.home_pose().tolist()
     if suite.get("version") != "crowded-v3":
         raise RuntimeError(f"Unexpected suite version: {suite.get('version')}")
     if suite.get("seed") != seed:

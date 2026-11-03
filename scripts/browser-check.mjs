@@ -11,10 +11,10 @@ async function waitForDisplayedJoint(side,index){await page.waitForFunction(asyn
 try{
  await page.goto(base);
  await until(s=>s.ready,'Simulator did not initialize');
- const jointRows=side=>page.locator('#joints-'+side+' .joint-row');
- await page.waitForFunction(()=>document.querySelectorAll('.joint-row').length===12);
- assert.equal(await jointRows('white').count(),6);assert.equal(await jointRows('black').count(),6);
- for(const side of ['white','black'])for(const i of [0,1,2,3,4,5]){
+ const sides=Object.keys((await status()).joints);const jointRows=side=>page.locator('#joints-'+side+' .joint-row');
+ await page.waitForFunction(n=>document.querySelectorAll('.joint-row').length===n,6*sides.length);
+ for(const side of sides)assert.equal(await jointRows(side).count(),6);
+ for(const side of sides)for(const i of [0,1,2,3,4,5]){
   const degrees=(await status()).joints[side][i]*180/Math.PI;
   assert.equal(await jointRows(side).nth(i).locator('span').nth(1).textContent(),degrees.toFixed(2)+'°');
  }
@@ -44,7 +44,7 @@ try{
  assert.ok(Math.abs(gripNow-beforeGrip)>0.01,'Gripper arrows did not change the jaw gap');
  await page.waitForFunction(()=>document.querySelector('#main-camera').naturalWidth>0);
  assert.equal(await page.locator('#main-camera').evaluate(e=>e.naturalWidth),800);
- for(const camera of ['overview','top','white_wrist','black_wrist']){const r=await page.request.get(base+'/api/frame/'+camera+'.jpg');assert.equal(r.status(),200);const bytes=await r.body();assert.equal(bytes[0],255);assert.equal(bytes[1],216)}
+ for(const camera of ['overview','top',...sides.map(x=>x+'_wrist')]){const r=await page.request.get(base+'/api/frame/'+camera+'.jpg');assert.equal(r.status(),200);const bytes=await r.body();assert.equal(bytes[0],255);assert.equal(bytes[1],216)}
  await page.locator('#stop').click();await until(s=>s.phase==='stopped','Stop not reflected');
  await page.locator('#mode').selectOption('opening');await page.locator('#observations').selectOption('all');await page.locator('#apply').click();
  await until(s=>s.phase==='ready'&&s.observations==='all','Configuration/reset failed');
@@ -52,12 +52,12 @@ try{
  await page.locator('#observations').selectOption('wrists');await page.locator('#apply').click();
  await until(s=>s.phase==='ready'&&s.observations==='wrists','Wrist-only configuration failed');
  const sensors=await (await page.request.get(base+'/api/observations')).json();
- assert.deepEqual(Object.keys(sensors.cameras).sort(),['black_wrist','white_wrist']);assert.equal('fen' in sensors,false);
+ assert.deepEqual(Object.keys(sensors.cameras).sort(),sides.map(x=>x+'_wrist').sort());assert.equal('fen' in sensors,false);
  const beforeAuto=(await status()).joints;
  await page.locator('#start').click();await until(s=>s.running&&s.phase==='moving','Start did not run');
- const afterAuto=await until(s=>['white','black'].some(side=>s.joints[side].some((v,i)=>Math.abs(v-beforeAuto[side][i])>0.005)),
+ const afterAuto=await until(s=>sides.some(side=>s.joints[side].some((v,i)=>Math.abs(v-beforeAuto[side][i])>0.005)),
    'Joint snapshot did not update during automated movement');
- const automatedSide=['white','black'].find(side=>afterAuto.joints[side].some((v,i)=>Math.abs(v-beforeAuto[side][i])>0.005));
+ const automatedSide=sides.find(side=>afterAuto.joints[side].some((v,i)=>Math.abs(v-beforeAuto[side][i])>0.005));
  const automatedIndex=afterAuto.joints[automatedSide].findIndex((v,i)=>Math.abs(v-beforeAuto[automatedSide][i])>0.005);
  await waitForDisplayedJoint(automatedSide,automatedIndex);
  await page.locator('#pause').click();await until(s=>s.phase==='paused'&&!s.running,'Pause did not freeze');
@@ -73,6 +73,6 @@ try{
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'/tmp/robot-arm-lab-mobile.png',fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.deepEqual(errors,[]);
- const final=await status();await fs.writeFile(process.env.RECEIPT_PATH||'/tmp/robot-arm-browser-check.json',JSON.stringify({base,version:final.version,renderer:final.renderer,phase:final.phase,checks:['12 actual joint angles across both arms','cartesian teleop moves the arm, wrist stays vertical, elbow stays up','wrist-roll and gripper arrow keys update live angles','automated motion updates live angle readout','4 real JPEG views','start','pause freezes clock','resume advances clock','stop','reset','sensor selection','CSRF','mobile layout'],errors},null,2));
+ const final=await status();await fs.writeFile(process.env.RECEIPT_PATH||'/tmp/robot-arm-browser-check.json',JSON.stringify({base,version:final.version,renderer:final.renderer,phase:final.phase,checks:['actual joint angles for installed followers','cartesian teleop moves the arm, wrist stays vertical, elbow stays up','wrist-roll and gripper arrow keys update live angles','automated motion updates live angle readout','real JPEG views and installed wrist cameras','start','pause freezes clock','resume advances clock','stop','reset','sensor selection','CSRF','mobile layout'],errors},null,2));
  console.log('Browser checks passed:',base,'renderer:',final.renderer);
 }finally{await browser.close()}

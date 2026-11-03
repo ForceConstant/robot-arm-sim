@@ -53,6 +53,7 @@ def compose():
       MUJOCO_GL: egl
       ROBOT_VIEW_FPS: "5"
       ROBOT_DATA_DIR: /data
+      ROBOT_ARM_COUNT: "1"
       STOCKFISH_PATH: /usr/games/stockfish
       ROBOT_GRIPPER: cad_parallel
       ROBOT_GRIPPER_ASSETS: /app/chess_sim/assets/custom_gripper
@@ -120,7 +121,7 @@ def main():
     tar = io.BytesIO()
     with tarfile.open(fileobj=tar, mode="w") as archive:
         for name in ["Dockerfile", ".dockerignore", "requirements.lock", "pyproject.toml",
-                     "chess_sim", "robot_web", "deploy/entrypoint.sh"]:
+                     "chess_sim", "robot_web", "hardware/product_twin.json", "deploy/entrypoint.sh"]:
             def keep(info):
                 if any(part in info.name for part in ["__pycache__", "/generated/"]):
                     return None

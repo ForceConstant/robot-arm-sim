@@ -1,0 +1,54 @@
+{
+  "schema": "robot-arm-current-layout/1",
+  "selected_at": "2026-11-03",
+  "version": "1.12.0",
+  "board": {
+    "square_mm": 28,
+    "border_mm": 15,
+    "thickness_mm": 3.2,
+    "overall_mm": 254
+  },
+  "mount": {
+    "board_edge_to_base_frame_mm": 90,
+    "base_mount_datum_above_table_mm": 30,
+    "table_top_mm": 430,
+    "white_arm_base_frame_mm": [
+      0,
+      -217,
+      460
+    ],
+    "board_edge_to_front_of_base_mesh_mm_approx": 25.365,
+    "front_edge_provenance": "CAD vertex bounds of so101:base within 3 mm of mount datum; not a physical measurement",
+    "black_arm_base_frame_mm_debug_only": [
+      0,
+      217,
+      460
+    ]
+  },
+  "tool": {
+    "kind": "cad_parallel",
+    "revision": "4dca0986f24304c301118aa4"
+  },
+  "solver": {
+    "position_cost": 30,
+    "tilt_cost": 0.5,
+    "hard_limits_unchanged": true
+  },
+  "selection": {
+    "distinct_layouts": 20,
+    "critical_executions": 168,
+    "critical_passed": 8,
+    "critical_total": 8,
+    "critical_worst_error_mm": 4.8967,
+    "critical_mean_error_mm": 2.9312,
+    "source_square_passed": 64,
+    "source_square_total": 64,
+    "source_square_worst_error_mm": 7.0167,
+    "board_offset_passed": 29,
+    "board_offset_total": 32
+  },
+  "scope": "Best nominal layout tested, not global optimum, physical qualification or all-piece crowded-board proof",
+  "mass_model": "Rook 4.8 g including M6 nut; king and other piece masses remain unmeasured nominal PLA models",
+  "baseline_contract": "hardware/product_twin.json remains the historical 2026-11-02 stock-tool Phase 8 baseline; this file names current runtime geometry",
+  "installed_followers": 1
+}

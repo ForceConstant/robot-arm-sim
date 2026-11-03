@@ -52,6 +52,19 @@ def test_clean_move_still_releases_normally(env):
     assert chess.E4 in env._square_slot
 
 
+def test_failed_pickup_descent_never_closes_on_the_wrong_square(env,monkeypatch):
+    env.reset(chess.STARTING_FEN)
+    monkeypatch.setattr(C.PickPlaceController,'_descend',lambda *args,**kwargs:False)
+    phases=[]
+    result=env.execute(MoveTask(from_square='e2',to_square='e4'),
+                       on_step=lambda action:phases.append(env.diagnostic_phase))
+    assert not result.success
+    assert env.diagnostic_stall=='grasp_descend'
+    assert 'close' not in phases
+    assert 'release' not in phases
+    assert chess.E2 in env._square_slot and chess.E4 not in env._square_slot
+
+
 def test_missed_grasp_stops_before_carrying(env, monkeypatch):
     """If nothing rises with the jaws, do not carry air to the target square."""
     import dataclasses

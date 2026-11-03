@@ -21,7 +21,11 @@ from . import gripper
 ARM_JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
 _DOWN = np.array([0.0, 0.0, -1.0])
 
-POSITION_COST = 1.0    # tool-point error, per meter
+# Position is in metres but axis-alignment errors are unitless. With equal
+# numeric weights the custom tool stayed vertical at its wrist limit while
+# missing A8 by 29 mm. A position-priority solve reaches it at ~10 degrees tilt
+# without changing joint/collision limits or the grasp acceptance cone.
+POSITION_COST = 30.0 if gripper.CUSTOM else 1.0
 TILT_COST = 0.5        # approach-axis direction error (unitless)
 SPAN_COST = 0.6        # jaw-span direction error, horizontal components (unitless)
 POSTURE_COST = 0.003   # tie-breaker toward the rest posture, per radian (roll excluded)
@@ -225,7 +229,13 @@ class So101Ik:
         if span is not None:
             flipped = q0.copy()
             flipped[4] = self._wrap_roll(q0[4] + np.pi)
-            other = self._iterate(flipped, target, offset, span)
+            try:
+                other = self._iterate(flipped, target, offset, span)
+            except mink.exceptions.NoSolutionFound:
+                # A rolled alternate seed can start inside the conservative
+                # hand/shoulder envelope. Its infeasible QP must not discard a
+                # valid solution already found on the current roll branch.
+                other = best
             # keep the current roll branch unless the flipped one is clearly
             # better: flipping between consecutive waypoints would twist the
             # wrist mid-motion. When the current branch itself had to travel far

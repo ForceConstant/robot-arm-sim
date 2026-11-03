@@ -22,12 +22,13 @@ from PIL import Image
 
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
+from chess_sim.single import SingleFollowerEnv
 from chess_sim import gripper
 from chess_sim.assets import set_properties
 from chess_sim.controller import PlanOverride
 from .incidents import (Store, Recording, restore, bookkeeping, physics_state,
                         reset_diagnostics)
-from .torture import CASES, SUITE_VERSION
+from .torture import CASES, SUITE_VERSION, LAYOUT_CASES, LAYOUT_VERSION
 
 OPENING = ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5", "c2c3", "g8f6",
            "d2d3", "d7d6", "b1d2", "a7a6", "c4b3", "c5a7", "h2h3", "h7h6",
@@ -110,7 +111,7 @@ class Lab:
         self.sweep_request = None
         self.incident_count = 0
         self.viewers = {}
-        self.state = {"phase": "initializing", "message": "Building the two-arm scene",
+        self.state = {"phase": "initializing", "message": "Building the simulator scene",
                       "renderer": "Starting", "engine": "Starting", "sim_time": 0,
                       "active_arm": None, "current_move": None, "last_result": None}
         self.thread = threading.Thread(target=self._run, name="physics-render", daemon=True)
@@ -146,10 +147,11 @@ class Lab:
                          "playing": self.replay.get("playing", False)},
                     "suite": None if self.suite is None else
                         {"version": self.suite["version"], "index": self.suite["index"],
-                         "total": len(CASES), "phase": self.suite["phase"],
+                         "total": len(self.suite.get("cases", CASES)), "phase": self.suite["phase"],
                          "seed": self.suite.get("seed"),
                          "results": list(self.suite["results"])},
-                    "observation_cameras": ["white_wrist", "black_wrist"] +
+                    "observation_cameras": (["white_wrist"] if self.env is not None and len(self.env._contexts)==1
+                                            else ["white_wrist", "black_wrist"]) +
                         (["top"] if self.observations == "all" else []),
                     "joints": getattr(self, "joint_snapshot", {})}
 
@@ -217,11 +219,13 @@ class Lab:
                 self.log("Incident recording " + ("enabled" if self.record_enabled else "disabled"))
             elif action == "suite":
                 choice = options.get("suite", "start")
-                if choice == "start":
-                    self.suite = {"version": SUITE_VERSION, "index": 0, "phase": "running",
+                if choice in ("start","layout"):
+                    cases=LAYOUT_CASES if choice=="layout" else CASES
+                    version=LAYOUT_VERSION if choice=="layout" else SUITE_VERSION
+                    self.suite = {"version": version, "cases": cases, "index": 0, "phase": "running",
                                   "seed": options.get("suite_seed"), "results": []}
                     self.running, self.stop_requested, self.step_requested = True, False, False
-                    self.log(f"Torture suite {SUITE_VERSION}: {len(CASES)} independent cases")
+                    self.log(f"Torture suite {version}: {len(cases)} independent cases")
                 elif choice == "stop":
                     if self.suite:
                         self.suite["phase"] = "stopped"
@@ -289,6 +293,8 @@ class Lab:
             subset = (list(VIEWS) if force else
                       tuple(self._active_views(include_wrists=True)))
         keys = [(k, VIEWS[k]) for k in subset]
+        if len(self.env._contexts)==1:
+            keys=[(k,v) for k,v in keys if k!='black_wrist']
         lookat = self.env.orbit_default()["lookat"]
         lookat = [lookat[0], lookat[1], lookat[2] + 0.03]
         for key, (kind, value) in keys:
@@ -302,6 +308,8 @@ class Lab:
         feedback = {}
         if gripper.CUSTOM:
             for side, prefix in (('white', 'so101:'), ('black', 'black:')):
+                if side not in self.env._contexts:
+                    continue
                 positions = [float(self.env.data.qpos[self.env.model.joint(prefix + n).qposadr[0]])
                              for n in gripper.PROFILE['jaw_joints']]
                 feedback[side] = {'jaw_positions_m': positions,
@@ -395,6 +403,7 @@ class Lab:
             env.select_arm(side)
         except Exception:
             pass
+        side=env.active_side
         prefix = "black:" if side == "black" else "so101:"
         zeros = np.zeros(3)
         joints = np.asarray(env.arm_joint_positions(), dtype=float)
@@ -463,15 +472,15 @@ class Lab:
         self.game = chess.Board(fen or SCENARIOS[self.scenario])
         self.history = []
         self.env.reset(self.game.fen())
-        self.env.cameras = ((Camera.WRIST, Camera.WRIST_BLACK, Camera.TOP)
-                            if self.observations == "all" else (Camera.WRIST, Camera.WRIST_BLACK))
+        wrists=(Camera.WRIST,) if len(self.env._contexts)==1 else (Camera.WRIST,Camera.WRIST_BLACK)
+        self.env.cameras = wrists+((Camera.TOP,) if self.observations=='all' else ())
         self.dirty = False
         self.stop_requested = False
         self.reset_requested = False
         self.last_tick = 0
         self._render(force=True)
         with self.lock:
-            self.state.update(phase="ready", message="Ready — two arms, one board")
+            self.state.update(phase="ready", message="Ready — one follower, full board" if len(self.env._contexts)==1 else "Ready — two-arm debug scene")
         self.log("Board reset: " + self.scenario)
 
     def _choose_move(self):
@@ -592,7 +601,7 @@ class Lab:
         side = "white" if self.game.turn else "black"
         self.env.select_arm(side)
         with self.lock:
-            self.state.update(phase="thinking", active_arm=side, message=side.title() + " is choosing a move")
+            self.state.update(phase="thinking", active_arm=self.env.active_side, message=side.title() + " is choosing a move")
         if self.game.is_game_over(claim_draw=True):
             return self._complete("Game over: " + self.game.result(claim_draw=True))
         move = self._choose_move()
@@ -670,8 +679,9 @@ class Lab:
         """Each case gets a fresh board, so a failed case cannot poison the next.
         These are physical manipulation tasks, not legal chess games."""
         suite = self.suite
+        cases = suite.get('cases', CASES)
         suite["phase"] = "running"
-        while suite["index"] < len(CASES):
+        while suite["index"] < len(cases):
             if self.shutdown.is_set() or self.stop_requested or not self.running or \
                     suite["phase"] != "running":
                 suite["phase"] = "stopped"
@@ -680,9 +690,9 @@ class Lab:
                 self.current_case_layout = None
                 self.running = False
                 return
-            case = CASES[suite["index"]]
+            case = cases[suite["index"]]
             self.current_case = case.id
-            self.log(f"Case {suite['index'] + 1}/{len(CASES)} · {case.id} · {case.move}")
+            self.log(f"Case {suite['index'] + 1}/{len(cases)} · {case.id} · {case.move}")
             with self.lock:
                 self.state.update(phase="moving", active_arm=case.arm, current_move=case.move,
                                   message=f"{case.id}: {case.description}", last_result=None,
@@ -705,6 +715,7 @@ class Lab:
             self.current_case_seed = case_seed
             self.current_case_layout = layout
             self.env.select_arm(case.arm)
+            self.state['active_arm']=self.env.active_side
             self.env.position = self.game.copy()
             # Every case must start from a fully placed board. A missing source
             # square is silent in the old path (it surfaced once as a bare
@@ -1025,11 +1036,23 @@ class Lab:
 
     def _run(self):
         try:
-            self.env = DualArmEnv(EnvConfig(
+            env_type=SingleFollowerEnv if os.environ.get('ROBOT_ARM_COUNT')=='1' else DualArmEnv
+            self.env = env_type(EnvConfig(
                 appearance=AppearanceConfig(camera_mast=False,
                     piece_set=os.environ.get("ROBOT_PIECE_SET", "default")),
                 control=ControlConfig(cameras=(), image_size=(800, 600))))
             self.env.model.vis.quality.shadowsize = 2048
+            if self.env.config.appearance.piece_set == 'printed':
+                from chess_sim.product import load_product_twin,apply_mass_model
+                apply_mass_model(self.env,load_product_twin(),'nominal',all_slots=True)
+            board=self.env.config.board
+            self.state['layout']={
+                'arm_count':len(self.env._contexts),
+                'board_edge_to_base_frame_mm':board.arm_gap*1000,
+                'base_riser_mm':board.arm_riser*1000,
+                'board_thickness_mm':board.thickness*1000,
+                'arm_base_m':list(board.arm_base),
+            }
             self.model_signature = __import__("robot_web.incidents", fromlist=["model_signature"]).model_signature(self.env)
             self.runtime_signature = __import__("robot_web.incidents", fromlist=["runtime_signature"]).runtime_signature(self.model_signature)
             self.incident_count = len(self.recorder.rows())

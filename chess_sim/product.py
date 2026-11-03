@@ -313,17 +313,21 @@ def rook_mass_range(twin: ProductTwin) -> list[MassProperties]:
             for z in p.nut_model_z_range_mm]
 
 
-def apply_mass_model(env, twin: ProductTwin, regime: str = "nominal") -> list[dict]:
+def apply_mass_model(env, twin: ProductTwin, regime: str = "nominal", *, all_slots: bool = False) -> list[dict]:
     """Apply the product mass model to every piece already in an environment.
 
     Call after `env.reset()` (so slots exist), then call `env.reset()` again if
     the changed masses should settle the scene.  Returns the applied records for
     the qualification report; the caller owns any further physics checks.
+    `all_slots=True` also covers parked pieces before the first reset, for a
+    service that must keep the same mass model in every subsequent case.
     """
     import mujoco
 
     applied = []
-    for slot in list(env._square_slot.values()) + list(getattr(env, "_captured", [])):
+    slots = (env.slots if all_slots else
+             list(env._square_slot.values()) + list(getattr(env, "_captured", [])))
+    for slot in slots:
         ptype = chess.piece_name(slot.piece.piece_type)
         props = piece_mass_properties(twin, ptype, regime)
         body = env.model.body(slot.body)

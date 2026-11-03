@@ -1,8 +1,10 @@
 """Versioned, independent manipulation cases, not chess-engine decisions."""
 from dataclasses import dataclass
 import chess
+from chess_sim.layout_cases import CASES as LAYOUT_PROBES,case_fen
 
 SUITE_VERSION = 'crowded-v3'
+LAYOUT_VERSION = 'layout-v1'
 
 @dataclass(frozen=True)
 class Case:
@@ -11,6 +13,21 @@ class Case:
     fen: str
     move: str
     description: str
+
+
+def layout_cases():
+    rows=[]
+    for side,color in (('white',chess.WHITE),('black',chess.BLACK)):
+        for ident,kind,source,destination in LAYOUT_PROBES:
+            if color==chess.BLACK:
+                source=chess.square_name(chess.square_mirror(chess.parse_square(source)))
+                destination=chess.square_name(chess.square_mirror(chess.parse_square(destination)))
+            rows.append(Case(f'{side}-{ident}',side,case_fen(kind,source,color),
+                             source+destination,f'Layout probe: {kind}, {ident}; independent empty board'))
+    return rows
+
+
+LAYOUT_CASES=layout_cases()
 
 
 def position(moves=(), turn=chess.WHITE):

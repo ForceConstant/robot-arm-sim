@@ -116,12 +116,12 @@ class BoardConfig(Config):
 
     square: float = 0.028          # square edge (mini set: SO-101 reach is ~33 cm)
     border: float = 0.015          # wood border around the 8x8 field
-    thickness: float = 0.012       # board slab thickness
+    thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
     table_top: float = 0.43        # table height above the floor
-    # Keep the near-side back rank outside the SO-101's measured inner reach;
-    # the old 80 mm standoff put d/e-file grasp targets ~110 mm from the shoulder.
-    arm_gap: float = 0.12          # distance from board edge to arm base center
-    arm_riser: float = 0.06        # pedestal height under the arm base
+    # Best tested custom-tool layout: 20 distinct candidates, eight critical
+    # transfers, then 64/64 source-square executions. See docs/LAYOUT_OPTIMIZATION.md.
+    arm_gap: float = 0.09          # board outer edge to arm base frame origin, NOT foot edge
+    arm_riser: float = 0.03        # arm mounting datum above the board's underside/table
     arm_side: str = "white"       # the dual-arm scene mirrors the black mount
     # where the board's centre sits on the table; the arm, camera mast, tray and
     # parked pieces do not move with it
@@ -311,7 +311,7 @@ class AppearanceConfig(Config):
 
     piece_scale: float = Field(1.0, ge=PIECE_SCALE_LIMITS[0], le=PIECE_SCALE_LIMITS[1])
     piece_set: str = "default"            # see chess_sim.assets.available_piece_sets()
-    board_labels: bool = False            # a-h and 1-8 printed on the border
+    board_labels: bool = True             # measured printed board has a-h / 1-8 labels
     board_finish: str = "wood"            # one of BOARD_FINISHES: how the board looks and grips
     # The overhead camera. None keeps the published rig: the lens on the mast beside
     # the arm, 678 mm above the board, 24 degrees. Otherwise the lens sits `camera_height`

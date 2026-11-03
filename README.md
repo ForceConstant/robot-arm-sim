@@ -1,5 +1,7 @@
 # Robot Arm · Chess Lab
 
+**Current simulator layout (1.12.0):** 90 mm board-edge-to-base-frame gap, 30 mm riser, measured 3.2 mm printed board. [Layout search and limits](docs/LAYOUT_OPTIMIZATION.md); use **Layout: 16 cases** in the UI to repeat the near/far manipulation probes.
+
 **Brian's fork:** [ForceConstant/robot-arm-sim](https://github.com/ForceConstant/robot-arm-sim)
 of [qalby-tech/embryo_lab_chess_so101](https://github.com/qalby-tech/embryo_lab_chess_so101).
 Upstream project documentation follows below; it describes upstream work, not

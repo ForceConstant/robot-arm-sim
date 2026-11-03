@@ -1291,3 +1291,12 @@ sensitivity range; no midpoint is presented as a measurement.
 
 **Verdict:** Phase 8 exit met for the selected stock tool. No physical arm,
 servo, camera or purchase was touched.
+
+
+## Board/base layout search — 2026-11-03
+
+Brian requested near kings, close rooks and far-rook/diagonal transfers to choose the base height and board gap. Twenty distinct nominal layouts (168 critical executions including a repeated candidate) selected **90 mm gap to the base-frame origin / 30 mm riser**, measured 3.2 mm board. Critical cases **8/8**, worst **4.90 mm**, mean **2.93 mm**; all source squares **64/64** alternating rook/king, worst **7.02 mm**. ±2 mm board-placement offsets: **29/32**, failures retained. Current custom jaw `4dca0986`, measured 4.8 g rook; other masses remain nominal/unmeasured.
+
+Position cost 30 versus tilt 0.5 fixes the A8 positioning shortfall without relaxing joint/collision constraints. Failed pickup descents now retreat open. The runtime provides a separate **layout-v1** suite with eight white-arm probes and eight black-arm mirrors; crowded-v3 remains the existing 25-case fixture. `hardware/current_layout.json` describes current runtime; the dated stock-tool Phase 8 product twin/report remain historical. Full report and reproduction: `docs/LAYOUT_OPTIMIZATION.md`, `reports/layout_*.json`.
+
+The sequential opening `f1c4` bishop slipped at the new layout. Its original six-move regression remains pinned to the legacy 120/60 mm / 12 mm fixture; no claim of full-game or physical-arm reliability follows from layout qualification. Release/live checks are recorded separately.
