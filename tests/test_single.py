@@ -1,5 +1,6 @@
 from chess_sim.single import SingleFollowerEnv
 from chess_sim import EnvConfig,ControlConfig,AppearanceConfig
+import chess
 
 
 def test_one_follower_handles_both_colours_without_a_hidden_second_arm():
@@ -14,4 +15,6 @@ def test_one_follower_handles_both_colours_without_a_hidden_second_arm():
         assert env.home_pose()[0]==0
         env.reset()
         assert len(env._square_slot)==32 and env._capture_count=={'white':0}
+        assert env.full_board_error(chess.Board()) is None
+        assert env.full_board_error(chess.Board(None)) is not None
     finally:env.close()

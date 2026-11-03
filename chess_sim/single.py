@@ -9,6 +9,7 @@ class SingleFollowerEnv(ChessSimEnv):
     # retreat/candidate rules as the retained dual-arm debug fixture.
     park=DualArmEnv.park
     candidate_moves=DualArmEnv.candidate_moves
+    full_board_error=DualArmEnv.full_board_error
 
     def __init__(self,config: EnvConfig|None=None):
         super().__init__((config or EnvConfig()).model_copy(update={'dual_arms':False}))
