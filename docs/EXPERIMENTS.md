@@ -1302,3 +1302,28 @@ Position cost 30 versus tilt 0.5 fixes the A8 positioning shortfall without rela
 The sequential opening `f1c4` bishop slipped at the new layout. Its original six-move regression remains pinned to the legacy 120/60 mm / 12 mm fixture; no claim of full-game or physical-arm reliability follows from layout qualification. Release/live checks are recorded separately.
 
 Final live release **1.12.1** (`b6437d2`): delivered Layout button **16/16**, crowded-v3 **21/25** (four white queen/king neighbour-disturbance cases); controls/cameras/mobile browser checks passed. Single-follower board/post-parking verifier included. Sanitized receipt: `reports/layout_live_verification.json`.
+
+
+## Phase 8 requalification at updated mount — 2026-11-03
+
+Brian requested a fresh gripper decision after the 90 mm setback / 30 mm riser
+layout optimization. See [full method and receipts](PHASE8_UPDATED_OFFSETS.md).
+Current custom jaw: 62/64 mixed-type first pass, 64/64 paths after king/rook
+retries, 4/4 actual distinct tray destinations. Stock/native controller: 58/64
+first, 60/64 paths, 4/4 tray; respective point costs 30 and 1 mean this is not a
+pure hardware A/B. The dated 80/60 stock-tool product twin remains historical.
+
+Default crowded-v3: custom 21/25, stock 18/25. Four custom white queen/king
+short/far failures pass after forcing a +20 degree absolute world jaw span;
+the full matched-seed candidate suite passes 25/25 without geometry, contact,
+friction or evaluator changes. Both +/-20 degree spans also fix representative
+short cases in a 14-run bounded sweep; grasp-height/place-y variants do not.
+Recommendation: keep the existing CAD jaw; improve validated span selection
+before redesigning fingers. Candidate settings are not deployed or robustly
+qualified over board perturbations. Physical qualification remains separate.
+
+Audit: the old Phase 8 tray reset loop always targeted slot zero. The new runner
+asserts and records all four distinct target coordinates. Raw historical report
+retained and annotated. Default scan residuals and initial piece-grasp failures
+remain in the new JSON evidence. Public regression: 102 pass/5 skip; private
+custom printed pack: 107 pass; new receipt audits: 3 pass. No runtime deploy.

@@ -1,0 +1,745 @@
+{
+  "schema": "robot-arm-phase8-parameter-sweep/1",
+  "layout": {
+    "schema": "robot-arm-current-layout/1",
+    "selected_at": "2026-11-03",
+    "version": "1.12.1",
+    "board": {
+      "square_mm": 28,
+      "border_mm": 15,
+      "thickness_mm": 3.2,
+      "overall_mm": 254
+    },
+    "mount": {
+      "board_edge_to_base_frame_mm": 90,
+      "base_mount_datum_above_table_mm": 30,
+      "table_top_mm": 430,
+      "white_arm_base_frame_mm": [
+        0,
+        -217,
+        460
+      ],
+      "board_edge_to_front_of_base_mesh_mm_approx": 25.365,
+      "front_edge_provenance": "CAD vertex bounds of so101:base within 3 mm of mount datum; not a physical measurement",
+      "black_arm_base_frame_mm_debug_only": [
+        0,
+        217,
+        460
+      ]
+    },
+    "tool": {
+      "kind": "cad_parallel",
+      "revision": "4dca0986f24304c301118aa4"
+    },
+    "solver": {
+      "position_cost": 30,
+      "tilt_cost": 0.5,
+      "hard_limits_unchanged": true
+    },
+    "selection": {
+      "distinct_layouts": 20,
+      "critical_executions": 168,
+      "critical_passed": 8,
+      "critical_total": 8,
+      "critical_worst_error_mm": 4.8967,
+      "critical_mean_error_mm": 2.9312,
+      "source_square_passed": 64,
+      "source_square_total": 64,
+      "source_square_worst_error_mm": 7.0167,
+      "board_offset_passed": 29,
+      "board_offset_total": 32
+    },
+    "scope": "Best nominal layout tested, not global optimum, physical qualification or all-piece crowded-board proof",
+    "mass_model": "Rook 4.8 g including M6 nut; king and other piece masses remain unmeasured nominal PLA models",
+    "baseline_contract": "hardware/product_twin.json remains the historical 2026-11-02 stock-tool Phase 8 baseline; this file names current runtime geometry",
+    "installed_followers": 1
+  },
+  "source_sha256": "a1baa0de9f3259658913236ca668babc8b2f336dd843dba1e714889119886f1d",
+  "scope": "Fresh identical nominal starts, seed 0, two representative crowded failures; not historical incident replay or exhaustive geometry proof.",
+  "rows": [
+    {
+      "move": "d1d3",
+      "params": {},
+      "success": false,
+      "error_mm": 4.573241915313187,
+      "disturbed": [
+        "d2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 84.02776398467016,
+      "first_disturbance": [
+        {
+          "square": "d2",
+          "phase": "lift",
+          "distance_mm": 12.668690729925961
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "grasp_dz": -0.004
+      },
+      "success": false,
+      "error_mm": 11.38919242716276,
+      "disturbed": [
+        "d2"
+      ],
+      "reason": "placement error",
+      "precise": true,
+      "lift_mm": 88.53199041609238,
+      "first_disturbance": [
+        {
+          "square": "d2",
+          "phase": "lift",
+          "distance_mm": 23.33544184950783
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "grasp_dz": 0.004
+      },
+      "success": false,
+      "error_mm": 3.564844531658108,
+      "disturbed": [
+        "d2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 79.85277665397739,
+      "first_disturbance": [
+        {
+          "square": "d2",
+          "phase": "lift",
+          "distance_mm": 14.805860567724002
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "span_deg": -20
+      },
+      "success": true,
+      "error_mm": 4.451351132178732,
+      "disturbed": [],
+      "reason": "None",
+      "precise": true,
+      "lift_mm": 85.69650238819659,
+      "first_disturbance": [],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "span_deg": 20
+      },
+      "success": true,
+      "error_mm": 1.1696367728367887,
+      "disturbed": [],
+      "reason": "None",
+      "precise": true,
+      "lift_mm": 85.0500732385292,
+      "first_disturbance": [],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "place_dy": -0.002
+      },
+      "success": false,
+      "error_mm": 5.562407864234394,
+      "disturbed": [
+        "d2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 84.02776398467016,
+      "first_disturbance": [
+        {
+          "square": "d2",
+          "phase": "lift",
+          "distance_mm": 12.668690729925961
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "d1d3",
+      "params": {
+        "place_dy": 0.002
+      },
+      "success": false,
+      "error_mm": 2.1045709389436533,
+      "disturbed": [
+        "d2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 84.02776398467016,
+      "first_disturbance": [
+        {
+          "square": "d2",
+          "phase": "lift",
+          "distance_mm": 12.668690729925961
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052931545855759016
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.8811238008860538
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {},
+      "success": false,
+      "error_mm": 1.113053978429456,
+      "disturbed": [
+        "e2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 85.51115157891087,
+      "first_disturbance": [
+        {
+          "square": "e2",
+          "phase": "lift",
+          "distance_mm": 13.823969312557782
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "grasp_dz": -0.004
+      },
+      "success": false,
+      "error_mm": 13.234798892209641,
+      "disturbed": [
+        "e2",
+        "f1"
+      ],
+      "reason": "placement error",
+      "precise": true,
+      "lift_mm": 88.68693929119675,
+      "first_disturbance": [
+        {
+          "square": "e2",
+          "phase": "lift",
+          "distance_mm": 18.726325706724403
+        },
+        {
+          "square": "f1",
+          "phase": "retreat",
+          "distance_mm": 10.240973345822155
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "grasp_dz": 0.004
+      },
+      "success": false,
+      "error_mm": 18.607869997620384,
+      "disturbed": [
+        "e2"
+      ],
+      "reason": "placement error",
+      "precise": false,
+      "lift_mm": 20.438871940944793,
+      "first_disturbance": [
+        {
+          "square": "e2",
+          "phase": "lift",
+          "distance_mm": 14.720978246015111
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "span_deg": -20
+      },
+      "success": true,
+      "error_mm": 1.277546698969018,
+      "disturbed": [],
+      "reason": "None",
+      "precise": true,
+      "lift_mm": 77.86671486787822,
+      "first_disturbance": [],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "span_deg": 20
+      },
+      "success": true,
+      "error_mm": 1.2828612577569276,
+      "disturbed": [],
+      "reason": "None",
+      "precise": true,
+      "lift_mm": 76.99753836066759,
+      "first_disturbance": [],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "place_dy": -0.002
+      },
+      "success": false,
+      "error_mm": 3.5772263506549327,
+      "disturbed": [
+        "e2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 85.51115157891087,
+      "first_disturbance": [
+        {
+          "square": "e2",
+          "phase": "lift",
+          "distance_mm": 13.823969312557782
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    },
+    {
+      "move": "e1e3",
+      "params": {
+        "place_dy": 0.002
+      },
+      "success": false,
+      "error_mm": 2.263306888663449,
+      "disturbed": [
+        "e2"
+      ],
+      "reason": "disturbed other pieces",
+      "precise": true,
+      "lift_mm": 85.51115157891087,
+      "first_disturbance": [
+        {
+          "square": "e2",
+          "phase": "lift",
+          "distance_mm": 13.823969312557782
+        }
+      ],
+      "nominal_span_options": [
+        {
+          "direction": [
+            0.0,
+            1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            0.0,
+            -1.0
+          ],
+          "margin_mm": 0.052923264821262
+        },
+        {
+          "direction": [
+            1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        },
+        {
+          "direction": [
+            -1.0,
+            0.0
+          ],
+          "margin_mm": -1.7278067482149642
+        }
+      ]
+    }
+  ]
+}

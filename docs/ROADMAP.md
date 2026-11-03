@@ -425,10 +425,16 @@ overall. One white-side follower at an 80 mm board gap and 60 mm riser. Rook
 mass is the single measured assembled value, 4.8 g including one M6 nut; all
 other assembled masses remain explicit ranges, not invented facts.
 
-**Tool decision:** the stock SO-101 pinch gripper is selected. The NormaCore
+**Historical tool decision (80/60 mount):** the stock SO-101 pinch gripper was selected. The NormaCore
 custom PLA parallel jaw was rejected for this 28 mm board: it failed 11/64
 squares in the path map and spot executions at e1, c1, d1 and h8. Reconsider it
-only after a revised jaw passes the same matrix.
+only after a revised jaw passes the same matrix. This dated decision is not a
+current-layout rejection: the [updated-offset rerun](PHASE8_UPDATED_OFFSETS.md)
+executes the unchanged current CAD jaw at the 90/30 mount, with **62/64 first
+pass and 64/64 paths after retries**. A span-only candidate passes **25/25
+crowded cases**. Keep that jaw geometry and improve validated span selection;
+do not infer a required mechanical redesign from the historical scan. Candidate
+parameters are not deployed defaults; the live v1.12.1 receipt remains 21/25.
 
 **Outcome:** a reproducible scene/configuration and test manifest representing
 our single physical follower, printed board/pieces, selected tool, wrist camera

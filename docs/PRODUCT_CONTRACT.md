@@ -1,5 +1,9 @@
 # Product digital-twin and acceptance contract
 
+**Historical baseline, not the current runtime mount/tool decision.** See the
+[2026-11-03 updated-offset Phase 8 rerun](PHASE8_UPDATED_OFFSETS.md) before
+recommending gripper changes. The dated config below is preserved for regression.
+
 **Frozen 2026-11-02. Phase 8.** The machine-readable source is
 [`hardware/product_twin.json`](../hardware/product_twin.json); the loader and
 validators are in [`chess_sim/product.py`](../chess_sim/product.py). The

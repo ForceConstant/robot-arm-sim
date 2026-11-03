@@ -1,5 +1,11 @@
 # Phase 8 — product twin qualification
 
+**Historical 80/60 stock-tool report.** The [updated-offset rerun](PHASE8_UPDATED_OFFSETS.md)
+supersedes this report for the current 90/30 mount. Audit correction: the old
+`tray_execution` reset the capture list each time and therefore repeated slot
+zero despite labelling rows 0–3. Its 4/4 is not evidence of four distinct actual
+destinations. The new rerun asserts and records each actual destination.
+
 Generated 2026-11-02T23:49:40.861813+00:00 from `887a7a60ba94`.
 
 **Phase 8 verdict: PASS.** The product twin is the frozen

@@ -1,5 +1,10 @@
 # Board/base layout optimization — 2026-11-03
 
+Follow-up: the [full Phase 8 rerun at these offsets](PHASE8_UPDATED_OFFSETS.md)
+qualifies 64/64 source paths with the current custom jaw and tests span-only
+corrections for crowded queen/king moves. Keep geometry; improve span selection.
+The tested candidate is not a deployed controller update.
+
 ## Selected current simulator layout
 
 - **90 mm outer board edge to arm base-frame origin; 30 mm riser/mount-datum height.**

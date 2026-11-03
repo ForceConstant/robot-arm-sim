@@ -13,6 +13,15 @@ user; the roadmap is not authorization to implement all future phases at once.
 
 ## Invariants
 
+- Current-mount Phase 8 rerun: `docs/PHASE8_UPDATED_OFFSETS.md` and
+  `reports/phase8_updated_*.json`. The unchanged CAD jaw passes 64/64 source
+  paths after retries; a span-only candidate passes 25/25 crowded cases. Keep
+  geometry; qualify finer span selection before redesigning fingers. Candidate
+  overrides are experiments, not live defaults. Four cardinal spans and a
+  conservative 2-D clearance heuristic do not prove mechanical impossibility.
+- Tray qualification must assert distinct actual target coordinates. A reset
+  clears capture bookkeeping and otherwise sends every capture to slot zero.
+
 - Current interactive layout: `hardware/current_layout.json` / `docs/LAYOUT_OPTIMIZATION.md`
   (one follower via `ROBOT_ARM_COUNT=1`, 90 mm board-edge-to-base-frame gap,
   30 mm riser, measured 3.2 mm slab,

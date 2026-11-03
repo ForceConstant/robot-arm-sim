@@ -1,5 +1,10 @@
 # Phase 8 product test matrix
 
+Current-mount rerun and gripper recommendation:
+[PHASE8_UPDATED_OFFSETS.md](PHASE8_UPDATED_OFFSETS.md). Use
+`scripts/requalify_phase8.py` for actual distinct tray destinations; the old
+runner's reset loop repeated slot zero. The dated matrix below is historical.
+
 **Frozen 2026-11-02.** Commands assume the repository root and the project venv.
 `ROBOT_PIECE_ASSETS` points at the private printed pack; geometry is not
 redistributed. The stock gripper is selected (see
