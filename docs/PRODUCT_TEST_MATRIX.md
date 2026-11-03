@@ -33,5 +33,5 @@ redistributed. The stock gripper is selected (see
   (the six first-pass failures in the execution sweep; those squares pass with
   king/rook, so they are grasp-reliability cases, not reach exclusions).
 - **Phase 11/12:** ACT runtime/training; no learned-policy claim here.
-- **Phase 16/17:** physical fixture, camera/arm calibration, guarded real
+- **Phase 17/18:** physical fixture, camera/arm calibration, guarded real
   manipulation. This phase does not touch the real arm.

@@ -135,4 +135,4 @@ and `docs/PHASE9_*` for the public summary.
   the checker-lattice fit, which was not accurate enough from wrist views
   (3/6 single-view fits, 3–9 mm origin error).
 * No move execution is tested here; this is perception and state inference only.
-* Simulated success never passes a physical gate (Phases 16–18).
+* Simulated success never passes a physical gate (Phases 17–19).

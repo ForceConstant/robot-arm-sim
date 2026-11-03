@@ -83,10 +83,11 @@ No next-stage physical work until the simulation release gate passes.
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
 - **15 — Pi/BC-250 service boundary against fake hardware.**
-- **16 — physical fixture and camera/arm calibration.**
-- **17 — guarded real manipulation and real-data adaptation.**
-- **18 — complete real games and product acceptance.**
-- **19–21 — simulation-first extensions:** loose-piece setup, avatar, emotes.
+- **16 — fabricate the physical board and piece set.**
+- **17 — physical fixture and camera/arm calibration.**
+- **18 — guarded real manipulation and real-data adaptation.**
+- **19 — complete real games and product acceptance.**
+- **20–22 — simulation-first extensions:** loose-piece setup, avatar, emotes.
 
 Dependencies: 8 → 9 → 10; 12 requires 10 + 11. **Phase 11 is split by
 dependency:**
@@ -104,7 +105,7 @@ dependency:**
   no defensible label set or error budget.
 
 13 consumes 9+10+12 (a measured rejection may select scripted control).
-14 → 15 → **hardware boundary** → 16 → 17 → 18. Extension software/simulation
+14 → 15 → **hardware boundary** → 16 → 17 → 18 → 19. Extension software/simulation
 qualification happens before its physical rollout, never by testing first on
 hardware. No new purchases, cloud uploads or host-driver changes are authorized
 by this planning document.
@@ -351,7 +352,7 @@ The largest-practical-local-model preference is preserved by the passing 35B VLM
 The earlier demand for final trained-controller qualification is **not claimed
 passed**: with large-network training no longer prerequisite to the selected
 architecture, final perception quality belongs to Phase 6, state inference to 7,
-learned-control qualification to 11–12, and physical readiness to 16–18. These remain open.
+learned-control qualification to 11–12, and physical readiness to 17–19. These remain open.
 The pilot does not replace our calibrated controller or qualify MolmoAct2,
 LeRobot/PyTorch training, continuous VLM service, or a physical robot.
 
@@ -755,7 +756,37 @@ Depends on 14; all captures/feedback/servos are mocked or simulated.
   can be built/tested without opening actual serial devices. Physical deployment
   starts only at 16; this phase does not authorize a Pi install or reflash.
 
-## Phase 16 — physical commissioning and measured calibration
+## Phase 16 — fabricate the physical board and piece set
+
+**Outcome:** the physical board and all 32 pieces exist to the frozen twin's
+dimensions, with markers printed and ballast fitted, so the commissioning in
+Phase 17 calibrates a known object instead of a prototype. Needs no software, so
+it can run in parallel with Phases 9–15; it must finish before 17.
+
+- Freeze the board print: 28 mm squares, 15 mm labelled border, 3.2 mm slab.
+  Choose the marker placement from [`BOARD_MARKER_LAYOUT.md`](BOARD_MARKER_LAYOUT.md)
+  — mat-mounted at ±152 mm, or border-mounted only after the mount
+  re-qualification that a wider border requires.
+- Print the full 32-piece set at the recorded scale, fit the M6 ballast, then
+  weigh every type and record mass, centre-of-mass height and upright
+  stability. The twin currently has one measured type (rook, 4.8 g including
+  its nut) and explicit ranges for the rest; replace the ranges with
+  measurements and update the twin.
+- Dimension check against `hardware/product_twin.json` and
+  `hardware/current_layout.json`: square pitch, slab thickness, overall size,
+  marker centres, quiet-zone width, piece footprint and height.
+- QC the printed parts: board flat and unwarped, pieces stand unaided, M6
+  thread starts flush at the pocket floor, labels legible, no stringing in the
+  gripper contact band.
+- Verify the marker sheet decodes at the planned scan heights, with the chosen
+  camera once it exists, otherwise with a phone camera and the saved
+  intrinsics.
+- **Exit:** measured board and piece dimensions inside the twin's tolerance; all
+  32 pieces assembled and weighed; markers decode at 6+ px per module; a
+  measurement/photo receipt per item. Physical jaw fit and calibration stay in
+  Phase 17.
+
+## Phase 17 — physical commissioning and measured calibration
 
 **Outcome:** validate the selected fixture, wrist camera and local executor on
 real hardware. **Hard prerequisite: 14–15 passed.** Existing LeLab assembly and
@@ -774,7 +805,7 @@ teleoperation remain self-reported; earlier bench gates are still required.
   repeated light-object picks and full empty-board path verification. Return
   discrepancies to the simulator instead of compensating with oracle constants.
 
-## Phase 17 — guarded real pick/place and adaptation
+## Phase 18 — guarded real pick/place and adaptation
 
 **Outcome:** transfer the simulated skills to actual pieces. Depends on 16.
 
@@ -790,7 +821,7 @@ teleoperation remain self-reported; earlier bench gates are still required.
   actions and no undetected failure. Every fault stops/reconciles correctly;
   failed gates return to simulation/data refinement, not longer live games.
 
-## Phase 18 — physical complete games and final acceptance
+## Phase 19 — physical complete games and final acceptance
 
 **Outcome:** the final working core chess robot. Depends on 17.
 
@@ -806,11 +837,11 @@ teleoperation remain self-reported; earlier bench gates are still required.
   limitations. No dependence on a second arm, debug overhead camera, Internet
   service or unqualified training stack for normal play.
 
-## Phase 19 — autonomous setup from loose pieces
+## Phase 20 — autonomous setup from loose pieces
 
 **Outcome:** inventory, identify, grasp and arrange all 32 pieces. First qualify
 software in simulation; physical rollout depends on 18 and the same new-feature
-gates as 16–18. This is not required for the human-confirmed-setup core release.
+gates as 17–19. This is not required for the human-confirmed-setup core release.
 
 - Start with upright separated, unsorted pieces in a reachable staging area;
   recognize type/color (shape versus visible identifiers is a measured decision),
@@ -822,7 +853,7 @@ gates as 16–18. This is not required for the human-confirmed-setup core releas
   missing/duplicate/wrong-type placements left undetected, with success rate,
   interventions and unreachable/unknown-object refusal reported.
 
-## Phase 20 — screen avatar and bounded conversation
+## Phase 21 — screen avatar and bounded conversation
 
 **Outcome:** game-aware display on an existing screen first, no purchase implied.
 Prototype/qualify with simulated game events before hardware rollout.
@@ -832,10 +863,10 @@ Prototype/qualify with simulated game events before hardware rollout.
 - **Exit:** event/replay tests for normal play, uncertainty, recovery and game-over;
   display/model failures never stall or override the chess/motion coordinator.
 
-## Phase 21 — safe game-aware arm emotes
+## Phase 22 — safe game-aware arm emotes
 
 **Outcome:** a collision-checked empty-gripper gesture library. Qualify simulation
-first; physical rollout requires measured gesture volume and Phase 18 readiness.
+first; physical rollout requires measured gesture volume and Phase 19 readiness.
 
 - Coordinator arbitrates gestures against task motion; require hands clear,
   empty tool, local limits/watchdog, cooldowns/hysteresis and robot-perspective
