@@ -217,6 +217,10 @@ def main() -> int:
                       for i, index in enumerate(chosen)],
             "coverage": [int(v) for v in counts],
             "covered_squares": int((counts >= args.min_views).sum()),
+            # Per-square clear-view bitmap per chosen pose, so a different
+            # min_views can be re-greedied without re-solving any pose.
+            "clear_rows": ["".join("1" if flag else "0" for flag in rows[index])
+                           for index in chosen],
         }
         out = Path(args.out)
         out.write_text(json.dumps(plan, indent=2) + "\n")
