@@ -344,7 +344,7 @@ def main():
                 "camera": args.camera, "dataset": "XvKuoMing/so101_chess",
                 "dataset_revision": "969ae3a886b2038dfa349a768cbf8a9d57dde583"}, ckpt_path)
 
-    reloaded = load_act("/tmp/modeling_act.py")(config()).cuda()
+    reloaded = load_act("/tmp/modeling_act.py")(config()).to(dev)
     rck = torch.load(ckpt_path, map_location=dev, weights_only=False)
     reloaded.load_state_dict(rck["model"])
     reloaded.eval()
