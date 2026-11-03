@@ -536,7 +536,9 @@ route that cannot train locally is recorded as a rejected path with its measured
 blocker, not as a pass.
 
 **Status: in progress.** The execution-runtime sub-gate is measured (see
-[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)). Pinned
+[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)). Local training routes, the vision-policy
+gaps and the kernel-vs-userspace findings are tracked in
+[PHASE11_LOCAL_TRAINING_PATHS.md](PHASE11_LOCAL_TRAINING_PATHS.md). Pinned
 full-size LeRobot ACT (51,565,446 parameters, ResNet-18, 224×224, 30-step
 chunks, VAE, FP32) passed batch-1/2 initialized steps, 20 AdamW updates on
 audited recordings, exact checkpoint reload, a bit-identical resumed update and
