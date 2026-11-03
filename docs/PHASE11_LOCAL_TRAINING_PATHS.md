@@ -106,9 +106,10 @@ no merge signal. Bazzite would need to carry them deliberately.
 ## Cost-ordered ladder (the actual plan)
 
 1. **CPU threads** — already trains ACT; re-measure at 8 threads rather than 4.
-2. **GTX 1060 3 GB** — fit test at batch 1/2/4/8 in FP32 (Pascal FP16 compute is
-   1/32–1/64 rate), with live-simulator VRAM/SM contention stated. Needs a
-   throwaway CUDA container (approval outstanding).
+2. **GTX 1060 3 GB — measured 2026-11-03.** Full ACT fits at batch 8 under
+   1.1 GiB reserved (2.94 GiB card, simulator rendering), 74.9 samples/s vs 3.8
+   on CPU. Throwaway container, synthetic tensors, torch 2.9.1 (not the pinned
+   2.8.0). Next: real dataloader + video decode, then a learning-curve run.
 3. **Tinygrad/Vulkan** — small vision model first; price the missing ACT
    operators separately.
 4. **Patched ROCm** — four required pieces: kernel patch set (PASID/runlist

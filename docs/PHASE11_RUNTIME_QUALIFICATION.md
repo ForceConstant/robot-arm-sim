@@ -122,6 +122,36 @@ to certify. This is why the measured latency is reported as a **runtime timing
 gate only** and cannot be promoted to a motion-safety claim. Phase 15 owns
 capture timestamps, sequence IDs, expiry and the Pi-local watchdog.
 
+## Small-GPU fit test — GTX 1060 3 GB (2026-11-03)
+
+Run on the Unraid host in a throwaway container (image
+`ghcr.io/forceconstant/pdf2epub-nvidia:latest`, `torch 2.9.1+cu126`, CUDA 12.6,
+`--gpus all` via the nvidia runtime, 8 GiB host RAM cap, 4 CPUs), with the live
+`robot_arm` simulator still owning its share of the card. **Synthetic tensors**
+were used: this measures graph fit and throughput, not learning.
+
+| Batch | Peak allocated | Peak reserved | Warm step | Samples/s |
+| --- | --- | --- | --- | --- |
+| 1 | 835.6 MiB | 922 MiB | 0.055 s | 18.2 |
+| 2 | 835.7 MiB | 928 MiB | 0.059 s | 33.8 |
+| 4 | 836.3 MiB | 942 MiB | 0.075 s | 53.2 |
+| 8 | 914.1 MiB | 1072 MiB | 0.107 s | 74.9 |
+
+- Full-size ACT (51,565,446 parameters, 196.7 MiB weights) fits at **batch 8
+  under 1.1 GiB reserved**, on a card reporting 2.94 GiB total and 2.0 GiB free
+  at start because the simulator was rendering.
+- Throughput at batch 8 is **~75 samples/s**, about **20× the BC-250 CPU**
+  measurement (3.8 samples/s at batch 2). A 70k-step run at batch 8 is roughly
+  **2.1 hours** of optimiser time, before data loading.
+- Contention is real but not fatal at these sizes; larger batches or a second
+  process would need the simulator paused.
+
+Limits: torch 2.9.1 is not the pinned 2.8.0, so this is a fit/throughput result
+rather than a reproduction of the CPU receipt; synthetic inputs bypass the
+dataloader and video decode, which will be the next bottleneck; no convergence,
+held-out quality or checkpoint reload was tested here; and only the control model
+was exercised — the vision model still needs its own fit test.
+
 ## Rejected routes
 
 - **Tinygrad/WebGPU ACT port.** All 51.6M parameters transferred to the
