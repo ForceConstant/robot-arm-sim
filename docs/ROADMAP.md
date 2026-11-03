@@ -3,10 +3,11 @@
 **Updated 2026-11-03. Canonical delivery plan.** This replaces the old priority
 list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
 Phase 11 runtime lane retain their identifiers and measured, scope-limited
-completion evidence below. **Next product phase: Phase 9 — in progress (registration passes, turn
-resolution 94.0%).** Phase 11 is **reopened**: its execution-runtime receipt is
-measured, but a locally runnable training path for both the control and vision
-models is still required (scope change 2026-11-03). Phases 10 and 12–21 are
+completion evidence below. **Phase 9 is complete (2026-11-03) for a stated
+envelope at 94.0% turn resolution; next product phase: Phase 10.** Phase 11 is
+**reopened**: its execution-runtime receipt is measured, but a locally runnable
+training path for both the control and vision models is still required (scope
+change 2026-11-03). Phases 10 and 12–21 are
 planned, not completed.
 Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
@@ -73,8 +74,8 @@ No next-stage physical work until the simulation release gate passes.
   baseline; reusable corrections; off-center targeting; local platform/data;
   sparse fixed-rig perception; sparse move inference. Limits remain below.
 - **8 — product digital twin and acceptance contract — complete 2026-11-02.**
-- **9 — wrist-only board calibration and full-board observation — in progress
-  (registration pass, turn resolution 94.0%).**
+- **9 — wrist-only board calibration and full-board observation — complete
+  2026-11-03 for the stated envelope (94.0% turn resolution on crowded boards).**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — local training and execution for control and vision models — in
   progress: 11a infrastructure partly demonstrated, 11b/11c blocked on 9 + 10.**
@@ -484,18 +485,23 @@ hardware commissioning session.
 
 ## Phase 9 — wrist-only calibration and complete-board perception
 
-**Status: in progress (2026-11-03).** See
-[`PHASE9_WRIST_ONLY.md`](PHASE9_WRIST_ONLY.md) for the implementation, envelope,
-numbers and open limits. Registration from the printed marker mat passes the
-2 mm / 1° gate on 8/8 held-out sessions (worst 0.49 mm, 0.06°) with zero false
-move confirmations in 200 turns. Adding three tilted scan poses raised turn
-resolution from 72.5% to **94.0%** (6 poses, every square clear in ≥3, median 5),
-still one point below the 95% exit gate. Two further attempts were measured and
-rejected: an 8-pose plan at >=4 clear views per square (92.0%) and dropping
-per-view votes that match the empty reference (39.5%). Phase 9 remains open and
-needs a decision: accept 94.0% with a named limit and move to Phase 10, or invest
-in self-model occlusion (project the known arm geometry to exclude its own
-shadow) or a different wrist mount. See `PHASE9_WRIST_ONLY.md`.
+**Status: complete 2026-11-03 for a stated envelope — owner decision (Brian).**
+See [`PHASE9_WRIST_ONLY.md`](PHASE9_WRIST_ONLY.md) for the implementation,
+envelope, numbers and limits. Registration from the printed marker mat meets the
+2 mm / 1° target on 8/8 held-out sessions (worst 0.80 mm, 0.09°) with zero false
+move confirmations in 200 turns and 16/16 invalid rearrangements rejected.
+Turn resolution is **94.0%** (188/200) from six scan poses — three tilted — with
+every square clear in ≥3 views (median 5), up from 72.5% for vertical-only poses.
+
+**Bounded acceptance:** the initial 95% exit target was **not** reached. Brian
+accepted 94.0% as the qualified envelope on 2026-11-03 on condition that the
+limit is stated: crowded 32-piece boards can leave 15–61 squares `unknown`, so
+roughly one turn in sixteen abstains (`insufficient`) rather than guessing. Two
+variants were measured and rejected — an 8-pose plan at ≥4 clear views per
+square (92.0%) and dropping per-view votes that match the empty reference
+(39.5%) — and are recorded so they are not repeated. Self-model occlusion
+(projecting the known arm geometry to exclude its own shadow) is queued as a
+Phase 10 refinement; it is the principled fix for the residual `unknown` band.
 
 **Outcome:** locate a shifted board relative to the arm and obtain trustworthy
 observations using only wrist images and measured joints. Depends on 8.
@@ -527,6 +533,10 @@ clearance-aware move, not a square-center assumption. Depends on 8–9.
 - Add segmentation/keypoints/base/contact geometry, piece-specific grasp heights,
   knight yaw/approach choices and uncertainty; compare known geometry with extra
   wrist views. Reject unreachable, uncertain or neighbor-colliding grasps.
+- **Queued from Phase 9 (2026-11-03): self-model occlusion.** Project the known
+  arm geometry into each wrist frame so the arm's own shadow abstains instead of
+  voting, then remeasure crowded-board turn resolution against the 95% target.
+  Phase 9 closed at 94.0% with that gap named rather than hidden.
 - Implement observe → approach → re-observe → grasp → verify lift → transport →
   place → retract → verify. Tune physical closure/contact parameters honestly;
   retain collisions/slips, not welds, teleportation or forgiving success labels.

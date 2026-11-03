@@ -1,9 +1,10 @@
 # Phase 9 — wrist-only calibration and complete-board perception
 
-**Status: in progress (2026-11-03).** Registration and the scan/calibration
-software are complete and measured inside the stated envelope. Turn resolution
-reached **94.0%** with the oblique scan plan — one point below the 95% gate — so
-Phase 9 stays open.
+**Status: complete 2026-11-03 for a stated envelope (owner decision, Brian).**
+Registration, scan planning, calibration and turn inference are implemented and
+measured. Turn resolution is **94.0%**, accepted in place of the initial 95%
+target with the limits below named explicitly; the residual `unknown` band is
+queued as a Phase 10 refinement (self-model occlusion).
 
 ## What was built
 
@@ -44,7 +45,7 @@ Turns (`--sessions 8 --turns 25`, 200 held-out turns, oblique plan):
 
 | Metric | Result | Gate |
 | --- | --- | --- |
-| Resolved after ≤3 scans | 188/200 (94.0%) | ≥95% — **fail by 1 point** |
+| Resolved after ≤3 scans | 188/200 (94.0%) | 95% target — **accepted at 94.0%** |
 | False move confirmations | 0/200 | 0 — **pass** |
 | Abstentions | 13, all `insufficient` | — |
 | Turns resolving on the first scan | 187/200 | — |
@@ -83,11 +84,18 @@ single "unsafe" occluded case returned the correct move rather than abstaining:
 the restricted pose subset still observed the changed squares, so it is a
 case-construction limit, not a false confirmation.
 
-## Why it is not complete
+## Limits of the accepted envelope
+
+The 95% target was not reached. Brian accepted 94.0% on 2026-11-03 provided the
+limit is stated: crowded 32-piece boards can leave 15–61 squares `unknown`, and
+about one turn in sixteen then abstains (`insufficient`) instead of guessing.
+No wrong move was ever confirmed, so the failure mode is abstention, not error.
+
+## Why 95% was not reached
 
 1. **One point short.** 94.0% needs 190/200; the shortfall is the 13 crowded
-   boards whose remaining `unknown` band is 15–61 squares. More poses or a
-   better fusion weight (per-view patch quality) are the obvious next levers.
+   boards whose remaining `unknown` band is 15–61 squares. More poses did not
+   help (measured below); the next lever is excluding the arm's own shadow.
 2. **Occluded-case construction.** Restricting the scan to poses that hide a
    square is measured by segmentation coverage; a square can still be readable
    through a grazing patch, so such cases occasionally resolve correctly

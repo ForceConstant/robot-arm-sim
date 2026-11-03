@@ -23,14 +23,16 @@ user; the roadmap is not authorization to implement all future phases at once.
   conservative 2-D clearance heuristic do not prove mechanical impossibility.
 - Tray qualification must assert distinct actual target coordinates. A reset
   clears capture bookkeeping and otherwise sends every capture to slot zero.
-- Phase 9 (in progress): wrist-only registration uses the printed 4-marker mat
+- Phase 9 (complete 2026-11-03 for a stated envelope; 94.0% turn resolution
+  accepted by Brian, self-model occlusion queued to Phase 10): wrist-only
+  registration uses the printed 4-marker mat
   (`chess_sim/fiducials.py`, mat thickness `BoardConfig.mat`), a saved
   hand-eye/lens calibration (`chess_sim/wrist_calibration.py`) and measured
   joints. Never feed simulator camera or board truth to inference; the checker
   fit stays only as a marker-free ablation. Empty references are epoch-bound and
   must be re-captured after any re-registration. Measured: registration 8/8
   within 2 mm/1°, 0 false confirmations in 200 turns, turn resolution 94.0%
-  (gate 95%) — see `docs/PHASE9_WRIST_ONLY.md`.
+  (95% target, gap named) — see `docs/PHASE9_WRIST_ONLY.md`.
 
 - Phase 11 runtime evidence: `docs/PHASE11_RUNTIME_QUALIFICATION.md`. This is a
   sub-gate receipt: Phase 11 also requires local training of control **and**
