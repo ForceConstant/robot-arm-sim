@@ -201,6 +201,16 @@ deadband (0 % until ~80 °C) and tops out near 60 %, so the card stabilises at
 cooling path — dust, aged paste, restricted airflow, or a conservative fan
 profile — not a dead fan.
 
+**Fan-control feasibility (2026-11-03):** there is no fan control surface
+available from the container. `nvidia-settings` is absent and there is no X
+server; the driver exposes no NVIDIA `hwmon` PWM node (only the CPU `k10temp`
+hwmon exists), and `nvidia-smi` can report fan speed but not set it. The only
+software lever is a power cap (`power.limit` 60–140 W, default 120 W), which
+needs root on the Unraid host and affects the simulator's GPU too. It is also
+unlikely to be sufficient: the card already sits at 82–83 °C at only ~40 W with
+the fan at ~60 %, which points at degraded die-to-heatsink contact rather than
+insufficient fan speed.
+
 **Consequence for Phase 11a:** a *continuous* batch-8 training soak is not
 achievable within an 85 °C guard on this card. Options, in order of preference:
 physical cooling maintenance (clean/paste/airflow), a host-side fan curve or power
