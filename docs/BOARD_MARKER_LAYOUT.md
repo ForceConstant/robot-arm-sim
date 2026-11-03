@@ -37,9 +37,11 @@ projects to ~44.7 px (7.4 px/module) and a 30 mm marker to ~33.5 px
   warm start (same target, no tool offset) and a fixed set of fallback postures,
   because the local QP can miss a reachable target from one seed. That lifted
   the all-types scan from 52/64 to **56/64** on the unchanged layout. The eight
-  remaining squares fail per *piece type*, not per square: every one is
-  reachable from an arbitrary posture (b1 at 0.0 mm), so what remains is a
-  global IK fallback rather than a geometric limit.
+  remaining squares fail per *piece type* and the failure is labelled
+  ``IK leg``: king at b1/g1/d2/e2, queen at c1/d1/e1/f1, bishop at d1/e1/f1.
+  That is the carry/approach leg of the path for tall pieces at the near rank,
+  not the grasp point — a bounded global seed search was added and did not
+  change the count, because the grasp point already solves.
 
 ## What that means for the overhang argument
 

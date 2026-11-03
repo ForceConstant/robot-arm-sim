@@ -720,9 +720,8 @@ class ChessSimEnv:
         seeds += [limits[:, 0] + u * (limits[:, 1] - limits[:, 0])
                   for u in self.SPAN_RANDOM_SEEDS]
         try:
-            for direction, margin in self.span_options(point[:2], exclude):
-                if margin < 0:
-                    break
+            ordered = [(d, m) for d, m in self.span_options(point[:2], exclude) if m >= 0]
+            for direction, _ in ordered:
                 # Warm start: the same target with no tool offset often lands in
                 # the basin the offset solve needs, at the cost of one extra solve.
                 warm = self.ik.solve(self.data, point, offset=np.zeros(3), span=direction)
