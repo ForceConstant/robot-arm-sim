@@ -490,8 +490,12 @@ numbers and open limits. Registration from the printed marker mat passes the
 2 mm / 1° gate on 8/8 held-out sessions (worst 0.49 mm, 0.06°) with zero false
 move confirmations in 200 turns. Adding three tilted scan poses raised turn
 resolution from 72.5% to **94.0%** (6 poses, every square clear in ≥3, median 5),
-still one point below the 95% exit gate. Phase 9 remains open: close the last
-crowded-board `unknown` band before Phase 10.
+still one point below the 95% exit gate. Two further attempts were measured and
+rejected: an 8-pose plan at >=4 clear views per square (92.0%) and dropping
+per-view votes that match the empty reference (39.5%). Phase 9 remains open and
+needs a decision: accept 94.0% with a named limit and move to Phase 10, or invest
+in self-model occlusion (project the known arm geometry to exclude its own
+shadow) or a different wrist mount. See `PHASE9_WRIST_ONLY.md`.
 
 **Outcome:** locate a shifted board relative to the arm and obtain trustworthy
 observations using only wrist images and measured joints. Depends on 8.
