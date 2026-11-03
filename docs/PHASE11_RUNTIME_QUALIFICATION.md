@@ -218,7 +218,14 @@ card is at its thermal ceiling at one-third of the batch-8 rate.
 
 **Consequence for Phase 11a:** a *continuous* batch-8 training soak is not
 achievable within an 85 °C guard on this card, and neither is a reduced-batch or
-duty-cycled envelope. Options, in order of preference:
+duty-cycled envelope.
+
+**Wrist stream validated (2026-11-03):** as the wrist videos arrived, a CPU smoke
+run (2 episodes, 8 samples, 2 steps, batch 2) built samples from
+`observation.images.wrist`, trained, and reloaded the checkpoint with exact
+predictions. Both camera paths now exercise the same harness. Ingest reached
+11.56 of 15.7 GB with 13 wrist files present; the remainder is still
+transferring. Options, in order of preference:
 physical cooling maintenance (clean/paste/airflow), a host-side fan curve or power
 cap (needs operator access), or a duty-cycled training envelope measured to stay
 under the limit. A duty-cycled run (batch 4, 60 s train / 90 s cool, 84 °C guard)
