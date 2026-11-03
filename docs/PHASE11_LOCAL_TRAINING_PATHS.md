@@ -103,6 +103,22 @@ project. Kernel Bugzilla has **no** entries for BC-250 or gfx1013.
 Both kernel items are single-author reports with no reviewer traffic, so there is
 no merge signal. Bazzite would need to carry them deliberately.
 
+## Dependencies on Phases 9 and 10
+
+Phase 11 is not one block. Infrastructure can proceed now; the model work cannot
+be separated from the contracts Phases 9 and 10 produce.
+
+- **Unblocked (11a):** dataset ingestion, wrist-stream decode, training harness,
+  checkpoint/reload, GPU fit and thermal tests. Current evidence lives here.
+- **Needs Phase 9 + 10 (11b control, 11c vision):** the wrist observation
+  contract, registration/occlusion/abstention behaviour, grasp and task buckets,
+  and piece pose/orientation targets. Training before those exist means training
+  on the wrong labels and distribution — the pilot's held-out failure (944.5 vs
+  465.6 deg²) would simply repeat at greater cost.
+- **Do not invert the order:** Phase 9/10 may *use* Phase 11's training
+  capability as a tool, but they do not depend on 11 completing, and Phase 12
+  still requires 10 + 11.
+
 ## Cost-ordered ladder (the actual plan)
 
 1. **CPU threads** — already trains ACT; re-measure at 8 threads rather than 4.

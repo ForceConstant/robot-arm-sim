@@ -87,7 +87,21 @@ No next-stage physical work until the simulation release gate passes.
 - **18 — complete real games and product acceptance.**
 - **19–21 — simulation-first extensions:** loose-piece setup, avatar, emotes.
 
-Dependencies: 8 → 9 → 10; 11 can run after 8, with 12 requiring 10+11.
+Dependencies: 8 → 9 → 10; 12 requires 10 + 11. **Phase 11 is split by
+dependency:**
+
+- **11a — infrastructure (after 8, unblocked):** dataset ingestion, wrist-stream
+  decoding, training harness, checkpoint/reload, fit and thermal tests on the
+  1060 and CPU. This is where the current work sits; it does not need 9 or 10.
+- **11b — control-policy training (needs 9 + 10):** the corpus must use Phase 9's
+  wrist observation contract and Phase 10's grasp/task buckets and pose targets.
+  Training before those exist means training against the wrong distribution and
+  repeating it.
+- **11c — vision-model training (needs 9 + 10):** registration/occlusion/
+  abstention behaviour comes from 9; piece type, in-square position/orientation
+  and crowding buckets come from 10. Selecting or training the model earlier has
+  no defensible label set or error budget.
+
 13 consumes 9+10+12 (a measured rejection may select scripted control).
 14 → 15 → **hardware boundary** → 16 → 17 → 18. Extension software/simulation
 qualification happens before its physical rollout, never by testing first on
@@ -546,11 +560,13 @@ an independent inference-only reload on the BC-250 **CPU**; 30-minute scheduled
 inference ran 1201 cycles over 30.0 min with p95 101 ms and no deadline or swap-growth violations; capture-age admission remains unverified.
 required deliverables for the reopened phase:
 
-1. **Control model.** Goal-conditioned ACT trained end-to-end on a local target,
+1. **Control model (11b — prerequisite: Phase 9 + 10).** Goal-conditioned ACT
+   trained end-to-end on a local target,
    from audited task data through checkpoint reload, with measured samples/s,
    peak memory, thermals and a learning-curve sanity check. A finite 20-step
    pilot is not a training path.
-2. **Vision model — decide it here, for the worst case.** No single vision
+2. **Vision model (11c — prerequisite: Phase 9 + 10) — decide it here, for the
+   worst case.** No single vision
    policy has been chosen for the future tasks. The current floor is: geometric
    board registration (not learned), a 32-unit NumPy MLP for occupancy/colour
    over 34 patch features (trained locally on CPU), and legal-successor
@@ -563,7 +579,8 @@ required deliverables for the reopened phase:
    memory, thermal and held-out error against the Phase 6/9/10 budgets, or
    record a measured frozen-model + calibrated-geometry decision that meets the
    same budgets. "The MLP already trains on CPU" is the floor, not the answer.
-3. **Small-GPU fit test.** The GTX 1060 3 GB is a first-class candidate: fit and
+3. **Small-GPU fit test (11a — no dependency beyond 8; measured 2026-11-03).**
+   The GTX 1060 3 GB is a first-class candidate: fit and
    step time at batch 1/2/4/8, FP32 (Pascal FP16 compute is 1/32–1/64 rate), with
    the live simulator's VRAM/SM contention stated rather than assumed away.
 4. **Cost-ordered ladder.** Try CPU threads → GTX 1060 → Tinygrad/Vulkan →
