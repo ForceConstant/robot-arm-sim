@@ -77,7 +77,7 @@ No next-stage physical work until the simulation release gate passes.
   (registration pass, turn resolution 94.0%).**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — local training and execution for control and vision models — in
-  progress (runtime receipt measured 2026-11-03; local training paths open).**
+  progress: 11a infrastructure partly demonstrated, 11b/11c blocked on 9 + 10.**
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -535,90 +535,96 @@ clearance-aware move, not a square-center assumption. Depends on 8–9.
   per-type/task/crowding results, not only a favorable aggregate. Physical
   realism and Phase 14 full-game tests remain separate gates.
 
-## Phase 11 — qualify local training and execution for control and vision models
+## Phase 11 — local training and execution for control and vision models
 
-**Outcome:** a measured runtime/model selection **and a locally runnable training
-path for both the control policy and the vision model** for phases 12–18, not a
-promise that nominal model memory fits. Depends on 8; may run beside vision
-development.
+**Dependencies: Phase 8 (product twin) for 11a; Phases 9 and 10 for 11b and 11c —
+11a can start immediately after 8, but neither model can be trained for real
+until Phase 9 fixes the wrist observation/registration/abstention contract and
+Phase 10 fixes the grasp buckets, task families and piece pose/orientation
+targets.** Keep that order: training before those contracts exist means training
+on the wrong distribution, and Phase 12 already requires 10 + 11 anyway, so the
+gate costs no schedule.
 
-**Scope change — 2026-11-03 (Brian): the phase is not complete.** Choosing an
-execution runtime is necessary but not sufficient. Phase 11 must demonstrate
-training **on our own services** — BC-250, HTPC GTX 1060, or CPU — for both a
-control policy and a vision model. Cloud training is explicitly out of scope. A
+**Outcome:** a measured execution runtime **and a locally runnable training path
+for both the control policy and the vision model**, for Phases 12–18. Local
+services only — BC-250, HTPC GTX 1060, CPU. Cloud training is out of scope. A
 route that cannot train locally is recorded as a rejected path with its measured
-blocker, not as a pass.
+blocker, never as a pass.
 
-**Status: in progress.** The execution-runtime sub-gate is measured (see
-[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)). Local training routes, the vision-policy
-gaps and the kernel-vs-userspace findings are tracked in
-[PHASE11_LOCAL_TRAINING_PATHS.md](PHASE11_LOCAL_TRAINING_PATHS.md). Pinned
-full-size LeRobot ACT (51,565,446 parameters, ResNet-18, 224×224, 30-step
-chunks, VAE, FP32) passed batch-1/2 initialized steps, 20 AdamW updates on
-audited recordings, exact checkpoint reload, a bit-identical resumed update and
-an independent inference-only reload on the BC-250 **CPU**; 30-minute scheduled
-inference ran 1201 cycles over 30.0 min with p95 101 ms and no deadline or swap-growth violations; capture-age admission remains unverified.
-required deliverables for the reopened phase:
+**Status: in progress — 11a partly demonstrated, 11b and 11c not started.**
 
-1. **Control model (11b — prerequisite: Phase 9 + 10).** Goal-conditioned ACT
-   trained end-to-end on a local target,
-   from audited task data through checkpoint reload, with measured samples/s,
-   peak memory, thermals and a learning-curve sanity check. A finite 20-step
-   pilot is not a training path.
-2. **Vision model (11c — prerequisite: Phase 9 + 10) — decide it here, for the
-   worst case.** No single vision
-   policy has been chosen for the future tasks. The current floor is: geometric
-   board registration (not learned), a 32-unit NumPy MLP for occupancy/colour
-   over 34 patch features (trained locally on CPU), and legal-successor
-   comparison for move inference (no learning). **Undecided and therefore
-   worst-case:** (a) opponent-move change detection robust to occlusion and
-   shadows, (b) per-piece type plus in-square position and orientation —
-   including knight yaw — needed by Phase 10, and (c) wrist-only board
-   registration under real occlusion (Phase 9). This phase must select a
-   candidate for (a)–(c) and either train it locally with measured throughput,
-   memory, thermal and held-out error against the Phase 6/9/10 budgets, or
-   record a measured frozen-model + calibrated-geometry decision that meets the
-   same budgets. "The MLP already trains on CPU" is the floor, not the answer.
-3. **Small-GPU fit test (11a — no dependency beyond 8; measured 2026-11-03).**
-   The GTX 1060 3 GB is a first-class candidate: fit and
-   step time at batch 1/2/4/8, FP32 (Pascal FP16 compute is 1/32–1/64 rate), with
-   the live simulator's VRAM/SM contention stated rather than assumed away.
-4. **Cost-ordered ladder.** Try CPU threads → GTX 1060 → Tinygrad/Vulkan →
-   patched ROCm; stop at the first route that trains *both* models end-to-end,
-   and keep every rejected route with its receipt.
-5. **Host-change boundary.** No kernel, firmware or driver change without a
-   separate written change set and rollback, in a maintenance window.
+### 11a — infrastructure and execution (after Phase 8; unblocked)
 
-**Exit (revised):** both the control and the vision model train locally, with
-reproducible receipts (throughput, memory, thermal, reload, held-out sanity), or
-a specific local route is rejected with a measured blocker and a documented
-fallback. Execution-runtime evidence alone does not close this phase.
+Scope: dataset ingestion (public LeRobot v3, including the wrist stream),
+training harness, checkpoint/reload, GPU fit tests, and thermal soak on the
+1060 and the BC-250.
 
-Patched ROCm was not
-attempted because it needs kernel/firmware/driver changes. This selects a
-runtime, not a controller: Phase 12 still owns training and paired comparison.
+Measured 2026-11-03:
 
-- Pin exact ACT implementation, backbone, image size, chunk length, goal encoding,
-  precision and runtime. Test full initialized forward/backward/optimizer steps
-  at batch 1–2, finite gradients, save/reload and exact resumed update; then an
-  actual audited task-data pilot. Tinygrad/WebGPU toy-network success is not ACT.
-- Route A: investigate patched ROCm/PyTorch compatibility without changing the
-  gaming kernel/firmware/driver stack under this plan. Host changes need separate
-  authorization. Route B: assess a Tinygrad/WebGPU ACT port, accounting for the
-  vision backbone, transformer, loss, optimizer and checkpoint parity—not just
-  a small MLP. CPU is a measurable fallback, not assumed sufficiently fast.
-- In the same capability study, test the largest practical local VLA/action
-  artifact, stepping down on measured operator/memory/latency/thermal failure.
-  Keep frozen VLM scene interpretation separate from precision action control.
-- Benchmark final local preprocessing → inference → action decoding, warm-up,
-  p50/p95, joint/camera transport and chunk replenishment under expected concurrent
-  load. Define chunk execution period and memory reserve first. Delayed/stale
-  results must trigger bounded hold/replan; the Pi servo loop stays local.
-- **Exit:** reproducible compatibility/resource receipt and selected runtime or
-  explicit rejected paths. Sustain ≥30 minutes without thermal cutoff, swap
-  growth or missing action-buffer deadlines under the selected schedule. The
-  current paced 1.45–1.50 s VLM pass / unpaced 85°C failure does not qualify this.
-  No training-time estimate until measured throughput exists.
+- **CPU ACT** (51,565,446 parameters; ResNet-18, 224×224, 30-step chunks, VAE,
+  FP32): batch-1/2 initialized steps, 20 AdamW updates on audited recordings,
+  exact checkpoint reload, bit-identical resumed update, independent
+  inference-only reload. 30-minute scheduled inference: 1201 cycles, p95 101 ms,
+  no deadline or swap-growth violations; capture-age admission remains
+  unverified because the simulator publishes no capture timestamp.
+- **GTX 1060 3 GB**: full ACT fits at batch 8 under 1.07 GiB reserved with the
+  live simulator rendering; 74.9 samples/s on synthetic tensors and **62.6
+  samples/s** on real data.
+- **Real-data pilot**: public `so101_chess` slice (25 of 6,095 episodes, top
+  camera), 400 samples, 200 steps, loss 85.0 → 4.09, checkpoint reload bit-exact.
+  Held-out 944.5 vs 465.6 deg² for hold-position — overfit, so this proves the
+  loop, not a policy.
+
+Still open in 11a: full 18 GB dataset with the wrist stream, multi-hour thermal
+soak under training load, and a turnkey harness for repeatable runs.
+
+### 11b — control-policy training (needs Phase 9 + 10)
+
+Scope: goal-conditioned ACT trained end-to-end on product-distribution data —
+Phase 9's wrist observation contract, Phase 10's grasp/task buckets — with
+measured samples/s, peak memory, thermals, and a held-out learning curve.
+
+Gate: held-out error must improve on hold-position and be stable across seeds;
+only then does Phase 12 compare it with scripted control. A 20-episode/200-step
+pilot does not satisfy this.
+
+### 11c — vision-model training (needs Phase 9 + 10)
+
+Scope: choose and train a candidate for the worst case, or record a measured
+frozen-model + geometry decision meeting the same budgets:
+
+- (a) opponent-move change detection robust to occlusion and shadows;
+- (b) per-piece type plus in-square position/orientation, including knight yaw,
+  as required by Phase 10;
+- (c) wrist-only board registration under real occlusion (Phase 9).
+
+The current floor is geometric registration (not learned), a 32-unit NumPy MLP
+for occupancy/colour over 34 patch features (trained locally on CPU) and
+legal-successor move inference (no learning). That floor does not cover (a)–(c).
+
+### Rejected routes (receipts retained)
+
+- **Tinygrad/WebGPU ACT**: all parameters transfer, then the forward graph fails
+  at `cumsum(dtype=…)` in the 2-D positional embedding.
+- **SmolVLA 450M action artifact**: loads and is deterministic, but 5.40–5.49 s
+  per chunk against a 1.0 s deadline.
+- **MolmoAct2 5.44B**: 21.77 GB F32; ≥10.88 GB even at hypothetical FP16 against
+  8.02 GB total CPU memory.
+- **Patched ROCm**: not attempted — needs kernel, firmware and driver changes,
+  i.e. four pieces: the amdgpu/amdkfd flush patch, the navi12 SDMA blob, a native
+  gfx1013 rocBLAS build, and PyTorch built from source. Trackers:
+  `drm/amd#5597` (compute TLB), `drm/amd#5590` (SDMA).
+
+### Exit (revised)
+
+- 11a: reproducible receipts for ingestion, harness, fit and thermal soak.
+- 11b and 11c: both models trained locally with throughput, memory, thermal,
+  reload and held-out evidence — or a specific local route rejected with a
+  measured blocker and a documented fallback.
+- Execution-runtime evidence alone does not close this phase.
+
+Evidence: [PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)
+and [PHASE11_LOCAL_TRAINING_PATHS.md](PHASE11_LOCAL_TRAINING_PATHS.md).
 
 ## Phase 12 — train and compare goal-conditioned ACT
 
