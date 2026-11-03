@@ -190,10 +190,10 @@ def main():
 
     episodes, rows, data_files = load_index(args.root, args.camera)
     episodes.sort(key=lambda e: e["episode_index"])
+    rng = np.random.default_rng(20261103)
     if args.selection == "first":
         episodes = episodes[:args.episodes]
     else:
-        rng = np.random.default_rng(20261103)
         episodes = [episodes[i] for i in rng.permutation(len(episodes))[:args.episodes]]
         episodes.sort(key=lambda e: e["episode_index"])
 
