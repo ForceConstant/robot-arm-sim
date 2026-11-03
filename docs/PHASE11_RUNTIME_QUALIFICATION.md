@@ -97,7 +97,7 @@ per chunk), with a **zero swap-growth** gate.
   against the pre-declared 1.0 s deadline.
 - Guard: peak GPU edge **50 °C**, minimum CPU availability
   **4.80 GiB**, maximum swap growth **0.0 MB**,
-  peak process RSS **700.40 GiB**. The zero-swap-growth gate passed
+  peak process RSS **700 MiB** (0.68 GiB). The zero-swap-growth gate passed
   for every sample.
 - **Capture-age admission: 1201/1201 cycles
   returned `hold_replan:unverified_capture_age`.** Unique simulator frame IDs
