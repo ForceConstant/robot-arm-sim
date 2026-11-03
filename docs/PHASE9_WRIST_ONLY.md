@@ -60,6 +60,13 @@ Plan comparison, same 200-turn suite:
 | --- | --- | --- | --- |
 | Vertical only | 7 | 2 / 4 | 72.5% |
 | Vertical + oblique | 6 | 3 / 5 | **94.0%** |
+| Vertical + oblique, ≥4 views | 8 | 4 / 6 | 92.0% (rejected) |
+
+The 8-pose candidate reached 15/15 safe occluded cases and 31/31 safe
+rejections, but resolved fewer quiet moves (172/188 vs 176/188). Extra tilted
+views add grazing angles and parallax without removing the remaining unknown
+band, so the 6-pose plan stays selected. Receipt:
+`.private/phase9/heldout-mv4.json`.
 
 Note: in the first vertical-only run one invalid rearrangement was reported
 `confirmed`; the generator had compared full FENs, so a rearrangement differing
