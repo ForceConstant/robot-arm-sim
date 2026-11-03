@@ -181,6 +181,33 @@ capture/tray tasks, torch 2.9.1 (not the pinned 2.8.0), and one seed. The next
 run needs the full dataset (18 GB), the wrist camera, far more steps, and a
 held-out learning curve before any quality claim.
 
+## GTX 1060 cooling fault — Phase 11a thermal gate blocked (2026-11-03)
+
+Brian noticed the card's fan was not visibly running. Direct measurement confirms
+it is not controlling temperature:
+
+- **Idle:** 56–58 °C, fan **7–9 %**, 26.6 W, no throttle.
+- **Under load (FP32 matmul):** 56 → 84 °C in **1.6 s** at ~52 W, with the fan
+  still at **7–9 %**. There is no ramp at all, at any temperature tested.
+- **Training soak:** stepping at ~64 samples/s, the card reached **81–85 °C**
+  within the first minutes and reported throttle reason `0x20`
+  (SW thermal slowdown) at 80–83 °C; the 85 °C guard aborted the run.
+
+A GTX 1060 at ~52 W should not climb 28 °C in under two seconds even with a
+stopped fan. Combined with the flat fan reading, this points to a **cooling
+hardware fault** — disconnected/failed fan, fan header, or lost heatsink contact
+— not a software curve or a harness problem. The training loop itself is healthy:
+loss falls, throughput holds, checkpoint reload is exact.
+
+**Consequence for Phase 11a:** the sustained-training thermal gate cannot pass on
+this card as it stands. No further GPU training should run on it until the fan
+and heatsink are physically checked. Software mitigations (fan curves, power
+caps) are not credible while the fan does not respond.
+
+Actions for the operator: power down, inspect the fan connector and header,
+confirm the fan spins when powered, check heatsink mounting and thermal paste,
+and re-test with the same guarded ramp before any training run.
+
 ## Rejected routes
 
 - **Tinygrad/WebGPU ACT port.** All 51.6M parameters transferred to the
