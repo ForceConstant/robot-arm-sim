@@ -211,8 +211,14 @@ unlikely to be sufficient: the card already sits at 82–83 °C at only ~40 W wi
 the fan at ~60 %, which points at degraded die-to-heatsink contact rather than
 insufficient fan speed.
 
+**Batch-1 test (2026-11-03):** even at batch 1 the card pins at the 83 °C guard
+after ~35 s (8 samples, peak 83 °C, 15.0 samples/s, step 525) and the run exits
+on the temperature guard. There is no throughput/heat trade left to make: the
+card is at its thermal ceiling at one-third of the batch-8 rate.
+
 **Consequence for Phase 11a:** a *continuous* batch-8 training soak is not
-achievable within an 85 °C guard on this card. Options, in order of preference:
+achievable within an 85 °C guard on this card, and neither is a reduced-batch or
+duty-cycled envelope. Options, in order of preference:
 physical cooling maintenance (clean/paste/airflow), a host-side fan curve or power
 cap (needs operator access), or a duty-cycled training envelope measured to stay
 under the limit. A duty-cycled run (batch 4, 60 s train / 90 s cool, 84 °C guard)

@@ -599,11 +599,15 @@ Measured 2026-11-03:
   volume; **7.6 of 15.7 GB** at the last reading, wrist stream not yet started,
   link-limited (~2–3 MB/s effective).
 - **Thermal gate blocked.** The GTX 1060 cannot hold training inside an 85 °C
-  guard: continuous batch-8 reached 81–85 °C in minutes (throttle `0x20`), and
-  batch-4 with a 60 s/90 s duty cycle still hit 85 °C after ~45 s of training
-  (44.7 samples/s, step 500). Fan sampling shows a late, weak curve — 0 % until
-  ~80 °C, then ~60–70 % — with steady state 82–83 °C at only ~40 W and a spike
-  to 87 °C. This is marginal cooling (paste/heatsink/airflow), not a dead fan.
+  guard: continuous batch-8 reached 81–85 °C in minutes (throttle `0x20`),
+  batch-4 with a 60 s/90 s duty cycle hit 85 °C after ~45 s (44.7 samples/s,
+  step 500), and **batch 1 pinned at the 83 °C guard after ~35 s** (15.0
+  samples/s, step 525) before the run exited. Fan sampling shows a late, weak
+  curve — 0 % until ~80 °C, then ~60–70 % — with steady state 82–83 °C at only
+  ~40 W and a spike to 87 °C. No fan-control surface exists in software (no
+  `nvidia-settings`/X, no NVIDIA `hwmon` PWM); the only software lever is a
+  host-side power cap. This is marginal cooling (paste/heatsink/airflow), not a
+  dead fan, and not something the training harness can compensate for.
 - Next action is physical or host-side: cooling maintenance, or an operator-set
   fan curve/power cap on the Unraid host. CPU training (~3.8 samples/s) remains
   the fallback. 11a stays in progress until the soak passes and the ingest
