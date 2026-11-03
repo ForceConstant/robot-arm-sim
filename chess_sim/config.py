@@ -118,6 +118,7 @@ class BoardConfig(Config):
     border: float = 0.015          # wood border around the 8x8 field
     thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
+    marker_plane: str = "mat"      # where the markers print: "mat" or "board'
     table_top: float = 0.43        # table height above the floor
     # Best tested custom-tool layout: 20 distinct candidates, eight critical
     # transfers, then 64/64 source-square executions. See docs/LAYOUT_OPTIMIZATION.md.
@@ -160,7 +161,16 @@ class BoardConfig(Config):
 
     @property
     def marker_above_table(self) -> float:
-        """Printed fiducial face height above the table (top of the mat)."""
+        """Printed fiducial face height above the table.
+
+        ``marker_plane="mat"`` prints on the mat face (height = mat);
+        ``"board"`` prints into the board border, coplanar with the playing
+        surface (height = mat + slab).
+        """
+        if self.marker_plane == "board":
+            return self.surface_above_table
+        if self.marker_plane != "mat":
+            raise ValueError('marker_plane must be "mat" or "board"')
         return self.mat
 
     @property

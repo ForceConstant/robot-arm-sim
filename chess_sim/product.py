@@ -271,11 +271,20 @@ def layout_env_config(piece_set: str = "printed",
                       cameras: tuple[Camera, ...] = (Camera.WRIST,)) -> EnvConfig:
     """Product scene at the current mount, including the fiducial mat."""
     twin = load_product_twin()
-    mount = current_layout()["mount"]
+    layout = current_layout()
+    mount, measured = layout["mount"], layout["board"]
     config = twin.env_config(piece_set=piece_set, cameras=cameras)
     board = config.board.model_copy(update={
+        "square": measured["square_mm"] / 1000.0,
+        "border": measured["border_mm"] / 1000.0,
+        "thickness": measured["thickness_mm"] / 1000.0,
+        # Fields absent from a frozen layout keep the qualified defaults:
+        # a 0.5 mm mat under the slab with the markers printed on it.
+        "mat": measured.get("mat_mm", 0.5) / 1000.0,
+        "marker_plane": measured.get("marker_plane", "mat"),
         "arm_gap": mount["board_edge_to_base_frame_mm"] / 1000.0,
         "arm_riser": mount["base_mount_datum_above_table_mm"] / 1000.0,
+        "tray_x": layout.get("tray_x_mm", -160.0) / 1000.0,
     })
     if not np.allclose(np.array(board.arm_base) * 1000,
                        mount["white_arm_base_frame_mm"], atol=1e-6):

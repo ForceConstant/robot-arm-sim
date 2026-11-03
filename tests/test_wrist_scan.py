@@ -86,13 +86,28 @@ def test_fused_median_rejects_one_confidently_wrong_view():
     assert unknown[27].label == "unknown"
 
 
+def test_marker_layout_fits_a_55mm_border_and_rejects_a_40mm_one():
+    layout = fiducials.MarkerLayout.in_border(224.0, 55.0)
+    assert layout.offset_mm == pytest.approx(139.5)
+    assert layout.corners_mm(0)[0] == pytest.approx((-159.5, -119.5))
+    # the outer edge of the marker sits on the board edge
+    assert layout.outer_mm == pytest.approx(167.0)
+    with pytest.raises(ValueError):
+        fiducials.MarkerLayout.in_border(224.0, 40.0)
+
+
 def test_marker_geometry_is_complete_and_ordered():
-    ids, points = fiducials.object_points()
-    assert len(points) == 4 * len(fiducials.MARKERS)
+    layout = fiducials.MarkerLayout.in_border(224.0, 55.0)
+    ids, points = fiducials.object_points(layout)
+    assert len(points) == 4 * len(fiducials.MARKER_IDS)
     assert set(ids.tolist()) == set(fiducials.MARKER_IDS)
     assert fiducials.marker_bits(0).shape == (6, 6)
-    geoms = fiducials.mat_geoms(0.0032, 0.0005)
-    assert all(part["size"][0] > 0 for part in geoms)
+    on_board = fiducials.marker_geoms(0.0032, layout, on_surface=True)
+    assert all(part["size"][0] > 0 for part in on_board)
+    # surface-mounted markers sit above the slab, not on a plate below it
+    assert not any(part["name"] == "marker_mat" for part in on_board)
+    on_mat = fiducials.marker_geoms(0.0032, layout, mat_thickness=0.0005)
+    assert any(part["name"] == "marker_mat" for part in on_mat)
     assert fiducials.marker_height_above_table(0.0005) == pytest.approx(0.00056)
 
 

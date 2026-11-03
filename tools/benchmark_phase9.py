@@ -25,7 +25,7 @@ import mujoco
 import numpy as np
 
 from chess_sim.config import Camera, RandomizationConfig
-from chess_sim.fiducials import detect_markers
+from chess_sim.fiducials import MarkerLayout, detect_markers
 from chess_sim.move_inference import SquareEvidence, infer_move
 from chess_sim.perception import PerceptionModel, square_mask_fraction
 from chess_sim.env import ChessSimEnv
@@ -176,10 +176,14 @@ def main() -> int:
             # Place the board for this session, then freeze that pose as nominal.
             env.reset(EMPTY, rng=place_rng)
             env.config = env.config.model_copy(update={"board": env.board})
-            scanner = WristScanner(watch, poses, model,
-                                   square=env.board.square, board_z=env.board.top,
-                                   marker_z=env.board.table_top + env.board.marker_above_table,
-                                   method=args.method)
+            scanner = WristScanner(
+                watch, poses, model,
+                square=env.board.square, board_z=env.board.top,
+                marker_z=env.board.table_top + env.board.marker_above_table,
+                marker_layout=MarkerLayout.for_board(env.board.field * 1000.0,
+                                                     env.board.border * 1000.0,
+                                                     env.board.marker_plane),
+                method=args.method)
             empty_frames = _capture(env, scanner, poses)
             references = {item.pose: item.frame for item in empty_frames}
             empty_registration = scanner.register(empty_frames)

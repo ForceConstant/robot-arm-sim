@@ -291,8 +291,13 @@ def _add_board(spec, board, texture_file, appearance):
                   material="board_mat", friction=[grip, 0.005, 0.0001],
                   solimp=list(SURFACE_SOLIMP), priority=SURFACE_PRIORITY)
     if appearance.board_markers:
-        # Rigidly part of the board body, so a board shift moves the mat too.
-        for part in fiducials.mat_geoms(board.thickness, board.mat):
+        # Rigidly part of the board body, so a board shift moves the markers too.
+        layout = fiducials.MarkerLayout.for_board(
+            board.field * 1000.0, board.border * 1000.0, board.marker_plane)
+        on_surface = board.marker_plane == "board"
+        for part in fiducials.marker_geoms(board.thickness, layout,
+                                           on_surface=on_surface,
+                                           mat_thickness=board.mat):
             body.add_geom(name=part["name"], type=mujoco.mjtGeom.mjGEOM_BOX,
                           size=list(part["size"]), pos=list(part["pos"]),
                           rgba=list(part["rgba"]), contype=0, conaffinity=0, density=0)

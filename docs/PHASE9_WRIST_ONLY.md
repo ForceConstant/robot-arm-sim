@@ -25,7 +25,9 @@ queued as a Phase 10 refinement (self-model occlusion).
   labelled border, 3.2 mm slab on a 0.5 mm printed mat -> playing surface
   **3.7 mm above the table**, marker face **0.5 mm above the table**, arm datum
   **30 mm above the table**. World z is derived (`table_top + height`) and never
-  used as the reference for a board measurement.
+  used as the reference for a board measurement. A 55 mm border carrying the
+  markers directly was measured and rejected (51/64 squares) — see
+  [`BOARD_MARKER_LAYOUT.md`](BOARD_MARKER_LAYOUT.md).
 * Mount: `hardware/current_layout.json` — 90 mm board edge to base frame,
   30 mm riser, one follower, custom jaw revision `4dca0986…`.
 * Camera: wrist only, 640×480, saved calibration `sim-current-layout-custom-v3`.

@@ -1,22 +1,21 @@
-"""Printed fiducial mat for wrist-only board registration.
+"""Printed ArUco markers that give the board pose.
 
-A thin printed mat sits under the board and carries four 40 mm ArUco markers
-(DICT_4X4_50, ids 0-3) in a square around the playing field.  The mat is rigidly
-attached to the board in the simulator and is intended to be taped to the real
-board, so a marker corner is a directly measurable board-frame point.
+Four 40 mm ``DICT_4X4_50`` markers (ids 0-3) sit in the board border, one per
+corner, centred in the band.  A 40 mm marker needs a 6.7 mm quiet zone, so the
+border must be at least ~54 mm; a 55 mm border gives 7.5 mm.
 
-Registration here is a geometry problem with no learned component and no
-simulator lookup at inference: detect marker corners in one or more wrist
-frames, solve the mat pose in each frame from the saved hand-eye calibration,
-then refine one board pose (x, y, yaw) against every detected corner.
+Registration is pure geometry: detect marker corners, solve the mat/board pose
+in each frame from the saved hand-eye calibration, then refine one board pose
+(x, y, yaw) against every detected corner.  No simulator state is consulted.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import math
 
 import cv2
 import numpy as np
+from scipy.optimize import least_squares
 
 from .board_registration import BoardRegistration
 from .vision_geometry import CameraCalibration
@@ -24,55 +23,81 @@ from .vision_geometry import CameraCalibration
 DICTIONARY_ID = cv2.aruco.DICT_4X4_50
 MARKER_IDS: tuple[int, ...] = (0, 1, 2, 3)
 MARKER_MM = 40.0
-MARKER_OFFSET_MM = 152.0      # marker centre from the board centre, per axis
-MAT_HALF_MM = 184.0           # mat plate half-width (board half is 127 mm)
-MAT_THICKNESS_MM = 0.8
-CELLS = 6                     # 1 black border + 4x4 payload... plus quiet ring
-QUIET_MM = 6.0
+QUIET_MM = 6.0                     # minimum white margin around a marker
+CELLS = 6                          # 4 data modules + 1 border each side
 MIN_MARKERS = 2
 MAX_RMS_PX = 1.2
+PRINT_RAISE_M = 0.00006            # ink sits this far above the printed face
+DEFAULT_BOARD_THICKNESS = 0.0032
+MAT_THICKNESS_M = 0.0005      # default mat when markers are mat-mounted
 
-
-def _dictionary():
-    return cv2.aruco.getPredefinedDictionary(DICTIONARY_ID)
+# Unit offsets per marker id: (-x,-y), (+x,-y), (+x,+y), (-x,+y).
+_CENTRE_SIGNS = {0: (-1.0, -1.0), 1: (1.0, -1.0), 2: (1.0, 1.0), 3: (-1.0, 1.0)}
 
 
 @dataclass(frozen=True)
-class MarkerSpec:
-    marker_id: int
-    centre_mm: tuple[float, float]
+class MarkerLayout:
+    """Marker centres in board-frame millimetres.
 
-    @property
-    def corners_mm(self) -> tuple[tuple[float, float], ...]:
+    ``offset_mm`` is the distance from the board centre to each marker centre,
+    on both axes: half the playing field plus half the border.
+    """
+
+    offset_mm: float
+    size_mm: float = MARKER_MM
+    quiet_mm: float = QUIET_MM
+
+    @classmethod
+    def in_border(cls, field_mm: float, border_mm: float,
+                  size_mm: float = MARKER_MM) -> "MarkerLayout":
+        """Markers centred in the border band, validated against the quiet zone."""
+        if field_mm <= 0 or border_mm <= 0 or size_mm <= 0:
+            raise ValueError("field, border and marker size must be positive")
+        quiet = (border_mm - size_mm) / 2.0
+        if quiet + 1e-9 < QUIET_MM:
+            raise ValueError(
+                f"a {size_mm:.0f} mm marker needs at least {QUIET_MM:.0f} mm of quiet "
+                f"zone each side: border {border_mm:.0f} mm leaves {quiet:.1f} mm, "
+                f"needs {size_mm + 2 * QUIET_MM:.0f} mm or more")
+        return cls(field_mm / 2.0 + border_mm / 2.0, size_mm, quiet)
+
+    @classmethod
+    def for_board(cls, field_mm: float, border_mm: float, plane: str = "mat",
+                  size_mm: float = MARKER_MM, margin_mm: float = 40.0) -> "MarkerLayout":
+        """Layout for a board: in its border, or on a mat around it.
+
+        ``plane="board"`` needs a border wide enough for the marker plus its
+        quiet zones (>= 54 mm for a 40 mm marker).  ``plane="mat"`` puts the
+        markers on a thin sheet outside the board, so the border width is
+        irrelevant and edge squares keep their jaw clearance.
+        """
+        if plane == "board":
+            return cls.in_border(field_mm, border_mm, size_mm)
+        if plane != "mat":
+            raise ValueError('marker plane must be "mat" or "board"')
+        return cls(field_mm / 2.0 + margin_mm, size_mm, QUIET_MM)
+
+    def centre_mm(self, marker_id: int) -> tuple[float, float]:
+        if int(marker_id) not in _CENTRE_SIGNS:
+            raise ValueError(f"unknown marker id {marker_id!r}")
+        sx, sy = _CENTRE_SIGNS[int(marker_id)]
+        return (sx * self.offset_mm, sy * self.offset_mm)
+
+    def corners_mm(self, marker_id: int) -> tuple[tuple[float, float], ...]:
         """Top-left, top-right, bottom-right, bottom-left in board axes."""
-        h = MARKER_MM / 2.0
-        cx, cy = self.centre_mm
+        h = self.size_mm / 2.0
+        cx, cy = self.centre_mm(marker_id)
         return ((cx - h, cy + h), (cx + h, cy + h),
                 (cx + h, cy - h), (cx - h, cy - h))
 
-
-MARKERS: tuple[MarkerSpec, ...] = (
-    MarkerSpec(0, (-MARKER_OFFSET_MM, -MARKER_OFFSET_MM)),
-    MarkerSpec(1, (MARKER_OFFSET_MM, -MARKER_OFFSET_MM)),
-    MarkerSpec(2, (MARKER_OFFSET_MM, MARKER_OFFSET_MM)),
-    MarkerSpec(3, (-MARKER_OFFSET_MM, MARKER_OFFSET_MM)),
-)
-
-# Marker plane sits this far below the playing surface: the mat is under the slab.
-DEFAULT_BOARD_THICKNESS = 0.0032
-MAT_THICKNESS_M = 0.0005
+    @property
+    def outer_mm(self) -> float:
+        """Half-extent of the printed marker footprint, quiet zone included."""
+        return self.offset_mm + self.size_mm / 2.0 + self.quiet_mm
 
 
-PRINT_RAISE_M = 0.00006      # marker ink sits this far above the mat face
-
-
-def marker_height_above_table(mat_thickness: float = MAT_THICKNESS_M) -> float:
-    """Printed marker face height above the table.
-
-    The table is the datum for every board-relative measurement: the mat sits
-    on it, and the markers print on the mat's top face.  No negative offsets
-    relative to the playing surface are used anywhere.
-    """
+def marker_height_above_table(mat_thickness: float = 0.0) -> float:
+    """Marker face height above the table when the markers print on a mat."""
     if not np.isfinite(mat_thickness) or mat_thickness < 0:
         raise ValueError("mat thickness must be finite and non-negative")
     return mat_thickness + PRINT_RAISE_M
@@ -84,47 +109,55 @@ def marker_bits(marker_id: int) -> np.ndarray:
     return (np.asarray(image) > 127).astype(np.int8)
 
 
-def object_points() -> tuple[np.ndarray, np.ndarray]:
+def _dictionary():
+    return cv2.aruco.getPredefinedDictionary(DICTIONARY_ID)
+
+
+def object_points(layout: MarkerLayout) -> tuple[np.ndarray, np.ndarray]:
     """Flattened marker ids and their board-frame corner points (metres, z=0)."""
     ids: list[int] = []
     points: list[tuple[float, float, float]] = []
-    for spec in MARKERS:
-        for x_mm, y_mm in spec.corners_mm:
-            ids.append(spec.marker_id)
+    for marker_id in MARKER_IDS:
+        for x_mm, y_mm in layout.corners_mm(marker_id):
+            ids.append(marker_id)
             points.append((x_mm / 1000.0, y_mm / 1000.0, 0.0))
     return np.asarray(ids, dtype=np.int32), np.asarray(points, dtype=np.float64)
 
 
-def mat_geoms(board_thickness: float = DEFAULT_BOARD_THICKNESS,
-              mat_thickness: float = MAT_THICKNESS_M) -> list[dict]:
-    """Scene primitives for the mat, expressed in the board body frame.
+def marker_geoms(board_thickness: float, layout: MarkerLayout, *,
+                 on_surface: bool = False, mat_thickness: float = 0.0) -> list[dict]:
+    """Scene primitives for the markers, in the board body frame.
 
-    Geometry, not a texture: a bitmap texture's orientation on a box face is
-    not guaranteed, and a wrongly flipped mat would silently move every marker.
-    The plate carries the board; markers print on the plate face around it.
+    ``on_surface`` prints into the board border, coplanar with the playing
+    surface; otherwise the markers sit on a mat under the slab.  Geometry, not
+    a texture: a texture's face orientation is not guaranteed, and a flipped
+    mat would silently move every marker.
     """
-    if mat_thickness <= 0:
-        raise ValueError("the fiducial mat needs a positive thickness")
-    bottom = -board_thickness / 2.0
-    plate_top = bottom
-    geoms: list[dict] = [{
-        "name": "marker_mat",
-        "type": "box",
-        "size": (MAT_HALF_MM / 1000.0, MAT_HALF_MM / 1000.0, mat_thickness / 2.0),
-        "pos": (0.0, 0.0, plate_top - mat_thickness / 2.0),
-        "rgba": (0.96, 0.96, 0.94, 1.0),
-    }]
-    cell = MARKER_MM / CELLS / 1000.0
-    for spec in MARKERS:
-        bits = marker_bits(spec.marker_id)
-        cx, cy = spec.centre_mm[0] / 1000.0, spec.centre_mm[1] / 1000.0
-        geoms.append({
-            "name": f"marker_bg_{spec.marker_id}",
+    top = board_thickness / 2.0
+    if on_surface:
+        plane = top + 0.00002
+        geoms: list[dict] = []
+    else:
+        if mat_thickness <= 0:
+            raise ValueError("a mat-mounted layout needs a positive mat thickness")
+        plane = -top + 0.00002
+        geoms = [{
+            "name": "marker_mat",
             "type": "box",
-            "size": (MARKER_MM / 2000.0 + QUIET_MM / 2000.0,
-                     MARKER_MM / 2000.0 + QUIET_MM / 2000.0, 0.00002),
-            "pos": (cx, cy, plate_top + 0.00002),
-            "rgba": (0.98, 0.98, 0.97, 1.0),
+            "size": (layout.outer_mm / 1000.0, layout.outer_mm / 1000.0,
+                     mat_thickness / 2.0),
+            "pos": (0.0, 0.0, -top - mat_thickness / 2.0),
+            "rgba": (0.96, 0.96, 0.94, 1.0),
+        }]
+    half = (layout.size_mm + 2 * layout.quiet_mm) / 2000.0
+    cell = layout.size_mm / CELLS / 1000.0
+    for marker_id in MARKER_IDS:
+        bits = marker_bits(marker_id)
+        cx, cy = (v / 1000.0 for v in layout.centre_mm(marker_id))
+        geoms.append({
+            "name": f"marker_bg_{marker_id}", "type": "box",
+            "size": (half, half, 0.00002),
+            "pos": (cx, cy, plane), "rgba": (0.98, 0.98, 0.97, 1.0),
         })
         for row in range(CELLS):
             for col in range(CELLS):
@@ -133,11 +166,9 @@ def mat_geoms(board_thickness: float = DEFAULT_BOARD_THICKNESS,
                 x = cx + (col - (CELLS - 1) / 2.0) * cell
                 y = cy - (row - (CELLS - 1) / 2.0) * cell
                 geoms.append({
-                    "name": f"marker_{spec.marker_id}_{row}_{col}",
-                    "type": "box",
+                    "name": f"marker_{marker_id}_{row}_{col}", "type": "box",
                     "size": (cell / 2.0, cell / 2.0, 0.00002),
-                    "pos": (x, y, plate_top + 0.00006),
-                    "rgba": (0.04, 0.04, 0.04, 1.0),
+                    "pos": (x, y, plane + 0.00004), "rgba": (0.04, 0.04, 0.04, 1.0),
                 })
     return geoms
 
@@ -145,20 +176,10 @@ def mat_geoms(board_thickness: float = DEFAULT_BOARD_THICKNESS,
 @dataclass
 class MarkerDetection:
     marker_id: int
-    corners: np.ndarray          # (4, 2) pixel corners, same order as the spec
+    corners: np.ndarray          # (4, 2) pixel corners, spec order
 
 
-@dataclass
-class MarkerFit:
-    """One frame's mat pose in world coordinates and its reprojection error."""
-
-    registration: BoardRegistration
-    rms_px: float
-    marker_ids: tuple[int, ...]
-    camera_position: tuple[float, float, float]
-
-
-def _detector() -> "cv2.aruco.ArucoDetector":
+def _detector():
     params = cv2.aruco.DetectorParameters()
     params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
     params.adaptiveThreshWinSizeMin = 5
@@ -174,7 +195,7 @@ _DETECTOR = None
 
 
 def detect_markers(frame: np.ndarray) -> list[MarkerDetection]:
-    """Detect mat markers in one undistorted RGB frame."""
+    """Detect markers in one undistorted RGB frame."""
     global _DETECTOR
     if _DETECTOR is None:
         _DETECTOR = _detector()
@@ -194,15 +215,6 @@ def detect_markers(frame: np.ndarray) -> list[MarkerDetection]:
     return found
 
 
-def _corner_map(detections: list[MarkerDetection]) -> dict[int, list[np.ndarray]]:
-    """Marker corners sorted by id order of the mat spec, not detection order."""
-    table: dict[int, list[np.ndarray]] = {}
-    for detection in detections:
-        table.setdefault(detection.marker_id, []).append(detection.corners)
-    order = {spec.marker_id: index for index, spec in enumerate(MARKERS)}
-    return dict(sorted(table.items(), key=lambda item: order.get(item[0], 99)))
-
-
 def _project(pose, calibration: CameraCalibration, points: np.ndarray,
              marker_z: float) -> np.ndarray:
     c, s = math.cos(pose[2]), math.sin(pose[2])
@@ -219,7 +231,7 @@ def _project(pose, calibration: CameraCalibration, points: np.ndarray,
 
 def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
                         square: float, board_z: float, *,
-                        marker_z: float,
+                        marker_z: float, layout: MarkerLayout,
                         min_markers: int = MIN_MARKERS,
                         max_rms_px: float = MAX_RMS_PX,
                         search_mm: float = 40.0,
@@ -227,18 +239,15 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     """Fuse marker corners from one or more frames into one board pose.
 
     ``views`` are ``(frame, calibration)`` pairs; the calibration carries the
-    arm's measured joints, so no simulator state is used at inference.  A
-    bounded coarse search followed by bounded refinement finds the pose; there
-    is no simulator ground-truth seed.  Returns ``None`` when fewer than
-    ``min_markers`` markers are detected or the joint reprojection error
-    exceeds ``max_rms_px``.
+    arm's measured joints, so no simulator state is used at inference.
+    ``marker_z`` is the world height of the printed marker face, derived from
+    the table datum.  Returns ``None`` below ``min_markers`` detected markers or
+    above ``max_rms_px`` joint reprojection error.
     """
     if not np.isfinite(marker_z):
         raise ValueError("marker_z must be a finite world height")
-    _, obj_points = object_points()
-    # One marker contributes four consecutive corners; build the index from the
-    # mat spec because the flattened id array repeats each id four times.
-    corner_index = {spec.marker_id: 4 * index for index, spec in enumerate(MARKERS)}
+    _, obj_points = object_points(layout)
+    base_index = {marker_id: 4 * index for index, marker_id in enumerate(MARKER_IDS)}
     observations: list[tuple[CameraCalibration, np.ndarray, np.ndarray]] = []
     seen: set[int] = set()
     for frame, calibration in views:
@@ -248,7 +257,7 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         object_list: list[np.ndarray] = []
         image_list: list[np.ndarray] = []
         for detection in detections:
-            base = corner_index[detection.marker_id]
+            base = base_index[detection.marker_id]
             object_list.extend(obj_points[base:base + 4])
             image_list.extend(detection.corners)
             seen.add(detection.marker_id)
@@ -262,19 +271,15 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
             (_project(params, calibration, points, marker_z) - pixels).ravel()
             for calibration, points, pixels in observations])
 
-    # Initial guess from per-view planar PnP; the coarse grid is only a fallback
-    # when PnP fails, because a blind (x, y, yaw) search can settle on a
-    # translated branch that still reprojects well with few markers.
+    # Seed from per-view planar PnP; fall back to a bounded coarse search.
     guesses: list[tuple[float, np.ndarray]] = []
     for calibration, points, pixels in observations:
         matrix = np.array([[calibration.fx, 0.0, calibration.cx],
                            [0.0, calibration.fy, calibration.cy],
                            [0.0, 0.0, 1.0]])
         try:
-            ok, rvec, tvec = cv2.solvePnP(
-                np.ascontiguousarray(points, dtype=np.float64),
-                np.ascontiguousarray(pixels, dtype=np.float64),
-                matrix, np.zeros(5), flags=cv2.SOLVEPNP_SQPNP)
+            ok, rvec, tvec = cv2.solvePnP(points, pixels, matrix, np.zeros(5),
+                                          flags=cv2.SOLVEPNP_SQPNP)
         except cv2.error:
             continue
         if not ok:
@@ -289,6 +294,7 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         rms = float(np.sqrt(np.mean(
             (_project(guess, calibration, points, marker_z) - pixels) ** 2)))
         guesses.append((rms, guess))
+
     span = search_mm / 1000.0
     yaw_span = math.radians(search_deg)
     if guesses:
@@ -306,26 +312,23 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
                         best_cost, best = cost, candidate
         if best is None:
             return None
-    from scipy.optimize import least_squares
+
     lower = np.array([-span * 2, -span * 2, -yaw_span * 2])
     upper = np.array([span * 2, span * 2, yaw_span * 2])
     best = np.clip(np.asarray(best, dtype=float), lower + 1e-9, upper - 1e-9)
-    result = least_squares(
-        error, best, method="trf", xtol=1e-12, ftol=1e-12, gtol=1e-12,
-        bounds=([-span * 2, -span * 2, -yaw_span * 2],
-                [span * 2, span * 2, yaw_span * 2]))
+    result = least_squares(error, best, method="trf", xtol=1e-12, ftol=1e-12,
+                           gtol=1e-12, bounds=(lower, upper))
     pose = result.x
     rms = float(np.sqrt(np.mean(result.fun ** 2)))
     if not np.isfinite(rms) or rms > max_rms_px:
         return None
-    coverage = float(len(seen)) / len(MARKERS)
     return BoardRegistration(
         origin=(float(pose[0]), float(pose[1])),
         yaw=float(pose[2]),
         square=float(square),
         board_z=float(board_z),
         score=float(max(0.0, 1.0 - rms / max_rms_px)),
-        coverage=coverage,
+        coverage=float(len(seen)) / len(MARKER_IDS),
         edge_score=float(len(observations)) / max(1.0, len(views)),
         corner_pixels=(),
     )
