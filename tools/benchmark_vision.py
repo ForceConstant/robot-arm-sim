@@ -17,7 +17,7 @@ import mujoco
 import numpy as np
 import chess
 
-from chess_sim.config import Camera, EnvConfig, RandomizationConfig
+from chess_sim.config import AppearanceConfig, Camera, EnvConfig, RandomizationConfig
 from chess_sim.env import ChessSimEnv
 from chess_sim.tasks import MoveTask
 from chess_sim.vision import detect_piece_base
@@ -36,6 +36,8 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=74123)
     parser.add_argument("--camera", choices=("rig", "random"), default="random",
                         help="published fixed overhead rig or randomized viewpoints")
+    parser.add_argument("--piece-set", default="default",
+                        help="verified mesh set to load (for example: printed)")
     parser.add_argument("--reobserve-camera", choices=("top", "external"), default="top",
                         help="camera used for the post-motion observation")
     parser.add_argument("--out", default=".private/vision-localization.json")
@@ -44,7 +46,8 @@ def main() -> int:
         parser.error("--cases must be positive")
 
     rng = random.Random(args.seed)
-    env = ChessSimEnv(EnvConfig(randomization=RandomizationConfig(
+    env = ChessSimEnv(EnvConfig(appearance=AppearanceConfig(piece_set=args.piece_set),
+                               randomization=RandomizationConfig(
         board_shift=0.005, board_yaw=math.radians(5), board_side=0.005,
         arm_joint_jitter=0.0,
         camera=args.camera == "random")))
@@ -209,7 +212,8 @@ def main() -> int:
     reobserved_errors = [r["reobserved_error_mm"] for r in records
                          if r.get("reobserved_error_mm") is not None]
     report = {
-        "schema": "robot-arm-vision-benchmark/v1", "seed": args.seed,
+        "schema": "robot-arm-vision-benchmark/v2", "seed": args.seed,
+        "piece_set": args.piece_set,
         "camera_mode": args.camera,
         "cases": len(records), "detected": len(detected),
         "abstained": sum(bool(r["abstained"]) for r in records),
