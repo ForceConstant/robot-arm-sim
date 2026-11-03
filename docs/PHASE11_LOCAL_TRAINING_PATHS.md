@@ -54,8 +54,9 @@ layers are required; neither substitutes for the other.
 
 ## 4. Is SDMA a config setting or an issue?
 
-**Neither a config setting nor a tracked upstream issue — it is two more kernel
-patches plus a firmware selection.**
+**Not a config setting. The core fix is a firmware blob replacement; the
+community patch series adds reliability plumbing on top.** There is an open
+kernel-side tracker: `drm/amd#5590`.
 
 Measured evidence (`cachenetics/project-ariel#13`, closed): the board's
 `cyan_skillfish2` SDMA firmware never drives user queues — 0 of 4 MiB copied on
@@ -66,11 +67,41 @@ expired" lines are an init-order artifact, not dead silicon. Their fix:
 - `bc250-sdma-firmware-override` — module parameter `amdgpu.bc250_sdma_fw=navi12`
 - `bc250-early-sdma-trap` — writes TRAP_ENABLE before `ip_init`
 
-On Bazzite (immutable root) this means layering another kernel build, not a
-modprobe/sysctl line. Navi12 blobs are already installed locally
+The tracker itself reports the blob swap works **with no kernel change**, so the
+package question is how to supply the replacement blob on an immutable root
+(initramfs/image layer), not whether to patch the module. The community patches
+(`bc250-sdma-firmware-override`, `bc250-early-sdma-trap`) automate the override
+and fix the init-order artifact. Navi12 blobs are already installed locally
 (`navi12_sdma.bin.xz`, `navi12_sdma1.bin.xz`), but firmware loads early and
 `firmware_class.path=/usr/local/lib/firmware` may lose to the initramfs copy —
 unverified.
+
+## Kernel-side trackers
+
+Both problems have open upstream kernel trackers in the freedesktop `drm/amd`
+project. Kernel Bugzilla has **no** entries for BC-250 or gfx1013.
+
+- **`drm/amd#5597` — "amdgpu/gfx1013: KIQ-routed PASID TLB invalidation corrupts
+  sustained compute on BC-250."** Opened 2026-08-10, still open, zero comments.
+  It carries a patch scoped to `IP_VERSION(10, 1, 3)`: route PASID TLB flushes
+  through MMIO, use flush type 0 on the GFXHUB(0) path, take the invalidation
+  semaphore and skip the KIQ register write. Other GMC v10 parts keep the
+  existing path. <https://gitlab.freedesktop.org/drm/amd/-/work_items/5597>
+- **`drm/amd#5590` — "cyan_skillfish2 SDMA firmware does not drive the RLC
+  (user) queues — navi12 firmware works on the same silicon."** Opened
+  2026-08-09, still open, zero comments. `cyan_skillfish2_sdma.bin` never
+  signals completion and transfers zero bytes; `navi12_sdma.bin` (same IP 5.0,
+  same 33792-byte layout) works with **no kernel change**. The blob has not been
+  updated in `linux-firmware` since 2021-11-12.
+  <https://gitlab.freedesktop.org/drm/amd/-/work_items/5590>
+- Related but **different**: `drm/amd#3356` (2024, closed) was a boot/display
+  freeze regression fixed by disabling SG display on Cyan Skillfish — not the
+  compute-path fault above.
+- The ROCm repository issue `ROCm/TheRock#9221` remains the user-facing tracker
+  (open, 26 comments). Mesa's `#11982` (Cyan Skillfish support) is closed.
+
+Both kernel items are single-author reports with no reviewer traffic, so there is
+no merge signal. Bazzite would need to carry them deliberately.
 
 ## Cost-ordered ladder (the actual plan)
 
