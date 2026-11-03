@@ -1,0 +1,417 @@
+{
+  "version": "1.12.1",
+  "runtime_commit": "b6437d2c147e33f095d2409e375810a4a79134d1",
+  "renderer": "NVIDIA GeForce GTX 1060 3GB/PCIe/SSE2",
+  "layout": {
+    "arm_count": 1,
+    "board_edge_to_base_frame_mm": 90,
+    "base_riser_mm": 30,
+    "board_thickness_mm": 3.2,
+    "arm_base_m": [
+      0,
+      -0.217,
+      0.45999999999999996
+    ]
+  },
+  "layout_suite": {
+    "version": "layout-v1",
+    "passed": 16,
+    "total": 16,
+    "browser_button_verified": true,
+    "full_board_and_parking_checks_clean": true,
+    "cases": [
+      {
+        "case": "white-near-king-e",
+        "move": "e1e2",
+        "success": true,
+        "error_mm": 2.34,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-near-king-d",
+        "move": "d1d2",
+        "success": true,
+        "error_mm": 0.89,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-near-rook-left",
+        "move": "a1h1",
+        "success": true,
+        "error_mm": 4.31,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-near-rook-right",
+        "move": "h1a1",
+        "success": true,
+        "error_mm": 3.51,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-far-rook-left",
+        "move": "a8h8",
+        "success": true,
+        "error_mm": 3.09,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-far-rook-right",
+        "move": "h8a8",
+        "success": true,
+        "error_mm": 5.21,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-diagonal-rook-out",
+        "move": "a1h8",
+        "success": true,
+        "error_mm": 2.51,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-diagonal-rook-in",
+        "move": "h8a1",
+        "success": true,
+        "error_mm": 4.58,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-near-king-e",
+        "move": "e8e7",
+        "success": true,
+        "error_mm": 3.1,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-near-king-d",
+        "move": "d8d7",
+        "success": true,
+        "error_mm": 3.11,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-near-rook-left",
+        "move": "a8h8",
+        "success": true,
+        "error_mm": 3.09,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-near-rook-right",
+        "move": "h8a8",
+        "success": true,
+        "error_mm": 5.21,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-far-rook-left",
+        "move": "a1h1",
+        "success": true,
+        "error_mm": 4.31,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-far-rook-right",
+        "move": "h1a1",
+        "success": true,
+        "error_mm": 3.51,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-diagonal-rook-out",
+        "move": "a8h1",
+        "success": true,
+        "error_mm": 4.56,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-diagonal-rook-in",
+        "move": "h1a8",
+        "success": true,
+        "error_mm": 8.29,
+        "message": "",
+        "categories": [
+          "success"
+        ]
+      }
+    ]
+  },
+  "crowded_suite": {
+    "version": "crowded-v3",
+    "physical_actions_passed": 21,
+    "total": 25,
+    "cases": [
+      {
+        "case": "white-pawn",
+        "success": true,
+        "error_mm": 1.5,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-pawn",
+        "success": true,
+        "error_mm": 1.9,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-knight",
+        "success": true,
+        "error_mm": 1.82,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-knight",
+        "success": true,
+        "error_mm": 0.19,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-bishop",
+        "success": true,
+        "error_mm": 2.19,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-bishop",
+        "success": true,
+        "error_mm": 1.52,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-rook",
+        "success": true,
+        "error_mm": 1.46,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-rook",
+        "success": true,
+        "error_mm": 0.39,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-queen",
+        "success": false,
+        "error_mm": 1.62,
+        "categories": [
+          "neighbour_disturbance",
+          "unexpected_contact_candidate"
+        ]
+      },
+      {
+        "case": "black-queen",
+        "success": true,
+        "error_mm": 0.04,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-king",
+        "success": false,
+        "error_mm": 7.18,
+        "categories": [
+          "neighbour_disturbance"
+        ]
+      },
+      {
+        "case": "black-king",
+        "success": true,
+        "error_mm": 0.51,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-pawn-far",
+        "success": true,
+        "error_mm": 0.44,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-pawn-far",
+        "success": true,
+        "error_mm": 1.89,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-knight-far",
+        "success": true,
+        "error_mm": 1.4,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-knight-far",
+        "success": true,
+        "error_mm": 1.5,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-knight-corner",
+        "success": true,
+        "error_mm": 0.12,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-bishop-far",
+        "success": true,
+        "error_mm": 1.2,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-bishop-far",
+        "success": true,
+        "error_mm": 2.19,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-rook-corner",
+        "success": true,
+        "error_mm": 2.16,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "black-rook-corner",
+        "success": true,
+        "error_mm": 5.21,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-queen-far",
+        "success": false,
+        "error_mm": 4.15,
+        "categories": [
+          "neighbour_disturbance",
+          "unexpected_contact_candidate"
+        ]
+      },
+      {
+        "case": "black-queen-far",
+        "success": true,
+        "error_mm": 0.33,
+        "categories": [
+          "success"
+        ]
+      },
+      {
+        "case": "white-king-far",
+        "success": false,
+        "error_mm": 7.45,
+        "categories": [
+          "neighbour_disturbance"
+        ]
+      },
+      {
+        "case": "black-king-far",
+        "success": true,
+        "error_mm": 1.37,
+        "categories": [
+          "success"
+        ]
+      }
+    ]
+  },
+  "browser_checks": [
+    "actual joint angles for installed followers",
+    "cartesian teleop moves the arm, wrist stays vertical, elbow stays up",
+    "wrist-roll and gripper arrow keys update live angles",
+    "automated motion updates live angle readout",
+    "real JPEG views and installed wrist cameras",
+    "start",
+    "pause freezes clock",
+    "resume advances clock",
+    "stop",
+    "reset",
+    "sensor selection",
+    "CSRF",
+    "mobile layout"
+  ],
+  "browser_errors": [],
+  "local_tests": {
+    "custom_pack_passed": 107,
+    "stock_passed": 102,
+    "stock_skipped": 5,
+    "adapter_followup_passed": 14
+  },
+  "deployment_scope": "Only robot_arm rebuilt/redeployed; no physical hardware control"
+}

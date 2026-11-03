@@ -79,3 +79,14 @@ The release also retains a valid primary IK solution when an alternate wrist-rol
 The deployment now sets `ROBOT_ARM_COUNT=1`: one actual model, six joints, one wrist camera. Both piece colours are manipulated by that same follower. The old two-arm model remains selectable as a debug fixture by omitting the flag. Its parked opposite arm obstructed far-board probes, so dual-arm collisions are not used to grade the single-follower mount. No robot is merely hidden visually or exempted from contacts: the single-follower scene contains exactly one arm.
 
 Local runtime preflight on the actual single-follower adapter: **16/16 layout-v1 cases passed**. Stock public regression: **102 passed, 5 skipped**; custom-pack regression: **107 passed**. Live receipts are recorded separately.
+
+## Final live verification — 1.12.1
+
+- Deployed commit `b6437d2`, NVIDIA GTX 1060 renderer; one actual follower, six joints and one operational wrist camera. Live status confirms 90 mm setback / 30 mm riser / 3.2 mm board.
+- **Layout button: 16/16 passed**, with clean full-board and post-parking checks. Tested by clicking the delivered browser control, not merely inspecting the handler.
+- **Crowded-v3: 21/25 physical actions passed**. White queen, white king, white queen-far and white king-far disturb neighbours. This remains a clearance/grasp-reliability limitation, not solved by nominal reach optimization.
+- Browser checks passed: actual joints, Cartesian jog, wrist/gripper keys, start/pause/resume/stop/reset, installed camera JPEGs, wrist-only sensor contract, CSRF and mobile overflow.
+- Local tests: custom **107 passed**; public/stock **102 passed, 5 skipped**; single-adapter follow-up **14 passed**.
+- The first deployment smoke test found a missing full-board verifier on the single adapter; 1.12.1 restores the same verifier used by the debug fixture. Final live layout cases include it and post-parking checks. The 1.12.0 release is superseded.
+
+Sanitized live receipt: [layout_live_verification.json](../reports/layout_live_verification.json). No physical arm was moved; no unrelated stack was changed.
