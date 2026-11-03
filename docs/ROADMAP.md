@@ -548,10 +548,19 @@ required deliverables for the reopened phase:
    from audited task data through checkpoint reload, with measured samples/s,
    peak memory, thermals and a learning-curve sanity check. A finite 20-step
    pilot is not a training path.
-2. **Vision model.** The perception model selected for Phase 6/9 (occupancy /
-   colour, or the frozen VLM if it remains the choice) must have a local
-   fine-tune or adaptation path with measured throughput and memory — or a
-   measured frozen-inference decision with the reasoning recorded.
+2. **Vision model — decide it here, for the worst case.** No single vision
+   policy has been chosen for the future tasks. The current floor is: geometric
+   board registration (not learned), a 32-unit NumPy MLP for occupancy/colour
+   over 34 patch features (trained locally on CPU), and legal-successor
+   comparison for move inference (no learning). **Undecided and therefore
+   worst-case:** (a) opponent-move change detection robust to occlusion and
+   shadows, (b) per-piece type plus in-square position and orientation —
+   including knight yaw — needed by Phase 10, and (c) wrist-only board
+   registration under real occlusion (Phase 9). This phase must select a
+   candidate for (a)–(c) and either train it locally with measured throughput,
+   memory, thermal and held-out error against the Phase 6/9/10 budgets, or
+   record a measured frozen-model + calibrated-geometry decision that meets the
+   same budgets. "The MLP already trains on CPU" is the floor, not the answer.
 3. **Small-GPU fit test.** The GTX 1060 3 GB is a first-class candidate: fit and
    step time at batch 1/2/4/8, FP32 (Pascal FP16 compute is 1/32–1/64 rate), with
    the live simulator's VRAM/SM contention stated rather than assumed away.
