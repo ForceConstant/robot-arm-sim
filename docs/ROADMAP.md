@@ -608,10 +608,19 @@ Measured 2026-11-03:
   `nvidia-settings`/X, no NVIDIA `hwmon` PWM); the only software lever is a
   host-side power cap. This is marginal cooling (paste/heatsink/airflow), not a
   dead fan, and not something the training harness can compensate for.
-- Next action is physical or host-side: cooling maintenance, or an operator-set
-  fan curve/power cap on the Unraid host. CPU training (~3.8 samples/s) remains
-  the fallback. 11a stays in progress until the soak passes and the ingest
-  completes.
+- **Operator task (Brian, 2026-11-03): clean the GPU heatsink/fan and replace
+  the thermal paste.** The measured behaviour — 82–83 °C steady at only ~40 W,
+  and 56 → 84 °C in under two seconds under load — is consistent with dried or
+  pumped-out paste and a dust-blocked fin stack, so this is the first thing to
+  fix before any further training attempt.
+  **Acceptance after reassembly:** the guarded ramp test must hold a steady state
+  at or below **78 °C** under the batch-8 training load with the fan below 100 %,
+  and the 30-minute soak must complete without touching the 85 °C guard. Until
+  that passes, the 11a thermal gate stays blocked and no GPU training runs.
+- Remaining software lever if servicing is deferred: an operator-set power cap
+  (60–140 W range) or fan curve on the Unraid host. CPU training (~3.8
+  samples/s) remains the fallback. 11a stays in progress until the soak passes
+  and the ingest completes.
 
 ### 11b — control-policy training (needs Phase 9 + 10)
 

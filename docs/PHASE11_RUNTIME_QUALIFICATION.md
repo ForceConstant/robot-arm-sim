@@ -220,6 +220,12 @@ card is at its thermal ceiling at one-third of the batch-8 rate.
 achievable within an 85 °C guard on this card, and neither is a reduced-batch or
 duty-cycled envelope.
 
+**Service task (Brian, 2026-11-03):** clean the heatsink/fan and replace the
+thermal paste. Post-service acceptance: steady state at or below 78 °C under the
+batch-8 training load with the fan below 100 %, and a clean 30-minute soak
+without the 85 °C guard. The current readings (82–83 °C at ~40 W; 56 → 84 °C in
+under 2 s) are consistent with dried paste and blocked fins.
+
 **Wrist stream validated (2026-11-03):** as the wrist videos arrived, a CPU smoke
 run (2 episodes, 8 samples, 2 steps, batch 2) built samples from
 `observation.images.wrist`, trained, and reloaded the checkpoint with exact
