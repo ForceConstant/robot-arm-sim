@@ -227,6 +227,15 @@ replacing the thermal paste, the same guarded ramp test is transformed — idle
 die-to-heatsink path, not fan speed. A 30-minute batch-8 soak is now the
 acceptance run.
 
+**Ingest complete (2026-11-03 18:1x):** all 82 pinned files verified present
+against the HF listing — 75 videos (39 top, 36 wrist), meta and data, **0
+missing**, 16.1 GB in `phase11_data`. Four stale `.part` files from an earlier
+interrupted transfer are being removed.
+
+**Post-service soak (in progress):** batch 8 sustained at **73–74 °C peak** after
+40 s with 64.5 samples/s — down from 85 °C+ before servicing. The 30-minute run
+is the acceptance gate.
+
 **Service task (Brian, 2026-11-03):** clean the heatsink/fan and replace the
 thermal paste. Post-service acceptance: steady state at or below 78 °C under the
 batch-8 training load with the fan below 100 %, and a clean 30-minute soak
