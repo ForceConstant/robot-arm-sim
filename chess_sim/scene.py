@@ -17,6 +17,7 @@ import numpy as np
 from . import assets, gripper
 from .assets import (ASSET_DIR, DEFAULT_SET, SET_COUNTS, PieceGeometry, piece_asset_name,
                      piece_geometry, piece_obj_path, piece_texture_path, piece_tint)
+from . import fiducials
 from .config import BOARD_FINISHES, AppearanceConfig, BoardConfig, Camera, Config, JointPose
 
 ARM_PREFIX = "so101:"
@@ -283,12 +284,18 @@ def _add_board(spec, board, texture_file, appearance):
     # the spot it now covered.
     body = spec.worldbody.add_body(name="board", mocap=True,
                                    pos=[board.origin[0], board.origin[1],
-                                        board.table_top + board.thickness / 2],
+                                        board.table_top + board.mat + board.thickness / 2],
                                    quat=[float(np.cos(board.yaw / 2)), 0.0, 0.0, float(np.sin(board.yaw / 2))])
     body.add_geom(name="board", type=mujoco.mjtGeom.mjGEOM_BOX,
                   size=[board.width / 2, board.width / 2, board.thickness / 2],
                   material="board_mat", friction=[grip, 0.005, 0.0001],
                   solimp=list(SURFACE_SOLIMP), priority=SURFACE_PRIORITY)
+    if appearance.board_markers:
+        # Rigidly part of the board body, so a board shift moves the mat too.
+        for part in fiducials.mat_geoms(board.thickness, board.mat):
+            body.add_geom(name=part["name"], type=mujoco.mjtGeom.mjGEOM_BOX,
+                          size=list(part["size"]), pos=list(part["pos"]),
+                          rgba=list(part["rgba"]), contype=0, conaffinity=0, density=0)
 
 
 def _add_pieces(spec, board, appearance):

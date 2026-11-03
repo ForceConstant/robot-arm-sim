@@ -41,9 +41,12 @@ numpy==2.4.6
     #   chess-sim (pyproject.toml)
     #   imageio
     #   mujoco
+    #   opencv-python-headless
     #   qpsolvers
     #   scipy
     #   trimesh
+opencv-python-headless==4.13.0.92
+    # via chess-sim (pyproject.toml)
 opentelemetry-api==1.45.1
     # via fastapi
 pillow==13.0.0

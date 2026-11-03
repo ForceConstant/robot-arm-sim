@@ -27,7 +27,7 @@ import chess
 import numpy as np
 from pydantic import Field
 
-from . import gripper
+from . import fiducials, gripper
 from .config import (JOINTS, AppearanceConfig, BoardConfig, Camera, Config,
                      ControlConfig, EnvConfig, ToleranceConfig)
 
@@ -174,6 +174,7 @@ class ProductTwin(Config):
             border=b.border_mm / 1000.0,
             thickness=b.thickness_mm / 1000.0,
             table_top=m.table_top_mm / 1000.0,
+            mat=fiducials.MAT_THICKNESS_M if self.tool is not None else 0.0,
             arm_gap=m.board_edge_to_arm_base_mm / 1000.0,
             arm_riser=m.arm_riser_mm / 1000.0,
             arm_side=self.robot.arm_side,
@@ -185,7 +186,8 @@ class ProductTwin(Config):
 
     def appearance(self, piece_set: str = "printed") -> AppearanceConfig:
         return AppearanceConfig(piece_set=piece_set, board_labels=self.board.labels,
-                                board_finish="plastic", camera_mast=False)
+                                board_finish="plastic", camera_mast=False,
+                                board_markers=True)
 
     def env_config(self, piece_set: str = "printed",
                    cameras: tuple[Camera, ...] = (Camera.WRIST,),
@@ -251,6 +253,34 @@ def load_product_twin(path: str | Path = PRODUCT_TWIN_PATH) -> ProductTwin:
     twin = ProductTwin.model_validate(raw)
     twin.validate_against_code()
     return twin
+
+
+LAYOUT_PATH = PRODUCT_TWIN_PATH.parent.parent / "hardware" / "current_layout.json"
+
+
+@lru_cache(maxsize=1)
+def current_layout() -> dict:
+    """The measured mount the live service runs (not the historical twin)."""
+    payload = json.loads(LAYOUT_PATH.read_text())
+    if payload.get("schema") != "robot-arm-current-layout/1":
+        raise ValueError("unexpected current-layout schema")
+    return payload
+
+
+def layout_env_config(piece_set: str = "printed",
+                      cameras: tuple[Camera, ...] = (Camera.WRIST,)) -> EnvConfig:
+    """Product scene at the current mount, including the fiducial mat."""
+    twin = load_product_twin()
+    mount = current_layout()["mount"]
+    config = twin.env_config(piece_set=piece_set, cameras=cameras)
+    board = config.board.model_copy(update={
+        "arm_gap": mount["board_edge_to_base_frame_mm"] / 1000.0,
+        "arm_riser": mount["base_mount_datum_above_table_mm"] / 1000.0,
+    })
+    if not np.allclose(np.array(board.arm_base) * 1000,
+                       mount["white_arm_base_frame_mm"], atol=1e-6):
+        raise ValueError("current layout does not match its own arm-base record")
+    return config.model_copy(update={"board": board})
 
 
 def mass_properties(base: MassProperties, added_mass_g: float,

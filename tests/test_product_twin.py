@@ -34,7 +34,10 @@ def test_measured_board_and_single_follower():
     board = twin.board_config()
     assert board.square == pytest.approx(0.028)
     assert board.thickness == pytest.approx(0.0032)
-    assert board.top == pytest.approx(0.4332)
+    # Phase 9 adds a 0.5 mm fiducial mat under the slab: the playing surface
+    # rises by the mat thickness while the slab itself is unchanged.
+    assert board.mat == pytest.approx(0.0005)
+    assert board.top == pytest.approx(0.4337)
     assert board.arm_base[1] == pytest.approx(-0.207)
 
 

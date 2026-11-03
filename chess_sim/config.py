@@ -117,6 +117,7 @@ class BoardConfig(Config):
     square: float = 0.028          # square edge (mini set: SO-101 reach is ~33 cm)
     border: float = 0.015          # wood border around the 8x8 field
     thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
+    mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
     table_top: float = 0.43        # table height above the floor
     # Best tested custom-tool layout: 20 distinct candidates, eight critical
     # transfers, then 64/64 source-square executions. See docs/LAYOUT_OPTIMIZATION.md.
@@ -151,7 +152,7 @@ class BoardConfig(Config):
     @property
     def top(self) -> float:
         """World z of the board's playing surface."""
-        return self.table_top + self.thickness
+        return self.table_top + self.mat + self.thickness
 
     @property
     def arm_base(self) -> tuple[float, float, float]:
@@ -313,6 +314,7 @@ class AppearanceConfig(Config):
     piece_set: str = "default"            # see chess_sim.assets.available_piece_sets()
     board_labels: bool = True             # measured printed board has a-h / 1-8 labels
     board_finish: str = "wood"            # one of BOARD_FINISHES: how the board looks and grips
+    board_markers: bool = False           # printed fiducial mat under the board (Phase 9)
     # The overhead camera. None keeps the published rig: the lens on the mast beside
     # the arm, 678 mm above the board, 24 degrees. Otherwise the lens sits `camera_height`
     # above the board, `camera_over_board` of the way from the mast to straight above

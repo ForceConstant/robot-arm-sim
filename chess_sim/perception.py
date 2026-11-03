@@ -597,6 +597,7 @@ def predict_board(frame: np.ndarray, calibration: CameraCalibration,
                   *, view: str = "top", patch: int = 16,
                   min_confidence: float | None = None,
                   reference_frame: np.ndarray | None = None,
+                  reference_patches: np.ndarray | None = None,
                   recover_empty: bool = False) -> list[SquarePrediction]:
     """Classify all 64 squares from pixels, calibration and board geometry only.
 
@@ -613,8 +614,8 @@ def predict_board(frame: np.ndarray, calibration: CameraCalibration,
     invalid_frame = float(luminance.mean()) < 12.0 or float(luminance.std()) < 2.0
     patches, valid_fraction = board_patches(frame, calibration, registration,
                                             patch=patch)
-    reference = None
-    if reference_frame is not None:
+    reference = reference_patches
+    if reference is None and reference_frame is not None:
         reference, _ = board_patches(reference_frame, calibration, registration,
                                      patch=patch)
     expected = expected_background(patches, valid_fraction)
