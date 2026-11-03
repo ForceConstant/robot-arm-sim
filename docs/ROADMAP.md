@@ -589,8 +589,25 @@ Measured 2026-11-03:
   Held-out 944.5 vs 465.6 deg² for hold-position — overfit, so this proves the
   loop, not a policy.
 
-Still open in 11a: full 18 GB dataset with the wrist stream, multi-hour thermal
-soak under training load, and a turnkey harness for repeatable runs.
+**11a status 2026-11-03 — harness and fit complete, thermal gate blocked.**
+
+- Harness: `training/probes/so101_train.py` (GPU and CPU device paths, duty
+  cycle, resume, JSONL metrics, guarded temperature monitor) and
+  `training/probes/so101_fetch.py`; smoke-tested on GPU and CPU with bit-exact
+  checkpoint reload.
+- Ingest: pinned dataset (`969ae3a8…`) downloading into the `phase11_data`
+  volume; **7.6 of 15.7 GB** at the last reading, wrist stream not yet started,
+  link-limited (~2–3 MB/s effective).
+- **Thermal gate blocked.** The GTX 1060 cannot hold training inside an 85 °C
+  guard: continuous batch-8 reached 81–85 °C in minutes (throttle `0x20`), and
+  batch-4 with a 60 s/90 s duty cycle still hit 85 °C after ~45 s of training
+  (44.7 samples/s, step 500). Fan sampling shows a late, weak curve — 0 % until
+  ~80 °C, then ~60–70 % — with steady state 82–83 °C at only ~40 W and a spike
+  to 87 °C. This is marginal cooling (paste/heatsink/airflow), not a dead fan.
+- Next action is physical or host-side: cooling maintenance, or an operator-set
+  fan curve/power cap on the Unraid host. CPU training (~3.8 samples/s) remains
+  the fallback. 11a stays in progress until the soak passes and the ingest
+  completes.
 
 ### 11b — control-policy training (needs Phase 9 + 10)
 
