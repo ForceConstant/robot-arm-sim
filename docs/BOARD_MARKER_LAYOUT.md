@@ -19,26 +19,38 @@ projects to ~44.7 px (7.4 px/module) and a 30 mm marker to ~33.5 px
 * **Qualified:** 64/64 source squares, 4/4 tray slots; registration 8/8 within
   2 mm / 1° in the Phase 9 held-out runs.
 
-## Option B — 334 mm board, 55 mm border, markers in the border (rejected)
+## Option B — 334 mm board, 55 mm border, markers in the border (not yet usable)
 
 * Border 55 mm hosts a 40 mm marker with 7.5 mm quiet zones at ±139.5 mm.
-* Play area pinned: same square centres, same arm base position (the mount gap
-  drops from 90 to 50 mm so the base does not move).
-* Reach probes pass: a1→a2, b1→b2, h1→h2, h8→h7 all complete at 0.8–1.4 mm with
-  no arm-to-board contact.
-* **Fails the square matrix: 51/64.** The failing squares are a1–g1 and b2, all
-  rejected with "no jaw span with clearance and IK". The border now sits at
-  playing height where the jaw must overhang the board edge to straddle an edge
-  piece; on Option A that space is the 0.5 mm mat, low enough for the fingers.
-* Registration still works from the border markers (0.88 mm / 0.10° in a smoke
-  run, from one visible marker), so the failure is manipulation, not vision.
+* Play area pinned: same square centres, same arm base (the mount gap drops from
+  90 to 50 mm so the base does not move).
+* Reach probes pass: a1→a2, b1→b2, h1→h2, h8→h7 complete at 0.8–1.4 mm with no
+  arm-to-board contact.
+* Registration works from the border markers (0.88 mm / 0.10° in a smoke run).
+* **Open question, not a border verdict.** The all-types square scan scores
+  51/64 here, but the *unchanged* 254 mm/15 mm layout scores 52/64 on the same
+  scan, failing the same near-rank squares (a1–g1, b2, c2, d2) with IK error
+  8–13 mm against an 8 mm gate. So this scan does not implicate the border; it
+  exposes a pre-existing near-rank limitation of the arm/tool under the
+  stricter all-six-types criterion. The historical 64/64 receipt counted "at
+  least one piece type per square, with king/rook retries", which is weaker.
+
+## What that means for the overhang argument
+
+An earlier version of this note blamed the border for blocking an open jaw that
+had to pass tens of millimetres outside the board edge. That was wrong. The open
+jaw is 28.8 mm against a 28 mm square, so a finger passes the edge by well under
+a millimetre, and `jaw_clearance` only measures clearance to other pieces, not to
+the board at all. The border is a mount-clearance cost (40 mm of the 90 mm gap),
+not a grasp-volume conflict.
 
 ## Consequence for the build
 
-Do not print a 55 mm border at playing height. Either keep the thin mat
-(Option A), or change the border's *height* rather than its width — a border
-2–3 mm below the playing surface would restore the jaw overhang, but that is a
-new geometry and needs its own 64-square run before it can be claimed.
+Keep the thin mat (Option A) for the current build: it is qualified, needs no
+mount change, and the border alternative has not been shown to hold the same
+matrix. The 55 mm border is still a legitimate option on marker grounds, but it
+costs 40 mm of mount clearance and must be requalified — including resolving why
+the all-types scan fails the near rank in both layouts.
 
 The code supports both placements: `BoardConfig.marker_plane` selects `"mat"`
 or `"board"`, and `MarkerLayout.for_board()` builds the matching marker
