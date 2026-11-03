@@ -68,6 +68,13 @@ views add grazing angles and parallax without removing the remaining unknown
 band, so the 6-pose plan stays selected. Receipt:
 `.private/phase9/heldout-mv4.json`.
 
+**Rejected: drop reference-matching votes.** A square whose patch matches that
+pose's empty reference is either empty or hidden behind the arm, so those views
+were made to abstain instead of voting `empty`. Measured 39.5% resolution (121
+abstentions): it removes votes that were carrying other turns and adds no
+information to the genuinely unclear squares. Reverted; receipt
+`.private/phase9/heldout-informed.json`.
+
 Note: in the first vertical-only run one invalid rearrangement was reported
 `confirmed`; the generator had compared full FENs, so a rearrangement differing
 only in move clocks passed the "illegal" test while being piece-identical to a
