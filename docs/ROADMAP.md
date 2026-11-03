@@ -3,8 +3,11 @@
 **Updated 2026-11-03. Canonical delivery plan.** This replaces the old priority
 list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
 Phase 11 runtime lane retain their identifiers and measured, scope-limited
-completion evidence below. **Next product phase: Phase 9.** Phase 11 is complete
-as a runtime decision only; Phases 10 and 12–21 are planned, not completed.
+completion evidence below. **Next product phase: Phase 9 — in progress (registration passes, turn
+resolution 72%).** Phase 11 is **reopened**: its execution-runtime receipt is
+measured, but a locally runnable training path for both the control and vision
+models is still required (scope change 2026-11-03). Phases 10 and 12–21 are
+planned, not completed.
 Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
 
@@ -70,10 +73,11 @@ No next-stage physical work until the simulation release gate passes.
   baseline; reusable corrections; off-center targeting; local platform/data;
   sparse fixed-rig perception; sparse move inference. Limits remain below.
 - **8 — product digital twin and acceptance contract — complete 2026-11-02.**
-- **9 — wrist-only board calibration and full-board observation.**
+- **9 — wrist-only board calibration and full-board observation — in progress
+  (registration pass, turn resolution 72%).**
 - **10 — grasp localization and robust printed-piece manipulation.**
-- **11 — BC-250 ACT / larger-policy runtime decision — complete 2026-11-03
-  (CPU ACT fallback selected; GPU routes and larger artifacts rejected).**
+- **11 — local training and execution for control and vision models — in
+  progress (runtime receipt measured 2026-11-03; local training paths open).**
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -466,6 +470,15 @@ hardware commissioning session.
 
 ## Phase 9 — wrist-only calibration and complete-board perception
 
+**Status: in progress (2026-11-03).** See
+[`PHASE9_WRIST_ONLY.md`](PHASE9_WRIST_ONLY.md) for the implementation, envelope,
+numbers and open limits. Registration from the printed marker mat passes the
+2 mm / 1° gate on 8/8 held-out sessions (worst 0.49 mm, 0.06°) with zero false
+move confirmations in 200 turns; turn resolution is **72%**, below the 95% exit
+gate, because 8–19 squares per crowded board stay hidden behind the arm in every
+planned pose. Phase 9 therefore remains open: add oblique/side scan poses and
+requalify before Phase 10.
+
 **Outcome:** locate a shifted board relative to the arm and obtain trustworthy
 observations using only wrist images and measured joints. Depends on 8.
 
@@ -508,21 +521,52 @@ clearance-aware move, not a square-center assumption. Depends on 8–9.
   per-type/task/crowding results, not only a favorable aggregate. Physical
   realism and Phase 14 full-game tests remain separate gates.
 
-## Phase 11 — qualify BC-250 training and policy execution
+## Phase 11 — qualify local training and execution for control and vision models
 
-**Outcome:** a measured runtime/model selection for phases 12–18, not a promise
-that nominal model memory fits. Depends on 8; may run beside vision development.
+**Outcome:** a measured runtime/model selection **and a locally runnable training
+path for both the control policy and the vision model** for phases 12–18, not a
+promise that nominal model memory fits. Depends on 8; may run beside vision
+development.
 
-**Status: complete 2026-11-03 — see
-[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md).** Pinned
+**Scope change — 2026-11-03 (Brian): the phase is not complete.** Choosing an
+execution runtime is necessary but not sufficient. Phase 11 must demonstrate
+training **on our own services** — BC-250, HTPC GTX 1060, or CPU — for both a
+control policy and a vision model. Cloud training is explicitly out of scope. A
+route that cannot train locally is recorded as a rejected path with its measured
+blocker, not as a pass.
+
+**Status: in progress.** The execution-runtime sub-gate is measured (see
+[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)). Pinned
 full-size LeRobot ACT (51,565,446 parameters, ResNet-18, 224×224, 30-step
 chunks, VAE, FP32) passed batch-1/2 initialized steps, 20 AdamW updates on
 audited recordings, exact checkpoint reload, a bit-identical resumed update and
 an independent inference-only reload on the BC-250 **CPU**; 30-minute scheduled
 inference ran 1201 cycles over 30.0 min with p95 101 ms and no deadline or swap-growth violations; capture-age admission remains unverified.
-The Tinygrad/WebGPU ACT port was rejected in the forward graph, the 450M SmolVLA
-action artifact missed the 1.0 s deadline at 5.40–5.49 s per chunk, and the 5.44B
-MolmoAct2 artifact exceeded CPU memory before allocation. Patched ROCm was not
+required deliverables for the reopened phase:
+
+1. **Control model.** Goal-conditioned ACT trained end-to-end on a local target,
+   from audited task data through checkpoint reload, with measured samples/s,
+   peak memory, thermals and a learning-curve sanity check. A finite 20-step
+   pilot is not a training path.
+2. **Vision model.** The perception model selected for Phase 6/9 (occupancy /
+   colour, or the frozen VLM if it remains the choice) must have a local
+   fine-tune or adaptation path with measured throughput and memory — or a
+   measured frozen-inference decision with the reasoning recorded.
+3. **Small-GPU fit test.** The GTX 1060 3 GB is a first-class candidate: fit and
+   step time at batch 1/2/4/8, FP32 (Pascal FP16 compute is 1/32–1/64 rate), with
+   the live simulator's VRAM/SM contention stated rather than assumed away.
+4. **Cost-ordered ladder.** Try CPU threads → GTX 1060 → Tinygrad/Vulkan →
+   patched ROCm; stop at the first route that trains *both* models end-to-end,
+   and keep every rejected route with its receipt.
+5. **Host-change boundary.** No kernel, firmware or driver change without a
+   separate written change set and rollback, in a maintenance window.
+
+**Exit (revised):** both the control and the vision model train locally, with
+reproducible receipts (throughput, memory, thermal, reload, held-out sanity), or
+a specific local route is rejected with a measured blocker and a documented
+fallback. Execution-runtime evidence alone does not close this phase.
+
+Patched ROCm was not
 attempted because it needs kernel/firmware/driver changes. This selects a
 runtime, not a controller: Phase 12 still owns training and paired comparison.
 

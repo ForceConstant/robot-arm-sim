@@ -1362,3 +1362,13 @@ commands and limits: [`PHASE11_RUNTIME_QUALIFICATION.md`](PHASE11_RUNTIME_QUALIF
 - **Regression:** 113 pass/5 skip (clean HEAD worktree + Phase 11 files); 117 pass (custom tool + printed
   pieces). Two interrupted soak attempts and the first strict-swap failure are
   retained as evidence rather than deleted.
+
+### Phase 11 scope change — 2026-11-03
+
+Brian reopened Phase 11: selecting an execution runtime is necessary but not
+sufficient. The phase now requires a locally runnable training path for **both**
+the control policy and the vision model on services we own (BC-250, HTPC GTX
+1060, CPU), with measured throughput, memory, thermals and reload evidence.
+Cloud training is out of scope. The runtime receipt in
+[PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md) is retained
+as a sub-gate result; the 20-step ACT pilot does not count as a training path.

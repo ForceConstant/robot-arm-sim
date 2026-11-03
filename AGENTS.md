@@ -3,8 +3,9 @@
 ## Current scope
 
 Current delivery authority: `docs/ROADMAP.md` (Brian, 2026-11-03). Completed
-Phases 0–8 are bounded foundations and Phase 11's parallel runtime lane selects a
-CPU ACT fallback; **Phase 9 is next**. Develop and qualify core
+Phases 0–8 are bounded foundations; **Phase 9 is next**. Phase 11 is in
+progress: a CPU ACT execution-runtime receipt exists, but local training paths
+for both the control and vision models are still required. Develop and qualify core
 software in simulation before real autonomous integration. Product target is
 one follower with wrist-only vision, Pi 4 direct camera/servo I/O and watchdog,
 and BC-250 central processing/model inference/training where qualified. Existing
@@ -22,9 +23,19 @@ user; the roadmap is not authorization to implement all future phases at once.
   conservative 2-D clearance heuristic do not prove mechanical impossibility.
 - Tray qualification must assert distinct actual target coordinates. A reset
   clears capture bookkeeping and otherwise sends every capture to slot zero.
+- Phase 9 (in progress): wrist-only registration uses the printed 4-marker mat
+  (`chess_sim/fiducials.py`, mat thickness `BoardConfig.mat`), a saved
+  hand-eye/lens calibration (`chess_sim/wrist_calibration.py`) and measured
+  joints. Never feed simulator camera or board truth to inference; the checker
+  fit stays only as a marker-free ablation. Empty references are epoch-bound and
+  must be re-captured after any re-registration. Measured: registration 8/8
+  within 2 mm/1°, 0 false confirmations in 200 turns, turn resolution 72%
+  (gate 95%) — see `docs/PHASE9_WRIST_ONLY.md`.
 
-- Phase 11 runtime evidence: `docs/PHASE11_RUNTIME_QUALIFICATION.md`. Full ACT
-  is qualified on BC-250 **CPU** only. Tinygrad/WebGPU ACT, the 450M SmolVLA
+- Phase 11 runtime evidence: `docs/PHASE11_RUNTIME_QUALIFICATION.md`. This is a
+  sub-gate receipt: Phase 11 also requires local training of control **and**
+  vision models (scope change 2026-11-03). Full ACT execution is qualified on
+  BC-250 **CPU** only. Tinygrad/WebGPU ACT, the 450M SmolVLA
   action artifact and the 5.44B MolmoAct2 artifact are rejected; do not cite the
   old tiny-MLP or 35B-VLM receipts as ACT/VLA execution evidence. A fresh HTTP
   JPEG is not a verified capture timestamp, so probe latency is not a

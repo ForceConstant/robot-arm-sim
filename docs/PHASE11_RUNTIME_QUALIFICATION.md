@@ -5,6 +5,13 @@ compatibility**, not trained-policy quality, not physical readiness and not a
 whole-board controller result. No robot, servo, camera or simulator command was
 issued by any probe in this phase; the simulator was only read over LAN.
 
+> **Scope update 2026-11-03 (Brian): this document is a sub-gate receipt, not
+> Phase 11 completion.** Phase 11 is reopened and additionally requires a
+> locally runnable training path for both the control policy and the vision
+> model, on our own services. See the roadmap's Phase 11 deliverables. Cloud
+> training is out of scope; a route that cannot train locally is a rejected
+> path, not a pass.
+
 ## Outcome
 
 **Selected runtime: pinned LeRobot ACT at full default size, FP32, CPU fallback
