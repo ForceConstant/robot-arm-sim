@@ -25,7 +25,9 @@ user; the roadmap is not authorization to implement all future phases at once.
   clears capture bookkeeping and otherwise sends every capture to slot zero.
 - Phase 9 (complete 2026-11-03 for a stated envelope; 94.0% turn resolution
   accepted by Brian, self-model occlusion queued to Phase 10): wrist-only
-  registration uses the printed 4-marker mat
+  registration uses the printed 4-marker mat, with all board measurements
+  relative to the table (surface = mat + slab = 3.7 mm, marker face = 0.5 mm,
+  arm datum = 30 mm)
   (`chess_sim/fiducials.py`, mat thickness `BoardConfig.mat`), a saved
   hand-eye/lens calibration (`chess_sim/wrist_calibration.py`) and measured
   joints. Never feed simulator camera or board truth to inference; the checker

@@ -150,9 +150,28 @@ class BoardConfig(Config):
         return self.field + 2 * self.border
 
     @property
+    def surface_above_table(self) -> float:
+        """Playing surface height above the table: mat + slab, in metres.
+
+        Every board-relative measurement is taken from the table, so this is
+        the datum the rest of the product uses instead of world z.
+        """
+        return self.mat + self.thickness
+
+    @property
+    def marker_above_table(self) -> float:
+        """Printed fiducial face height above the table (top of the mat)."""
+        return self.mat
+
+    @property
+    def arm_datum_above_table(self) -> float:
+        """Arm mounting datum above the table."""
+        return self.arm_riser
+
+    @property
     def top(self) -> float:
-        """World z of the board's playing surface."""
-        return self.table_top + self.mat + self.thickness
+        """World z of the board's playing surface (table_top + heights)."""
+        return self.table_top + self.surface_above_table
 
     @property
     def arm_base(self) -> tuple[float, float, float]:

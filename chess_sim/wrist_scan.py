@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from .board_registration import BoardRegistration, register_board
-from .fiducials import estimate_board_pose, marker_plane_offset
+from .fiducials import estimate_board_pose
 from .perception import (CLASSES, PerceptionModel, SquarePrediction,
                          predict_board, square_features, board_patches)
 from .vision_geometry import CameraCalibration
@@ -107,7 +107,7 @@ class WristScanner:
 
     def __init__(self, calibration: WristCalibration, poses: list[ScanPose],
                  model: PerceptionModel, *, square: float, board_z: float,
-                 board_thickness: float = 0.0032,
+                 marker_z: float,
                  method: str = "markers", min_markers: int = 2):
         if method not in ("markers", "checker"):
             raise ValueError("method must be 'markers' or 'checker'")
@@ -116,7 +116,11 @@ class WristScanner:
         self.model = model
         self.square = float(square)
         self.board_z = float(board_z)
-        self.board_thickness = float(board_thickness)
+        # World height of the printed marker face; the caller derives it from
+        # the table datum (table + mat), never from the playing surface.
+        if not np.isfinite(marker_z):
+            raise ValueError("marker_z must be a finite world height")
+        self.marker_z = float(marker_z)
         self.method = method
         self.min_markers = int(min_markers)
         self.epoch = ReferenceEpoch()
@@ -132,7 +136,7 @@ class WristScanner:
         if self.method == "markers":
             return estimate_board_pose(
                 views, self.square, self.board_z,
-                marker_z=self.board_z + marker_plane_offset(self.board_thickness),
+                marker_z=self.marker_z,
                 min_markers=self.min_markers)
         return register_board(views[0][0], views[0][1], self.board_z,
                               prior=BoardRegistration((0.0, 0.0), 0.0, self.square,

@@ -21,8 +21,11 @@ queued as a Phase 10 refinement (self-model occlusion).
 
 ## Envelope measured
 
-* Product board: 28 mm squares, 15 mm labelled border, 3.2 mm slab, 0.5 mm mat
-  (surface at 0.4337 m).
+* Product board, **measured from the table as the datum**: 28 mm squares, 15 mm
+  labelled border, 3.2 mm slab on a 0.5 mm printed mat -> playing surface
+  **3.7 mm above the table**, marker face **0.5 mm above the table**, arm datum
+  **30 mm above the table**. World z is derived (`table_top + height`) and never
+  used as the reference for a board measurement.
 * Mount: `hardware/current_layout.json` — 90 mm board edge to base frame,
   30 mm riser, one follower, custom jaw revision `4dca0986…`.
 * Camera: wrist only, 640×480, saved calibration `sim-current-layout-custom-v3`.

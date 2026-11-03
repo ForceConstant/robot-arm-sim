@@ -93,7 +93,7 @@ def test_marker_geometry_is_complete_and_ordered():
     assert fiducials.marker_bits(0).shape == (6, 6)
     geoms = fiducials.mat_geoms(0.0032, 0.0005)
     assert all(part["size"][0] > 0 for part in geoms)
-    assert fiducials.marker_plane_offset(0.0032) < 0
+    assert fiducials.marker_height_above_table(0.0005) == pytest.approx(0.00056)
 
 
 def test_scan_plan_loads_poses_with_six_finite_joints():

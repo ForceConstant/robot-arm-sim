@@ -178,7 +178,7 @@ def main() -> int:
             env.config = env.config.model_copy(update={"board": env.board})
             scanner = WristScanner(watch, poses, model,
                                    square=env.board.square, board_z=env.board.top,
-                                   board_thickness=env.board.thickness,
+                                   marker_z=env.board.table_top + env.board.marker_above_table,
                                    method=args.method)
             empty_frames = _capture(env, scanner, poses)
             references = {item.pose: item.frame for item in empty_frames}

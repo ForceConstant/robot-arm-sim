@@ -63,15 +63,19 @@ DEFAULT_BOARD_THICKNESS = 0.0032
 MAT_THICKNESS_M = 0.0005
 
 
-def marker_plane_offset(board_thickness: float = DEFAULT_BOARD_THICKNESS) -> float:
-    """Height of the painted marker face relative to the playing surface.
+PRINT_RAISE_M = 0.00006      # marker ink sits this far above the mat face
 
-    The mat is a thin sheet under the slab, so the printed face lies one slab
-    thickness below the playing surface.
+
+def marker_height_above_table(mat_thickness: float = MAT_THICKNESS_M) -> float:
+    """Printed marker face height above the table.
+
+    The table is the datum for every board-relative measurement: the mat sits
+    on it, and the markers print on the mat's top face.  No negative offsets
+    relative to the playing surface are used anywhere.
     """
-    if not np.isfinite(board_thickness) or board_thickness <= 0:
-        raise ValueError("board_thickness must be positive and finite")
-    return -board_thickness + 0.00005
+    if not np.isfinite(mat_thickness) or mat_thickness < 0:
+        raise ValueError("mat thickness must be finite and non-negative")
+    return mat_thickness + PRINT_RAISE_M
 
 
 def marker_bits(marker_id: int) -> np.ndarray:
@@ -215,7 +219,7 @@ def _project(pose, calibration: CameraCalibration, points: np.ndarray,
 
 def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
                         square: float, board_z: float, *,
-                        marker_z: float | None = None,
+                        marker_z: float,
                         min_markers: int = MIN_MARKERS,
                         max_rms_px: float = MAX_RMS_PX,
                         search_mm: float = 40.0,
@@ -229,8 +233,8 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     ``min_markers`` markers are detected or the joint reprojection error
     exceeds ``max_rms_px``.
     """
-    if marker_z is None:
-        marker_z = board_z + marker_plane_offset()
+    if not np.isfinite(marker_z):
+        raise ValueError("marker_z must be a finite world height")
     _, obj_points = object_points()
     # One marker contributes four consecutive corners; build the index from the
     # mat spec because the flattened id array repeats each id four times.
