@@ -156,6 +156,8 @@ def main():
     ap.add_argument("--root", type=Path, default=Path("/data/so101/full"))
     ap.add_argument("--camera", default="wrist", choices=("top", "wrist"))
     ap.add_argument("--episodes", type=int, default=40)
+    ap.add_argument("--selection", choices=("random", "first"), default="random",
+                    help="first = lowest episode indices (already-downloaded smoke tests)")
     ap.add_argument("--per-episode", type=int, default=16)
     ap.add_argument("--test-episodes", type=int, default=5)
     ap.add_argument("--steps", type=int, default=400)
@@ -187,9 +189,13 @@ def main():
     from act_runtime import load_act, config, loss
 
     episodes, rows, data_files = load_index(args.root, args.camera)
-    rng = np.random.default_rng(20261103)
-    episodes = [episodes[i] for i in rng.permutation(len(episodes))[:args.episodes]]
     episodes.sort(key=lambda e: e["episode_index"])
+    if args.selection == "first":
+        episodes = episodes[:args.episodes]
+    else:
+        rng = np.random.default_rng(20261103)
+        episodes = [episodes[i] for i in rng.permutation(len(episodes))[:args.episodes]]
+        episodes.sort(key=lambda e: e["episode_index"])
 
     t0 = time.monotonic()
     frames = collect_frames(args.root, args.camera, episodes, args.per_episode)
@@ -214,7 +220,12 @@ def main():
             samples.append({"image": fr[idx], "state": st[idx], "action": chunk,
                             "pad": pad, "goal": goal, "episode": e["episode_index"]})
     if not samples:
-        raise RuntimeError("no samples built")
+        key = f"videos/observation.images.{args.camera}"
+        wanted = {(int(e[key + "/chunk_index"]), int(e[key + "/file_index"])) for e in episodes}
+        present = {(int(p.parent.name.split("-")[1]), int(p.stem.split("-")[1]))
+                   for p in (args.root / f"videos/observation.images.{args.camera}").rglob("*.mp4")}
+        raise RuntimeError(f"no samples built; video files present={len(present)} "
+                           f"needed={sorted(wanted)} missing={sorted(wanted - present)}")
 
     eps = sorted({s["episode"] for s in samples})
     test_eps = set(eps[-args.test_episodes:]) if len(eps) > args.test_episodes else set(eps[-1:])
@@ -338,7 +349,7 @@ def main():
         "gpu_peak_c": monitor.peak, "temp_limit_c": args.temp_limit,
         "reload_exact": reload_exact,
         "checkpoint_MB": round(ckpt_path.stat().st_size / 1e6, 1),
-        "dataset_rows": rows,
+        "dataset_rows": rows, "selection": args.selection,
     }
     (args.out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary), flush=True)
