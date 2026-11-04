@@ -609,8 +609,14 @@ Measured 2026-11-03:
   `nvidia-settings`/X, no NVIDIA `hwmon` PWM); the only software lever is a
   host-side power cap. This is marginal cooling (paste/heatsink/airflow), not a
   dead fan, and not something the training harness can compensate for.
-- **Operator task (Brian, 2026-11-03): clean the GPU heatsink/fan and replace
-  the thermal paste.** The measured behaviour — 82–83 °C steady at only ~40 W,
+- **Service done (Brian, 2026-11-03): heatsink cleaned, paste replaced.** Post-service
+  result: idle 43 °C (was 56), 62 °C after 20 s at ~60 W (was 80 °C at 1.5 s),
+  and two clean 30-minute soaks at 67.0 (batch 8) and 57.8 (batch 6) samples/s
+  with **peak 80 °C, median 79 °C, no throttle, no guard trip**. Ingest complete:
+  82/82 pinned files, 0 missing, 16.1 GB, both cameras. Wrist re-validated on GPU.
+  **Open decision:** the written ≤78 °C target is missed by 1–2 °C — accept 79–80 °C
+  as the operating envelope, or pursue case airflow / fan curve / power cap.
+- **Original operator task:** The measured behaviour — 82–83 °C steady at only ~40 W,
   and 56 → 84 °C in under two seconds under load — is consistent with dried or
   pumped-out paste and a dust-blocked fin stack, so this is the first thing to
   fix before any further training attempt.

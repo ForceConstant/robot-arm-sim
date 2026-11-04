@@ -236,6 +236,21 @@ interrupted transfer are being removed.
 40 s with 64.5 samples/s — down from 85 °C+ before servicing. The 30-minute run
 is the acceptance gate.
 
+**Post-service soak results (2026-11-03):** two 30-minute batch runs, both
+completed with **no throttle flag and no guard trip**:
+
+- batch 8: 15,109 steps, 67.0 samples/s, peak **80 °C**, median 79 °C, reload exact.
+- batch 6: 17,359 steps, 57.8 samples/s, peak **80 °C**, median 79 °C, reload exact.
+
+Load is no longer the variable — the card settles at 79–80 °C at either batch
+size, with the fan at its normal curve. The written acceptance target was steady
+≤78 °C, so this **misses by 1–2 °C**, even though it is a large improvement on
+the pre-service behaviour (85 °C+ abort within minutes) and remains inside the
+85 °C guard. Decision required: accept 79–80 °C as the documented operating
+envelope, or pursue more cooling (case airflow, fan curve, or a host-side power
+cap). Wrist stream also re-validated on GPU (2 episodes, reload exact, 56 °C
+peak).
+
 **Service task (Brian, 2026-11-03):** clean the heatsink/fan and replace the
 thermal paste. Post-service acceptance: steady state at or below 78 °C under the
 batch-8 training load with the fan below 100 %, and a clean 30-minute soak
