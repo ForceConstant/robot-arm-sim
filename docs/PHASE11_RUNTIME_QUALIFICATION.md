@@ -251,6 +251,11 @@ envelope, or pursue more cooling (case airflow, fan curve, or a host-side power
 cap). Wrist stream also re-validated on GPU (2 episodes, reload exact, 56 °C
 peak).
 
+**Acceptance (Brian, 2026-11-03): 79–80 °C is accepted as the operating
+envelope.** The original ≤78 °C target is missed by 1–2 °C; this is recorded as
+an explicit acceptance, not a silent relaxation. Both 30-minute soaks completed
+with no throttle flag and no guard trip, and 11a is complete.
+
 **Service task (Brian, 2026-11-03):** clean the heatsink/fan and replace the
 thermal paste. Post-service acceptance: steady state at or below 78 °C under the
 batch-8 training load with the fan below 100 %, and a clean 30-minute soak

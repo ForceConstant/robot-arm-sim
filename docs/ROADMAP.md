@@ -78,7 +78,7 @@ No next-stage physical work until the simulation release gate passes.
   2026-11-03 for the stated envelope (94.0% turn resolution on crowded boards).**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — local training and execution for control and vision models — in
-  progress: 11a infrastructure partly demonstrated, 11b/11c blocked on 9 + 10.**
+  progress: 11a complete (2026-11-03), 11b/11c blocked on 9 + 10.**
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -590,44 +590,30 @@ Measured 2026-11-03:
   Held-out 944.5 vs 465.6 deg² for hold-position — overfit, so this proves the
   loop, not a policy.
 
-**11a status 2026-11-03 — harness and fit complete, thermal gate blocked.**
+**11a complete — 2026-11-03.**
 
-- Harness: `training/probes/so101_train.py` (GPU and CPU device paths, duty
-  cycle, resume, JSONL metrics, guarded temperature monitor) and
-  `training/probes/so101_fetch.py`; smoke-tested on GPU and CPU with bit-exact
+- **Harness:** `training/probes/so101_train.py` (GPU and CPU devices, duty cycle,
+  resume, JSONL metrics, guarded temperature monitor) and
+  `training/probes/so101_fetch.py`. Smoke-tested on GPU and CPU with bit-exact
   checkpoint reload.
-- Ingest: pinned dataset (`969ae3a8…`) downloading into the `phase11_data`
-  volume; **7.6 of 15.7 GB** at the last reading, wrist stream not yet started,
-  link-limited (~2–3 MB/s effective).
-- **Thermal gate blocked.** The GTX 1060 cannot hold training inside an 85 °C
-  guard: continuous batch-8 reached 81–85 °C in minutes (throttle `0x20`),
-  batch-4 with a 60 s/90 s duty cycle hit 85 °C after ~45 s (44.7 samples/s,
-  step 500), and **batch 1 pinned at the 83 °C guard after ~35 s** (15.0
-  samples/s, step 525) before the run exited. Fan sampling shows a late, weak
-  curve — 0 % until ~80 °C, then ~60–70 % — with steady state 82–83 °C at only
-  ~40 W and a spike to 87 °C. No fan-control surface exists in software (no
-  `nvidia-settings`/X, no NVIDIA `hwmon` PWM); the only software lever is a
-  host-side power cap. This is marginal cooling (paste/heatsink/airflow), not a
-  dead fan, and not something the training harness can compensate for.
-- **Service done (Brian, 2026-11-03): heatsink cleaned, paste replaced.** Post-service
-  result: idle 43 °C (was 56), 62 °C after 20 s at ~60 W (was 80 °C at 1.5 s),
-  and two clean 30-minute soaks at 67.0 (batch 8) and 57.8 (batch 6) samples/s
-  with **peak 80 °C, median 79 °C, no throttle, no guard trip**. Ingest complete:
-  82/82 pinned files, 0 missing, 16.1 GB, both cameras. Wrist re-validated on GPU.
-  **Open decision:** the written ≤78 °C target is missed by 1–2 °C — accept 79–80 °C
-  as the operating envelope, or pursue case airflow / fan curve / power cap.
-- **Original operator task:** The measured behaviour — 82–83 °C steady at only ~40 W,
-  and 56 → 84 °C in under two seconds under load — is consistent with dried or
-  pumped-out paste and a dust-blocked fin stack, so this is the first thing to
-  fix before any further training attempt.
-  **Acceptance after reassembly:** the guarded ramp test must hold a steady state
-  at or below **78 °C** under the batch-8 training load with the fan below 100 %,
-  and the 30-minute soak must complete without touching the 85 °C guard. Until
-  that passes, the 11a thermal gate stays blocked and no GPU training runs.
-- Remaining software lever if servicing is deferred: an operator-set power cap
-  (60–140 W range) or fan curve on the Unraid host. CPU training (~3.8
-  samples/s) remains the fallback. 11a stays in progress until the soak passes
-  and the ingest completes.
+- **Ingest:** all **82/82** pinned files present, **0 missing**, 16.1 GB in
+  `phase11_data` — 39 top + 36 wrist videos plus meta/data. Stale partial files
+  removed.
+- **Fit:** full ACT at batch 1/2/4/8 under 1.07 GiB reserved; 74.9 samples/s on
+  synthetic tensors, 62.6 on real data.
+- **Thermal, pre-service:** continuous batch 8, duty-cycled batch 4 and batch 1
+  all hit the guard (85/85/83 °C) — the card was thermally unusable.
+- **Service (Brian, 2026-11-03):** heatsink cleaned, paste replaced. Idle fell to
+  **43 °C** (was 56); 20 s at ~60 W reached **62 °C** (was 80 °C at 1.5 s).
+- **Thermal, post-service:** two 30-minute soaks completed clean — batch 8 at
+  **67.0 samples/s**, batch 6 at **57.8 samples/s**; peak **80 °C**, median
+  **79 °C**, no throttle flag, no guard trip, checkpoint reload exact.
+- **Accepted operating envelope: 79–80 °C (Brian, 2026-11-03).** This misses the
+  originally written ≤78 °C target by 1–2 °C and is recorded as an explicit
+  acceptance, not a silent relaxation. Revisit if multi-hour runs drift upward.
+- **Wrist stream** validated on CPU and GPU (2 episodes, reload exact).
+- Scope limits: one camera per run, 12 episodes per run, heavy overfit (held-out
+  worse than hold-position) — this qualifies the pipeline, not policy quality.
 
 ### 11b — control-policy training (needs Phase 9 + 10)
 
