@@ -83,3 +83,30 @@ user; the roadmap is not authorization to implement all future phases at once.
 - Update the project notes at `/home/node/obsidian/Chess-Robot-Arm*.md` when
   architecture or measured environment readiness changes. Physical gates remain
   independent of simulator-environment readiness.
+
+## BC-250 CachyOS simulation workstation
+
+Brian requested that future robot-arm simulation and test-case runs use the
+BC-250 on CachyOS rather than Unraid. The workstation is `cachyos`
+(`brian@192.168.1.171`), with the project at `/home/brian/robot-arm-sim` and
+the user launcher at `~/.local/bin/robot-arm-sim`.
+
+- Before running project simulations or tests, synchronize the current working
+  tree to the BC-250 and check its Git revision/status; do not test an old clean
+  clone when the active source has uncommitted changes. Exclude `.private`,
+  generated datasets/runs, `dist`, virtualenv/toolchain directories and private
+  CAD assets. Preserve the BC-250's own generated data; do not use destructive
+  mirroring.
+- Use `robot-arm-sim test` for the suite, `robot-arm-sim python <script>` for
+  project tools, or `robot-arm-sim serve` for a localhost-only simulator. The
+  launcher selects the user-local Python 3.11 environment and sets
+  `MUJOCO_GL=egl`, `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1`.
+- EGL rendering has been verified on `AMD BC-250 (radeonsi, gfx1013)`. MuJoCo
+  physics remains CPU-executed; this workstation setup does **not** mean the
+  simulation/test physics or PyTorch training uses GPU compute. Do not add ROCm,
+  alter kernel/GPU settings, start a persistent service, or change containers as
+  part of routine test execution.
+- Keep workload duration and scope explicit. A renderer smoke check is not a
+  full test-suite or long-run qualification; preserve that distinction in
+  reports. If a GPU fault appears, stop further GPU work and report it rather
+  than trusting subsequent results without recovery.
