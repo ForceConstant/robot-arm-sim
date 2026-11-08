@@ -95,8 +95,10 @@ the user launcher at `~/.local/bin/robot-arm-sim`.
   tree to the BC-250 and check its Git revision/status; do not test an old clean
   clone when the active source has uncommitted changes. Exclude `.private`,
   generated datasets/runs, `dist`, virtualenv/toolchain directories and private
-  CAD assets. Preserve the BC-250's own generated data; do not use destructive
-  mirroring.
+  CAD assets. If a case needs the custom gripper, sync only the licensed
+  `.private/gripper-assets` pack separately into the matching ignored path; never
+  include it in Git or copy unrelated receipts/logs. Preserve the BC-250's own
+  generated data; do not use destructive mirroring.
 - Use `robot-arm-sim test` for the suite, `robot-arm-sim python <script>` for
   project tools, or `robot-arm-sim serve` for a localhost-only simulator. The
   launcher selects the user-local Python 3.11 environment and sets
