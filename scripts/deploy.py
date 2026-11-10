@@ -15,8 +15,10 @@ import tarfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCKHAND = "http://100.76.32.93:7120"
-DOCKER = "http://100.76.32.93:2375"
+# Endpoints are overridable: a host that is on the LAN but not on Tailscale
+# cannot reach the 100.x address, and hardcoding it forced a tunnel.
+DOCKHAND = os.environ.get("DOCKHAND_URL", "http://100.76.32.93:7120")
+DOCKER = os.environ.get("DOCKER_URL", "http://100.76.32.93:2375")
 STACK = "robot_arm"
 COMPOSE_PATH = "/app/data/stacks/HTPC/robot_arm/compose.yaml"
 
