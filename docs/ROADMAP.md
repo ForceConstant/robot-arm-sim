@@ -602,6 +602,8 @@ blocker, never as a pass.
 **Status: in progress — 11a complete (2026-11-03); 11b complete (2026-11-10,
 gate met in aggregate with a named move-family shortfall); 11c pending.**
 
+> **Execution host (2026-11-10, Brian):** from now on, all training and simulation/analysis runs for Phase 11 (11b follow-ups and 11c onward) must run on **`bc250-cachy`** (`brian@192.168.1.171`, CachyOS, BC-250, project `/home/brian/robot-arm-sim`, launcher `~/.local/bin/robot-arm-sim`). Synchronize the active working tree before runs (exclude `.private`, generated datasets/runs, `dist`, venv/toolchain dirs, private CAD assets; preserve BC-250 generated data; no destructive mirroring). Use `robot-arm-sim test|python|serve` with explicit scope/duration; MuJoCo physics remains CPU-executed (EGL verified) and GPU compute is not implied. Record this host in 11c receipts.
+
 ### 11a — infrastructure and execution (after Phase 8; unblocked)
 
 Scope: dataset ingestion (public LeRobot v3, including the wrist stream),
