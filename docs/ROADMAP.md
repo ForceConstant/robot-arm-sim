@@ -600,7 +600,8 @@ services only — BC-250, HTPC GTX 1060, CPU. Cloud training is out of scope. A
 route that cannot train locally is recorded as a rejected path with its measured
 blocker, never as a pass.
 
-**Status: in progress — 11a partly demonstrated, 11b and 11c not started.**
+**Status: in progress — 11a complete; 11b and 11c unblocked as of 2026-11-09
+because Phase 10 closed (grasp/task buckets measured).**
 
 ### 11a — infrastructure and execution (after Phase 8; unblocked)
 
