@@ -4,9 +4,12 @@
 list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
 Phase 11 runtime lane retain their identifiers and measured, scope-limited
 completion evidence below. **Phases 9 and 10 are complete** (2026-11-03 at 94.0%
-turn resolution; 2026-11-09 owner-accepted at 98.54%). **Phase 11 is in
-progress: 11a (infrastructure/execution) and 11b (control-policy training) are
-complete; 11c (vision-model training) remains.** Phases 12–21 are planned, not
+turn resolution; 2026-11-09 owner-accepted at 98.54%). **Phase 11 is complete (2026-11-10): 11a (infrastructure/execution) and 11b
+(control-policy training) complete; 11c (vision-model training) closed with
+exit-compliant measured evidence in simulation envelope** (c/a frozen/geometry
+accepted with bounded throughput/memory/thermal/reload/held-out evidence; b
+measured and frozen B1-alone rejected with documented fallback) — see
+[`docs/PHASE11C_RESULTS.md`](docs/PHASE11C_RESULTS.md). **Phases 12–21 are planned, not
 completed.
 Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
@@ -76,8 +79,10 @@ No next-stage physical work until the simulation release gate passes.
 - **9 — wrist-only board calibration and full-board observation — complete
   2026-11-03 for the stated envelope (94.0% turn resolution on crowded boards).**
 - **10 — grasp localization and robust printed-piece manipulation.**
-- **11 — local training and execution for control and vision models — in
-  progress: 11a and 11b complete (2026-11-03 / 2026-11-10), 11c pending.**
+- **11 — local training and execution for control and vision models — complete
+  (2026-11-10, sim envelope):** 11a infrastructure/execution and 11b control-policy
+  training complete; 11c vision-model training closed with measured evidence
+  (c/a frozen/geometry accepted; b frozen B1-alone rejected with documented fallback).
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -599,8 +604,14 @@ services only — BC-250, HTPC GTX 1060, CPU. Cloud training is out of scope. A
 route that cannot train locally is recorded as a rejected path with its measured
 blocker, never as a pass.
 
-**Status: in progress — 11a complete (2026-11-03); 11b complete (2026-11-10,
-gate met in aggregate with a named move-family shortfall); 11c pending.**
+**Status: complete (2026-11-10, exit-compliant sim envelope).** 11a complete
+(2026-11-03). 11b complete (2026-11-10, gate met in aggregate with a named
+move-family shortfall). 11c complete (2026-11-10): (c)/(a) closed by measured
+frozen/calibrated-geometry decisions with bounded throughput/memory/thermal/
+reload/held-out evidence and 0 false confirmations; (b) closed by specific local
+route measured and rejected (B1, given type hypothesis, 3/24 accepted, no type-ID)
+with documented blocker and fallback. See [`docs/PHASE11C_RESULTS.md`](PHASE11C_RESULTS.md).
+Simulated success does not pass a physical gate.
 
 > **Execution host (2026-11-10, Brian):** from now on, all training and simulation/analysis runs for Phase 11 (11b follow-ups and 11c onward) must run on **`bc250-cachy`** (`brian@192.168.1.171`, CachyOS, BC-250, project `/home/brian/robot-arm-sim`, launcher `~/.local/bin/robot-arm-sim`). Synchronize the active working tree before runs (exclude `.private`, generated datasets/runs, `dist`, venv/toolchain dirs, private CAD assets; preserve BC-250 generated data; no destructive mirroring). Use `robot-arm-sim test|python|serve` with explicit scope/duration; MuJoCo physics remains CPU-executed (EGL verified) and GPU compute is not implied. Record this host in 11c receipts.
 
@@ -681,19 +692,18 @@ held out, split by whole episode). Three seeds × 3,000 steps at batch 4:
 Receipt: [PHASE11B_CONTROL_TRAINING.md](PHASE11B_CONTROL_TRAINING.md). Evidence:
 `reports/phase11b_*.json`.
 
-### 11c — vision-model training (needs Phase 9 + 10)
+### 11c — vision-model training (needs Phase 9 + 10) — closed 2026-11-10 (exit-compliant, sim envelope)
 
-Scope: choose and train a candidate for the worst case, or record a measured
-frozen-model + geometry decision meeting the same budgets:
+**Status:** complete (2026-11-10). Executed on **bc250-cachy** (`brian@192.168.1.171`, CachyOS BC-250, 16c/14GB), MuJoCo CPU/EGL, env `/home/brian/robot-arm-sim/.venv/bin/python` 3.11.18; active tree synced to `/home/brian/robot-arm-sim-phase11c`. Measured frozen/calibrated-geometry decisions and measured rejection+fallback recorded with local evidence (bounded samples). Full closure: [`docs/PHASE11C_RESULTS.md`](PHASE11C_RESULTS.md), [`docs/PHASE11C_EVIDENCE_PLAN.md`](PHASE11C_EVIDENCE_PLAN.md), [`docs/PHASE11C_VISION_PLAN.md`](PHASE11C_VISION_PLAN.md), [`reports/phase11c/`](../reports/phase11c/).
 
-- (a) opponent-move change detection robust to occlusion and shadows;
-- (b) per-piece type plus in-square position/orientation, including knight yaw,
-  as required by Phase 10;
-- (c) wrist-only board registration under real occlusion (Phase 9).
+Scope (met per exit): choose/train candidate for worst case, or record measured
+frozen-model + calibrated-geometry decision meeting same budgets for:
 
-The current floor is geometric registration (not learned), a 32-unit NumPy MLP
-for occupancy/colour over 34 patch features (trained locally on CPU) and
-legal-successor move inference (no learning). That floor does not cover (a)–(c).
+- **(a) Opponent-move change detection robust to occlusion and shadows — ACCEPTED (A1 frozen/geometry, sim envelope):** self-occlusion-masked perception/fusion + existing legal-successor inference. Controlled paired held-out (seed 9300, 8×25=200, 6-view, identical hashes): **200/200 resolved, 0 false confirmations**, insufficient/coverage abstentions eliminated in sample (residual safe ambiguous promotion). Dedicated shadow/arm-over-changed stress characterization remains a follow-up for tighter bounds.
+- **(b) Per-piece type plus in-square position/orientation, including knight yaw — B1 measured; frozen B1-alone REJECTED for full 11c(b), fallback documented:** `fit_mesh_axis` (given type/mesh, axis mod π, 6-view) eval 24 cases (4/type): **3/24 accepted (12.5%, knights)**; accepted knights accurate (axis err mean 0.513°, XY mean 0.614 mm, ~1.32 s/fit) but low acceptance on symmetric pieces and **no per-piece type identification**. Measured blocker: type-ID absent + 12.5% acceptance/instability. **Documented fallback:** scoped local type-ID+pose training probe on bc250-cachy (or hybrid type-known + B1 refinement with abstention) with dataset manifests/train/reload/held-out/resource/thermal evidence.
+- **(c) Wrist-only board registration under real occlusion (Phase 9) — ACCEPTED (C1 frozen/geometry, sim envelope):** marker registration + self-occlusion-masked wrist occupancy/colour + median fusion. Controlled paired held-out: **200/200 vs 190/200 no-self-occ vs 188/200 baseline, 0 false confirmations**, abstentions 13→11→1, reg **8/8 ≤2mm/1°**, unknown/rescans reduced. R (bounded): reload/determinism identical (SHA256 `7deba606...704d5`); harnessed 4×5 rc 0 20/20, peak RSS ~3.47 GiB, tctl 48.25→55.625°C max, no throttling noted.
+
+Prior floor (geometric registration, 32-unit NumPy occupancy/colour MLP, legal-successor inference) remains the basis; C1/A1 extend it with measured self-occlusion handling and evidence. Not a physical gate; cloud training out of scope.
 
 ### Rejected routes (receipts retained)
 
@@ -708,13 +718,12 @@ legal-successor move inference (no learning). That floor does not cover (a)–(c
   gfx1013 rocBLAS build, and PyTorch built from source. Trackers:
   `drm/amd#5597` (compute TLB), `drm/amd#5590` (SDMA).
 
-### Exit (revised)
+### Exit (revised) — satisfied (2026-11-10, sim envelope)
 
-- 11a: reproducible receipts for ingestion, harness, fit and thermal soak.
-- 11b and 11c: both models trained locally with throughput, memory, thermal,
-  reload and held-out evidence — or a specific local route rejected with a
-  measured blocker and a documented fallback.
-- Execution-runtime evidence alone does not close this phase.
+- 11a: reproducible receipts for ingestion, harness, fit and thermal soak. **Complete.**
+- 11b: control policy trained locally with throughput, memory, thermal, reload and held-out evidence (aggregate gate met; named move-family shortfall). **Complete.**
+- 11c: vision path closed with exit-compliant measured evidence — (c)/(a) measured frozen/calibrated-geometry decisions meeting safety/evidence requirements in sim envelope with throughput/memory/thermal/reload/held-out receipts (bounded); (b) specific local route (B1 frozen geometry, given type hypothesis) measured and **rejected** for full 11c(b) with measured blocker and documented fallback (scoped local type-ID+pose training probe/hybrid). **Complete (exit-compliant).** Local services only; cloud training out of scope.
+- Execution-runtime evidence alone does not close this phase; simulated success does not pass a physical gate.
 
 Evidence: [PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)
 and [PHASE11_LOCAL_TRAINING_PATHS.md](PHASE11_LOCAL_TRAINING_PATHS.md).
