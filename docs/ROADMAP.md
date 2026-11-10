@@ -1,14 +1,13 @@
 # Chess robot — simulation-first delivery roadmap
 
-**Updated 2026-11-03. Canonical delivery plan.** This replaces the old priority
+**Updated 2026-11-10. Canonical delivery plan.** This replaces the old priority
 list and the earlier hardware-first build sequence. Phases 0–8 and the parallel
 Phase 11 runtime lane retain their identifiers and measured, scope-limited
-completion evidence below. **Phase 9 is complete (2026-11-03) for a stated
-envelope at 94.0% turn resolution; next product phase: Phase 10.** Phase 11 is
-**reopened**: its execution-runtime receipt is measured, but a locally runnable
-training path for both the control and vision models is still required (scope
-change 2026-11-03). Phases 10 and 12–21 are
-planned, not completed.
+completion evidence below. **Phases 9 and 10 are complete** (2026-11-03 at 94.0%
+turn resolution; 2026-11-09 owner-accepted at 98.54%). **Phase 11 is in
+progress: 11a (infrastructure/execution) and 11b (control-policy training) are
+complete; 11c (vision-model training) remains.** Phases 12–21 are planned, not
+completed.
 Historical acceptance filenames
 such as `PRIORITY5_ACCEPTANCE.md` remain stable evidence links.
 
@@ -78,7 +77,7 @@ No next-stage physical work until the simulation release gate passes.
   2026-11-03 for the stated envelope (94.0% turn resolution on crowded boards).**
 - **10 — grasp localization and robust printed-piece manipulation.**
 - **11 — local training and execution for control and vision models — in
-  progress: 11a complete (2026-11-03), 11b/11c blocked on 9 + 10.**
+  progress: 11a and 11b complete (2026-11-03 / 2026-11-10), 11c pending.**
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -600,8 +599,8 @@ services only — BC-250, HTPC GTX 1060, CPU. Cloud training is out of scope. A
 route that cannot train locally is recorded as a rejected path with its measured
 blocker, never as a pass.
 
-**Status: in progress — 11a complete; 11b and 11c unblocked as of 2026-11-09
-because Phase 10 closed (grasp/task buckets measured).**
+**Status: in progress — 11a complete (2026-11-03); 11b complete (2026-11-10,
+gate met in aggregate with a named move-family shortfall); 11c pending.**
 
 ### 11a — infrastructure and execution (after Phase 8; unblocked)
 
@@ -659,6 +658,26 @@ measured samples/s, peak memory, thermals, and a held-out learning curve.
 Gate: held-out error must improve on hold-position and be stable across seeds;
 only then does Phase 12 compare it with scripted control. A 20-episode/200-step
 pilot does not satisfy this.
+
+**11b complete — 2026-11-10.** Full-size ACT (51,565,446 parameters) trained
+locally on the BC-250 CPU from the 1.13.0 product build: 48 buckets, 768
+recorded / 756 verified-success episodes, 18,144 samples (13,608 train / 4,536
+held out, split by whole episode). Three seeds × 3,000 steps at batch 4:
+**7.40–7.41 samples/s**, ~27 min/seed, peak RSS **4.70 GB**, peak SoC
+**76.6–77.5 °C** (accepted 79–80 °C envelope), exact checkpoint reload (0.0 rad).
+
+- Held-out L1 vs hold-position: **+7.6% / +17.2% / +2.1%** (mean **+9.0%**,
+  population SD 6.2 pp); MSE **+37.3% / +42.0% / +32.5%**. All seeds improve in
+  the same direction, so the stated stability gate passes.
+- **Named shortfall:** the gain is concentrated in capture/tray tasks
+  (**+19.7% to +28.1%**). Move buckets are **−10.5% / +4.6% / −18.1%** versus
+  hold-position (mean **−8.0%**). Do not adopt this policy for quiet moves;
+  Phase 12 must evaluate families separately and may retain scripted control.
+- No rollout, task-success or physical result is claimed. Scope limits: 0.88
+  epoch, 3,000 steps, 48 simulation buckets, CPU FP32.
+
+Receipt: [PHASE11B_CONTROL_TRAINING.md](PHASE11B_CONTROL_TRAINING.md). Evidence:
+`reports/phase11b_*.json`.
 
 ### 11c — vision-model training (needs Phase 9 + 10)
 

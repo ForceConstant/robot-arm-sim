@@ -45,6 +45,16 @@ user; the roadmap is not authorization to implement all future phases at once.
   JPEG is not a verified capture timestamp, so probe latency is not a
   motion-safety claim.
 
+- Phase 11b training evidence: `docs/PHASE11B_CONTROL_TRAINING.md` and
+  `reports/phase11b_*.json`. Full ACT (51,565,446 parameters) trained locally on
+  the BC-250 CPU on a 48-bucket product corpus (768 recorded / 756 verified
+  successes; 18,144 samples, episode-level split). Held-out L1 beats
+  hold-position in all three seeds (+7.6 / +17.2 / +2.1%, mean +9.0%), but the
+  gain is **capture-only**: move buckets are -10.5 / +4.6 / -18.1%. Do not call
+  this a qualified controller or use it for quiet moves; Phase 12 evaluates
+  move and capture families separately and may retain scripted control. The
+  private corpus and checkpoints stay under `.private/phase11b/`.
+
 - Current interactive layout: `hardware/current_layout.json` / `docs/LAYOUT_OPTIMIZATION.md`
   (one follower via `ROBOT_ARM_COUNT=1`, 90 mm board-edge-to-base-frame gap,
   30 mm riser, measured 3.2 mm slab,

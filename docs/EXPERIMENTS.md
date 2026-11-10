@@ -1372,3 +1372,26 @@ the control policy and the vision model on services we own (BC-250, HTPC GTX
 Cloud training is out of scope. The runtime receipt in
 [PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md) is retained
 as a sub-gate result; the 20-step ACT pilot does not count as a training path.
+
+
+### Phase 11b — local control-policy training — 2026-11-10
+
+Full-size LeRobot ACT (51,565,446 parameters, pinned commit `2774d9b`) trained
+on the BC-250 CPU from the 1.13.0 product build (`gripper-assets-v5-tipthin`,
+`piece-assets-v9-brian-parallel-knight`). Corpus: 48 buckets (6 pieces x 2
+colours x move/capture x sparse/crowded), 768 episodes recorded, 756 verified
+successes (98.4%), 18,144 samples at 24 frames/episode (13,608 train / 4,536
+held out; every fourth episode of each bucket held out). Wrist RGB 224x224,
+observed joints and explicit source/destination goals; 30-step chunks at 10 Hz.
+
+Three seeds x 3,000 steps, batch 4, AdamW lr 1e-5, 8 CPU threads, FP32:
+7.40-7.41 samples/s, 1,620 s training per seed, peak RSS 4.70-4.71 GB, peak SoC
+76.6-77.5 C, checkpoint reload exact (0.0 rad). Held-out L1 versus hold-position:
+0.1486/0.1332/0.1574 versus 0.1608 rad (**+7.6 / +17.2 / +2.1%**, mean +9.0%,
+SD 6.2 pp); MSE +37.3 / +42.0 / +32.5%.
+
+The aggregate gain is capture-only: capture +23.3/+28.1/+19.7%, move
+-10.5/+4.6/-18.1%. The move family is the named Phase 12 gap; no rollout or
+task-success result is claimed. Receipt:
+[PHASE11B_CONTROL_TRAINING.md](PHASE11B_CONTROL_TRAINING.md). Evidence:
+`reports/phase11b_*.json`.

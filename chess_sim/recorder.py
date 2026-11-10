@@ -47,6 +47,9 @@ class EpisodeMeta(Record):
     fps: int
     joints: list[str]
     cameras: list[str]
+    # explicit source/destination in the board frame (metres); the only goal the
+    # Phase 11b policy is trained on, so it never has to infer task intent
+    goal_xy_m: list[tuple[float, float]] | None = None
     recovery: RecoveryTrigger | None = None   # set when an expert took over from a policy
     action_noise: ActionNoiseConfig | None = None   # set when execution was perturbed
     success: bool = False
@@ -82,7 +85,10 @@ class EpisodeRecorder:
         `recovery` marks an episode that begins where a policy went wrong, so a
         dataset can be filtered by what the correction was for."""
         self._buf = _Buffer(frames={cam: [] for cam in self.config.cameras})
+        source_xy = tuple(float(v) for v in self.env.board.square_center(task.source))
+        target_xy = tuple(float(v) for v in task.target_xy(self.env))
         self._meta = EpisodeMeta(
+            goal_xy_m=[source_xy, target_xy],
             episode=self._index, instruction=task.instruction, task=task.family, move=task.label,
             fen=self.env.position.fen(), layout=self.env.layout,
             board=self.env.board if record_appearance else None,
