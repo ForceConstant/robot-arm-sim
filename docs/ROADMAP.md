@@ -550,6 +550,40 @@ clearance-aware move, not a square-center assumption. Depends on 8–9.
   per-type/task/crowding results, not only a favorable aggregate. Physical
   realism and Phase 14 full-game tests remain separate gates.
 
+**Status: complete 2026-11-09 — owner-accepted at 98.54%, below the 99% target,
+with the shortfall recorded rather than rounded up.**
+
+Measured on a fresh held-out set: 480 transactions from new seeds, zero overlap
+with the development matrix and with the earlier held-out set, 50 buckets with at
+least 6 cases each. Build: printed parallel-jaw gripper with the tip-thin finger
+(mass corrected to 17.03 g), slowed precise descent, rank-1 placement tilt,
+release containment tolerance.
+
+- **473/480 = 98.54% complete transactions**
+- **zero wrong-piece picks and zero collateral moves**
+- all seven failures detected before game-state commit — every one a guard refusal
+- six buckets short: king/white/crowded/capture 10/12,
+  knight/black/crowded/capture 11/12, knight/black/crowded/quiet 11/12,
+  knight/white/sparse/capture 5/6, pawn/white/sparse/capture 5/6,
+  rook/black/crowded/quiet 11/12
+
+The seven refusals: king e1-d2, king g1-f2, knight f6-h7, knight g8-h6,
+knight e2-f4, rook b8-c8 (gripper-neighbour contact during approach or retreat,
+0.046-0.297 mm) and pawn d1-e2 (lift waypoint miss). Measured neighbour
+displacement at the approach latch on quiet moves is 1.08-1.17 mm — ten times the
+0.1 mm containment limit — so the residual is an approach-geometry limit, not a
+tuning gap, and no tolerance change would honestly clear it.
+
+Approach-tilt variants at 20, 32 and 60 degrees were measured and rejected: no
+conversions at 20 or 32 (32 also broke a previously passing case), unreachable
+motion at 60. Owner decision 2026-11-09: accept the measured result and document
+the refusals. A true lateral approach from the board edge is the untried fix and
+is recorded as future work.
+
+Receipt: `.private/phase10/heldout-v2-verdict.json`. Physical realism, hardware
+integration and the Phase 14 full-game gate remain separate and unpassed;
+simulated success never passes a physical gate.
+
 ## Phase 11 — local training and execution for control and vision models
 
 **Dependencies: Phase 8 (product twin) for 11a; Phases 9 and 10 for 11b and 11c —

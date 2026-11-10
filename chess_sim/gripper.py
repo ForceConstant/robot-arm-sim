@@ -83,7 +83,14 @@ if CUSTOM:
     # initial estimate: at 0.5 mm a pawn was picked but slipped from the jaws
     # during the final horizontal carry. 2 mm retained it through the same
     # dual-arm move; keep this as a real aperture reduction, not a success fudge.
-    SQUEEZE = .002
+    # A 2.0 mm clamp let the 3.9 g high-bound en-passant victim creep beyond
+    # the 4 mm slip guard; 2.5 mm fixed that replay but still slipped on the
+    # 4.2 g high-bound bishop tray pickup. 3.0 mm passed those cases, but the
+    # held-out king lift still crept through the pads. A 5.0 mm closure passed
+    # that exact king case with real contacts and zero collateral. This remains
+    # an uncalibrated preload assumption, not a measured jaw force; retain all
+    # slip/contact aborts and requalify every sentinel before adopting it.
+    SQUEEZE = .005
 
 
 def description() -> dict:

@@ -51,6 +51,9 @@ def detect_piece_base(frame: np.ndarray, empty_reference: np.ndarray,
         raise ValueError("search radius, area and threshold must be non-negative")
 
     effective_z = board_z + piece_height_m * centroid_height_fraction
+    expected_pixel = calibration.project((expected_xy[0], expected_xy[1], effective_z))
+    if expected_pixel is None:
+        return None
     points = [calibration.project((expected_xy[0] + dx,
                                    expected_xy[1] + dy, effective_z))
               for dx, dy in ((-search_radius_m, -search_radius_m),
@@ -100,7 +103,18 @@ def detect_piece_base(frame: np.ndarray, empty_reference: np.ndarray,
     candidates = candidates[candidates != 0]
     if len(candidates) == 0:
         return None
-    label = int(candidates[np.argmax(areas[candidates])])
+    # The largest component in a square-sized window is often a neighbour's
+    # base or the visible edge of a tall piece.  The task already identifies
+    # the source square, so use geometric proximity to its calibrated
+    # projection first and component area only to break near-ties.  This is
+    # especially important in the close, oblique wrist view.
+    expected_px = np.asarray(expected_pixel, dtype=float)
+    candidate_centers = []
+    for candidate in candidates:
+        cy, cx = np.nonzero(labels == candidate)
+        candidate_centers.append((float(cx.mean() + x0), float(cy.mean() + y0)))
+    distances = np.linalg.norm(np.asarray(candidate_centers) - expected_px, axis=1)
+    label = int(candidates[np.argmin(distances)])
     area = int(areas[label])
 
     yy, xx = np.nonzero(labels == label)

@@ -1,6 +1,7 @@
 """Audit the rerun's evidence, including the formerly repeated tray target."""
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 import zlib
 
@@ -8,6 +9,10 @@ import chess
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+# Commit that published these historical receipts and their exact source. The
+# report's git_commit is the pre-run HEAD; its working tree was not yet committed.
+# This audits Phase 8 evidence, not qualification of the current Phase 10 runtime.
+PHASE8_RECEIPT_REVISION = '4d5422f25cac91181f66a02d0863c4c4fb124457'
 
 
 @pytest.mark.parametrize('kind', ['stock', 'cad_parallel'])
@@ -38,7 +43,9 @@ def test_current_mount_qualification_receipt(kind):
         assert target == pytest.approx((-160, -100 + 40*i))
     assert report['phase8_pass'] == (ex['path_feasible'] == 64 and tray['passed'] == 4)
     for path, digest in report['source_sha256'].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+        archived = subprocess.check_output(
+            ['git', 'show', f'{PHASE8_RECEIPT_REVISION}:{path}'], cwd=ROOT)
+        assert hashlib.sha256(archived).hexdigest() == digest, path
 
 
 def test_span_verification_is_a_matched_case_parameter_experiment():

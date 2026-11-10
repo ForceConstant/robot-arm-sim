@@ -70,13 +70,14 @@ the same matrix.
 
 ## Mass model
 
-The rook is the only **measured** assembled piece: **4.8 g including one M6
-nut**. Its COM/inertia are a bounded bottom point-mass model at 2–4 mm, not a
-measured tensor. Every other piece's assembled mass is unmeasured and remains a
-range from its unweighted PLA estimate to +5 g (an explicit assumed bound of up
-to two M6 nuts). The nominal scene uses unweighted PLA for those pieces; the
-heavy bound is a sensitivity case only. Do not turn a range midpoint into a
-measurement.
+Brian measured all six **final assembled** piece types on 2026-11-04: king
+5.3 g, queen 4.8 g, knight 4.5 g, rook 4.3 g, pawn 3.8 g, bishop 4.1 g. The
+rook measurement supersedes the earlier 4.8 g value. Qualification uses these
+measured totals as nominal, plus separate uniform **−0.1 g** and **+0.1 g**
+sensitivity strata; those bounds are uncertainty assumptions, not additional
+measurements. The unweighted mesh is combined with a point ballast at z=3 mm to
+derive COM and inertia, because the actual ballast distribution was not
+measured. Do not describe those derived tensors as measured.
 
 ## Supported perturbations and evaluator
 

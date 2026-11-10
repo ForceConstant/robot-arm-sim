@@ -25,6 +25,7 @@ import mujoco
 import numpy as np
 
 from chess_sim.config import Camera, RandomizationConfig
+from chess_sim import gripper
 from chess_sim.fiducials import MarkerLayout, detect_markers
 from chess_sim.move_inference import SquareEvidence, infer_move
 from chess_sim.perception import PerceptionModel, square_mask_fraction
@@ -76,7 +77,10 @@ def arithmetic(seed: int) -> random.Random:
 
 
 def _park(env, joints) -> None:
-    env.data.qpos[env._joint_qpos] = np.asarray(joints)
+    command = np.asarray(joints, dtype=float).copy()
+    command[5] = np.clip(command[5], gripper.JOINT_MIN, gripper.JOINT_MAX)
+    env.data.qpos[env._joint_qpos] = command
+    gripper.seed_coupled(env.model, env.data, "so101:")
     env.data.qvel[:] = 0
     mujoco.mj_forward(env.model, env.data)
 
@@ -92,7 +96,8 @@ def _capture(env, scanner, poses) -> list[ScanFrame]:
     frames: list[ScanFrame] = []
     for pose in poses:
         _park(env, pose.joints)
-        frames.append(ScanFrame(env.render(Camera.WRIST).copy(), pose.joints, 0.0, pose.name))
+        frames.append(ScanFrame(env.render(Camera.WRIST).copy(),
+                                tuple(env.data.qpos[env._joint_qpos]), 0.0, pose.name))
     return frames
 
 
@@ -157,6 +162,8 @@ def main() -> int:
     parser.add_argument("--method", choices=("markers", "checker"), default="markers")
     parser.add_argument("--out", default=".private/phase9/heldout.json")
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--crowded-only", action="store_true")
+    parser.add_argument("--no-self-occlusion", action="store_true", help="paired unmasked ablation")
     args = parser.parse_args()
 
     model = PerceptionModel.load(args.model)
@@ -171,7 +178,7 @@ def main() -> int:
 
     for index in range(args.sessions):
         env, place_rng = _scene(args.seed * 1000 + index)
-        crowded = index % 2 == 0
+        crowded = args.crowded_only or index % 2 == 0
         try:
             # Place the board for this session, then freeze that pose as nominal.
             env.reset(EMPTY, rng=place_rng)
@@ -183,7 +190,7 @@ def main() -> int:
                 marker_layout=MarkerLayout.for_board(env.board.field * 1000.0,
                                                      env.board.border * 1000.0,
                                                      env.board.marker_plane),
-                method=args.method)
+                method=args.method, self_occlusion=not args.no_self_occlusion)
             empty_frames = _capture(env, scanner, poses)
             references = {item.pose: item.frame for item in empty_frames}
             empty_registration = scanner.register(empty_frames)
@@ -300,6 +307,7 @@ def main() -> int:
                     "correct": bool(correct), "safe": bool(safe),
                     "scans": used_scans, "answered": inference.answered,
                     "unknown": inference.unknown,
+                    "unknown_squares": [p.square for p in result.predictions if p.label == "unknown"],
                 })
             sessions.append({"session": index, "registered": True,
                              "crowded": crowded, "cases": len(cases)})
@@ -334,6 +342,13 @@ def main() -> int:
         "seed": args.seed, "sessions": args.sessions, "turns_per_session": args.turns,
         "method": args.method, "views": len(poses),
         "model_sha256": hashlib.sha256(Path(args.model).read_bytes()).hexdigest(),
+        "crowded_only": args.crowded_only,
+        "self_occlusion": not args.no_self_occlusion,
+        "source_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                          for p in map(Path, [__file__, "chess_sim/wrist_scan.py",
+                                             "chess_sim/self_occlusion.py", "chess_sim/wrist_calibration.py",
+                                             args.calibration, args.plan])},
+        "geometry_sources": scanner.self_model.sources if scanner.self_model is not None else {},
         "calibration": args.calibration,
         "scope": "wrist-only frames and measured joints; board pose from printed markers; "
                  "simulator truth used only for case construction and scoring",

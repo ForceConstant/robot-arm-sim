@@ -74,7 +74,7 @@ def test_product_mass_can_cover_parked_pieces_before_first_reset(printed_pack):
         assert len(applied)==len(env.slots)==32
         rooks=[s for s in env.slots if s.piece.piece_type==chess.ROOK]
         assert len(rooks)==4
-        assert all(env.model.body(s.body).mass[0]==pytest.approx(.0048) for s in rooks)
+        assert all(env.model.body(s.body).mass[0]==pytest.approx(.0043) for s in rooks)
     finally:env.close()
 
 

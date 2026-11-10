@@ -20,8 +20,9 @@ import numpy as np
 from .board_registration import BoardRegistration, register_board
 from .fiducials import MarkerLayout, estimate_board_pose
 from .perception import (CLASSES, PerceptionModel, SquarePrediction,
-                         predict_board, square_features, board_patches)
+                         predict_board, square_features, board_patches, square_mask_fraction)
 from .vision_geometry import CameraCalibration
+from .self_occlusion import SelfOcclusionModel
 from .wrist_calibration import ReferenceEpoch, WristCalibration
 
 PLAN_PATH = Path(__file__).resolve().parent / "assets" / "wrist_scan_plan.json"
@@ -108,10 +109,12 @@ class WristScanner:
     def __init__(self, calibration: WristCalibration, poses: list[ScanPose],
                  model: PerceptionModel, *, square: float, board_z: float,
                  marker_z: float, marker_layout: MarkerLayout,
-                 method: str = "markers", min_markers: int = 2):
+                 method: str = "markers", min_markers: int = 2,
+                 self_occlusion: bool = True):
         if method not in ("markers", "checker"):
             raise ValueError("method must be 'markers' or 'checker'")
         self.calibration = calibration
+        self.self_model = SelfOcclusionModel(calibration) if self_occlusion else None
         self.poses = list(poses)
         self.model = model
         self.square = float(square)
@@ -165,10 +168,26 @@ class WristScanner:
             frame = self.calibration.rectify(item.frame)
             camera = self.cameras(item.joints)
             reference = self._reference_patches(references, registration, item)
-            views.append(predict_board(
+            predictions = predict_board(
                 frame, camera, registration, self.model,
                 view="wrist", min_confidence=0.0,
-                reference_patches=reference, recover_empty=False))
+                reference_patches=reference, recover_empty=False)
+            if self.self_model is not None:
+                mask = self.self_model.exclusion_mask(item.joints)
+                covered = square_mask_fraction(mask, camera, registration)
+                # Exclude the WHOLE square/view vote if any sampled patch pixel
+                # intersects our conservative silhouette. Never paint the arm
+                # away and then classify the fabricated pixels as board.
+                predictions = [SquarePrediction(
+                    p.square, "unknown", 0.0, (0.25,) * 4, 0.0)
+                    if covered[p.square] > 0 else p for p in predictions]
+            # predict_board's blank-frame gate labels unknown but retains raw
+            # probabilities; do not let fusion revive those invalid votes.
+            luminance = frame.astype(np.float32) @ np.array([.299, .587, .114])
+            if luminance.mean() < 12 or luminance.std() < 2:
+                predictions = [SquarePrediction(
+                    p.square, "unknown", 0.0, (0.25,) * 4, 0.0) for p in predictions]
+            views.append(predictions)
         fused = fuse_predictions(views, threshold=self.model.confidence_threshold)
         return ScanResult(registration=registration, predictions=fused,
                           frames_used=len(frames))

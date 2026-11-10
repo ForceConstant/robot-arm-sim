@@ -1,13 +1,16 @@
 {
   "schema": "chess-robot-product-twin/1",
-  "frozen_at": "2026-11-02",
+  "frozen_at": "2026-11-04",
+  "mass_sensitivity_g": 0.1,
   "sources": {
-    "board_and_rook": "Brian, 2026-11-02 IRL: 28 mm square pitch, 3.2 mm slab, 15 mm labelled border, rook 4.8 g assembled including one M6 nut",
+    "board_and_rook": "Brian, 2026-11-02 IRL: 28 mm square pitch, 3.2 mm slab, 15 mm labelled border",
     "base_geometry": "hardware/dimensions.json and the rig diagrams: 430 mm table, 60 mm riser, 80 mm board-edge-to-arm gap",
     "piece_geometry": "private printed Dubrovnik 1960 pack at 50% mesh scale (MakerWorld 406463); geometry is not redistributed by this config",
     "tool": "stock SO-101 pinch gripper supplied with the kit; the NormaCore custom parallel jaw was measured and rejected for this 28 mm board (see tool_selection)",
     "camera": "simulator candidate wrist-camera pose from scene.WRIST_CAMERA_CUSTOM; physical lens, focus and mount are unmeasured",
-    "evaluator": "chess_sim.config.ToleranceConfig, the same rule env.evaluate uses"
+    "evaluator": "chess_sim.config.ToleranceConfig, the same rule env.evaluate uses",
+    "piece_masses": "Brian, 2026-11-04: final assembled weights K=5.3 g, Q=4.8 g, Kn=4.5 g, R=4.3 g, P=3.8 g, B=4.1 g; supersedes prior rook 4.8 g measurement",
+    "mass_sensitivity": "Brian, 2026-11-04: model each assembled piece at measured mass and at uniform ±0.1 g bounds as a separate sensitivity stratum; not a remeasurement"
   },
   "robot": {
     "model": "SO-101 follower",
@@ -106,7 +109,7 @@
   "pieces": {
     "pawn": {
       "count_per_side": 8,
-      "measured": false,
+      "measured": true,
       "unweighted_pla": {
         "mass_g": 0.6257266212998366,
         "com_mm": [
@@ -132,17 +135,38 @@
           ]
         ]
       },
-      "assembled": null,
-      "assembled_includes": null,
+      "assembled": {
+        "mass_g": 3.8,
+        "com_mm": [
+          0.00030690093370390383,
+          -0.0013349499375929043,
+          4.046447752758937
+        ],
+        "inertia_kg_m2": [
+          [
+            5.7323165888950966e-08,
+            -3.017350393956187e-13,
+            -5.833550447953167e-12
+          ],
+          [
+            -3.017350393956187e-13,
+            5.735463138534827e-08,
+            -1.944106435795959e-11
+          ],
+          [
+            -5.833550447953167e-12,
+            -1.944106435795959e-11,
+            1.4403395322659726e-08
+          ]
+        ]
+      },
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
       "nut_mass_g": null,
       "nut_model_z_mm": null,
       "nut_model_z_range_mm": null,
-      "mass_range_g": [
-        0.625726621,
-        5.625726621
-      ],
+      "mass_range_g": null,
       "added_mass_com_z_mm": 3.0,
-      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+      "provenance": "assembled mass 3.8 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm"
     },
     "rook": {
       "count_per_side": 2,
@@ -173,42 +197,41 @@
         ]
       },
       "assembled": {
-        "mass_g": 4.8,
+        "mass_g": 4.3,
         "com_mm": [
-          -0.0005738134894352136,
-          -0.0009531367946488392,
-          5.6668944336468225
+          -0.00064053598820675,
+          -0.0010639666544917275,
+          5.976998437559243
         ],
         "inertia_kg_m2": [
           [
-            1.8379419593093326e-07,
-            -9.504321610524043e-13,
-            1.5794264712508393e-11
+            1.7982452514282935e-07,
+            -9.50126901843076e-13,
+            1.4940143781758872e-11
           ],
           [
-            -9.504321610524043e-13,
-            1.838245437186031e-07,
-            -2.941326976760448e-11
+            -9.50126901843076e-13,
+            1.7985487325377796e-07,
+            -3.0832013141829393e-11
           ],
           [
-            1.5794264712508393e-11,
-            -2.941326976760448e-11,
-            4.098505809759851e-08
+            1.4940143781758872e-11,
+            -3.0832013141829393e-11,
+            4.098505740677152e-08
           ]
         ]
       },
-      "assembled_includes": "1 x M6 steel nut, bottom-weighted",
-      "nut_mass_g": 3.314633709,
-      "nut_model_z_mm": 3.0,
-      "nut_model_z_range_mm": [
-        2.0,
-        4.0
-      ],
-      "provenance": "assembled 4.8 g measured by Brian 2026-11-02 including one M6 nut; nut height, COM and inertia are a bounded bottom-point-mass model, not a physical measurement"
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
+      "nut_mass_g": null,
+      "nut_model_z_mm": null,
+      "nut_model_z_range_mm": null,
+      "provenance": "assembled mass 4.3 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm",
+      "mass_range_g": null,
+      "added_mass_com_z_mm": 3.0
     },
     "knight": {
       "count_per_side": 2,
-      "measured": false,
+      "measured": true,
       "unweighted_pla": {
         "mass_g": 1.5585401701236037,
         "com_mm": [
@@ -234,21 +257,42 @@
           ]
         ]
       },
-      "assembled": null,
-      "assembled_includes": null,
+      "assembled": {
+        "mass_g": 4.5,
+        "com_mm": [
+          0.001982619847656267,
+          0.1258816806860717,
+          6.113620156664964
+        ],
+        "inertia_kg_m2": [
+          [
+            2.1751834192884868e-07,
+            -2.2731115460999685e-12,
+            -5.5108956065532294e-11
+          ],
+          [
+            -2.2731115460999685e-12,
+            2.1065007650135476e-07,
+            -5.055191769842795e-09
+          ],
+          [
+            -5.5108956065532294e-11,
+            -5.055191769842795e-09,
+            4.390688449873632e-08
+          ]
+        ]
+      },
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
       "nut_mass_g": null,
       "nut_model_z_mm": null,
       "nut_model_z_range_mm": null,
-      "mass_range_g": [
-        1.55854017,
-        6.55854017
-      ],
+      "mass_range_g": null,
       "added_mass_com_z_mm": 3.0,
-      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+      "provenance": "assembled mass 4.5 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm"
     },
     "bishop": {
       "count_per_side": 2,
-      "measured": false,
+      "measured": true,
       "unweighted_pla": {
         "mass_g": 1.0750128040198372,
         "com_mm": [
@@ -274,21 +318,42 @@
           ]
         ]
       },
-      "assembled": null,
-      "assembled_includes": null,
+      "assembled": {
+        "mass_g": 4.1,
+        "com_mm": [
+          0.001036895923157194,
+          0.0012833814913547957,
+          5.332037789551859
+        ],
+        "inertia_kg_m2": [
+          [
+            1.7913739934050326e-07,
+            -2.789263455191428e-12,
+            -2.0552497464842944e-10
+          ],
+          [
+            -2.789263455191428e-12,
+            1.791676109714018e-07,
+            -2.815048752093192e-10
+          ],
+          [
+            -2.0552497464842944e-10,
+            -2.815048752093192e-10,
+            2.7443068258884888e-08
+          ]
+        ]
+      },
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
       "nut_mass_g": null,
       "nut_model_z_mm": null,
       "nut_model_z_range_mm": null,
-      "mass_range_g": [
-        1.075012804,
-        6.075012804
-      ],
+      "mass_range_g": null,
       "added_mass_com_z_mm": 3.0,
-      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+      "provenance": "assembled mass 4.1 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm"
     },
     "queen": {
       "count_per_side": 1,
-      "measured": false,
+      "measured": true,
       "unweighted_pla": {
         "mass_g": 1.937302213322428,
         "com_mm": [
@@ -314,21 +379,42 @@
           ]
         ]
       },
-      "assembled": null,
-      "assembled_includes": null,
+      "assembled": {
+        "mass_g": 4.8,
+        "com_mm": [
+          0.0006850513758848045,
+          -0.0012683714467875463,
+          7.450012162434224
+        ],
+        "inertia_kg_m2": [
+          [
+            4.134012304604403e-07,
+            -1.0308300220681354e-12,
+            -2.0896059512891174e-11
+          ],
+          [
+            -1.0308300220681354e-12,
+            4.1343475328946123e-07,
+            -2.948741279337033e-11
+          ],
+          [
+            -2.0896059512891174e-11,
+            -2.948741279337033e-11,
+            5.809209104827331e-08
+          ]
+        ]
+      },
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
       "nut_mass_g": null,
       "nut_model_z_mm": null,
       "nut_model_z_range_mm": null,
-      "mass_range_g": [
-        1.937302213,
-        6.937302213
-      ],
+      "mass_range_g": null,
       "added_mass_com_z_mm": 3.0,
-      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+      "provenance": "assembled mass 4.8 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm"
     },
     "king": {
       "count_per_side": 1,
-      "measured": false,
+      "measured": true,
       "unweighted_pla": {
         "mass_g": 2.5528960370494493,
         "com_mm": [
@@ -354,17 +440,38 @@
           ]
         ]
       },
-      "assembled": null,
-      "assembled_includes": null,
+      "assembled": {
+        "mass_g": 5.299999999999999,
+        "com_mm": [
+          0.0028256365920665797,
+          -0.001297220758696177,
+          10.035054931882046
+        ],
+        "inertia_kg_m2": [
+          [
+            7.653458788949581e-07,
+            -5.292786379365888e-13,
+            -1.150805624321115e-10
+          ],
+          [
+            -5.292786379365888e-13,
+            7.653773590502331e-07,
+            -4.0112256823665187e-11
+          ],
+          [
+            -1.150805624321115e-10,
+            -4.0112256823665187e-11,
+            7.357649512262724e-08
+          ]
+        ]
+      },
+      "assembled_includes": "complete assembled piece as weighed by Brian; internal ballast distribution not measured",
       "nut_mass_g": null,
       "nut_model_z_mm": null,
       "nut_model_z_range_mm": null,
-      "mass_range_g": [
-        2.552896037,
-        7.552896037
-      ],
+      "mass_range_g": null,
       "added_mass_com_z_mm": 3.0,
-      "provenance": "assembled mass unmeasured; range is an explicit assumed bound from no added weight to two M6 nuts (5 g), with a bottom point-mass at an assumed 3 mm height. Do not treat the midpoint as a measurement."
+      "provenance": "assembled mass 5.3 g measured by Brian 2026-11-04; ballast distribution, COM, and inertia are modeled by combining the unweighted mesh with a bottom point mass at assumed z=3 mm"
     }
   },
   "perturbations": {

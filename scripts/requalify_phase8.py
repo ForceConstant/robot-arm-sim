@@ -5,6 +5,7 @@ the matching CAD assets. No hardware, web-service or deployment changes.
 """
 from __future__ import annotations
 
+import argparse
 import datetime as dt
 import hashlib
 import json
@@ -29,6 +30,10 @@ from robot_web.torture import CASES, SUITE_VERSION
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=None,
+                        help="write a separate candidate receipt without replacing prior reports")
+    args = parser.parse_args()
     layout_path = ROOT / "hardware/current_layout.json"
     layout = json.loads(layout_path.read_text())
     twin = load_product_twin()
@@ -39,7 +44,8 @@ def main():
         "arm_riser": mount["base_mount_datum_above_table_mm"] / 1000})})
     assert np.allclose(np.array(cfg.board.arm_base) * 1000,
                        mount["white_arm_base_frame_mm"])
-    report_path = ROOT / "reports" / f"phase8_updated_{gripper.KIND}.json"
+    report_path = args.out or ROOT / "reports" / f"phase8_updated_{gripper.KIND}.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report = dict(
         schema="robot-arm-phase8-current-layout/1",
         generated_at=dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -49,11 +55,14 @@ def main():
         tilt_cost=ik.TILT_COST, config=cfg.model_dump(mode="json"),
         piece_manifest_sha256=hashlib.sha256(
             (Path(os.environ["ROBOT_PIECE_ASSETS"]) / "set.json").read_bytes()).hexdigest(),
-        mass_model="Historical Phase 8 nominal model: measured rook 4.8 g; other types unmeasured PLA. Both tools identical.",
+        mass_model="Current measured assembled totals (K 5.3, Q 4.8, Kn 4.5, R 4.3, P 3.8, B 4.1 g); nominal stratum, ±0.1 g sensitivity qualified separately. COM/inertia retain the documented 3 mm point-ballast approximation.",
         scope="Single-follower simulation; identical Phase 8 scans, mixed-type executions with king/rook retries, actual four tray destinations, plus crowded-v3. No physical qualification.",
         source_sha256={str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                        for p in [Path(__file__), ROOT / "scripts/qualify_phase8.py",
-                                 ROOT / "chess_sim/controller.py", ROOT / "chess_sim/ik.py"]},
+                                 ROOT / "chess_sim/controller.py", ROOT / "chess_sim/env.py",
+                                 ROOT / "chess_sim/config.py", ROOT / "chess_sim/scene.py",
+                                 ROOT / "chess_sim/gripper.py", ROOT / "chess_sim/assets.py", ROOT / "chess_sim/ik.py",
+                                 ROOT / "chess_sim/product.py", ROOT / "hardware/product_twin.json"]},
     )
 
     def save(stage):

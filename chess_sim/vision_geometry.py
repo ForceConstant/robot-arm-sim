@@ -73,6 +73,10 @@ class Localization:
     pixel_xy: tuple[float, float]
     confidence: float
     sigma_m: float
+    # Optional grasp-axis estimate from the same wrist views (radians). Only
+    # pieces with a calibrated asymmetric section carry one; the controller
+    # treats it as a hint and still checks clearance and reach.
+    span_rad: float | None = None
 
     def acceptable(self, max_sigma_m: float = 0.004, min_confidence: float = 0.7) -> bool:
         return self.confidence >= min_confidence and self.sigma_m <= max_sigma_m

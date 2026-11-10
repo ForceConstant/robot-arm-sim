@@ -15,6 +15,7 @@ from typing import Callable
 from . import gripper
 
 import chess
+import math
 import mujoco
 import numpy as np
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -22,7 +23,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from .assets import piece_asset_name, piece_tint
 from .config import (JOINTS, START_FEN, AppearanceConfig, Camera, EnvConfig, FailureReason,
                      JointName, JointPose, Square, square_at, square_index)
-from .controller import PickPlaceController, grasp_plan
+from .controller import PickPlaceController, grasp_plan, SPAN_MARGIN_TOLERANCE
 from .ik import So101Ik
 from .reach import MAX_IK_ERROR, MAX_TILT, ReachMap
 from .scene import (ARM_PREFIX, FILL_LIGHT_DIFFUSE, key_diffuse, lookat_xyaxes, mast_lens, overhead_camera, PieceSlot, arm_rest_pose, build_arm, build_scene,
@@ -30,10 +31,16 @@ from .scene import (ARM_PREFIX, FILL_LIGHT_DIFFUSE, key_diffuse, lookat_xyaxes, 
 from .tasks import AnyTask, CaptureTask, MoveTask, Task, TaskFamily
 from .vision_geometry import Localization
 
-# Candidate jaw-span directions: the moving jaw opens along one board axis.
+# Candidate jaw-span directions: preserve the qualified cardinal order.
 SPAN_DIRECTIONS = (np.array([0.0, 1.0]), np.array([0.0, -1.0]),
                    np.array([1.0, 0.0]), np.array([-1.0, 0.0]))
 GRASP_HEIGHT = 0.016      # tool height above the board used to map out reachable squares
+# The CAD jaw span prefilter uses axisymmetric piece radii and a lane envelope,
+# not its full swept volume. A 12 mm margin admitted a jaw path that selected
+# an adjacent piece in a crowded h8/g8 repro; 8 mm excludes that observed
+# interference while retaining the measured 7.3 mm rescue for fresh repro.
+# Actual MuJoCo contacts and per-step piece-drift aborts remain authoritative;
+# this candidate is provisional pending focused and held-out qualification.
 CAMERA_FIELDS = ("camera_height", "camera_offset", "camera_fovy", "camera_over_board", "camera_aim", "camera_roll")
 
 OnStep = Callable[[np.ndarray], None]
@@ -122,10 +129,36 @@ class TaskResult(Record):
     steps: int
     reason: FailureReason | None = None
     waypoints_precise: bool = True             # diagnostic: the expert's waypoints hit tolerance
+    released: bool | None = None
+    supported: bool | None = None
+    settled: bool | None = None
+    phase10_complete: bool | None = None
+
+    @property
+    def commit_eligible(self) -> bool:
+        """Transaction gate; legacy synthetic results fall back to success."""
+        return bool(self.success if self.phase10_complete is None
+                    else self.phase10_complete)
 
     @property
     def instruction(self) -> str:
         return self.task.instruction
+
+
+class TransactionResult(Record):
+    """Compound physical transaction with an explicit whole-move commit gate.
+
+    ``ChessSimEnv.position`` remains the physical-scene mirror and is updated
+    after each attempted primitive. The caller's game state must only advance
+    when ``commit_allowed`` is true for the entire transaction.
+    """
+
+    tasks: tuple[AnyTask, ...]
+    results: tuple[TaskResult, ...]
+    complete: bool
+    commit_allowed: bool
+    failed_step: int | None = None
+    reason: str | None = None
 
 
 class ChessSimEnv:
@@ -175,6 +208,7 @@ class ChessSimEnv:
         self.diagnostic_target = None
         self.diagnostic_gap = None
         self.diagnostic_offset = np.zeros(3)
+        self.diagnostic_contained_contacts = 0   # bounded release grazes accepted
         self._orbit = None               # (lookat, distance, azimuth, elevation)
         self.controller = PickPlaceController(self)
         self._step_count = 0
@@ -366,7 +400,8 @@ class ChessSimEnv:
 
     def execute(self, task: Task, on_step: OnStep | None = None,
                 override=None, observed_source_xy: tuple[float, float] | None = None,
-                reobserve_source: Callable[[], Localization | None] | None = None) -> TaskResult:
+                reobserve_source: Callable[[], Localization | None] | None = None,
+                span_hint: np.ndarray | None = None) -> TaskResult:
         """Carry out a task with the scripted expert and score it.
 
         This plans against the simulator state, so it is a demonstrator, not an
@@ -389,9 +424,17 @@ class ChessSimEnv:
 
         precise = self.controller.pick_place(slot, target, on_step, target_z=target_z,
                                             override=override, source_xy=observed_source_xy,
-                                            reobserve_source=reobserve_source)
+                                            reobserve_source=reobserve_source,
+                                            span_hint=span_hint)
+        hold_action = self._current_action()
+        if self.controller._abort_reason is not None:
+            # A hard safety abort freezes the arm at its measured joint pose
+            # and preserves the closed gripper command. Replaying the last
+            # target for release_seconds would let a servo continue the very
+            # motion that the contact guard stopped.
+            hold_action[:5] = self.arm_joint_positions()[:5]
         for _ in range(int(self.config.control.release_seconds * self.control_hz)):
-            self.apply_action(self._current_action(), on_step)
+            self.apply_action(hold_action, on_step)
         result = self.evaluate(task, before, steps=self._step_count - started,
                                waypoints_precise=bool(precise))
         self._commit(task, result)
@@ -401,7 +444,8 @@ class ChessSimEnv:
                           on_step: OnStep | None = None,
                           max_sigma_m: float = 0.004,
                           min_confidence: float = 0.7,
-                          reobserve_source: Callable[[], Localization | None] | None = None) -> TaskResult:
+                          reobserve_source: Callable[[], Localization | None] | None = None,
+                          span_hint: np.ndarray | None = None) -> TaskResult:
         """Execute from a camera-derived source point, abstaining on uncertainty.
 
         The detector's pixel and calibration are upstream; simulator truth is
@@ -411,9 +455,57 @@ class ChessSimEnv:
         if not localization.acceptable(max_sigma_m=max_sigma_m,
                                        min_confidence=min_confidence):
             raise ValueError("localized target uncertainty/confidence exceeds grasp gate")
+        if span_hint is None and localization.span_rad is not None:
+            span_hint = np.array([math.cos(localization.span_rad),
+                                  math.sin(localization.span_rad)])
         return self.execute(task, on_step=on_step,
                             observed_source_xy=localization.world_xy,
-                            reobserve_source=reobserve_source)
+                            reobserve_source=reobserve_source,
+                            span_hint=span_hint)
+
+    def execute_transaction(
+            self, tasks: list[Task] | tuple[Task, ...],
+            localize_source: Callable[[Task, int], Localization | None], *,
+            on_step: OnStep | None = None,
+            max_sigma_m: float = 0.004,
+            min_confidence: float = 0.7,
+            reobserve_source: Callable[[Task, int], Localization | None] | None = None,
+    ) -> TransactionResult:
+        """Run a sequence of primitives and authorize commit only as a whole.
+
+        The localizer is called immediately before each primitive, allowing
+        later steps to observe the scene after earlier physical changes. A
+        missing, uncertain, failed, or interrupted step stops the transaction;
+        callers must not commit a chess move from a partial sequence.
+        """
+        sequence = tuple(tasks)
+        results: list[TaskResult] = []
+        for index, task in enumerate(sequence):
+            localization = localize_source(task, index)
+            if localization is None or not localization.acceptable(
+                    max_sigma_m=max_sigma_m, min_confidence=min_confidence):
+                return TransactionResult(
+                    tasks=sequence, results=tuple(results), complete=False,
+                    commit_allowed=False, failed_step=index,
+                    reason="source localization missing or uncertain")
+            reobserve = (None if reobserve_source is None else
+                         lambda task=task, index=index: reobserve_source(task, index))
+            result = self.execute_localized(
+                task, localization, on_step=on_step,
+                max_sigma_m=max_sigma_m, min_confidence=min_confidence,
+                reobserve_source=reobserve)
+            results.append(result)
+            if not result.commit_eligible:
+                return TransactionResult(
+                    tasks=sequence, results=tuple(results), complete=False,
+                    commit_allowed=False, failed_step=index,
+                    reason=(f"primitive task failed: {result.reason}" if not result.success else
+                            "primitive task incomplete: release/support/settling verification failed"))
+        complete = bool(sequence) and len(results) == len(sequence)
+        return TransactionResult(
+            tasks=sequence, results=tuple(results), complete=complete,
+            commit_allowed=complete,
+            reason=None if complete else "empty transaction")
 
     def move(self, from_square, to_square, on_step: OnStep | None = None) -> TaskResult:
         return self.execute(MoveTask(from_square=square_at(from_square),
@@ -446,6 +538,26 @@ class ChessSimEnv:
         target = np.asarray(task.target_xy(self))
         error = float(np.linalg.norm(position[:2] - target))
         upright = self.piece_upright(slot) > tol.upright_min
+        surface_z = (self.board.table_top if task.family is TaskFamily.CAPTURE
+                     else self.board.top)
+        expected_body_z = surface_z - slot.geometry.bottom_offset + 0.0015
+        supported = abs(float(position[2]) - expected_body_z) <= 0.005
+        dof = self._slot_dof[slot.body]
+        velocity = self.data.qvel[dof:dof + 6]
+        settled = (float(np.linalg.norm(velocity[:3])) <= 0.01
+                   and float(np.linalg.norm(velocity[3:6])) <= 0.2)
+        moving_body = self._slot_body[slot.body]
+        released = True
+        for contact_index in range(self.data.ncon):
+            contact = self.data.contact[contact_index]
+            if contact.dist >= 0:
+                continue
+            body1 = int(self.model.geom_bodyid[contact.geom1])
+            body2 = int(self.model.geom_bodyid[contact.geom2])
+            if ((body1 == moving_body and self._is_robot_body(body2))
+                    or (body2 == moving_body and self._is_robot_body(body1))):
+                released = False
+                break
         moved = {square: float(np.linalg.norm(
             self.piece_position(self._square_slot[square_index(square)])[:2] - np.asarray(xy)))
             for square, xy in before.items()}
@@ -458,7 +570,13 @@ class ChessSimEnv:
         if picked is None or moved[picked] <= tol.disturbance:
             picked = None
 
-        if task.family is TaskFamily.CAPTURE:
+        if not waypoints_precise:
+            # Oracle geometry is useful for measuring the physical outcome,
+            # but it must never turn a controller-declared failed/aborted
+            # execution into success or authorize a transaction commit.
+            success = False
+            reason = FailureReason.CONTROLLER_ABORT
+        elif task.family is TaskFamily.CAPTURE:
             off_board = not self.board.on_field(position[:2])
             success = off_board and error < tol.tray and upright and not disturbed
             reason = None if success else (
@@ -470,9 +588,16 @@ class ChessSimEnv:
             reason = None if success else (
                 FailureReason.PLACEMENT if error >= tol.placement else
                 FailureReason.FELL if not upright else FailureReason.DISTURBED)
+        phase10_complete = bool(success and waypoints_precise and released and supported and settled)
         return TaskResult(task=task, success=bool(success), placement_error=error, upright=upright,
                           disturbed=disturbed, picked=picked, right_piece=picked == task.source,
-                          steps=steps, reason=reason, waypoints_precise=waypoints_precise)
+                          steps=steps, reason=reason, waypoints_precise=waypoints_precise,
+                          released=released, supported=supported, settled=settled,
+                          phase10_complete=phase10_complete)
+
+    def _is_robot_body(self, body_id: int) -> bool:
+        name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, body_id)
+        return bool(name and name.startswith("so101:"))
 
     def _commit(self, task: Task, result: TaskResult) -> None:
         """Keep the mirror honest: a piece that physically reached its target has
@@ -720,7 +845,9 @@ class ChessSimEnv:
         seeds += [limits[:, 0] + u * (limits[:, 1] - limits[:, 0])
                   for u in self.SPAN_RANDOM_SEEDS]
         try:
-            ordered = [(d, m) for d, m in self.span_options(point[:2], exclude) if m >= 0]
+            tolerance = SPAN_MARGIN_TOLERANCE if gripper.CUSTOM else 0.0
+            ordered = [(d, m) for d, m in self.span_options(point[:2], exclude)
+                       if m >= -tolerance]
             for direction, _ in ordered:
                 # Warm start: the same target with no tool offset often lands in
                 # the basin the offset solve needs, at the cost of one extra solve.

@@ -58,6 +58,7 @@ class FailureReason(StrEnum):
     MISSED_TRAY = "missed the tray"
     FELL = "piece fell"
     DISTURBED = "disturbed other pieces"
+    CONTROLLER_ABORT = "controller execution aborted"
 
 
 class RecoveryTrigger(StrEnum):

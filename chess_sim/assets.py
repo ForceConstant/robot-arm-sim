@@ -154,7 +154,10 @@ class PieceGeometry:
     profile: tuple        # ((z_bottom, z_top, radius), ...) in scaled mesh frame
     grasp_height: float | None = None   # measured neck above the base, if the set carries one
     grasp_width: float | None = None    # widest directional width at that neck (asymmetric pieces)
+    thin_width: float | None = None     # narrowest section at that neck, the faces a parallel grip closes on
+    transit_m: float | None = None      # measured carry/transit height this piece tolerates, if calibrated
     grasp_squeeze: float | None = None # per-piece closure allowance from the pack
+    grasp_tip_offset: float = 0.0     # signed fingertip offset from the width-calibration plane
 
     @property
     def waist(self) -> float:
@@ -242,6 +245,25 @@ def _pack_grasp(ptype, piece_set: str, key: str, scale: float) -> float | None:
     return None if value is None else float(value) * scale
 
 
+def _pack_transit(piece_type, piece_set):
+    """Measured carry transit height for this piece, if the pack records one."""
+    if piece_set != PRINTED_SET:
+        return None
+    record = set_properties(piece_set)["pieces"].get(_TYPE_NAME[piece_type], {})
+    value = record.get("transit_m")
+    return None if value is None else float(value)
+
+
+def _pack_thin(piece_type, piece_set, piece_scale):
+    """Narrowest calibrated section at the grasp height, or None."""
+    if piece_set != PRINTED_SET:
+        return None
+    record = set_properties(piece_set)["pieces"].get(_TYPE_NAME[piece_type], {})
+    xs, ys = record.get("width_x_m"), record.get("width_y_m")
+    if xs is None or ys is None:
+        return None
+    return float(min(float(xs), float(ys))) * piece_scale
+
 def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
                    piece_set: str = DEFAULT_SET) -> PieceGeometry:
     """Scale a piece to the board: target height, footprint capped to the square;
@@ -275,7 +297,10 @@ def piece_geometry(piece: chess.Piece, square: float, piece_scale: float = 1.0,
         profile=profile,
         grasp_height=_pack_grasp(piece.piece_type, piece_set, "grasp_h_m", scale),
         grasp_width=_pack_grasp(piece.piece_type, piece_set, "grasp_width_m", scale),
+        thin_width=_pack_thin(piece.piece_type, piece_set, scale),
+        transit_m=_pack_transit(piece.piece_type, piece_set),
         grasp_squeeze=_pack_grasp(piece.piece_type, piece_set, "grasp_squeeze_m", scale),
+        grasp_tip_offset=_pack_grasp(piece.piece_type, piece_set, "grasp_tip_offset_m", scale) or 0.0,
     )
 
 

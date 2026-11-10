@@ -201,7 +201,8 @@ class So101Ik:
     # -- solver -------------------------------------------------------------
 
     def solve(self, data: mujoco.MjData, target: np.ndarray,
-              offset: np.ndarray | None = None, span: np.ndarray | None = None) -> IkResult:
+              offset: np.ndarray | None = None, span: np.ndarray | None = None,
+              seed_q: np.ndarray | None = None) -> IkResult:
         """Joint angles placing the tool point at `target` (world, meters),
         starting from the arm's current angles in `data`.
 
@@ -224,7 +225,10 @@ class So101Ik:
         if not (np.all(np.isfinite(target)) and np.all(np.isfinite(offset))
                 and (span is None or np.all(np.isfinite(span)))):
             raise ValueError("IK target, offset and span must be finite")
-        q0 = data.qpos[self.qpos_adr].copy()
+        q0 = (data.qpos[self.qpos_adr].copy() if seed_q is None
+              else np.asarray(seed_q, dtype=float).copy())
+        if q0.shape != (5,) or not np.all(np.isfinite(q0)):
+            raise ValueError("IK seed must contain five finite arm joint angles")
         best = self._iterate(q0, target, offset, span)
         if span is not None:
             flipped = q0.copy()

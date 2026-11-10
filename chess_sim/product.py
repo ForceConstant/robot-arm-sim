@@ -9,10 +9,9 @@ The distinction between *measured* and *assumed* is deliberate:
 
 * the board pitch, slab thickness, border and label presence are Brian's
   2026-11-02 physical measurements;
-* the rook's assembled 4.8 g (including one M6 nut) is a physical measurement,
-  while its exact nut height, centre of mass and inertia are a bounded model;
-* every other piece's assembled mass is unmeasured and stays a range, never a
-  fabricated single number.
+* all six assembled piece masses are Brian's final 2026-11-04 measurements;
+* the added ballast's exact location, centre of mass and inertia are still
+  estimates. The source pack models the added mass as a point at z=3 mm.
 
 Nothing here starts hardware, imports a servo driver or changes the published
 simulator defaults unless a caller explicitly asks for the product config.
@@ -152,6 +151,7 @@ class ProductTwin(Config):
 
     schema_version: str = Field(alias="schema")
     frozen_at: str
+    mass_sensitivity_g: float = Field(gt=0)
     sources: dict[str, str]
     robot: RobotTwin
     board: BoardTwin
@@ -227,11 +227,18 @@ class ProductTwin(Config):
             raise ValueError("product twin must define all six piece types")
         if sum(p.count_per_side for p in self.pieces.values()) != 16:
             raise ValueError("piece counts must total 16 per side")
-        rook = self.pieces["rook"]
-        if not rook.measured or rook.assembled is None:
-            raise ValueError("the measured rook mass is missing")
-        if abs(rook.assembled.mass_g - 4.8) > 1e-9:
-            raise ValueError("the measured rook mass must be 4.8 g")
+        expected_masses = {
+            "king": 5.3, "queen": 4.8, "knight": 4.5,
+            "rook": 4.3, "pawn": 3.8, "bishop": 4.1,
+        }
+        for name, expected in expected_masses.items():
+            piece = self.pieces[name]
+            if not piece.measured or piece.assembled is None:
+                raise ValueError(f"the measured {name} mass is missing")
+            if abs(piece.assembled.mass_g - expected) > 1e-9:
+                raise ValueError(f"the measured {name} mass must be {expected} g")
+            if piece.assembled.mass_g - self.mass_sensitivity_g <= piece.unweighted_pla.mass_g:
+                raise ValueError(f"the low sensitivity mass for {name} must exceed its unweighted shell")
         if tuple(self.camera.operational) != ("wrist",):
             raise ValueError("operational vision must be wrist-only")
         if self.tool_selection.selected != self.tool.kind:
@@ -325,17 +332,23 @@ def mass_properties(base: MassProperties, added_mass_g: float,
 
 def piece_mass_properties(twin: ProductTwin, piece_type: str,
                           regime: str = "nominal") -> MassProperties:
-    """Mass model for one piece at nominal or heavy-bound weight.
+    """Mass model for one piece at nominal weight or a sensitivity bound.
 
-    `nominal` uses the measured rook and the unweighted nominal for pieces whose
-    assembled weight is unknown.  `heavy_bound` adds the top of each unmeasured
-    range at its assumed bottom point; it is a sensitivity case, not a fact.
+    `sensitivity_low` and `sensitivity_high` vary the measured total by the
+    source-pack's ±g assumption while preserving the explicit bottom-point-mass
+    COM/inertia model. `heavy_bound` remains a compatibility alias for nominal.
     """
-    if regime not in ("nominal", "heavy_bound"):
-        raise ValueError("regime must be nominal or heavy_bound")
+    if regime not in ("nominal", "heavy_bound", "sensitivity_low", "sensitivity_high"):
+        raise ValueError("regime must be nominal, heavy_bound, sensitivity_low, or sensitivity_high")
     p = twin.pieces[piece_type]
     if p.measured and p.assembled is not None:
-        return p.assembled
+        if regime in ("nominal", "heavy_bound"):
+            return p.assembled
+        delta = -twin.mass_sensitivity_g if regime == "sensitivity_low" else twin.mass_sensitivity_g
+        target_mass = p.assembled.mass_g + delta
+        added = target_mass - p.unweighted_pla.mass_g
+        z = p.added_mass_com_z_mm if p.added_mass_com_z_mm is not None else 3.0
+        return mass_properties(p.unweighted_pla, added, z)
     if regime == "nominal" or p.mass_range_g is None:
         return p.unweighted_pla
     added = p.mass_range_g[1] - p.unweighted_pla.mass_g
@@ -344,12 +357,8 @@ def piece_mass_properties(twin: ProductTwin, piece_type: str,
 
 
 def rook_mass_range(twin: ProductTwin) -> list[MassProperties]:
-    """The measured 4.8 g total with the nut-height model at both bounds."""
-    p = twin.pieces["rook"]
-    if p.nut_model_z_range_mm is None or p.nut_mass_g is None:
-        raise ValueError("rook nut model is incomplete")
-    return [mass_properties(p.unweighted_pla, p.nut_mass_g, z)
-            for z in p.nut_model_z_range_mm]
+    """Compatibility wrapper: the rook's total is measured; COM is modeled."""
+    return [piece_mass_properties(twin, "rook", "nominal")]
 
 
 def apply_mass_model(env, twin: ProductTwin, regime: str = "nominal", *, all_slots: bool = False) -> list[dict]:

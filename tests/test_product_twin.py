@@ -54,25 +54,30 @@ def test_product_env_is_wrist_only_and_uses_frozen_evaluator():
     assert twin.evaluator.upright_min == 0.85
 
 
-def test_rook_measurement_and_unknown_piece_ranges():
+def test_final_assembled_piece_weights_are_measured():
     twin = load_product_twin()
-    rook = twin.pieces["rook"]
-    assert rook.measured is True
-    assert rook.assembled.mass_g == pytest.approx(4.8)
-    assert rook.nut_mass_g == pytest.approx(4.8 - rook.unweighted_pla.mass_g)
-    assert rook.nut_model_z_range_mm == (2.0, 4.0)
-    low, high = rook_mass_range(twin)
-    assert low.mass_g == high.mass_g == pytest.approx(4.8)
-    assert low.com_mm[2] != high.com_mm[2]       # the nut-height bound moves COM
-    for name in ("pawn", "knight", "bishop", "queen", "king"):
+    assert twin.mass_sensitivity_g == pytest.approx(0.1)
+    expected = {
+        "king": 5.3, "queen": 4.8, "knight": 4.5,
+        "rook": 4.3, "pawn": 3.8, "bishop": 4.1,
+    }
+    for name, weight in expected.items():
         piece = twin.pieces[name]
-        assert piece.measured is False
-        assert piece.assembled is None
-        assert piece.mass_range_g[0] == pytest.approx(piece.unweighted_pla.mass_g)
-        assert piece.mass_range_g[1] > piece.mass_range_g[0]
+        assert piece.measured is True
+        assert piece.assembled.mass_g == pytest.approx(weight)
+        assert piece.mass_range_g is None
         nominal = piece_mass_properties(twin, name, "nominal")
         heavy = piece_mass_properties(twin, name, "heavy_bound")
-        assert heavy.mass_g > nominal.mass_g
+        low = piece_mass_properties(twin, name, "sensitivity_low")
+        high = piece_mass_properties(twin, name, "sensitivity_high")
+        assert heavy.mass_g == pytest.approx(weight)
+        assert nominal.mass_g == pytest.approx(weight)
+        assert low.mass_g == pytest.approx(weight - 0.1)
+        assert high.mass_g == pytest.approx(weight + 0.1)
+        assert low.com_mm[2] > nominal.com_mm[2] > high.com_mm[2]
+        assert low.inertia_kg_m2[0][0] > 0
+        assert high.inertia_kg_m2[0][0] > 0
+    assert rook_mass_range(twin)[0].mass_g == pytest.approx(4.3)
 
 
 def test_point_mass_combination_is_physically_sane():
