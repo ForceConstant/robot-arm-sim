@@ -9,6 +9,7 @@ turn resolution; 2026-11-09 owner-accepted at 98.54%). **Phase 11 is complete (2
 exit-compliant measured evidence in simulation envelope** (c/a frozen/geometry
 accepted with bounded throughput/memory/thermal/reload/held-out evidence; b
 measured and frozen B1-alone rejected with documented fallback) — see
+  - Follow-up (2026-11-11, measured): type-ID+pose probe iterated on bc250-cachy but still insufficient for full 11c(b) E2E (baseline 0.664 acc / 0/12 E2E accepted; iter 0.468 acc / 5/18 type-correct / 1/18 accepted). Additional harnessed R/A1 engineered-stress evidence collected (0 false confirmations, safe abstentions; shadow-extreme 74.29%/68.33%, arm-over-changed 20.0%). See `reports/phase11c/followup_2026-11-11.md`.
 [`docs/PHASE11C_RESULTS.md`](docs/PHASE11C_RESULTS.md). **Phases 12–21 are planned, not
 completed.
 Historical acceptance filenames

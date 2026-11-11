@@ -50,17 +50,40 @@ def _evidence(predictions) -> list[SquareEvidence]:
 EMPTY = "8/8/8/8/8/8/8/8 w - - 0 1"
 
 
-def _scene(seed: int):
-    """Product-twin scene with randomized board placement and lighting."""
+def _scene(seed: int, stress_shadow_extreme: bool = False):
+    """Product-twin scene with randomized board placement and lighting.
+
+    stress_shadow_extreme enables a cast-shadow-extreme / harsh-lighting envelope
+    for targeted robustness characterization (same geometry/randomization).
+    """
     twin = load_product_twin()
     draw = np.random.default_rng(seed)
+    if stress_shadow_extreme:
+        # Hard/directional shadows and low-fill/high-contrast lighting extremes.
+        if int(draw.integers(0, 2)) == 0:
+            light_intensity = float(draw.uniform(0.30, 0.55))
+            fill_intensity = float(draw.uniform(0.20, 0.55))
+            ambient = float(draw.uniform(0.0, 0.02))
+        else:
+            light_intensity = float(draw.uniform(1.25, 1.55))
+            fill_intensity = float(draw.uniform(0.25, 0.60))
+            ambient = float(draw.uniform(0.0, 0.03))
+        light_dir = (float(draw.uniform(-0.55, -0.15)),
+                     float(draw.uniform(0.10, 0.55)), -1.0)
+        shadow_softness = float(draw.uniform(0.001, 0.010))
+    else:
+        light_intensity = float(draw.uniform(0.82, 1.15))
+        ambient = float(draw.uniform(0.0, 0.05))
+        light_dir = (float(draw.uniform(-0.35, -0.2)),
+                     float(draw.uniform(0.2, 0.4)), -1.0)
+        fill_intensity = float(draw.uniform(0.7, 1.3))
+        shadow_softness = float(draw.uniform(0.015, 0.035))
     appearance = twin.appearance("printed").model_copy(update={
-        "light_intensity": float(draw.uniform(0.82, 1.15)),
-        "ambient": float(draw.uniform(0.0, 0.05)),
-        "light_dir": (float(draw.uniform(-0.35, -0.2)),
-                      float(draw.uniform(0.2, 0.4)), -1.0),
-        "fill_intensity": float(draw.uniform(0.7, 1.3)),
-        "shadow_softness": float(draw.uniform(0.015, 0.035)),
+        "light_intensity": light_intensity,
+        "ambient": ambient,
+        "light_dir": light_dir,
+        "fill_intensity": fill_intensity,
+        "shadow_softness": shadow_softness,
     })
     config = layout_env_config("printed", cameras=(Camera.WRIST,)).model_copy(update={
         "appearance": appearance,
@@ -164,6 +187,10 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--crowded-only", action="store_true")
     parser.add_argument("--no-self-occlusion", action="store_true", help="paired unmasked ablation")
+    parser.add_argument("--stress-shadow-extreme", action="store_true",
+                        help="engineered cast-shadow-extreme/harsh lighting stress envelope")
+    parser.add_argument("--stress-arm-over-changed", action="store_true",
+                        help="engineered arm-over-changed-square stress (restrict views to those covering changed squares)")
     args = parser.parse_args()
 
     model = PerceptionModel.load(args.model)
@@ -177,7 +204,7 @@ def main() -> int:
     registration_rows: list[dict] = []
 
     for index in range(args.sessions):
-        env, place_rng = _scene(args.seed * 1000 + index)
+        env, place_rng = _scene(args.seed * 1000 + index, stress_shadow_extreme=args.stress_shadow_extreme)
         crowded = args.crowded_only or index % 2 == 0
         try:
             # Place the board for this session, then freeze that pose as nominal.
@@ -230,12 +257,14 @@ def main() -> int:
             for case_index, case in enumerate(cases):
                 env.reset(case["successor"])
                 visible = {}
-                if case["kind"] == "occluded":
+                need_visibility = (case["kind"] == "occluded") or (args.stress_arm_over_changed and case["move"] is not None)
+                if need_visibility:
                     for pose in poses:
                         _park(env, pose.joints)
                         camera = scanner.cameras(pose.joints)
                         visible[pose.name] = _visible(env, empty_registration, camera)
                 active = poses
+                arm_over_changed = None
                 if case["kind"] == "occluded":
                     square = case["move"].from_square
                     # Keep only poses that hide the changed square.
@@ -243,6 +272,20 @@ def main() -> int:
                     if len(hidden) < 1 or len(hidden) == len(poses):
                         continue
                     active = hidden
+                elif args.stress_arm_over_changed and case["move"] is not None:
+                    # Engineered arm-over-changed stress: prefer views where the arm
+                    # (robot geometry) covers at least one changed square in the scan.
+                    changed = {case["move"].from_square, case["move"].to_square}
+                    covering = [p for p in poses if any(not visible[p.name][sq] for sq in changed)]
+                    if covering:
+                        active = covering
+                    covered_count = sum(1 for p in active if any(not visible[p.name][sq] for sq in changed))
+                    arm_over_changed = {
+                        "changed_squares": sorted(changed),
+                        "active_views": [p.name for p in active],
+                        "covering_view_count": covered_count,
+                        "any_view_covers_changed": bool(covering),
+                    }
                 evidence: list[SquareEvidence] = []
                 registration = None
                 used_scans = 0
@@ -299,7 +342,7 @@ def main() -> int:
                 else:
                     correct = not accepted
                     safe = not accepted
-                records.append({
+                rec = {
                     "session": index, "case": case_index, "kind": case["kind"],
                     "category": case["category"], "status": inference.status,
                     "expected": case["move"].uci() if case["move"] else None,
@@ -308,7 +351,10 @@ def main() -> int:
                     "scans": used_scans, "answered": inference.answered,
                     "unknown": inference.unknown,
                     "unknown_squares": [p.square for p in result.predictions if p.label == "unknown"],
-                })
+                }
+                if arm_over_changed is not None:
+                    rec["arm_over_changed"] = arm_over_changed
+                records.append(rec)
             sessions.append({"session": index, "registered": True,
                              "crowded": crowded, "cases": len(cases)})
             if not args.quiet:
@@ -337,6 +383,10 @@ def main() -> int:
             1 for r in registration_rows
             if r["xy_error_mm"] <= REGISTRATION_MM and abs(r["yaw_error_deg"]) <= REGISTRATION_DEG),
     }
+    stress_modes = {
+        "shadow_extreme": args.stress_shadow_extreme,
+        "arm_over_changed": args.stress_arm_over_changed,
+    }
     report = {
         "schema": "robot-arm-phase9-wrist-only/v1",
         "seed": args.seed, "sessions": args.sessions, "turns_per_session": args.turns,
@@ -344,6 +394,7 @@ def main() -> int:
         "model_sha256": hashlib.sha256(Path(args.model).read_bytes()).hexdigest(),
         "crowded_only": args.crowded_only,
         "self_occlusion": not args.no_self_occlusion,
+        "stress_modes": stress_modes,
         "source_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
                           for p in map(Path, [__file__, "chess_sim/wrist_scan.py",
                                              "chess_sim/self_occlusion.py", "chess_sim/wrist_calibration.py",

@@ -51,3 +51,11 @@
 2. R: extended sustained harness run(s) for throughput/RSS/thermal envelope confidence.
 3. B/b: scoped local type-ID+pose training probe (or hybrid fallback) to satisfy full per-piece type + in-square position/orientation including knight yaw; validate against Phase 10 grasp/orientation needs.
 4. Physical/real-occlusion validation remains a separate gate.
+
+## Follow-ups (2026-11-11, measured)
+
+Post-closure follow-up work (bc250-cachy, harnessed, self-occ, sim envelope) continued per direction: scoped local type-ID+pose probe iteration, additional R/A1 stress evidence, and code/doc updates. See `reports/phase11c/followup_2026-11-11.md` for receipts/metrics.
+
+- **(b) Type-ID+pose probe:** baseline `s3t1p2_seed12101` (276/128, 350ep, reload ok, 90.45s, ~8.89 GiB, 58.125°C, harness rc 0) held-out type acc 0.664 but E2E 0/12 type-correct/accepted. Iteration `s6t2p3_seed12102` (1050/357, 350ep, reload ok, 221.05s, ~9.27 GiB, 59.375°C, harness rc 0) held-out type acc 0.468, E2E 5/18 type-correct, 1/18 accepted (knight 3 cases: 1 type-correct, 1 accepted; accepted axis err mod180 1.653°, XY 0.294 mm). Scoped baseline remains insufficient for full 11c(b) end-to-end; hybrid type-known+B1-with-abstention or larger/stronger local type+pose training remains the fallback.
+- **(a)/(R) stress:** additional harnessed runs preserved 0 false confirmations with safe abstentions/rejections but showed seed/scene sensitivity and capability limits under engineered stress (`tools/benchmark_phase9.py --stress-shadow-extreme`, `--stress-arm-over-changed`): shadow-extreme 78/105 (74.29%, seed 10001) and 82/120 (68.33%, seed 10002); arm-over-changed 24/120 (20.0%, seed 10101). Mixed/soak samples included 595/600 (99.17%, seed 9701) down to 345/400 (86.25%, seed 9501); seed 9801 hit inventory constraint (`ValueError: position needs more B than the set contains`, no receipt, harness rc 1), seed 9901 recovered 348/400 (87.0%). No new long sustained soak started in this 30-min window.
+
