@@ -1037,10 +1037,22 @@ class Lab:
     def _run(self):
         try:
             env_type=SingleFollowerEnv if os.environ.get('ROBOT_ARM_COUNT')=='1' else DualArmEnv
-            self.env = env_type(EnvConfig(
-                appearance=AppearanceConfig(camera_mast=False,
-                    piece_set=os.environ.get("ROBOT_PIECE_SET", "default")),
-                control=ControlConfig(cameras=(), image_size=(800, 600))))
+            piece_set=os.environ.get("ROBOT_PIECE_SET", "default")
+            if piece_set == 'printed':
+                # Use the qualified product layout, not a hand-built EnvConfig:
+                # the 0.5 mm fiducial mat and its marker geometry are part of the
+                # measured playing surface. With the flush mount this 0.5 mm
+                # difference decides the far-corner h8->a8 transfer.
+                from chess_sim.product import layout_env_config
+                base=layout_env_config(piece_set='printed', cameras=())
+                config=base.model_copy(update={
+                    'appearance':base.appearance.model_copy(update={'camera_mast':False}),
+                    'control':ControlConfig(cameras=(), image_size=(800, 600))})
+            else:
+                config=EnvConfig(
+                    appearance=AppearanceConfig(camera_mast=False, piece_set=piece_set),
+                    control=ControlConfig(cameras=(), image_size=(800, 600)))
+            self.env = env_type(config)
             self.env.model.vis.quality.shadowsize = 2048
             if self.env.config.appearance.piece_set == 'printed':
                 from chess_sim.product import load_product_twin,apply_mass_model

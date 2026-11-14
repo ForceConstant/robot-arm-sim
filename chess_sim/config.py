@@ -121,10 +121,13 @@ class BoardConfig(Config):
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
     marker_plane: str = "mat"      # where the markers print: "mat" or "board'
     table_top: float = 0.43        # table height above the floor
-    # Best tested custom-tool layout: 20 distinct candidates, eight critical
-    # transfers, then 64/64 source-square executions. See docs/LAYOUT_OPTIMIZATION.md.
-    arm_gap: float = 0.09          # board outer edge to arm base frame origin, NOT foot edge
-    arm_riser: float = 0.03        # arm mounting datum above the board's underside/table
+    # Flush single-board mount (2026-11-14): the base housing's lowest point is
+    # 2.4 mm below the frame origin, so a 2.4 mm datum puts the arm base bottom
+    # coplanar with the 3.2 mm board's underside. The 125 mm setback restores the
+    # eight critical transfers after that 27.6 mm drop. See docs/LAYOUT_OPTIMIZATION.md.
+    arm_gap: float = 0.125         # board outer edge to arm base frame origin, NOT foot edge
+    arm_riser: float = 0.0024      # arm mounting datum above the board's underside/table
+    arm_x: float = 0.003          # arm base frame offset from the board centreline
     arm_side: str = "white"       # the dual-arm scene mirrors the black mount
     # where the board's centre sits on the table; the arm, camera mast, tray and
     # parked pieces do not move with it
@@ -189,7 +192,8 @@ class BoardConfig(Config):
         """World position of the SO-101 base frame. Independent of `origin`:
         shifting the board moves it relative to the arm."""
         sign = 1.0 if self.arm_side == "black" else -1.0
-        return (0.0, sign * (self.width / 2 + self.arm_gap), self.table_top + self.arm_riser)
+        return (self.arm_x, sign * (self.width / 2 + self.arm_gap),
+                self.table_top + self.arm_riser)
 
     def square_center(self, square: int | str | Square) -> tuple[float, float]:
         """World x/y of a square, as a `Square`, a name or an index (0 = a1 ... 63 = h8)."""

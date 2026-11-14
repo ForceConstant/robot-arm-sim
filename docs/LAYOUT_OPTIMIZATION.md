@@ -1,11 +1,68 @@
 # Board/base layout optimization — 2026-11-03
 
+## Current layout — flush single-board mount, 2026-11-14
+
+Brian asked for the arm base's underside to sit even with the underside of the
+3.2 mm chess board, so both can be fixed to one base board. The SO-101 base
+housing's lowest mesh point is **2.4 mm below the frame origin** (CAD mesh
+bounds, `base_so101_v2.stl` transformed by its MJCF pose), so the required
+mount datum is **2.4 mm above the table**, not 0 and not the old 30 mm riser.
+That puts the arm base bottom at **430 mm**, exactly the board underside; the
+board's 3.2 mm top is then 0.8 mm above the frame origin.
+
+Dropping the frame 27.6 mm removes the near-rank approach clearance. At the old
+90 mm setback, near kings `e1`/`d1` fail `grasp_descend`; the same two cases
+fail at 60–120 mm and at datums 0–20 mm. Moving the base back restores them:
+
+| Gap mm | Datum mm | Critical | Worst mm | Mean mm |
+| ---: | ---: | ---: | ---: | ---: |
+| 90 | 2.4 | 6/8 | 36.68 | 9.60 |
+| 110 | 2.4 | 6/8 | 14.31 | 4.81 |
+| 115 | 2.4 | 6/8 | 21.30 | 4.54 |
+| 120 | 2.4 | 7/8 | 27.32 | 4.96 |
+| **125** | **2.4** | **8/8** | **3.42** | **1.79** |
+| 128 | 2.4 | 4/8 | 277.19 | 118.97 |
+| 130 | 2.4 | 6/8 | 196.00 | 49.94 |
+
+- Selected: **125 mm board outer edge to base frame origin; 2.4 mm datum;
+  arm base 3 mm to the right of the board centreline**.
+- Base frame white `(3, -252, 432.4)` mm; base bottom `430 mm`; board underside
+  `430 mm`; playing surface `433.7 mm` (3.2 mm slab + 0.5 mm fiducial mat);
+  table top `430 mm`.
+- Critical suite: **8/8**, worst **2.93 mm**, mean **1.70 mm**, same eight
+  independent physical transfers and evaluator as the 2026-11-03 search.
+- A centred 125 mm mount also passes 8/8 but fails the full-board `g7`/`g8`
+  transfers on jaw-span clearance (62/64). A 1 mm offset reaches 63/64 (`a7`
+  fails), and **3 mm reaches 64/64** (worst 7.49 mm, mean 2.74 mm). The offset
+  only chooses a clear jaw span; it does not change reach. The single mounting
+  board makes this small fixed offset repeatable rather than a placement guess.
+- `ReachMap` now uses a 9 mm analytic/executed screen at this mount: the 16 mm
+  vertical far-rank probe reads ~8.2 mm even though the 64-square contact suite
+  completes every square. The 5 mm screen was measured on the old 90/30 mount.
+- The live service now builds the printed scene from `layout_env_config`, not a
+  hand-built `EnvConfig`. That includes the 0.5 mm fiducial mat: with the flush
+  mount, omitting it flipped the far-corner `h8->a8` transfer from 2.7 mm success
+  to a 193.8 mm miss.
+- Verification at this mount: critical **8/8** (worst 2.93 mm, mean 1.70 mm);
+  full board **64/64** (worst 7.49 mm, mean 2.74 mm); delivered layout-v1 suite
+  **16/16**, worst 5.14 mm. Project pytest: **178 passed, 22 skipped** with the
+  printed asset pack and EGL rendering.
+- Every source square and board-offset repeat still needs re-running at this
+  mount before it replaces the older 64/64 and 29/32 claims.
+- The 128–130 mm cliff is the far-rank reach limit; do not round this layout
+  farther back. The 125 mm point is the last tested pass, not a continuous
+  optimum.
+- The old 30 mm riser and 90 mm gap remain the historical qualified baseline;
+  this section supersedes them for the current runtime defaults.
+
+## Previously selected layout — 2026-11-03
+
 Follow-up: the [full Phase 8 rerun at these offsets](PHASE8_UPDATED_OFFSETS.md)
 qualifies 64/64 source paths with the current custom jaw and tests span-only
 corrections for crowded queen/king moves. Keep geometry; improve span selection.
 The tested candidate is not a deployed controller update.
 
-## Selected current simulator layout
+## Selected current simulator layout (2026-11-03, superseded 2026-11-14)
 
 - **90 mm outer board edge to arm base-frame origin; 30 mm riser/mount-datum height.**
 - Board underside/table at 430 mm; arm datum at 460 mm; playing surface at 433.2 mm.

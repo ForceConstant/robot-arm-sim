@@ -15,10 +15,14 @@ def test_selected_runtime_layout_matches_qualification_and_defaults():
     board=BoardConfig()
     assert board.arm_gap*1000==current['mount']['board_edge_to_base_frame_mm']
     assert board.arm_riser*1000==current['mount']['base_mount_datum_above_table_mm']
+    assert board.arm_x*1000==current['mount']['arm_base_x_offset_mm']
     assert board.thickness*1000==current['board']['thickness_mm']
-    full=json.loads((root/'reports/layout_full_board.json').read_text())['best']
+    full=json.loads((root/'reports/layout_flush_full_board.json').read_text())['best']
     assert full['passed']==full['total']==64
     assert {c['source'] for c in full['cases']}==set(chess.SQUARE_NAMES)
+    assert full['gap_mm']==pytest.approx(board.arm_gap*1000)
+    assert full['riser_mm']==pytest.approx(board.arm_riser*1000)
+    assert (full['arm_base_m'][0]*1000 - full['board_offset_mm'][0]) == pytest.approx(board.arm_x*1000)
 
 
 def test_failed_alternate_roll_does_not_discard_valid_primary_solution():

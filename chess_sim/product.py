@@ -291,6 +291,7 @@ def layout_env_config(piece_set: str = "printed",
         "marker_plane": measured.get("marker_plane", "mat"),
         "arm_gap": mount["board_edge_to_base_frame_mm"] / 1000.0,
         "arm_riser": mount["base_mount_datum_above_table_mm"] / 1000.0,
+        "arm_x": mount["white_arm_base_frame_mm"][0] / 1000.0,
         "tray_x": layout.get("tray_x_mm", -160.0) / 1000.0,
     })
     if not np.allclose(np.array(board.arm_base) * 1000,

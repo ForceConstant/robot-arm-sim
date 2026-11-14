@@ -18,7 +18,11 @@ PHASE8_RECEIPT_REVISION = '4d5422f25cac91181f66a02d0863c4c4fb124457'
 @pytest.mark.parametrize('kind', ['stock', 'cad_parallel'])
 def test_current_mount_qualification_receipt(kind):
     report = json.loads((ROOT / f'reports/phase8_updated_{kind}.json').read_text())
-    layout = json.loads((ROOT / 'hardware/current_layout.json').read_text())
+    # These are historical receipts: compare against the layout file in the same
+    # revision, not the current mount, which later releases may change.
+    layout = json.loads(subprocess.check_output(
+        ['git', 'show', f'{PHASE8_RECEIPT_REVISION}:hardware/current_layout.json'],
+        cwd=ROOT))
     assert report['stage'] == 'complete'
     assert report['tool']['kind'] == kind
     assert report['layout'] == layout

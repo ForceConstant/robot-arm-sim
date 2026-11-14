@@ -56,11 +56,11 @@ user; the roadmap is not authorization to implement all future phases at once.
   private corpus and checkpoints stay under `.private/phase11b/`.
 
 - Current interactive layout: `hardware/current_layout.json` / `docs/LAYOUT_OPTIMIZATION.md`
-  (one follower via `ROBOT_ARM_COUNT=1`, 90 mm board-edge-to-base-frame gap,
-  30 mm riser, measured 3.2 mm slab,
-  latest custom jaw, position-priority IK). The 2026-11-02 stock-tool
-  `product_twin.json` is a historical Phase 8 baseline, not current runtime
-  layout. Keep nominal reach separate from crowded/perturbed reliability.
+  (one follower via `ROBOT_ARM_COUNT=1`, 125 mm board-edge-to-base-frame gap,
+  2.4 mm datum and 3 mm lateral offset so the arm base underside is coplanar with the 3.2 mm board
+  underside at 430 mm, latest custom jaw, position-priority IK). The 2026-11-02
+  stock-tool `product_twin.json` is a historical Phase 8 baseline, not current
+  runtime layout. Keep nominal reach separate from crowded/perturbed reliability.
 
 - Keep upstream provenance and history. `upstream` is
   `qalby-tech/embryo_lab_chess_so101`; `origin` is `ForceConstant/robot-arm-sim`.

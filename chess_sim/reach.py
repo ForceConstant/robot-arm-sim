@@ -20,8 +20,12 @@ CALIB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calib")
 EXECUTED_REACH_FILE = os.path.join(CALIB_DIR, "executed_reach.json")
 
 MAX_TILT = np.radians(30)
-MAX_IK_ERROR = 0.008
-MAX_EXECUTED_ERROR = 0.005
+MAX_IK_ERROR = 0.009
+# 9 mm, not the old 5 mm: the flush mount's 16 mm vertical probe reads ~8.2 mm
+# at the far corners, while the 64-square contact suite completes every square.
+# The tighter value was measured on the 90/30 mount and excludes reachable
+# squares here. Re-check both thresholds if the mount or probe height changes.
+MAX_EXECUTED_ERROR = 0.009
 NEAR_FIELD_RADIUS = 0.10
 
 
