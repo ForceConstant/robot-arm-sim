@@ -1,9 +1,10 @@
 # hardware
 
 **Current simulator layout:** [current_layout.json](current_layout.json) and
-[qualification](../docs/LAYOUT_OPTIMIZATION.md): 125 mm gap to the base-frame
-origin, 2.4 mm datum, 3 mm lateral offset and 3.2 mm board. The arm base underside is coplanar with
-the board underside at 430 mm, so a single base board can carry both. Older
+[qualification](../docs/LAYOUT_OPTIMIZATION.md): 90 mm gap to the base-frame
+origin, extended 30 mm base (`base_so101_v2_ext30.stl`, 462.4 mm frame datum)
+and 3.2 mm board. The base bottom is coplanar with the board underside at
+430 mm, so a single base board can carry both; no separate riser is used. Older
 generated rig drawings/parts below retain their historical dimensions; they
 were not regenerated or physically qualified by this simulation-only layout
 experiment. `product_twin.json` is the dated stock-tool Phase 8 baseline.

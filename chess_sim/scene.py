@@ -137,7 +137,7 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     _add_arm(spec, board)
     if dual_arms:
         _add_arm(spec, board.model_copy(update={"arm_side": "black"}), prefix="black:")
-        if board.arm_riser > 0:
+        if board.arm_riser > 0 and board.arm_pedestal:
             ax, ay, _ = board.model_copy(update={"arm_side": "black"}).arm_base
             spec.worldbody.add_geom(name="black_pedestal", type=mujoco.mjtGeom.mjGEOM_BOX,
                 size=[0.055, 0.055, board.arm_riser / 2],
@@ -266,7 +266,7 @@ def _add_environment(spec, board, appearance):
                             pos=[0, 0, board.table_top / 2], rgba=[*appearance.table_rgb, 1],
                             solimp=list(SURFACE_SOLIMP), priority=SURFACE_PRIORITY)
     ax, ay, az = board.arm_base
-    if board.arm_riser > 0:
+    if board.arm_riser > 0 and board.arm_pedestal:
         spec.worldbody.add_geom(type=mujoco.mjtGeom.mjGEOM_BOX,
                                 size=[0.055, 0.055, board.arm_riser / 2],
                                 pos=[ax, ay, board.table_top + board.arm_riser / 2],

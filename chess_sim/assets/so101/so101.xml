@@ -38,7 +38,7 @@
       <!-- Part base_motor_holder_so101_v1 -->
       <geom type="mesh" class="visual" pos="-0.00636471 -9.94414e-05 -0.0024" quat="0.5 0.5 0.5 0.5" mesh="base_motor_holder_so101_v1" material="base_motor_holder_so101_v1_material"/>
       <!-- Part base_so101_v2 -->
-      <geom type="mesh" class="visual" pos="-0.00636471 -8.97657e-09 -0.0024" quat="0.5 0.5 0.5 0.5" mesh="base_so101_v2" material="base_so101_v2_material"/>
+      <geom type="mesh" class="visual" pos="-0.00636471 -8.97657e-09 -0.0024" quat="0.5 0.5 0.5 0.5" mesh="base_so101_v2_ext30" material="base_so101_v2_material"/>
       <!-- Part sts3215_03a_v1 -->
       <geom type="mesh" class="visual" pos="0.0263353 -8.97657e-09 0.0437" quat="1 -2.85511e-16 -9.64433e-17 6.12908e-16" mesh="sts3215_03a_v1" material="sts3215_03a_v1_material"/>
       <!-- Part waveshare_mounting_plate_so101_v2 -->
@@ -139,6 +139,7 @@
     <mesh file="motor_holder_so101_wrist_v1.stl"/>
     <mesh file="sts3215_03a_no_horn_v1.stl"/>
     <mesh file="base_so101_v2.stl"/>
+    <mesh file="base_so101_v2_ext30.stl"/>
     <material name="base_motor_holder_so101_v1_material" rgba="1 0.82 0.12 1"/>
     <material name="base_so101_v2_material" rgba="1 0.82 0.12 1"/>
     <material name="sts3215_03a_v1_material" rgba="0.1 0.1 0.1 1"/>

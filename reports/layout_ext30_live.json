@@ -1,0 +1,507 @@
+{
+  "version": "1.15.0",
+  "renderer": "AMD BC-250 (radeonsi, gfx1013, ACO, DRM 3.64, 7.3.4-1.2-bc250-test)",
+  "layout": {
+    "arm_count": 1,
+    "board_edge_to_base_frame_mm": 90.0,
+    "base_riser_mm": 32.4,
+    "board_thickness_mm": 3.2,
+    "arm_base_m": [
+      0.0,
+      -0.217,
+      0.4624
+    ]
+  },
+  "suite": {
+    "version": "layout-v1",
+    "index": 16,
+    "total": 16,
+    "phase": "complete",
+    "seed": null,
+    "results": [
+      {
+        "case": "white-near-king-e",
+        "description": "Layout probe: king, near-king-e; independent empty board",
+        "move": "e1e2",
+        "arm": "white",
+        "seed": 3602898320,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.27,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "6fbf3b4e7fc44f90bceb5006eff0a9d0"
+      },
+      {
+        "case": "white-near-king-d",
+        "description": "Layout probe: king, near-king-d; independent empty board",
+        "move": "d1d2",
+        "arm": "white",
+        "seed": 2713251078,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.68,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "1c2ab687a9dc45df83461a317cc0d9ec"
+      },
+      {
+        "case": "white-near-rook-left",
+        "description": "Layout probe: rook, near-rook-left; independent empty board",
+        "move": "a1h1",
+        "arm": "white",
+        "seed": 762871132,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.29,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "d4f70de97d6449f8a1c7ed3aa37f08ff"
+      },
+      {
+        "case": "white-near-rook-right",
+        "description": "Layout probe: rook, near-rook-right; independent empty board",
+        "move": "h1a1",
+        "arm": "white",
+        "seed": 2502532667,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 1.47,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "525ee16087ec4459bf1a1109b29de5e2"
+      },
+      {
+        "case": "white-far-rook-left",
+        "description": "Layout probe: rook, far-rook-left; independent empty board",
+        "move": "a8h8",
+        "arm": "white",
+        "seed": 2708231502,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.43,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "1755280024b5496a968458a60380bcfc"
+      },
+      {
+        "case": "white-far-rook-right",
+        "description": "Layout probe: rook, far-rook-right; independent empty board",
+        "move": "h8a8",
+        "arm": "white",
+        "seed": 1713175387,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.58,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "d8ed2dfe7cc94960ba355bc60c7b2085"
+      },
+      {
+        "case": "white-diagonal-rook-out",
+        "description": "Layout probe: rook, diagonal-rook-out; independent empty board",
+        "move": "a1h8",
+        "arm": "white",
+        "seed": 4260767832,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.43,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "e90928e8abf4464ca9d81ece00fd6a1c"
+      },
+      {
+        "case": "white-diagonal-rook-in",
+        "description": "Layout probe: rook, diagonal-rook-in; independent empty board",
+        "move": "h8a1",
+        "arm": "white",
+        "seed": 1199848482,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.37,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "b19d94c0d3354fef9b51f9147b93414f"
+      },
+      {
+        "case": "black-near-king-e",
+        "description": "Layout probe: king, near-king-e; independent empty board",
+        "move": "e8e7",
+        "arm": "black",
+        "seed": 3613504125,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 1.54,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "dd08351b15aa4c9aaac6a15dba5adf5e"
+      },
+      {
+        "case": "black-near-king-d",
+        "description": "Layout probe: king, near-king-d; independent empty board",
+        "move": "d8d7",
+        "arm": "black",
+        "seed": 2691072747,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 1.54,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "658e735b4d084e688434415041b2dc21"
+      },
+      {
+        "case": "black-near-rook-left",
+        "description": "Layout probe: rook, near-rook-left; independent empty board",
+        "move": "a8h8",
+        "arm": "black",
+        "seed": 256685589,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.43,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "773d969b12a045d1a28bde1819c0f32d"
+      },
+      {
+        "case": "black-near-rook-right",
+        "description": "Layout probe: rook, near-rook-right; independent empty board",
+        "move": "h8a8",
+        "arm": "black",
+        "seed": 2584433604,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.58,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "8aea04d406744c8e92779f4ad6dbd66b"
+      },
+      {
+        "case": "black-far-rook-left",
+        "description": "Layout probe: rook, far-rook-left; independent empty board",
+        "move": "a1h1",
+        "arm": "black",
+        "seed": 2545001976,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.29,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "2691f6aaa16b4b2ca2ee3f6a41f00f5b"
+      },
+      {
+        "case": "black-far-rook-right",
+        "description": "Layout probe: rook, far-rook-right; independent empty board",
+        "move": "h1a1",
+        "arm": "black",
+        "seed": 1143484434,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 1.47,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "522fd3a583b4464592573b6b3737d9f1"
+      },
+      {
+        "case": "black-diagonal-rook-out",
+        "description": "Layout probe: rook, diagonal-rook-out; independent empty board",
+        "move": "a8h1",
+        "arm": "black",
+        "seed": 2332517381,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 0.9,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "621c1e8dd4cd4a73a726ea4c92b2abc5"
+      },
+      {
+        "case": "black-diagonal-rook-in",
+        "description": "Layout probe: rook, diagonal-rook-in; independent empty board",
+        "move": "h1a8",
+        "arm": "black",
+        "seed": 1787425122,
+        "suite_seed": null,
+        "layout": {
+          "board_origin_m": [
+            0.0,
+            0.0
+          ],
+          "arm_start_rad": [
+            0.0,
+            -1.0,
+            1.3,
+            0.4,
+            0.0,
+            -1.5981328090550484
+          ]
+        },
+        "success": true,
+        "error_mm": 2.48,
+        "slots": 1,
+        "categories": [
+          "success"
+        ],
+        "message": "",
+        "recording": "4438780147f9430a83480a0f073bd6c0"
+      }
+    ]
+  },
+  "passed": 16,
+  "total": 16,
+  "elapsed_s": 279.6
+}

@@ -16,8 +16,9 @@ def test_selected_runtime_layout_matches_qualification_and_defaults():
     assert board.arm_gap*1000==current['mount']['board_edge_to_base_frame_mm']
     assert board.arm_riser*1000==current['mount']['base_mount_datum_above_table_mm']
     assert board.arm_x*1000==current['mount']['arm_base_x_offset_mm']
+    assert board.arm_pedestal is current['mount']['arm_pedestal']
     assert board.thickness*1000==current['board']['thickness_mm']
-    full=json.loads((root/'reports/layout_flush_full_board.json').read_text())['best']
+    full=json.loads((root/'reports/layout_ext30_full_board.json').read_text())['best']
     assert full['passed']==full['total']==64
     assert {c['source'] for c in full['cases']}==set(chess.SQUARE_NAMES)
     assert full['gap_mm']==pytest.approx(board.arm_gap*1000)

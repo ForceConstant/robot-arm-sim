@@ -121,13 +121,13 @@ class BoardConfig(Config):
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
     marker_plane: str = "mat"      # where the markers print: "mat" or "board'
     table_top: float = 0.43        # table height above the floor
-    # Flush single-board mount (2026-11-14): the base housing's lowest point is
-    # 2.4 mm below the frame origin, so a 2.4 mm datum puts the arm base bottom
-    # coplanar with the 3.2 mm board's underside. The 125 mm setback restores the
-    # eight critical transfers after that 27.6 mm drop. See docs/LAYOUT_OPTIMIZATION.md.
-    arm_gap: float = 0.125         # board outer edge to arm base frame origin, NOT foot edge
-    arm_riser: float = 0.0024      # arm mounting datum above the board's underside/table
-    arm_x: float = 0.003          # arm base frame offset from the board centreline
+    # Extended 30 mm base (2026-11-14): the printed base extends 32.4 mm below
+    # the frame origin, so a 462.4 mm frame puts its bottom at 430 mm, coplanar
+    # with the board underside. No separate riser block; the base is the stand.
+    arm_gap: float = 0.09          # board outer edge to arm base frame origin, NOT foot edge
+    arm_riser: float = 0.0324      # arm mounting datum above the board's underside/table
+    arm_x: float = 0.0            # arm base frame offset from the board centreline
+    arm_pedestal: bool = False     # separate riser block under the base (old mount)
     arm_side: str = "white"       # the dual-arm scene mirrors the black mount
     # where the board's centre sits on the table; the arm, camera mast, tray and
     # parked pieces do not move with it

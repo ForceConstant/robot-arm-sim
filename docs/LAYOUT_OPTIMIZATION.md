@@ -1,6 +1,30 @@
 # Board/base layout optimization — 2026-11-03
 
-## Current layout — flush single-board mount, 2026-11-14
+## Current layout — extended 30 mm base, 2026-11-14
+
+Brian supplied a modified SO-101 base STL (“norma-core pgripper_Base_SO101
+Copy 2_Body5”). It is the stock base plus **30 mm in local −Y**, which the MJCF
+quaternion maps to world −Z; with the existing 2.4 mm lip the base bottom is
+**32.4 mm below the frame origin**. The mesh arrived in millimetres, so it was
+converted to metres and installed as `base_so101_v2_ext30.stl`; the SO-101 base
+visual geom now uses that mesh.
+
+- **90 mm** board outer edge to base frame origin; centred board.
+- Frame datum **462.4 mm**; base bottom **430 mm**; board assembly underside
+  **430 mm**; playing surface **433.7 mm** (3.2 mm slab + 0.5 mm mat).
+- No separate riser: `arm_pedestal` is false. The extended base is the stand.
+- Critical suite: **8/8**, worst **2.58 mm**, mean **1.32 mm**.
+- Full board: **64/64**, worst **4.30 mm**, mean **1.16 mm**.
+- Delivered layout-v1 suite through the live service: **16/16**, worst **2.58 mm**.
+- Reach screens restored to the original **8 mm analytic / 5 mm executed**
+  values: with the 90 mm setback the far-rank probe reads 3–4 mm and all 64
+  squares remain eligible. The 9 mm screen was only needed for the 125 mm flush
+  experiment and is not part of this mount.
+- The base mesh is still a **visual-only** MJCF geom, exactly like the stock
+  base. This qualifies reach/kinematics and the visual twin, not base collision,
+  printed-part stiffness or fastener strength.
+
+## Superseded — flush single-board mount, 2026-11-14
 
 Brian asked for the arm base's underside to sit even with the underside of the
 3.2 mm chess board, so both can be fixed to one base board. The SO-101 base

@@ -1,6 +1,6 @@
 # Robot Arm · Chess Lab
 
-**Current simulator layout (1.14.0):** 125 mm board-edge-to-base-frame gap, 2.4 mm mounting datum, 3 mm lateral mount offset, measured 3.2 mm printed board. The arm base underside sits at 430 mm, even with the board underside, so both can be mounted on one base board. [Layout search and limits](docs/LAYOUT_OPTIMIZATION.md); use **Layout: 16 cases** in the UI to repeat the near/far manipulation probes.
+**Current simulator layout (1.15.0):** 90 mm board-edge-to-base-frame gap, extended base with a 462.4 mm frame datum so its bottom sits at 430 mm, even with the board underside, and a centred board. The supplied 30 mm base extension replaces the separate riser. [Layout search and limits](docs/LAYOUT_OPTIMIZATION.md); use **Layout: 16 cases** in the UI to repeat the near/far manipulation probes.
 
 **Brian's fork:** [ForceConstant/robot-arm-sim](https://github.com/ForceConstant/robot-arm-sim)
 of [qalby-tech/embryo_lab_chess_so101](https://github.com/qalby-tech/embryo_lab_chess_so101).
