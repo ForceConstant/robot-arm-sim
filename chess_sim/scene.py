@@ -39,6 +39,20 @@ class CameraMount(Config):
     fovy: float = 42
 
 
+class CameraMountMeasured(Config):
+    """A camera pose given directly, for a mount that is not a convenient look-at.
+
+    ``pos`` is in the mounting body frame and ``xyaxes`` are the camera's +x and
+    +y axes in that same frame (MuJoCo's convention: the view direction is -z,
+    so z = x cross y).  This is the same convention ``camera_in_tool`` uses, so a
+    calibrated mount transfers without a conversion step.
+    """
+
+    pos: tuple[float, float, float]
+    xyaxes: tuple[float, float, float, float, float, float]
+    fovy: float = 42
+
+
 # wrist camera in the gripperframe site frame (+x approach, +z jaw span):
 # beside the wrist-roll motor, looking at the fingertips, wide lens
 # fovy 36 deg matches the measured live lens (fx ~746 px at 640x480), not the
@@ -55,6 +69,18 @@ WRIST_CAMERA = CameraMount(pos=(-0.075, 0.045, 0.012), target=(0.0, 0.0, 0.012),
 # the rendered model agrees with the image it produces.
 WRIST_CAMERA_CUSTOM = CameraMount(pos=(-0.060, 0.080, 0.0), target=(0.0, 0.0, 0.0),
                                   up=(-1.0, 0.0, 0.0), fovy=36)
+
+# Measured 2026-11-18 (Block 4c) on the printed gripper: camera_in_tool from a
+# joint ChArUco + forward-kinematics solve over the 37 fixed-board `_cal`
+# captures (reports/block4c_mount.json, reports/block4c_calibration.json).  The
+# stock look-at guess above is 63 mm and 49 deg away from it, which is why the
+# sim and the bench camera did not agree.  fovy is the vertical field of the
+# measured lens: 2 atan(240 / 833.0) = 32.14 deg, not the placeholder 36.
+WRIST_CAMERA_MEASURED = CameraMountMeasured(
+    pos=(0.067656, -0.002916, -0.010885),
+    xyaxes=(-0.845366, 0.155227, 0.511136,
+            -0.218268, -0.973702, -0.065290),
+    fovy=32.1445)
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
                      wrist_flex=0.4, wrist_roll=0.0, gripper=0.6)
 
@@ -426,13 +452,22 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     rot = np.zeros(9)
     mujoco.mju_quat2Mat(rot, np.asarray(site.quat, dtype=float))
     rot = rot.reshape(3, 3)                      # site axes in the gripper body frame
-    cam = WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA
-    pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
-    axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
-    x_axis, y_axis = rot @ axes[:3], rot @ axes[3:]
-    xyaxes = np.concatenate([x_axis, y_axis])
     tool_body = spec.body(prefix + "gripper")
-    tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=cam.fovy)
+    if gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
+        # Calibrated bench camera: already expressed in the gripper body frame,
+        # which is the frame `camera_in_tool` uses.  No site transform applies.
+        pos = np.asarray(WRIST_CAMERA_MEASURED.pos, dtype=float)
+        xyaxes = np.asarray(WRIST_CAMERA_MEASURED.xyaxes, dtype=float)
+        x_axis, y_axis = xyaxes[:3], xyaxes[3:]
+        fovy = WRIST_CAMERA_MEASURED.fovy
+    else:
+        cam = WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA
+        pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
+        axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
+        x_axis, y_axis = rot @ axes[:3], rot @ axes[3:]
+        xyaxes = np.concatenate([x_axis, y_axis])
+        fovy = cam.fovy
+    tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=fovy)
     # Orient the housing body with the camera, not the gripper body. A MuJoCo
     # camera looks down its own -z, so the box sits at +z from the lens and its
     # front face lands exactly on the image plane.

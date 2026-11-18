@@ -364,30 +364,67 @@ calibration is **fx 312.77**, zero distortion — 2.66× smaller, implying
 off-axis) was derived with that wrong lens, so the camera's location in space
 is also suspect; the board z 409.5 vs twin 433.7 is likely coupled.
 
-- [ ] Adopt the measured intrinsics (fx 831.9, fy 833.0, cx 309.1, cy 242.4,
+- [x] Adopt the measured intrinsics (fx 831.9, fy 833.0, cx 309.1, cy 242.4,
   distortion as above) as the candidate live lens.
-- [ ] Re-solve `camera_in_tool` on the **fixed-board `cal` frames** (37) with
+  → fx 831.897 / fy 833.014, but **cx/cy forced to 320/240** and distortion
+  refitted: a MuJoCo camera cannot render an off-centre pinhole, and the
+  measured principal point is unstable (309/293/306 px across subsets). Cost
+  0.002 px RMS (1.067 → 1.069). Cal-subset focal lengths are degenerate
+  (430 / 128 px at equal RMS); the 106-frame set is the only usable solve.
+- [x] Re-solve `camera_in_tool` on the **fixed-board `cal` frames** (37) with
   the corrected intrinsics, using FK + ChArUco PnP; compare to the stored
   64 mm mount.
-- [ ] Re-derive the board pose with the corrected mount; compare z 409.5 to the
+  → 18 usable views (23 with any detection, 14 of the 37 have none). New mount
+  translation (67.66, −2.92, −10.89) mm; 14.28 mm from the stored one and
+  178.69° rotated — the stored matrix is an OpenCV-convention solve whose y/z
+  axes are flipped, so read as OpenGL it puts **every** board corner behind the
+  lens. Reprojection median 1.53 px.
+- [x] Re-derive the board pose with the corrected mount; compare z 409.5 to the
   twin's 433.7 and the x/y/yaw offsets.
-- [ ] Validate reprojection **≤1.2 px** across the calibration views and run
+  → **(−9.92, −3.13, 431.35) mm, yaw 5.67°**. z moves +21.85 mm because depth
+  scales with focal length under the old 312.77; 431.35 is 2.35 mm from 433.7.
+  x +3.82, y +0.44, yaw −1.47°. A free board tilt finds 0.5° and z 430.35.
+- [x] Validate reprojection **≤1.2 px** across the calibration views and run
   the `/scan` path (sim or offline) before touching the arm.
-- [ ] **Camera view match (Brian's requirement):** render the sim wrist view at
+  → 1.53 px median over 256 corners; `/scan` path re-validated in sim, 7/7
+  placements at ≤0.26 mm / 0.037°.
+- [~] **Camera view match (Brian's requirement):** render the sim wrist view at
   the 37 `cal` joint vectors with the measured board pose, and compare the
   ChArUco corner projections against the real (undistorted) corners. Report
   median/max pixel error; target **median ≤2 px**. This is the gate that says
   the sim and IRL cameras agree, not just that each is self-consistent.
-- [ ] Update the sim wrist camera to the measured lens: `fovy` from
+  → **median 1.506 px PASS**; **max 16.523 px FAIL** (gate 4 px). Every view
+  with ≥2 markers is ≤3.38 px (236 corners); the three failures are single-tag
+  views whose tag is clipped by the frame border and shadowed by the gripper
+  (121015133 16.5, 120931121 5.40, 120950127 5.07). Not a mount error: marker
+  8 fits at 1.4 px in multi-tag views. Reports + overlays under `reports/`.
+- [x] Update the sim wrist camera to the measured lens: `fovy` from
   `2·atan(240/fy)` (≈32.2°), mount from the re-solved `camera_in_tool`, with
   the MuJoCo(−z) / OpenCV(+z) convention handled. Re-validate the ChArUco plan
   coverage after the camera change; regenerate if a pose loses its tags.
-- [ ] Record before/after in `reports/block4c_2026-11-18.md`; do not overwrite
+  → `WRIST_CAMERA_MEASURED` in `chess_sim/scene.py`, fovy **32.1445°**, pose
+  used unchanged in the file's OpenGL axes (the mount already is a camera pose
+  in that convention). FK vs MuJoCo camera 0.0000 mm at every cal pose. Plan
+  **still valid, not regenerated**: 7/7 placements, 9–12 ids per scan.
+- [x] Record before/after in `reports/block4c_2026-11-18.md`; do not overwrite
   the live calibration until the numbers are reviewed.
+  → candidate `reports/block4c_calibration.json` + `block4c_calibration_diff.md`;
+  **`.private/phase11d/calibration.json` deliberately untouched** pending the max-gate
+  call. Apply with `tools/block4c_apply_calibration.py --apply` after review.
 
 **Exit gate:** corrected intrinsics + mount validate at ≤1.2 px and the board
 pose is coherent; otherwise stop and report. No arm motion — existing captures
 only.
+
+**Result (2026-11-18): PARTIAL — median gate passed, max gate open.**
+`live/tests/test_scan_controller.py` **8 passed** (18.01 s) with the new sim
+calibration; plan validation 7/7; no arm motion (bridge `HOLD`, `armed=false`,
+`follower_open=false`). Two corrections landed: the lens is 2.66× the stored one
+and the stored `camera_in_tool` was 180° rolled. Open item for the planner: the
+view-match max is set by three clipped/shadowed single-tag frames, so decide
+whether to adopt the candidate on the median + all-multi-tag evidence, or leave
+the live file (which currently cannot project the board at all) unchanged.
+Receipt: `reports/block4c_2026-11-18.md`.
 
 ## Block 5 — IRL after power-up (2–3 h)
 

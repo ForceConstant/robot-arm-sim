@@ -39,7 +39,7 @@ from scan_controller import Frame, ScanController, plan_in_degrees  # noqa: E402
 # these tests render the MuJoCo wrist view, so the mount must be the one the
 # model exports or nothing projects into frame.
 CALIBRATION = (Path(__file__).resolve().parents[2]
-               / "reports/block4b_sim_calibration.json")
+               / "reports/block4c_sim_calibration.json")
 PLAN = (Path(__file__).resolve().parents[2]
         / "chess_sim/assets/marker_scan_plan_charuco.json")
 NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
