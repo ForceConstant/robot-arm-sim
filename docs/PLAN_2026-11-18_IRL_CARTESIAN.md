@@ -336,6 +336,24 @@ ChArUco plan; no pose relies on mat tags; scan-controller tests green.
 
 Receipt: `reports/block4b_2026-11-18.md`.
 
+### Planner verification (2026-11-18 10:15)
+
+- Plan file: 11 poses, ids **5–36**, `layout_offset_mm 0`, min 4 / max 15 ids
+  per pose.
+- `reports/scan_plan_validation.json`: **7/7**, 32 markers per scan;
+  nominal **ex 0.199 / ey −0.13 / eyaw −0.024°**.
+- `live/tests/test_scan_controller.py`: **8 passed** (13.13 s).
+- App up; bridge `HOLD`, `armed=false`, `follower_open=false`; no motion.
+- Calibration warning for future sim work: `block3_sim_calibration.json` was
+  exported with a different gripper pack and is **44.4 mm / 22.17°** off the
+  stock scene. `block4b_sim_calibration.json` matches the scene to
+  **0.000000 mm**. Always export the sim calibration from the same scene and
+  gripper pack used for the run. The **live** path still uses the real bench
+  calibration; this mismatch was sim-only.
+
+**Block 4 final status (2026-11-18): COMPLETE.** 4b resolved the scan-plan
+blocker. Block 5 is ready, subject to the bench run sheet.
+
 ## Block 5 — IRL after power-up (2–3 h)
 
 - [ ] Boot Pi and arm; verify port ownership before any motion
