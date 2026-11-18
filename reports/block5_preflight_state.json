@@ -1,0 +1,122 @@
+{
+  "captured_at": "2026-11-18T11:35:10-0500",
+  "calibration": {
+    "calibration_id": "handeye-2026-11-18T11-block4c",
+    "intrinsics": [
+      831.897,
+      833.014,
+      320.0,
+      240.0
+    ],
+    "distortion": [
+      -0.102251,
+      0.685733,
+      0.001112,
+      0.003239,
+      0.0
+    ],
+    "width": 640,
+    "height": 480
+  },
+  "bridge": {
+    "protocol": 1,
+    "mode": "REMOTE",
+    "desired": "REMOTE",
+    "armed": true,
+    "fault": null,
+    "error": null,
+    "joints": {
+      "shoulder_pan": -1.93,
+      "shoulder_lift": -102.46,
+      "elbow_flex": 96.4,
+      "wrist_flex": 77.85,
+      "wrist_roll": -58.99,
+      "gripper": 0.96
+    },
+    "joints_source": "follower",
+    "joints_age_s": 0.026,
+    "commands_applied": 0,
+    "commands_rejected": 0,
+    "last_clamped": [],
+    "lelab_active": false,
+    "follower_open": true,
+    "limits": {
+      "shoulder_pan": [
+        -108.99,
+        121.38
+      ],
+      "shoulder_lift": [
+        -107.05,
+        108.64
+      ],
+      "elbow_flex": [
+        -96.68,
+        94.75
+      ],
+      "wrist_flex": [
+        -104.59,
+        98.79
+      ],
+      "wrist_roll": [
+        -81.82,
+        91.05
+      ],
+      "gripper": [
+        0.0,
+        100.0
+      ]
+    },
+    "uptime_s": 63631.4
+  },
+  "app": {
+    "error": "pose 'marker71' is outside wrist_roll limits (-87.2 vs -81.8..91.0); plan units probably are not degrees",
+    "scan_running": false,
+    "scan": {
+      "ok": false,
+      "board": null,
+      "offset": null,
+      "views_used": 0,
+      "markers_seen": [],
+      "recovery_used": [],
+      "duration_s": 0.0,
+      "note": "pose 'marker71' is outside wrist_roll limits (-87.2 vs -81.8..91.0); plan units probably are not degrees",
+      "visits": []
+    },
+    "bridge_mode": "REMOTE",
+    "bridge_armed": true
+  },
+  "pose": {
+    "tool_mm": [
+      -1.8,
+      -108.1,
+      133.9
+    ],
+    "camera_mm": [
+      61.8,
+      -82.4,
+      132.8
+    ],
+    "camera_height_mm": 132.8,
+    "view_pitch_deg": 147.2,
+    "jaw_azimuth_deg": 114.3,
+    "tip_mm": [
+      1.2,
+      -75.6,
+      34.7
+    ],
+    "joints_deg": {
+      "shoulder_pan": -1.93,
+      "shoulder_lift": -102.46,
+      "elbow_flex": 96.4,
+      "wrist_flex": 77.85,
+      "wrist_roll": -58.99,
+      "gripper": 0.96
+    },
+    "board": {
+      "x_mm": -13.7,
+      "y_mm": -3.6,
+      "z_mm": 409.5,
+      "yaw_deg": 7.14
+    }
+  }
+}

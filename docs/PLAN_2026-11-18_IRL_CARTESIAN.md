@@ -435,20 +435,35 @@ actually see the board. Receipt: `reports/block4c_2026-11-18.md`.
 
 ## Block 5 — IRL after power-up (2–3 h)
 
-- [ ] Boot Pi and arm; verify port ownership before any motion
-- [ ] Open the follower and verify joint feedback **before** any command. At
+- [x] Boot Pi and arm; verify port ownership before any motion
+  → `REMOTE` taken 11:32. Port-ownership verified from the bridge side only
+  (`lelab_active:false`; the bridge's own transition stops LeLab and opens the
+  follower). The Pi-console `lsof` in run-sheet step 2 could **not** be run —
+  no SSH access to `brian@192.168.1.167` from this host or the BC-250.
+- [x] Open the follower and verify joint feedback **before** any command. At
   09:30 the bridge was HOLD, `armed=false`, `follower_open=false`,
   `joints_source=none` — power alone does not mean the servos are readable.
-- [ ] `/scan` board calibration; compare to saved pose. Large z/yaw change
-  means stop and re-fit, not fudge.
+  → `follower_open:true`, `joints_source:"follower"`, `joints_age_s` 0.002–0.083
+  across reads; joints pan −1.93, lift −102.46, elbow 96.40, wrist_flex 77.85,
+  wrist_roll −58.99, gripper 0.96. Pre-existing: elbow **1.65° past** its
+  94.75° limit at rest (the tolerated post-jam case).
+- [!] **BLOCKED — `/scan` board calibration; compare to saved pose. Large
+  z/yaw change means stop and re-fit, not fudge.**
+  → `/scan` refuses **before the first pose**: `pose 'marker71' is outside
+  wrist_roll limits (-87.2 vs -81.8..91.0)`. All 11 ChArUco-plan poses command
+  `wrist_roll = −87.2°`, a constant 5.4° past the bridge's calibrated lower
+  bound. The plan was generated in sim with ±180 limits (Block 4b validated
+  coverage, never joint limits). `commands_applied` stayed **0** — no motion.
 - [ ] **`/scan` is x/y/yaw only** — run the multi-marker plane fit for z. Do not
   treat the scan offset as a full 6-DoF pose.
 - [ ] **Frame semantics:** `board.json` x/y are absolute in the arm frame
   (base link at y = −217); `/scan` offsets are base-relative. Compare relative
   offsets, never absolute z against the twin's 433.7.
-- [ ] **Re-check live intrinsics/mount before trusting `/board/derive`:**
+- [x] **Re-check live intrinsics/mount before trusting `/board/derive`:**
   saved `fx = 312.77` vs the 36° lens comment (~746). If inconsistent, rerun
   hand-eye; single-tag z is biased −3.1 mm median (worst −9.4).
+  → settled in Block 4c and verified loaded live: id
+  `handeye-2026-11-18T11-block4c`, `intrinsics [831.897, 833.014, 320, 240]`.
 - [ ] `/sanity` corners + centre; any corner over 6 mm stops the sweep
 - [ ] 8-square dry run
 - [ ] Full 64-square sweep with the same solver and targets as sim
@@ -457,6 +472,32 @@ actually see the board. Receipt: `reports/block4c_2026-11-18.md`.
 **Exit gate:** 64/64 agreement with sim at the 20 mm gate; zero guard refusals
 misread as unreachability. A disagreement is a hardware/calibration finding —
 record it, do not retune the solver to hide it.
+
+**Result (2026-11-18, Block 5 attempt 1): BLOCKED at `/scan`; no motion.**
+
+Preflight passed in full: tree clean at `5da3817`, calibration
+`handeye-2026-11-18T11-block4c` (fx 831.897 / fy 833.014 / cx 320 / cy 240),
+gate 20.0, `marker_z_m`/`board_z_m` 0.4337, charuco plan offset 0, app `/state`
+and `/pose` sane, bridge `fault`/`error` null, limits exactly the run-sheet
+table, `lelab_active:false`. Follower opened via the `REMOTE` transition with
+live joint feedback (age < 0.1 s); armed `true`; `/board/assume` round-tripped
+(needs `camera_height_mm` — the run-sheet step 6 command is stale).
+
+`/scan` then refused instantly: every ChArUco-plan pose needs `wrist_roll
+−87.2°` against the bridge's `−81.82°` lower bound — 5.4° out, on 11/11 poses.
+The controller's limit precheck runs before the first visit, so the bridge
+recorded **0** applied commands. Without re-registration `board.json` stays at
+z **409.48**, which Block 4c showed is **21.9 mm low** (corrected derivation
+`(−9.92, −3.13, 431.35, 5.67)`); `/sanity`, the dry runs and the 64-square
+sweep were therefore **not** run — the achieved-tip metric is frame-relative,
+so a wrong board plane could report 64/64 while commanding the tip 22 mm below
+nominal. Arm returned to `HOLD`; nothing was left armed-in-motion.
+
+Next pre-bench task (planner): regenerate the ChArUco plan with `wrist_roll`
+bounded to `−81.82..91.05` and add a plan-vs-bridge-limit assertion to the 4b
+gate. Receipt: `reports/block5_2026-11-18.md`; preflight snapshot:
+`reports/block5_preflight_state.json`.
+
 
 ### Known carry-forwards from Blocks 2–3
 
