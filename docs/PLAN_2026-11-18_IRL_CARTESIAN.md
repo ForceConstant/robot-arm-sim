@@ -215,6 +215,20 @@ flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 
 ## Block 4 — IRL run sheet and dry-run harness (30 min)
 
+**Live state at 2026-11-18 09:30 (read-only):** Pi bridge
+`http://192.168.1.167:8100/state` answers: `mode=HOLD`, `armed=false`,
+`follower_open=false`, `joints_source=none`, `lelab_active=false`, all joints 0.
+The BC-250 live app on port 8080 is **down**. The arm is powered but not
+connected to the bridge yet.
+
+- [ ] **Preflight — REAL joint limits (critical):** the bridge reports
+  pan −108.99..121.38, lift −107.05..108.64, elbow −96.68..94.75,
+  wrist_flex −104.59..98.79, **wrist_roll −81.82..91.05**, gripper 0..100.
+  The calibration carries sim limits (wrist_roll ≈ −157..163) and the sim
+  sweep passed `limits={}` (effectively ±180). **Re-run the 64-square sweep
+  with the bridge limits** and report the honest count plus every square/axis
+  that exceeds them. Do not claim IRL 64/64 until this is done. This is the
+  first place a8's 160.8° wrist_roll will fail on the real arm.
 - [ ] **Preflight — ChArUco marker plane:** set `live/live_config.json`
   `marker_z_m = 0.4337` (equal to `board_z_m`). The current **0.43056** is the
   mat plane; with `layout_kind=charuco` a valid scan fails the fusion RMS gate
@@ -236,10 +250,15 @@ flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 - [ ] Define abort conditions and who calls them
 
 **Exit gate:** run sheet reviewed; no step requires improvisation at the bench.
+Plus: real-limit sweep count reported, every limit-exceeding square named, and
+an explicit go/no-go for Block 5.
 
 ## Block 5 — IRL after power-up (2–3 h)
 
 - [ ] Boot Pi and arm; verify port ownership before any motion
+- [ ] Open the follower and verify joint feedback **before** any command. At
+  09:30 the bridge was HOLD, `armed=false`, `follower_open=false`,
+  `joints_source=none` — power alone does not mean the servos are readable.
 - [ ] `/scan` board calibration; compare to saved pose. Large z/yaw change
   means stop and re-fit, not fudge.
 - [ ] **`/scan` is x/y/yaw only** — run the multi-marker plane fit for z. Do not
