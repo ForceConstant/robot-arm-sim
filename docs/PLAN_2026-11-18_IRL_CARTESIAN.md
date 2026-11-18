@@ -499,6 +499,41 @@ gate. Receipt: `reports/block5_2026-11-18.md`; preflight snapshot:
 `reports/block5_preflight_state.json`.
 
 
+## Block 5a — clear the two stop conditions (2026-11-18)
+
+- [x] **Plan limits.** Clamp/solve every pose + recovery pose into the bridge
+  limits; add a hard assertion to the plan validator.
+  → `wrist_roll −87.21° → −81.52°` on 11 poses + 32 recovery poses (43 joint
+  values), worst margin **+0.30°**. `tools/validate_scan_plan.py` gained
+  `--limits` / `--bridge-limits` with a hard fail and a `joint_limit_check`
+  block. `reports/scan_plan_validation_block5a.json`: **7/7 placements**,
+  `ex +0.12…0.14 mm`, `ey −0.20…−0.24 mm`, `eyaw ≤0.034°` at the block4c sim
+  camera. [x]
+- [x] **Board z.** `live/board.json` backed up
+  (`board.json.bak-block5a-114134`) and seeded to the 4c measurement
+  `(−9.92, −3.13, 431.35, 5.67)`; app restarted, `/board` confirms. [x]
+- [!] **Scan with the bounded plan — still fails.** 11 poses, 98 s:
+  7 timeouts (2.13–2.26° residual, no capture), 4 captured views, **3 tags
+  total** (`29,34,35` at marker50), `ok:false "board solve failed with 3
+  markers"`. `commands_applied 2916`, `rejected 0`, no clamping, no fault.
+- [!] **Root cause found — the plan is stale against the 4c camera.** Rendering
+  the current sim wrist camera at the plan's own joints detects **0–5 tags per
+  pose** (union 11) while the plan's authored `visible` lists claim 4–15. Sim
+  and IRL also disagree at identical joints (marker50: sim 0 / IRL 3;
+  marker37: sim 5 / IRL 0). The plan's tags sit at the frame border
+  (`edge_px 56.8`), and its postures are 250 mm / 47.6° oblique (view pitch
+  132.4°) against a calibration volume that is near-nadir at 150–170 mm
+  (178–179°). The 4c mount is validated only in that near-nadir volume.
+- [ ] `/sanity`, 8-square dry run, 64-square sweep — not run; no board pose.
+- [ ] Regenerate the plan against `reports/block4c_sim_calibration.json` with
+  the bridge limits, per-pose coverage ≥3 tags and ≥12 px frame margin; extend
+  the hand-eye/view-match validation to the oblique volume; resolve the
+  1.5–2.2° settling residual. Do not widen `pose_tolerance_deg`.
+
+Receipt: `reports/block5a_2026-11-18.md`; coverage table
+`reports/block5a_coverage.json`. The roll clamp itself does not change coverage
+(identical tag sets at −87.2° and −81.52° at marker71/37/57).
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

@@ -1,0 +1,229 @@
+{
+  "plan": "chess_sim/assets/marker_scan_plan_charuco.json",
+  "layout": "charuco",
+  "calibration": "sim-1.15.0-model.xml-462.4mm-2026-11-15",
+  "rms_gate_px": 1.2,
+  "tolerance_mm": 2.0,
+  "tolerance_yaw_deg": 1.0,
+  "placements": [
+    {
+      "placement": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.115,
+      "ey_mm": -0.235,
+      "eyaw_deg": -0.012
+    },
+    {
+      "placement": [
+        8.0,
+        0.0,
+        0.0
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        25,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.127,
+      "ey_mm": -0.203,
+      "eyaw_deg": -0.034
+    },
+    {
+      "placement": [
+        -8.0,
+        0.0,
+        0.0
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.137,
+      "ey_mm": -0.22,
+      "eyaw_deg": -0.02
+    },
+    {
+      "placement": [
+        0.0,
+        8.0,
+        0.0
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        23,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.125,
+      "ey_mm": -0.219,
+      "eyaw_deg": -0.024
+    },
+    {
+      "placement": [
+        0.0,
+        -8.0,
+        0.0
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.116,
+      "ey_mm": -0.212,
+      "eyaw_deg": -0.02
+    },
+    {
+      "placement": [
+        0.0,
+        0.0,
+        2.5
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.127,
+      "ey_mm": -0.234,
+      "eyaw_deg": -0.021
+    },
+    {
+      "placement": [
+        0.0,
+        0.0,
+        -2.5
+      ],
+      "ok": true,
+      "views_used": 11,
+      "markers_seen": [
+        21,
+        25,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        35,
+        36
+      ],
+      "note": "",
+      "ex_mm": 0.137,
+      "ey_mm": -0.212,
+      "eyaw_deg": -0.034
+    }
+  ],
+  "joint_limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -81.82,
+      91.05
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "joint_limit_check": {
+    "poses": 11,
+    "recovery": 32,
+    "worst_margin_deg": 0.0,
+    "worst": "marker71/gripper 100.00 in 0.00..100.00"
+  },
+  "summary": {
+    "passed": 7,
+    "total": 7,
+    "markers_min": 10,
+    "markers_max": 13
+  }
+}

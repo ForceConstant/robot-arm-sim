@@ -1,0 +1,154 @@
+{
+  "schema": "block5a/sim-per-pose-coverage/1",
+  "plan": "chess_sim/assets/marker_scan_plan_charuco.json (wrist_roll clamped to -81.52 deg)",
+  "calibration": "reports/block4c_sim_calibration.json",
+  "scene": "layout_env_config('printed'), board.face=charuco",
+  "note": "sim wrist render at each plan pose vs the plan's authored `visible` list (stale: generated with the pre-4c camera) and vs the IRL scan of the same pose",
+  "poses": [
+    {
+      "name": "marker71",
+      "authored_visible": 15,
+      "sim_markers": [
+        34
+      ],
+      "sim_count": 1,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.21
+    },
+    {
+      "name": "marker88",
+      "authored_visible": 14,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.197
+    },
+    {
+      "name": "marker50",
+      "authored_visible": 9,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": true,
+      "irl_markers": [
+        29,
+        34,
+        35
+      ],
+      "irl_error_deg": 1.415
+    },
+    {
+      "name": "marker33",
+      "authored_visible": 10,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": true,
+      "irl_markers": [],
+      "irl_error_deg": 0.849
+    },
+    {
+      "name": "marker18",
+      "authored_visible": 8,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": true,
+      "irl_markers": [],
+      "irl_error_deg": 0.57
+    },
+    {
+      "name": "marker37",
+      "authored_visible": 13,
+      "sim_markers": [
+        21,
+        25,
+        26,
+        29,
+        33
+      ],
+      "sim_count": 5,
+      "irl_reached": true,
+      "irl_markers": [],
+      "irl_error_deg": 0.602
+    },
+    {
+      "name": "marker41",
+      "authored_visible": 10,
+      "sim_markers": [
+        28,
+        31,
+        36
+      ],
+      "sim_count": 3,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 1.956
+    },
+    {
+      "name": "marker57",
+      "authored_visible": 14,
+      "sim_markers": [
+        30,
+        35
+      ],
+      "sim_count": 2,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.125
+    },
+    {
+      "name": "marker99",
+      "authored_visible": 8,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.256
+    },
+    {
+      "name": "marker127",
+      "authored_visible": 4,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.221
+    },
+    {
+      "name": "marker113",
+      "authored_visible": 5,
+      "sim_markers": [],
+      "sim_count": 0,
+      "irl_reached": false,
+      "irl_markers": [],
+      "irl_error_deg": 2.153
+    }
+  ],
+  "sim_union": [
+    21,
+    25,
+    26,
+    28,
+    29,
+    30,
+    31,
+    33,
+    34,
+    35,
+    36
+  ],
+  "irl": {
+    "views_used": 4,
+    "markers_seen": [
+      29,
+      34,
+      35
+    ],
+    "note": "board solve failed with 3 markers"
+  },
+  "view_pitch_deg": {
+    "plan_poses": 132.4,
+    "cal_postures": 178.7
+  },
+  "roll_clamp_effect": "none: marker71/37/57 render identical tag sets at -87.2 and -81.52"
+}

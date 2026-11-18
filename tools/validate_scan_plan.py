@@ -28,6 +28,7 @@ from pathlib import Path
 
 import mujoco
 import numpy as np
+import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -44,6 +45,59 @@ from scan_controller import Frame, ScanController, plan_in_degrees  # noqa: E402
 NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
          "wrist_flex", "wrist_roll", "gripper")
 DEFAULT_PLACEMENTS = "0,0,0;8,0,0;-8,0,0;0,8,0;0,-8,0;0,0,2.5;0,0,-2.5"
+
+
+def parse_limits(spec: str | None, bridge: str | None) -> dict:
+    """Joint limits in degrees from an inline/path JSON blob or the bridge.
+
+    Only GET is used against the bridge; this never commands a joint.
+    """
+    limits: dict = {}
+    if bridge:
+        url = bridge.rstrip("/") + "/state"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            state = json.loads(response.read())
+        raw = state.get("limits") or {}
+        if not raw:
+            raise SystemExit(f"bridge at {bridge} returned no limits")
+        limits = {name: [float(v[0]), float(v[1])] for name, v in raw.items()}
+    if spec:
+        text = Path(spec).read_text() if Path(spec).is_file() else spec
+        raw = json.loads(text)
+        if "limits" in raw and isinstance(raw["limits"], dict):
+            raw = raw["limits"]
+        limits.update({name: [float(v[0]), float(v[1])]
+                       for name, v in raw.items()})
+    return limits
+
+
+def assert_plan_limits(plan, limits: dict) -> dict:
+    """Hard gate: every plan and recovery pose must sit inside ``limits``.
+
+    The controller refuses at the bench with a precheck like
+    ``pose 'marker71' is outside wrist_roll limits (-87.2 vs -81.8..91.0)``;
+    this makes that a sim-stage failure instead of a bench trip.
+    """
+    entries = [(pose.name, pose.joints) for pose in plan.poses]
+    entries += [(entry["name"], tuple(float(v) for v in entry["joints"]))
+                for entry in (plan.recovery or {}).values()]
+    worst = float("inf")
+    worst_where = None
+    bad: list[dict] = []
+    for name, joints in entries:
+        for index, joint in enumerate(NAMES):
+            lo, hi = limits.get(joint, (-180.0, 180.0))
+            value = float(joints[index])
+            margin = min(value - lo, hi - value)
+            if margin < worst:
+                worst, worst_where = margin, f"{name}/{joint} {value:.2f} in {lo:.2f}..{hi:.2f}"
+            if not lo <= value <= hi:
+                bad.append({"pose": name, "joint": joint, "value": round(value, 2),
+                            "limit": [lo, hi]})
+    if bad:
+        raise SystemExit("plan exceeds the joint limits: " + json.dumps(bad[:6]))
+    return {"poses": len(plan.poses), "recovery": len(plan.recovery or {}),
+            "worst_margin_deg": round(worst, 2), "worst": worst_where}
 
 
 class Clock:
@@ -133,6 +187,10 @@ def main() -> None:
     parser.add_argument("--tolerance-mm", type=float, default=2.0,
                         help="offset error budget for a placement to pass")
     parser.add_argument("--tolerance-yaw-deg", type=float, default=1.0)
+    parser.add_argument("--limits", default=None,
+                        help="joint limits in degrees: inline JSON or a JSON file")
+    parser.add_argument("--bridge-limits", default=None, metavar="URL",
+                        help="read joint limits from a Pi bridge base URL (GET only)")
     args = parser.parse_args()
 
     calibration = WristCalibration.load(str(ROOT / args.calibration)
@@ -140,6 +198,16 @@ def main() -> None:
                                         else args.calibration)
     plan = plan_in_degrees(load_plan(ROOT / args.plan
                                      if not Path(args.plan).is_absolute() else args.plan))
+    # A plan that is valid in sim but outside the arm's servo range fails at
+    # the bench in the controller's precheck (Block 5, 2026-11-18: every
+    # ChArUco pose asked for wrist_roll -87.2 deg against -81.82). Fail it
+    # here instead, before the expensive placement sweep.
+    limits = parse_limits(args.limits, args.bridge_limits)
+    limit_report = assert_plan_limits(plan, limits) if limits else None
+    if limit_report is not None:
+        print(f"plan limits: worst margin {limit_report['worst_margin_deg']:+.2f} deg "
+              f"over {limit_report['poses']} poses + "
+              f"{limit_report['recovery']} recovery poses")
     mount = current_layout()["mount"]
     base_xy = (mount["white_arm_base_frame_mm"][0] / 1000.0,
                mount["white_arm_base_frame_mm"][1] / 1000.0)
@@ -208,6 +276,8 @@ def main() -> None:
         "rms_gate_px": 1.2, "tolerance_mm": args.tolerance_mm,
         "tolerance_yaw_deg": args.tolerance_yaw_deg,
         "placements": rows,
+        "joint_limits": limits or None,
+        "joint_limit_check": limit_report,
         "summary": {"passed": len(rows) - failures, "total": len(rows),
                     "markers_min": min(seen) if seen else 0,
                     "markers_max": max(seen) if seen else 0},
