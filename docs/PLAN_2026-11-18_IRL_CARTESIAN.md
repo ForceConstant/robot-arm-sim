@@ -980,3 +980,16 @@ Receipt: `reports/block5q_2026-11-18.md`.
 - No calibration constant changed without a measurement that predicts it.
 - Three failed attempts on one defect means stop and report the precise
   inconsistency, not a fourth theory.
+
+## PAUSED — 2026-11-18 14:13 ET (Brian)
+
+- Wide-volume calibration aborted at **pose 11/36** at Brian's request. The
+  process was stopped; the bridge is **HOLD**, the arm tip is **124.9 mm**
+  above the board, inside keep-in, no fault.
+- Partial captures: `live/captures/wide_5q` (22 files). **Do not use them for a
+  solve** — the set is incomplete.
+- Untracked WIP `tools/block5r_wide_solve.py` is left for resume; no solve ran.
+- **Resume after the replacement fingers are installed tonight.** Re-run
+  `tools/block5q_wide_cal.py --execute` from the start. The finger/tool
+  geometry changes, so re-check the CAD tool mask afterwards.
+- Block 5 remains in progress: **0/64 IRL**, no `/sanity`, no sweep.
