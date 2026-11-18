@@ -1,0 +1,95 @@
+[
+  {
+    "pose": "marker26",
+    "decoded": [],
+    "decoded_n": 0,
+    "model_visible_n": 4,
+    "model_visible": [
+      23,
+      28,
+      31,
+      36
+    ],
+    "edge_px": {},
+    "brightness": 94.3,
+    "sharpness": 66.1,
+    "board_in_view": true
+  },
+  {
+    "pose": "marker24",
+    "decoded": [],
+    "decoded_n": 0,
+    "model_visible_n": 4,
+    "model_visible": [
+      21,
+      26,
+      29,
+      34
+    ],
+    "edge_px": {},
+    "brightness": 93.8,
+    "sharpness": 39.4,
+    "board_in_view": true
+  },
+  {
+    "pose": "marker15",
+    "decoded": [],
+    "decoded_n": 0,
+    "model_visible_n": 5,
+    "model_visible": [
+      12,
+      15,
+      16,
+      20,
+      24
+    ],
+    "edge_px": {},
+    "brightness": 105.7,
+    "sharpness": 54.1,
+    "board_in_view": true
+  },
+  {
+    "pose": "marker23",
+    "decoded": [
+      24
+    ],
+    "decoded_n": 1,
+    "model_visible_n": 4,
+    "model_visible": [
+      20,
+      23,
+      24,
+      28
+    ],
+    "edge_px": {
+      "24": 112.5
+    },
+    "brightness": 101.8,
+    "sharpness": 45.3,
+    "board_in_view": true
+  },
+  {
+    "pose": "marker14",
+    "decoded": [
+      23,
+      24,
+      28
+    ],
+    "decoded_n": 3,
+    "model_visible_n": 4,
+    "model_visible": [
+      14,
+      15,
+      19,
+      23
+    ],
+    "edge_px": {
+      "28": 99.0,
+      "24": 91.1,
+      "23": 105.4
+    },
+    "brightness": 75.3,
+    "sharpness": 180.7,
+    "board_in_view": true
+  }
+]

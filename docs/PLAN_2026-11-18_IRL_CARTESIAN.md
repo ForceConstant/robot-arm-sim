@@ -834,6 +834,32 @@ Receipt: `reports/block5k_2026-11-18.md`.
 
 Receipt: `reports/block5l_2026-11-18.md`.
 
+## Block 5m — scan frames: board in view, tags blurred (2026-11-18)
+
+- [x] Five scan poses driven at **0.38°** and one frame saved each:
+  `live/captures/scan_5m_<pose>.jpg`. Montage
+  `reports/block5m_scan_frames.png`.
+- [x] **The board is in view at every pose** (4–5 projected tags). The failures
+  are optical, not geometric:
+  | pose | decoded | model-visible | sharpness |
+  |---|---|---|---|
+  | marker14 | **3** | 4 | **180.7** |
+  | marker23 | 1 | 4 | 45.3 |
+  | marker15 | 0 | 5 | 54.1 (grazing) |
+  | marker24 | 0 | 4 | 39.4 |
+  | marker26 | 0 | 4 | 66.1 |
+  Tags are ~100 px but visibly soft in the zero rows; marker15 is a grazing view
+  with the board edge across frame.
+- [!] So the ~1 tag/view in 5l is **blur + grazing incidence**, not reachability,
+  not the mount and not the mask.
+- [x] Nothing changed: plan, detector, gates, `MAX_RMS_PX`, lighting. No
+  `/sanity`, no sweep.
+- [ ] Planner: add an incidence/sharpness gate to the plan generator (reject
+  >35–40° between board normal and camera axis); A/B one focused re-capture of
+  these five poses before touching the detector.
+
+Receipt: `reports/block5m_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
