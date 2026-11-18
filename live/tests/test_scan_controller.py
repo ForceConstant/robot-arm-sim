@@ -28,7 +28,12 @@ from chess_sim.product import current_layout, layout_env_config  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from scan_controller import Frame, ScanController, plan_in_degrees  # noqa: E402
 
-CALIBRATION = Path(__file__).resolve().parents[2] / ".private/phase11d/calibration.json"
+# These tests render the MuJoCo wrist view, so the mount must be the one the model
+# exports (fx 738.64). The real hand-eye mount (fx 312.77) belongs to the bench arm
+# and projects the sim scene to zero markers, failing the accuracy assertions for a
+# fixture reason rather than a controller one.
+CALIBRATION = (Path(__file__).resolve().parents[2]
+               / "reports/block3_sim_calibration.json")
 PLAN = Path(__file__).resolve().parents[2] / "chess_sim/assets/marker_scan_plan.json"
 NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
          "wrist_flex", "wrist_roll", "gripper")

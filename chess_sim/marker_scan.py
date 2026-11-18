@@ -163,8 +163,15 @@ def observe_markers(calibration: CameraCalibration, joints, layout: MarkerLayout
     width, height = calibration.width, calibration.height
     found: dict[int, MarkerObservation] = {}
     for marker_id in MARKER_IDS:
-        world = marker_corners_world(layout, marker_id, origin_xy=board_origin,
-                                     yaw=board_yaw, marker_z=marker_z)
+        try:
+            world = marker_corners_world(layout, marker_id, origin_xy=board_origin,
+                                         yaw=board_yaw, marker_z=marker_z)
+        except (ValueError, KeyError):
+            # MARKER_IDS spans both faces (mat tags 0..4 and printed ChArUco
+            # 5..36) while a layout describes only one of them.  Asking a mat
+            # layout for marker 5 used to raise and take the whole scan down,
+            # which is the same crash ``object_points`` already guards against.
+            continue
         pixels = [calibration.project(point) for point in world]
         if any(pixel is None for pixel in pixels):
             continue

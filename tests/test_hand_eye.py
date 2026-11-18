@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -18,7 +19,32 @@ from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from solve_hand_eye import (MARKER_LAYOUT, _compare, _view_observations,  # noqa: E402
                             calibration_views, refine_hand_eye)
 
-CALIBRATION = Path(__file__).resolve().parents[1] / ".private/phase11d/calibration.json"
+# The sim scene is rendered by the model-exported camera (fx 738.64). The bench
+# hand-eye mount (fx 312.77) projects that scene to zero markers, so the mount
+# this test perturbs and recovers must be the model's own.
+CALIBRATION = (Path(__file__).resolve().parents[1]
+               / "reports/block3_sim_calibration.json")
+
+
+def _printed_pack() -> Path | None:
+    """The printed piece pack this scene needs, from the env or .private."""
+    env = os.environ.get("ROBOT_PIECE_ASSETS")
+    if env and (Path(env) / "set.json").exists():
+        return Path(env)
+    root = Path(__file__).resolve().parents[1] / ".private"
+    for candidate in sorted(root.glob("piece-assets-*")):
+        if (candidate / "set.json").exists():
+            return candidate
+    return None
+
+
+@pytest.fixture(autouse=True)
+def _piece_assets(monkeypatch):
+    """``layout_env_config("printed")`` needs a printed pack on the path."""
+    pack = _printed_pack()
+    if pack is None:
+        pytest.skip("no printed piece pack (ROBOT_PIECE_ASSETS)")
+    monkeypatch.setenv("ROBOT_PIECE_ASSETS", str(pack))
 
 
 @pytest.mark.skipif(not CALIBRATION.exists(), reason="no current-layout calibration")

@@ -99,8 +99,10 @@ def test_marker_layout_fits_a_55mm_border_and_rejects_a_40mm_one():
 def test_marker_geometry_is_complete_and_ordered():
     layout = fiducials.MarkerLayout.in_border(224.0, 55.0)
     ids, points = fiducials.object_points(layout)
-    assert len(points) == 4 * len(fiducials.MARKER_IDS)
-    assert set(ids.tolist()) == set(fiducials.MARKER_IDS)
+    # ``object_points`` returns the markers this layout defines, not every id in
+    # the global dictionary (which now includes the printed ChArUco face).
+    assert len(points) == 4 * len(fiducials.GEOM_MARKER_IDS)
+    assert set(ids.tolist()) == set(fiducials.GEOM_MARKER_IDS)
     assert fiducials.marker_bits(0).shape == (6, 6)
     on_board = fiducials.marker_geoms(0.0032, layout, on_surface=True)
     assert all(part["size"][0] > 0 for part in on_board)

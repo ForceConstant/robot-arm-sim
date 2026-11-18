@@ -15,6 +15,20 @@ identical targets and identical maths, so differences must be physical.
     robot-arm-sim python tools/cartesian_squares.py --backend sim --out reports/squares_sim.json
     robot-arm-sim python tools/cartesian_squares.py --backend irl --out reports/squares_irl.json
     robot-arm-sim python tools/cartesian_squares.py --compare reports/squares_sim.json reports/squares_irl.json
+
+Real-arm joint limits
+---------------------
+By default the solver runs *unconstrained* (``limits={}``, i.e. ±180) which is
+what the historical 64/64 sim result was measured with.  The Pi bridge reports
+much narrower servo ranges; a solve that needs wrist_roll 160.8 deg is valid in
+sim and impossible on the arm.  Pass ``--bridge-limits`` (or ``--limits``) to
+bound the solver with the real ranges so the count is honest:
+
+    robot-arm-sim python tools/cartesian_squares.py --backend sim \
+        --bridge-limits http://192.168.1.167:8100 \
+        --out reports/squares_sim_bridge_limits.json
+
+``--bridge-limits`` reads ``/state`` with a plain GET (no motion command).
 """
 from __future__ import annotations
 
@@ -33,6 +47,7 @@ sys.path.insert(0, str(ROOT / "live"))
 
 JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex",
           "wrist_flex", "wrist_roll", "gripper")
+ARM_JOINTS = JOINTS[:5]
 FILES = "abcdefgh"
 
 
@@ -61,7 +76,31 @@ def _board_frame(live_dir: Path) -> np.ndarray:
     return frame
 
 
-def _solver(live_dir: Path):
+def parse_limits(spec: str | None, bridge: str | None) -> dict:
+    """Joint limits in degrees from an inline/path JSON blob or the bridge.
+
+    Only GET is used against the bridge; this never commands a joint.
+    """
+    limits: dict = {}
+    if bridge:
+        url = bridge.rstrip("/") + "/state"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            state = json.loads(response.read())
+        raw = state.get("limits") or {}
+        if not raw:
+            raise SystemExit(f"bridge at {bridge} returned no limits")
+        limits = {name: [float(v[0]), float(v[1])] for name, v in raw.items()}
+    if spec:
+        text = Path(spec).read_text() if Path(spec).is_file() else spec
+        raw = json.loads(text)
+        if "limits" in raw and isinstance(raw["limits"], dict):
+            raw = raw["limits"]
+        limits.update({name: [float(v[0]), float(v[1])]
+                       for name, v in raw.items()})
+    return limits
+
+
+def _solver(live_dir: Path, limits: dict | None = None):
     from kinematics import ArmKinematics
     from tip_frame import TIP_IN_CHAIN
     from chess_sim.wrist_calibration import WristCalibration
@@ -69,18 +108,31 @@ def _solver(live_dir: Path):
     config = json.loads((live_dir / "live_config.json").read_text())
     calibration = WristCalibration.load(str(ROOT / config.get(
         "calibration", ".private/phase11d/calibration.json")))
-    kinematics = ArmKinematics(calibration, {}, _board_frame(live_dir))
+    kinematics = ArmKinematics(calibration, limits or {}, _board_frame(live_dir))
     kinematics.camera_in_tool = np.asarray(calibration.camera_in_tool, float)
     return kinematics, TIP_IN_CHAIN
 
 
-def run_sim(live_dir: Path, squares, hover_mm: float) -> dict:
+def _margins(kinematics, joints_deg) -> dict:
+    """Degrees of headroom to each real limit; negative means past it."""
+    out = {}
+    for index, name in enumerate(ARM_JOINTS):
+        if index >= len(joints_deg):
+            break
+        lo, hi = kinematics.limits.get(name, (-180.0, 180.0))
+        value = float(joints_deg[index])
+        out[name] = round(min(value - lo, hi - value), 2)
+    return out
+
+
+def run_sim(live_dir: Path, squares, hover_mm: float,
+            limits: dict | None = None) -> dict:
     import mujoco
     from chess_sim.config import AppearanceConfig, BoardConfig, EnvConfig
     from chess_sim.env import ChessSimEnv
     from chess_sim import fiducials
 
-    kinematics, jaw = _solver(live_dir)
+    kinematics, jaw = _solver(live_dir, limits)
     board = BoardConfig(face="charuco", yaw=math.pi)
     env = ChessSimEnv(EnvConfig(board=board,
                                 appearance=AppearanceConfig(board_markers=False)))
@@ -93,8 +145,11 @@ def run_sim(live_dir: Path, squares, hover_mm: float) -> dict:
         solved, goal = kinematics.solve_tip(point, seed, jaw, span)
         ok = solved["position_error_mm"] <= 20.0 and solved["approach_error_deg"] <= 8.0
         achieved, markers = None, 0
+        q = [solved["joints_deg"][j] for j in JOINTS]
+        margins = _margins(kinematics, q)
+        violations = [{"joint": j, "value": v, "limit": [lo, hi]}
+                      for j, v, (lo, hi) in kinematics.violations(q)]
         if ok:
-            q = [solved["joints_deg"][j] for j in JOINTS]
             data.qpos[env._joint_qpos] = np.radians(q)
             mujoco.mj_forward(model, data)
             # Same chain->tip transform the live app uses, so the sim column
@@ -108,13 +163,17 @@ def run_sim(live_dir: Path, squares, hover_mm: float) -> dict:
         rows.append({"square": name, "target": [x, y, z], "solved": bool(ok),
                      "ik_mm": solved["position_error_mm"],
                      "ik_deg": solved["approach_error_deg"],
+                     "joints": {j: q[i] for i, j in enumerate(JOINTS)},
+                     "margins_deg": margins, "violations": violations,
+                     "starts": solved.get("starts"),
                      "achieved": achieved, "markers": markers})
     env.close()
-    return {"backend": "sim", "hover_mm": hover_mm, "squares": rows}
+    return {"backend": "sim", "hover_mm": hover_mm,
+            "limits": {k: list(v) for k, v in kinematics.limits.items()},
+            "squares": rows}
 
 
 def run_irl(squares, hover_mm: float, base: str) -> dict:
-    import cv2
     rows = []
     for name, x, y, z, span in squares:
         body = json.dumps({"mode": "xyz", "x_mm": x, "y_mm": y, "z_mm": z,
@@ -164,23 +223,42 @@ def main() -> None:
     parser.add_argument("--compare", nargs=2)
     parser.add_argument("--reverse", action="store_true",
                         help="visit the squares in reverse order (order check)")
+    parser.add_argument("--limits", default=None,
+                        help="joint limits in degrees: inline JSON or a JSON file")
+    parser.add_argument("--bridge-limits", default=None,
+                        metavar="URL",
+                        help="read joint limits from a Pi bridge base URL (GET only)")
     args = parser.parse_args()
 
     if args.compare:
         compare(args.compare)
         return
 
+    limits = parse_limits(args.limits, args.bridge_limits)
+    if limits:
+        print("limits: " + ", ".join(
+            f"{name} {lo:g}..{hi:g}" for name, (lo, hi) in limits.items()))
+    else:
+        print("limits: NONE (unconstrained ±180; not the real arm)")
+
     targets = square_targets(args.hover_mm)
     if args.reverse:
         targets = list(reversed(targets))
     if args.backend == "sim":
-        result = run_sim(Path(args.live_dir), targets, args.hover_mm)
+        result = run_sim(Path(args.live_dir), targets, args.hover_mm, limits)
     else:
         result = run_irl(targets, args.hover_mm, args.base)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(result, indent=2) + "\n")
     solved = sum(1 for r in result["squares"] if r["solved"])
     print(f"{args.backend}: {solved}/{len(result['squares'])} solved -> {args.out}")
+    for row in result["squares"]:
+        if not row["solved"]:
+            tight = min(row.get("margins_deg", {"-": 999}).items(),
+                        key=lambda kv: kv[1])
+            print(f"  FAIL {row['square']}: "
+                  f"{row['ik_mm']} mm / {row['ik_deg']} deg; "
+                  f"tightest {tight[0]} margin {tight[1]} deg")
 
 
 if __name__ == "__main__":

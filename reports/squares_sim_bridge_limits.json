@@ -1,0 +1,2208 @@
+{
+  "backend": "sim",
+  "hover_mm": 60.0,
+  "limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -81.82,
+      91.05
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.9,
+      "ik_deg": 0.02,
+      "joints": {
+        "shoulder_pan": -56.08,
+        "shoulder_lift": -29.788,
+        "elbow_flex": 57.776,
+        "wrist_flex": 62.034,
+        "wrist_roll": -0.0,
+        "gripper": 0.6
+      },
+      "margins_deg": {
+        "shoulder_pan": 52.91,
+        "shoulder_lift": 77.26,
+        "elbow_flex": 36.97,
+        "wrist_flex": 36.76,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -98.6,
+        -95.8,
+        56.9
+      ],
+      "markers": 0
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 2.4,
+      "ik_deg": 0.19,
+      "joints": {
+        "shoulder_pan": -45.764,
+        "shoulder_lift": -43.978,
+        "elbow_flex": 66.387,
+        "wrist_flex": 67.404,
+        "wrist_roll": -0.0,
+        "gripper": 0.01
+      },
+      "margins_deg": {
+        "shoulder_pan": 63.23,
+        "shoulder_lift": 63.07,
+        "elbow_flex": 28.36,
+        "wrist_flex": 31.39,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -70.1,
+        -97.0,
+        57.8
+      ],
+      "markers": 0
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.2,
+      "ik_deg": 0.11,
+      "joints": {
+        "shoulder_pan": -31.651,
+        "shoulder_lift": -52.79,
+        "elbow_flex": 70.933,
+        "wrist_flex": 71.971,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 77.34,
+        "shoulder_lift": 54.26,
+        "elbow_flex": 23.82,
+        "wrist_flex": 26.82,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -44.1,
+        -95.6,
+        57.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.8,
+      "ik_deg": 0.07,
+      "joints": {
+        "shoulder_pan": -10.761,
+        "shoulder_lift": -58.523,
+        "elbow_flex": 74.237,
+        "wrist_flex": 74.355,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 98.23,
+        "shoulder_lift": 48.53,
+        "elbow_flex": 20.51,
+        "wrist_flex": 24.44,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -12.9,
+        -95.0,
+        55.1
+      ],
+      "markers": 2
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.4,
+      "ik_deg": 0.01,
+      "joints": {
+        "shoulder_pan": 8.093,
+        "shoulder_lift": -56.735,
+        "elbow_flex": 73.495,
+        "wrist_flex": 73.226,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 113.29,
+        "shoulder_lift": 50.31,
+        "elbow_flex": 21.25,
+        "wrist_flex": 25.56,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        13.7,
+        -95.5,
+        55.2
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.3,
+      "ik_deg": 0.05,
+      "joints": {
+        "shoulder_pan": 26.62,
+        "shoulder_lift": -48.101,
+        "elbow_flex": 68.632,
+        "wrist_flex": 69.415,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 94.76,
+        "shoulder_lift": 58.95,
+        "elbow_flex": 26.12,
+        "wrist_flex": 29.38,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        44.1,
+        -97.2,
+        57.6
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.5,
+      "ik_deg": 0.17,
+      "joints": {
+        "shoulder_pan": 38.257,
+        "shoulder_lift": -34.182,
+        "elbow_flex": 61.002,
+        "wrist_flex": 63.349,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 83.12,
+        "shoulder_lift": 72.87,
+        "elbow_flex": 33.75,
+        "wrist_flex": 35.44,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        72.2,
+        -96.0,
+        56.6
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 2.9,
+      "ik_deg": 0.17,
+      "joints": {
+        "shoulder_pan": 46.621,
+        "shoulder_lift": -23.702,
+        "elbow_flex": 52.828,
+        "wrist_flex": 60.707,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 74.76,
+        "shoulder_lift": 83.35,
+        "elbow_flex": 41.92,
+        "wrist_flex": 38.08,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        98.2,
+        -97.3,
+        57.2
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 0.9,
+      "ik_deg": 0.37,
+      "joints": {
+        "shoulder_pan": -47.598,
+        "shoulder_lift": -21.669,
+        "elbow_flex": 49.665,
+        "wrist_flex": 61.629,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 61.39,
+        "shoulder_lift": 85.38,
+        "elbow_flex": 45.09,
+        "wrist_flex": 37.16,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 7,
+      "achieved": [
+        -97.2,
+        -70.2,
+        60.2
+      ],
+      "markers": 0
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 0.5,
+      "ik_deg": 0.2,
+      "joints": {
+        "shoulder_pan": -37.845,
+        "shoulder_lift": -29.804,
+        "elbow_flex": 56.321,
+        "wrist_flex": 63.28,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 71.14,
+        "shoulder_lift": 77.25,
+        "elbow_flex": 38.43,
+        "wrist_flex": 35.51,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 7,
+      "achieved": [
+        -70.4,
+        -69.7,
+        60.0
+      ],
+      "markers": 1
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.6,
+      "ik_deg": 0.16,
+      "joints": {
+        "shoulder_pan": -25.747,
+        "shoulder_lift": -33.837,
+        "elbow_flex": 60.759,
+        "wrist_flex": 63.235,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 83.24,
+        "shoulder_lift": 73.21,
+        "elbow_flex": 33.99,
+        "wrist_flex": 35.56,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -44.0,
+        -67.7,
+        56.6
+      ],
+      "markers": 1
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.1,
+      "ik_deg": 0.25,
+      "joints": {
+        "shoulder_pan": -10.009,
+        "shoulder_lift": -36.512,
+        "elbow_flex": 62.598,
+        "wrist_flex": 64.165,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 98.98,
+        "shoulder_lift": 70.54,
+        "elbow_flex": 32.15,
+        "wrist_flex": 34.62,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -13.3,
+        -66.4,
+        56.5
+      ],
+      "markers": 3
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.8,
+      "ik_deg": 0.21,
+      "joints": {
+        "shoulder_pan": 4.445,
+        "shoulder_lift": -35.405,
+        "elbow_flex": 61.85,
+        "wrist_flex": 63.767,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 113.44,
+        "shoulder_lift": 71.64,
+        "elbow_flex": 32.9,
+        "wrist_flex": 35.02,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        14.3,
+        -66.7,
+        56.5
+      ],
+      "markers": 2
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.1,
+      "ik_deg": 0.06,
+      "joints": {
+        "shoulder_pan": 17.607,
+        "shoulder_lift": -30.821,
+        "elbow_flex": 58.56,
+        "wrist_flex": 62.317,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 103.77,
+        "shoulder_lift": 76.23,
+        "elbow_flex": 36.19,
+        "wrist_flex": 36.47,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        41.7,
+        -67.5,
+        56.8
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.0,
+      "ik_deg": 0.16,
+      "joints": {
+        "shoulder_pan": 29.74,
+        "shoulder_lift": -23.814,
+        "elbow_flex": 52.924,
+        "wrist_flex": 60.726,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 91.64,
+        "shoulder_lift": 83.24,
+        "elbow_flex": 41.83,
+        "wrist_flex": 38.06,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        70.9,
+        -69.9,
+        57.2
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 2.7,
+      "ik_deg": 0.41,
+      "joints": {
+        "shoulder_pan": 38.139,
+        "shoulder_lift": -15.52,
+        "elbow_flex": 45.266,
+        "wrist_flex": 59.84,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 83.24,
+        "shoulder_lift": 91.53,
+        "elbow_flex": 49.48,
+        "wrist_flex": 38.95,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        97.3,
+        -70.8,
+        57.5
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.3,
+      "ik_deg": 0.18,
+      "joints": {
+        "shoulder_pan": -41.254,
+        "shoulder_lift": -9.255,
+        "elbow_flex": 38.226,
+        "wrist_flex": 60.844,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 67.74,
+        "shoulder_lift": 97.8,
+        "elbow_flex": 56.52,
+        "wrist_flex": 37.95,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 16,
+      "achieved": [
+        -98.2,
+        -41.6,
+        58.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.4,
+      "ik_deg": 0.46,
+      "joints": {
+        "shoulder_pan": -32.376,
+        "shoulder_lift": -17.702,
+        "elbow_flex": 46.053,
+        "wrist_flex": 61.19,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 76.61,
+        "shoulder_lift": 89.35,
+        "elbow_flex": 48.7,
+        "wrist_flex": 37.6,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 7,
+      "achieved": [
+        -69.9,
+        -43.4,
+        60.3
+      ],
+      "markers": 0
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.4,
+      "ik_deg": 0.36,
+      "joints": {
+        "shoulder_pan": -22.036,
+        "shoulder_lift": -22.151,
+        "elbow_flex": 50.088,
+        "wrist_flex": 61.698,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 86.95,
+        "shoulder_lift": 84.9,
+        "elbow_flex": 44.66,
+        "wrist_flex": 37.09,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 7,
+      "achieved": [
+        -43.0,
+        -42.9,
+        60.2
+      ],
+      "markers": 2
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 2.9,
+      "ik_deg": 0.2,
+      "joints": {
+        "shoulder_pan": -9.491,
+        "shoulder_lift": -22.753,
+        "elbow_flex": 52.005,
+        "wrist_flex": 60.552,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 99.5,
+        "shoulder_lift": 84.3,
+        "elbow_flex": 42.74,
+        "wrist_flex": 38.24,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -13.4,
+        -41.6,
+        57.2
+      ],
+      "markers": 2
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 2.7,
+      "ik_deg": 0.22,
+      "joints": {
+        "shoulder_pan": 2.147,
+        "shoulder_lift": -21.975,
+        "elbow_flex": 51.319,
+        "wrist_flex": 60.436,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 111.14,
+        "shoulder_lift": 85.07,
+        "elbow_flex": 43.43,
+        "wrist_flex": 38.35,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        13.9,
+        -41.7,
+        57.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.3,
+      "ik_deg": 0.41,
+      "joints": {
+        "shoulder_pan": 13.081,
+        "shoulder_lift": -19.844,
+        "elbow_flex": 48.034,
+        "wrist_flex": 61.397,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 108.3,
+        "shoulder_lift": 87.21,
+        "elbow_flex": 46.72,
+        "wrist_flex": 37.39,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 34,
+      "achieved": [
+        40.9,
+        -42.6,
+        60.2
+      ],
+      "markers": 1
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.0,
+      "ik_deg": 0.48,
+      "joints": {
+        "shoulder_pan": 23.581,
+        "shoulder_lift": -13.383,
+        "elbow_flex": 43.116,
+        "wrist_flex": 59.787,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 97.8,
+        "shoulder_lift": 93.67,
+        "elbow_flex": 51.63,
+        "wrist_flex": 39.0,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        70.1,
+        -43.8,
+        57.6
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.3,
+      "ik_deg": 0.3,
+      "joints": {
+        "shoulder_pan": 31.537,
+        "shoulder_lift": -5.275,
+        "elbow_flex": 33.792,
+        "wrist_flex": 61.181,
+        "wrist_roll": -0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 89.84,
+        "shoulder_lift": 101.77,
+        "elbow_flex": 60.96,
+        "wrist_flex": 37.61,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 70,
+      "achieved": [
+        98.2,
+        -42.5,
+        58.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.8,
+      "ik_deg": 0.37,
+      "joints": {
+        "shoulder_pan": -35.831,
+        "shoulder_lift": 2.169,
+        "elbow_flex": 25.742,
+        "wrist_flex": 61.724,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 73.16,
+        "shoulder_lift": 106.47,
+        "elbow_flex": 69.01,
+        "wrist_flex": 37.07,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -96.9,
+        -12.3,
+        56.9
+      ],
+      "markers": 0
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.4,
+      "ik_deg": 0.33,
+      "joints": {
+        "shoulder_pan": -28.45,
+        "shoulder_lift": -4.301,
+        "elbow_flex": 32.67,
+        "wrist_flex": 61.3,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 80.54,
+        "shoulder_lift": 102.75,
+        "elbow_flex": 62.08,
+        "wrist_flex": 37.49,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 16,
+      "achieved": [
+        -70.4,
+        -14.6,
+        58.8
+      ],
+      "markers": 2
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.6,
+      "ik_deg": 0.23,
+      "joints": {
+        "shoulder_pan": -18.744,
+        "shoulder_lift": -7.589,
+        "elbow_flex": 36.4,
+        "wrist_flex": 60.956,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 90.25,
+        "shoulder_lift": 99.46,
+        "elbow_flex": 58.35,
+        "wrist_flex": 37.83,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -41.0,
+        -13.6,
+        58.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.4,
+      "ik_deg": 0.19,
+      "joints": {
+        "shoulder_pan": -9.13,
+        "shoulder_lift": -9.024,
+        "elbow_flex": 37.975,
+        "wrist_flex": 60.857,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 99.86,
+        "shoulder_lift": 98.03,
+        "elbow_flex": 56.77,
+        "wrist_flex": 37.93,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 43,
+      "achieved": [
+        -13.5,
+        -13.5,
+        58.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.3,
+      "ik_deg": 0.21,
+      "joints": {
+        "shoulder_pan": 0.593,
+        "shoulder_lift": -8.437,
+        "elbow_flex": 37.336,
+        "wrist_flex": 60.893,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 109.58,
+        "shoulder_lift": 98.61,
+        "elbow_flex": 57.41,
+        "wrist_flex": 37.9,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 43,
+      "achieved": [
+        14.0,
+        -13.7,
+        58.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 1.3,
+      "ik_deg": 0.28,
+      "joints": {
+        "shoulder_pan": 9.896,
+        "shoulder_lift": -5.901,
+        "elbow_flex": 34.506,
+        "wrist_flex": 61.112,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 111.48,
+        "shoulder_lift": 101.15,
+        "elbow_flex": 60.24,
+        "wrist_flex": 37.68,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 43,
+      "achieved": [
+        41.4,
+        -14.0,
+        58.8
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.6,
+      "ik_deg": 0.29,
+      "joints": {
+        "shoulder_pan": 18.383,
+        "shoulder_lift": 0.022,
+        "elbow_flex": 28.436,
+        "wrist_flex": 61.257,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 103.0,
+        "shoulder_lift": 107.07,
+        "elbow_flex": 66.31,
+        "wrist_flex": 37.53,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        69.8,
+        -12.3,
+        56.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.4,
+      "ik_deg": 0.49,
+      "joints": {
+        "shoulder_pan": 25.832,
+        "shoulder_lift": 5.437,
+        "elbow_flex": 21.517,
+        "wrist_flex": 62.556,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 95.55,
+        "shoulder_lift": 103.2,
+        "elbow_flex": 73.23,
+        "wrist_flex": 36.23,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        97.1,
+        -13.2,
+        56.9
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.8,
+      "ik_deg": 0.76,
+      "joints": {
+        "shoulder_pan": -32.247,
+        "shoulder_lift": 11.814,
+        "elbow_flex": 12.86,
+        "wrist_flex": 64.566,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 76.74,
+        "shoulder_lift": 96.83,
+        "elbow_flex": 81.89,
+        "wrist_flex": 34.22,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -96.1,
+        13.3,
+        56.9
+      ],
+      "markers": 2
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.3,
+      "ik_deg": 0.58,
+      "joints": {
+        "shoulder_pan": -25.014,
+        "shoulder_lift": 7.813,
+        "elbow_flex": 18.351,
+        "wrist_flex": 63.256,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 83.98,
+        "shoulder_lift": 100.83,
+        "elbow_flex": 76.4,
+        "wrist_flex": 35.53,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -68.8,
+        14.0,
+        56.9
+      ],
+      "markers": 2
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.2,
+      "ik_deg": 0.47,
+      "joints": {
+        "shoulder_pan": -17.136,
+        "shoulder_lift": 5.15,
+        "elbow_flex": 21.893,
+        "wrist_flex": 62.483,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 91.85,
+        "shoulder_lift": 103.49,
+        "elbow_flex": 72.86,
+        "wrist_flex": 36.31,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -41.3,
+        14.4,
+        56.9
+      ],
+      "markers": 1
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.2,
+      "ik_deg": 0.43,
+      "joints": {
+        "shoulder_pan": -8.866,
+        "shoulder_lift": 4.009,
+        "elbow_flex": 23.382,
+        "wrist_flex": 62.179,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 100.12,
+        "shoulder_lift": 104.63,
+        "elbow_flex": 71.37,
+        "wrist_flex": 36.61,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -13.6,
+        14.6,
+        56.9
+      ],
+      "markers": 1
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.2,
+      "ik_deg": 0.45,
+      "joints": {
+        "shoulder_pan": -0.527,
+        "shoulder_lift": 4.469,
+        "elbow_flex": 22.784,
+        "wrist_flex": 62.298,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 108.46,
+        "shoulder_lift": 104.17,
+        "elbow_flex": 71.97,
+        "wrist_flex": 36.49,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        14.1,
+        14.5,
+        56.9
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.1,
+      "ik_deg": 0.53,
+      "joints": {
+        "shoulder_pan": 7.545,
+        "shoulder_lift": 6.498,
+        "elbow_flex": 20.114,
+        "wrist_flex": 62.859,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 113.83,
+        "shoulder_lift": 102.14,
+        "elbow_flex": 74.64,
+        "wrist_flex": 35.93,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        41.6,
+        14.0,
+        56.9
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.3,
+      "ik_deg": 0.68,
+      "joints": {
+        "shoulder_pan": 15.07,
+        "shoulder_lift": 9.962,
+        "elbow_flex": 15.427,
+        "wrist_flex": 63.935,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 106.31,
+        "shoulder_lift": 98.68,
+        "elbow_flex": 79.32,
+        "wrist_flex": 34.86,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        69.0,
+        13.4,
+        56.9
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.5,
+      "ik_deg": 0.63,
+      "joints": {
+        "shoulder_pan": 22.32,
+        "shoulder_lift": 15.021,
+        "elbow_flex": 8.08,
+        "wrist_flex": 66.268,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 99.06,
+        "shoulder_lift": 93.62,
+        "elbow_flex": 86.67,
+        "wrist_flex": 32.52,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        97.6,
+        11.8,
+        57.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.4,
+      "ik_deg": 1.02,
+      "joints": {
+        "shoulder_pan": -29.799,
+        "shoulder_lift": 22.077,
+        "elbow_flex": -2.304,
+        "wrist_flex": 69.203,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 79.19,
+        "shoulder_lift": 86.56,
+        "elbow_flex": 94.38,
+        "wrist_flex": 29.59,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -96.6,
+        37.7,
+        57.1
+      ],
+      "markers": 0
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.3,
+      "ik_deg": 0.81,
+      "joints": {
+        "shoulder_pan": -23.293,
+        "shoulder_lift": 18.486,
+        "elbow_flex": 3.045,
+        "wrist_flex": 67.656,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 85.7,
+        "shoulder_lift": 90.15,
+        "elbow_flex": 91.7,
+        "wrist_flex": 31.13,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -69.8,
+        38.7,
+        57.2
+      ],
+      "markers": 2
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.7,
+      "ik_deg": 0.69,
+      "joints": {
+        "shoulder_pan": -15.901,
+        "shoulder_lift": 16.147,
+        "elbow_flex": 6.459,
+        "wrist_flex": 66.707,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 93.09,
+        "shoulder_lift": 92.49,
+        "elbow_flex": 88.29,
+        "wrist_flex": 32.08,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -41.0,
+        39.7,
+        57.3
+      ],
+      "markers": 2
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.9,
+      "ik_deg": 0.9,
+      "joints": {
+        "shoulder_pan": -8.659,
+        "shoulder_lift": 14.828,
+        "elbow_flex": 8.588,
+        "wrist_flex": 65.684,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 100.33,
+        "shoulder_lift": 93.81,
+        "elbow_flex": 86.16,
+        "wrist_flex": 33.11,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -13.6,
+        39.7,
+        56.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.5,
+      "ik_deg": 0.66,
+      "joints": {
+        "shoulder_pan": -1.364,
+        "shoulder_lift": 15.558,
+        "elbow_flex": 7.308,
+        "wrist_flex": 66.476,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 107.63,
+        "shoulder_lift": 93.08,
+        "elbow_flex": 87.44,
+        "wrist_flex": 32.31,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        13.8,
+        39.7,
+        57.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.0,
+      "ik_deg": 0.75,
+      "joints": {
+        "shoulder_pan": 5.747,
+        "shoulder_lift": 17.336,
+        "elbow_flex": 4.731,
+        "wrist_flex": 67.183,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 114.74,
+        "shoulder_lift": 91.3,
+        "elbow_flex": 90.02,
+        "wrist_flex": 31.61,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        41.1,
+        39.3,
+        57.2
+      ],
+      "markers": 0
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.9,
+      "ik_deg": 0.92,
+      "joints": {
+        "shoulder_pan": 12.481,
+        "shoulder_lift": 20.411,
+        "elbow_flex": 0.194,
+        "wrist_flex": 68.473,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 108.9,
+        "shoulder_lift": 88.23,
+        "elbow_flex": 94.56,
+        "wrist_flex": 30.32,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        68.2,
+        38.5,
+        57.1
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.4,
+      "ik_deg": 1.2,
+      "joints": {
+        "shoulder_pan": 18.699,
+        "shoulder_lift": 24.661,
+        "elbow_flex": -6.231,
+        "wrist_flex": 70.373,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 102.68,
+        "shoulder_lift": 83.98,
+        "elbow_flex": 90.45,
+        "wrist_flex": 28.42,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        94.9,
+        37.3,
+        56.9
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 10.2,
+      "ik_deg": 1.83,
+      "joints": {
+        "shoulder_pan": -27.442,
+        "shoulder_lift": 32.186,
+        "elbow_flex": -17.974,
+        "wrist_flex": 73.956,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 81.55,
+        "shoulder_lift": 76.45,
+        "elbow_flex": 78.71,
+        "wrist_flex": 24.83,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -95.1,
+        60.9,
+        56.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.4,
+      "ik_deg": 1.53,
+      "joints": {
+        "shoulder_pan": -21.528,
+        "shoulder_lift": 29.0,
+        "elbow_flex": -12.951,
+        "wrist_flex": 72.417,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 87.46,
+        "shoulder_lift": 79.64,
+        "elbow_flex": 83.73,
+        "wrist_flex": 26.37,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -68.8,
+        62.4,
+        56.6
+      ],
+      "markers": 0
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.4,
+      "ik_deg": 1.36,
+      "joints": {
+        "shoulder_pan": -14.937,
+        "shoulder_lift": 26.917,
+        "elbow_flex": -9.707,
+        "wrist_flex": 71.425,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 94.05,
+        "shoulder_lift": 81.72,
+        "elbow_flex": 86.97,
+        "wrist_flex": 27.37,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -40.5,
+        63.5,
+        56.8
+      ],
+      "markers": 2
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.0,
+      "ik_deg": 1.3,
+      "joints": {
+        "shoulder_pan": -8.494,
+        "shoulder_lift": 26.036,
+        "elbow_flex": -8.344,
+        "wrist_flex": 71.011,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 100.5,
+        "shoulder_lift": 82.6,
+        "elbow_flex": 88.34,
+        "wrist_flex": 27.78,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -13.5,
+        63.8,
+        56.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.1,
+      "ik_deg": 1.32,
+      "joints": {
+        "shoulder_pan": -2.017,
+        "shoulder_lift": 26.394,
+        "elbow_flex": -8.897,
+        "wrist_flex": 71.179,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 106.97,
+        "shoulder_lift": 82.25,
+        "elbow_flex": 87.78,
+        "wrist_flex": 27.61,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        13.5,
+        63.6,
+        56.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.9,
+      "ik_deg": 1.45,
+      "joints": {
+        "shoulder_pan": 4.333,
+        "shoulder_lift": 27.975,
+        "elbow_flex": -11.352,
+        "wrist_flex": 71.927,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 113.32,
+        "shoulder_lift": 80.66,
+        "elbow_flex": 85.33,
+        "wrist_flex": 26.86,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        40.4,
+        63.0,
+        56.7
+      ],
+      "markers": 1
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 9.3,
+      "ik_deg": 1.69,
+      "joints": {
+        "shoulder_pan": 10.411,
+        "shoulder_lift": 30.71,
+        "elbow_flex": -15.64,
+        "wrist_flex": 73.241,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 110.97,
+        "shoulder_lift": 77.93,
+        "elbow_flex": 81.04,
+        "wrist_flex": 25.55,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        67.0,
+        61.9,
+        56.5
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 11.8,
+      "ik_deg": 2.08,
+      "joints": {
+        "shoulder_pan": 16.11,
+        "shoulder_lift": 34.455,
+        "elbow_flex": -21.59,
+        "wrist_flex": 75.055,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 105.27,
+        "shoulder_lift": 74.19,
+        "elbow_flex": 75.09,
+        "wrist_flex": 23.73,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        93.1,
+        60.1,
+        56.1
+      ],
+      "markers": 1
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.7,
+      "ik_deg": 1.34,
+      "joints": {
+        "shoulder_pan": -25.247,
+        "shoulder_lift": 59.992,
+        "elbow_flex": -67.132,
+        "wrist_flex": 95.804,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 83.74,
+        "shoulder_lift": 48.65,
+        "elbow_flex": 29.55,
+        "wrist_flex": 2.99,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -94.6,
+        90.2,
+        58.0
+      ],
+      "markers": 0
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 3.8,
+      "ik_deg": 0.6,
+      "joints": {
+        "shoulder_pan": -19.826,
+        "shoulder_lift": 58.569,
+        "elbow_flex": -64.964,
+        "wrist_flex": 95.795,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 89.16,
+        "shoulder_lift": 50.07,
+        "elbow_flex": 31.72,
+        "wrist_flex": 3.0,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 1,
+      "achieved": [
+        -68.6,
+        94.6,
+        59.0
+      ],
+      "markers": 2
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 14.1,
+      "ik_deg": 2.46,
+      "joints": {
+        "shoulder_pan": -14.162,
+        "shoulder_lift": 37.452,
+        "elbow_flex": -26.401,
+        "wrist_flex": 76.489,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 94.83,
+        "shoulder_lift": 71.19,
+        "elbow_flex": 70.28,
+        "wrist_flex": 22.3,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -39.9,
+        84.7,
+        55.7
+      ],
+      "markers": 0
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 13.5,
+      "ik_deg": 2.36,
+      "joints": {
+        "shoulder_pan": -8.362,
+        "shoulder_lift": 36.712,
+        "elbow_flex": -25.209,
+        "wrist_flex": 76.138,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 100.63,
+        "shoulder_lift": 71.93,
+        "elbow_flex": 71.47,
+        "wrist_flex": 22.65,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        -13.4,
+        85.2,
+        55.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 13.8,
+      "ik_deg": 2.4,
+      "joints": {
+        "shoulder_pan": -2.538,
+        "shoulder_lift": 37.013,
+        "elbow_flex": -25.694,
+        "wrist_flex": 76.281,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 106.45,
+        "shoulder_lift": 71.63,
+        "elbow_flex": 70.99,
+        "wrist_flex": 22.51,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        13.0,
+        84.9,
+        55.8
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 14.9,
+      "ik_deg": 2.59,
+      "joints": {
+        "shoulder_pan": 3.193,
+        "shoulder_lift": 38.332,
+        "elbow_flex": -27.82,
+        "wrist_flex": 76.901,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 112.18,
+        "shoulder_lift": 70.31,
+        "elbow_flex": 68.86,
+        "wrist_flex": 21.89,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        39.3,
+        84.0,
+        55.6
+      ],
+      "markers": 1
+    },
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.4,
+      "ik_deg": 0.99,
+      "joints": {
+        "shoulder_pan": 8.727,
+        "shoulder_lift": 59.4,
+        "elbow_flex": -66.252,
+        "wrist_flex": 95.862,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 112.65,
+        "shoulder_lift": 49.24,
+        "elbow_flex": 30.43,
+        "wrist_flex": 2.93,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        68.0,
+        92.1,
+        58.5
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 12.3,
+      "ik_deg": 1.88,
+      "joints": {
+        "shoulder_pan": 13.971,
+        "shoulder_lift": 60.745,
+        "elbow_flex": -68.19,
+        "wrist_flex": 95.563,
+        "wrist_roll": 0.0,
+        "gripper": 0.0
+      },
+      "margins_deg": {
+        "shoulder_pan": 107.41,
+        "shoulder_lift": 47.9,
+        "elbow_flex": 28.49,
+        "wrist_flex": 3.23,
+        "wrist_roll": 81.82
+      },
+      "violations": [],
+      "starts": 85,
+      "achieved": [
+        93.2,
+        87.0,
+        57.3
+      ],
+      "markers": 1
+    }
+  ]
+}

@@ -39,7 +39,9 @@ def test_marker_corners_rotate_with_board():
 def test_all_four_markers_visible_from_one_overhead_pose():
     found = observe_markers(looking_down(), (0,) * 5 + (0.6,), LAYOUT,
                             marker_z=0.43)
-    assert sorted(found) == [0, 1, 2, 3]
+    # Four border tags plus the loose centre target: every marker this mat
+    # layout actually defines, and nothing from the ChArUco face (5..36).
+    assert sorted(found) == [0, 1, 2, 3, 4]
     for observation in found.values():
         assert observation.edge_px > 40.0
         assert 0 < observation.centre_px[0] < 640
@@ -72,7 +74,7 @@ def test_occlusion_mask_only_where_drawn():
     mask = np.zeros((frame.height, frame.width), dtype=bool)
     mask[0:10, 0:10] = True
     found = observe_markers(frame, (0,) * 6, LAYOUT, marker_z=0.43, occlusion=mask)
-    assert sorted(found) == [0, 1, 2, 3]
+    assert sorted(found) == [0, 1, 2, 3, 4]
 
 
 def pose(name: str, visible, edges=None) -> PoseCoverage:

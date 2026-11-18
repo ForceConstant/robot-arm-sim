@@ -221,7 +221,7 @@ flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 The BC-250 live app on port 8080 is **down**. The arm is powered but not
 connected to the bridge yet.
 
-- [ ] **Preflight — REAL joint limits (critical):** the bridge reports
+- [x] **Preflight — REAL joint limits (critical):** the bridge reports
   pan −108.99..121.38, lift −107.05..108.64, elbow −96.68..94.75,
   wrist_flex −104.59..98.79, **wrist_roll −81.82..91.05**, gripper 0..100.
   The calibration carries sim limits (wrist_roll ≈ −157..163) and the sim
@@ -229,29 +229,67 @@ connected to the bridge yet.
   with the bridge limits** and report the honest count plus every square/axis
   that exceeds them. Do not claim IRL 64/64 until this is done. This is the
   first place a8's 160.8° wrist_roll will fail on the real arm.
-- [ ] **Preflight — ChArUco marker plane:** set `live/live_config.json`
+  → **64/64, zero violations, tightest margin +2.93° (g8 wrist_flex).**
+  a8 is 8.7 mm at **wrist_roll 0.00**, not 160.8: the bounded search finds the
+  extended branch, so the 160.8° pose was a seed basin, not the only solution.
+  `reports/squares_sim_bridge_limits.json`.
+- [x] **Preflight — ChArUco marker plane:** set `live/live_config.json`
   `marker_z_m = 0.4337` (equal to `board_z_m`). The current **0.43056** is the
   mat plane; with `layout_kind=charuco` a valid scan fails the fusion RMS gate
   (1.33–2.56 px vs 1.2). Mandatory before any `/scan`.
-- [ ] **Preflight — test fixture calibration:** `live/tests/test_scan_controller.py`
+  → applied (bench file, untracked).
+- [x] **Preflight — test fixture calibration:** `live/tests/test_scan_controller.py`
   loads `.private/phase11d/calibration.json`, which is now the real hand-eye
   mount; in sim, 4 accuracy tests fail with 0 markers. Point the fixture at the
   sim-exported calibration (or add a sim fixture) before trusting the suite.
-- [ ] **Preflight — ChArUco test assumptions:** 11 failures in
+  → now loads `reports/block3_sim_calibration.json`. The 4 accuracy tests still
+  fail, for a **different and real** reason: the committed scan plan is the mat
+  plan and the rendered mat does not match `MarkerLayout.for_board(...)`. See
+  the result note below.
+- [x] **Preflight — ChArUco test assumptions:** 11 failures in
   `tests/test_marker_scan.py`, `test_hand_eye.py`, `test_wrist_scan.py` assume
   the old 0–4 mat marker set. Update or xfail with a reason; do not use the
   suite as a gate while it is red for the wrong reason.
-- [ ] One command to dry-run the 8 known-problem squares with `dry_run` only
-- [ ] Distinguish in output: keep-in refusal vs IK failure vs bridge fault
-- [ ] Write the bench sequence as a numbered run sheet:
+  → **11 → 5.** Six fixed for real (`observe_markers` no longer crashes on ids
+  its layout cannot describe; two stale assertions now use the layout's own set).
+  The remaining 5 are documented, not xfailed: four encode plan-completeness
+  over the global 37-id set, one is the hand-eye view generator.
+- [x] One command to dry-run the 8 known-problem squares with `dry_run` only
+  → `tools/block4_dryrun.py` (offline, production solver, bridge limits)
+- [x] Distinguish in output: keep-in refusal vs IK failure vs bridge fault
+  → `OK` / `IK_FAILURE` / `JOINT_LIMIT` / `KEEP_IN_REFUSAL` / `RESCUED_BY_SEED`;
+  bridge fault is live-only and mapped in run-sheet step 11
+- [x] Write the bench sequence as a numbered run sheet:
   Pi up → stop LeLab/teleop before the follower port → REMOTE + arm →
   `/board/assume` seed → `/scan` → compare `board.json` → `/sanity` 5 points →
   8-square dry run → full sweep
-- [ ] Define abort conditions and who calls them
+  → `docs/BLOCK4_RUN_SHEET.md`
+- [x] Define abort conditions and who calls them
+  → per-step abort + an abort table; Brian (and the e-stop) or the agent, either
+  one, immediately
 
 **Exit gate:** run sheet reviewed; no step requires improvisation at the bench.
 Plus: real-limit sweep count reported, every limit-exceeding square named, and
 an explicit go/no-go for Block 5.
+
+**Result (2026-11-18): PASS on limits, with one Block 5 blocker.**
+
+- Real-limit sweep **64/64**, worst 14.9 mm (f8); no square exceeds a bridge
+  limit, so there is no per-square limit table to publish. **GO** for Block 5 on
+  joint-limit grounds.
+- The 8 flagged squares all dry-run `OK` (0.9–3.9 mm, ≤0.48°).
+- **Blocker:** `live_config.json` pairs `layout_kind: charuco` with
+  `marker_scan_plan.json`, which is the **mat-tag** plan (ids 0–3, offset 152).
+  In sim, plan pose 1 sees 4 ChArUco tags and poses 2–11 see none, so `/scan`
+  would fail registration at the bench. No ChArUco plan exists in the repo and
+  `tools/plan_marker_scan.py` has no ChArUco option. This is a pre-bench code
+  task (run-sheet step 0b, hard abort), not bench work.
+- Also found: `layout_env_config("printed")` renders `marker_0_0_0` at
+  (−168.67, −135.33) mm on a plate at z −1.85 mm, while the scan maths assumes
+  (−152, −152) at +0.56 mm. Mat-scene PnP therefore cannot close; this is the
+  residual reason for the 4 scan-controller and 1 hand-eye failure.
+
+Receipt: `reports/block4_2026-11-18.md`.
 
 ## Block 5 — IRL after power-up (2–3 h)
 
