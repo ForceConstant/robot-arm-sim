@@ -645,6 +645,38 @@ Receipt: `reports/block5c_2026-11-18.md`; data `reports/block5c_cal_frames.json`
 Receipt: `reports/block5d_2026-11-18.md`; on-arm validation
 `reports/block5d_settle_controller.json`. No plan, no `/scan`, no sweep.
 
+## Block 5e — corrected yield, mask mismatch delimited (2026-11-18)
+
+- [x] **Exposure is not the issue — retracted.** On board-facing frames
+  (`model_visible > 0`, 28 of 35) `corr(brightness, yield)` is **+0.04** and
+  `corr(sharpness, yield)` **−0.00** (they were −0.42/+0.48 only because the
+  off-board frames polluted the sample). The seven off-board frames contribute
+  0 decoded and 0 visible, so the 43 % yield was never diluted. No change to
+  light, exposure, gain or focus.
+- [x] **Servo activation accepted as expected.** The ~3° HOLD→REMOTE shift is a
+  known activation offset, not a fault; the scan must seed from the **measured**
+  joints after REMOTE. No mode cycling in 5e.
+- [x] **Mask is 100 % the CAD tool** (per-link: arm links 0.0 %, tool 47.8 %,
+  union 48.2 %). Coverage sits at 60–140 mm in front of the lens; **0 % at a
+  140 mm near plane**. Tried and rejected: physical 20 mm near plane (48.2 %),
+  culling lens-straddling triangles (48.2 %), twelve rigid re-mounts (best
+  10.1 %). The camera is right — board reprojection **1.32 px** — so the tool
+  mount is 60–140 mm too far forward; that offset cannot be measured from
+  frames that never contain the tool.
+- [x] **Why 4c missed it:** that gate compares corner reprojections only; a
+  misplaced tool adds no corners. Add a whole-image silhouette check.
+- [x] **Real detector budget:** median **2.5 decodable tags per board-facing
+  view** at 150–170 mm, 6/28 frames with zero. Under the 3-tag rule about half
+  the time.
+- [ ] Needs a physical lens↔tool measurement before the mask can be corrected;
+  then re-audit (pass = ~0 decoded tags suppressed), add the silhouette gate,
+  and only then regenerate.
+- [ ] Standoff/pose budget: ~2.5 tags/view implies more poses or a smaller
+  standoff — a planning decision, not a worker one.
+
+Receipt: `reports/block5e_2026-11-18.md`. `chess_sim/self_occlusion.py` left
+unchanged (experiments reverted). No plan, no `/scan`, no sweep.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
