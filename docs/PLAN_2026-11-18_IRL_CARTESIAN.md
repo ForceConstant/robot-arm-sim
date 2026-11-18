@@ -534,6 +534,43 @@ Receipt: `reports/block5a_2026-11-18.md`; coverage table
 `reports/block5a_coverage.json`. The roll clamp itself does not change coverage
 (identical tag sets at −87.2° and −81.52° at marker71/37/57).
 
+## Block 5b — regenerate the ChArUco plan (2026-11-18)
+
+- [x] Planner can solve **inside the bridge limits**: `solve_pose(bounds=...)`,
+  `--limits` / `--bridge-limits`, and the same hard limit gate at the end of a
+  run (per pose **and** recovery pose, worst margin printed, non-zero exit).
+- [x] Per-pose coverage gate: `--edge-margin-px` (12) and
+  `--min-pose-markers` (3); a pose short of either is discarded, and the run
+  prints a per-pose tag table.
+- [!] **Near-nadir regeneration returns no plan.** At 150, 160 and 170 mm
+  standoff (41 candidates per height, no `--oblique`), **0 poses decode ≥3
+  tags**; counts are 0–2 with a handful of IK-gap rejects. The pose family
+  itself works: without the self-occlusion mask, marker 20 / 15 / 27 at 160 mm
+  solve at 0.00 mm gap, 0.00° view error and see **3 / 3 / 5** tags.
+- [!] **Cause is the production occlusion model at close range.** At a real
+  160 mm cal posture its mask covers **39 % of the frame** with the gripper and
+  drops 2 of 4 decodable tags, while the real frame at that posture shows no arm
+  at all. Planning without the mask on that evidence would use unvalidated
+  poses, so the block stopped here.
+- [x] **Settling diagnosed: gravity/compliance on the elbow.** At the parked 5a
+  posture the elbow is **2.15°** short of target while pan/lift/wrist are
+  ≤0.55°. A 1.0° elbow command settles 0.54° short and then **creeps back**;
+  `shoulder_lift` drifted 3.3° during the session. Not quantisation, so a final
+  correction cannot hold it — a longer hold and more elbow torque come first.
+  `pose_tolerance_deg` left at 1.5°, no gate widened.
+- [x] **Keep-in trap found and cleared.** The 5a scan parked the jaw tip at
+  y 118.6 mm against the ±118 mm box, so every move was refused. Recovered to
+  y 115.3 mm with a 1.8° elbow move. `GET /keep-in` reports `inside` on the tool
+  frame while `_keep_in_check` uses the jaw tip — fix that reporting mismatch.
+- [ ] Decision needed: fix/validate the occlusion model at 150–170 mm, extend the
+  4c view-match to an oblique volume, or change the per-pose tag requirement
+  with a written justification. Also check focus/exposure: the real detector
+  decoded 3 of the ~8 tags visible at the b3 posture.
+
+Receipt: `reports/block5b_2026-11-18.md`; 160 mm regeneration report
+`reports/marker_scan_plan_block5b.json`. No `/scan`, no `/sanity`, no dry run,
+no sweep — all gated on a plan that does not exist.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

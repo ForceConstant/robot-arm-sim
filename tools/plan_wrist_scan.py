@@ -33,7 +33,8 @@ from chess_sim.vision_geometry import CameraCalibration
 SCHEMA = "robot-arm-wrist-scan-plan/1"
 
 
-def solve_pose(env, target, seed: int, direction=None) -> tuple[np.ndarray, float, float]:
+def solve_pose(env, target, seed: int, direction=None,
+               bounds=None) -> tuple[np.ndarray, float, float]:
     """Wrist camera with the lens at ``target`` looking along ``direction``.
 
     The wrist camera looks along the gripper's approach axis, so a board-facing
@@ -41,6 +42,9 @@ def solve_pose(env, target, seed: int, direction=None) -> tuple[np.ndarray, floa
     the arm-only model (cheap, same camera mount), seeded from the grasp IK and
     bounded by the scene's actuator limits, then verified on the full model.
     ``direction`` is the unit view axis; vertical (0,0,-1) by default.
+    ``bounds`` overrides the optimizer bounds (radians per arm joint); the live
+    path passes the Pi bridge's calibrated servo ranges so a pose is never
+    planned outside them.
     """
     target = np.asarray(target, dtype=float)
     look = np.array([0.0, 0.0, -1.0]) if direction is None else np.asarray(direction, dtype=float)
@@ -56,8 +60,8 @@ def solve_pose(env, target, seed: int, direction=None) -> tuple[np.ndarray, floa
         return (100.0 * float(np.sum((data.cam_xpos[cid] - target) ** 2))
                 + 3.0 * float(np.sum((direction - look) ** 2)))
 
-    bounds = [(float(lo), float(hi)) for lo, hi in limits]
-    result = differential_evolution(cost, bounds, seed=seed, popsize=10,
+    box = bounds or [(float(lo), float(hi)) for lo, hi in limits]
+    result = differential_evolution(cost, box, seed=seed, popsize=10,
                                     maxiter=140, tol=1e-8, polish=True)
     joints = np.r_[result.x, 0.6]
     data.qpos[env._joint_qpos] = joints

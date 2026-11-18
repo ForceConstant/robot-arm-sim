@@ -1,0 +1,125 @@
+{
+  "schema": "robot-arm-marker-scan-report/1",
+  "plan": "/tmp/plan_test_charuco.json",
+  "min_views": 2,
+  "views_per_marker": {
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0,
+    "24": 0,
+    "25": 0,
+    "26": 0,
+    "27": 0,
+    "28": 0,
+    "29": 0,
+    "30": 0,
+    "31": 0,
+    "32": 0,
+    "33": 0,
+    "34": 0,
+    "35": 0,
+    "36": 0
+  },
+  "missing": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36
+  ],
+  "poses": [],
+  "joint_limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -81.82,
+      91.05
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "worst_joint_margin_deg": null,
+  "candidates": [],
+  "sources": {
+    "calibration": "sim-1.15.0-model.xml-462.4mm-2026-11-15",
+    "occlusion": {
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/so101.xml": "c86c9b6178f80fb71cc230d118018fd48cc7046766542e86de0326d7c2f4053e",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/base_motor_holder_so101_v1.stl": "8cd2f241037ea377af1191fffe0dd9d9006beea6dcc48543660ed41647072424",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/base_so101_v2_ext30.stl": "fdff2f3ac2ec26010169f5067b7fffa5d261fae2167008205b9ee873fe80d011",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/sts3215_03a_v1.stl": "a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/waveshare_mounting_plate_so101_v2.stl": "e197e24005a07d01bbc06a8c42311664eaeda415bf859f68fa247884d0f1a6e9",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/motor_holder_so101_base_v1.stl": "31242ae6fb59d8b15c66617b88ad8e9bded62d57c35d11c0c43a70d2f4caa95b",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/rotation_pitch_so101_v1.stl": "9be900cc2a2bf718102841ef82ef8d2873842427648092c8ed2ca1e2ef4ffa34",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/upper_arm_so101_v1.stl": "475056e03a17e71919b82fd88ab9a0b898ab50164f2a7943652a6b2941bb2d4f",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/under_arm_so101_v1.stl": "d01d1f2de365651dcad9d6669e94ff87ff7652b5bb2d10752a66a456a86dbc71",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/motor_holder_so101_wrist_v1.stl": "887f92e6013cb64ea3a1ab8675e92da1e0beacfd5e001f972523540545e08011",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/sts3215_03a_no_horn_v1.stl": "75ef3781b752e4065891aea855e34dc161a38a549549cd0970cedd07eae6f887",
+      "/home/brian/robot-arm-sim/chess_sim/assets/so101/wrist_roll_pitch_so101_v2.stl": "6c7ec5525b4d8b9e397a30ab4bb0037156a5d5f38a4adf2c7d943d6c56eda5ae",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/profile.json": "5e43a57bd2fa41ae3d754e7dacf07a679016af800cd4524b8ad9da36b65ff222",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/model.xml": "b6bd65bd4e875d1ea4f85beb79184268931f7ea3cf0df1d9d4d378941eb70789",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/assets/gripper_base_1__solid1.stl": "74af8e9ba9ac30a485f414e439b45c358c185c6992c9abd2e589f7f708aba054",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/assets/camera_mount.stl": "17eb65ce0419c14c208ad44836819eb3b21224efc8980f1c0c5fe57288785714",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/assets/gripper_gear_1__solid1.stl": "dab64794b70b1f27548298af1f61a479a8fc2f3df2b8dc8016167580db848626",
+      "/home/brian/robot-arm-sim/.private/gripper-assets-v3/assets/gripper_jaw_1__solid1.stl": "59d8ea18c98a0de820eb4cb65f5e468e85f97738f3cc3dd890ded389b70738f6"
+    }
+  }
+}

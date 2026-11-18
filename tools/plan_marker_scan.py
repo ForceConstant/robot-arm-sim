@@ -22,6 +22,7 @@ import math
 from collections import Counter
 from pathlib import Path
 import sys
+import urllib.request
 
 import mujoco
 import numpy as np
@@ -106,6 +107,44 @@ def charuco_ids() -> tuple[int, ...]:
     """Every id printed on the ChArUco face (5..36 on the 8x8 field)."""
     return tuple(marker_id for marker_id in range(5, 5 + 64)
                  if charuco_square_of(marker_id) is not None)
+
+
+def parse_limits(spec: str | None, bridge: str | None) -> dict:
+    """Joint limits in degrees from an inline/path JSON blob or the bridge.
+
+    Only GET is used against the bridge; this never commands a joint.
+    """
+    limits: dict = {}
+    if bridge:
+        url = bridge.rstrip("/") + "/state"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            state = json.loads(response.read())
+        raw = state.get("limits") or {}
+        if not raw:
+            raise SystemExit(f"bridge at {bridge} returned no limits")
+        limits = {name: [float(v[0]), float(v[1])] for name, v in raw.items()}
+    if spec:
+        text = Path(spec).read_text() if Path(spec).is_file() else spec
+        raw = json.loads(text)
+        if "limits" in raw and isinstance(raw["limits"], dict):
+            raw = raw["limits"]
+        limits.update({name: [float(v[0]), float(v[1])]
+                       for name, v in raw.items()})
+    return limits
+
+
+ARM_NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
+             "wrist_flex", "wrist_roll")
+
+
+def limit_margins(joints_rad, limits: dict) -> dict:
+    """Degrees of headroom per joint; negative means outside the limit."""
+    out = {}
+    for index, name in enumerate(ARM_NAMES):
+        lo, hi = limits.get(name, (-180.0, 180.0))
+        value = math.degrees(float(joints_rad[index]))
+        out[name] = round(min(value - lo, hi - value), 2)
+    return out
 
 
 def _candidates(board, layout, marker_ids, args) -> list[dict]:
@@ -195,6 +234,14 @@ def main() -> int:
     parser.add_argument("--radii", default="0.20,0.28")
     parser.add_argument("--reuse-plan", default="",
                         help="score an existing marker plan first and keep its poses")
+    parser.add_argument("--limits", default=None,
+                        help="joint limits in degrees: inline JSON or a JSON file")
+    parser.add_argument("--bridge-limits", default=None, metavar="URL",
+                        help="read joint limits from a Pi bridge base URL (GET only)")
+    parser.add_argument("--edge-margin-px", type=float, default=12.0,
+                        help="required frame-border margin for every accepted tag")
+    parser.add_argument("--min-pose-markers", type=int, default=3,
+                        help="a pose seeing fewer decoded tags is discarded")
     parser.add_argument("--report", default="reports/marker_scan_plan.json")
     parser.add_argument("--save-dir", default=".private/phase11d/marker-plan")
     args = parser.parse_args()
@@ -230,6 +277,25 @@ def main() -> int:
             layout_offset_mm = layout.offset_mm
         self_model = SelfOcclusionModel(calibration)
         jaw_angle = 0.5 * (gripper.JOINT_MIN + gripper.JOINT_MAX)
+        limits = parse_limits(args.limits, args.bridge_limits)
+        bounds = None
+        if limits:
+            sim = np.asarray(env.model.actuator_ctrlrange[env._actuators][:5],
+                             dtype=float)
+            rows = []
+            for index, name in enumerate(
+                    ("shoulder_pan", "shoulder_lift", "elbow_flex",
+                     "wrist_flex", "wrist_roll")):
+                lo, hi = limits.get(name, (-180.0, 180.0))
+                lo_r, hi_r = math.radians(lo), math.radians(hi)
+                rows.append((max(lo_r, float(sim[index][0])),
+                             min(hi_r, float(sim[index][1]))))
+            bounds = rows
+            print("bridge limits: " + ", ".join(
+                f"{name} {lo:.1f}..{hi:.1f}" for name, (lo, hi) in
+                zip(("pan", "lift", "elbow", "wflex", "wroll"),
+                    [(math.degrees(a), math.degrees(b)) for a, b in rows])),
+                flush=True)
         print(f"board {board.width*1000:.1f} mm, layout {args.layout}, "
               f"offset {layout_offset_mm:.1f} mm, ids {len(marker_ids)}, "
               f"marker_z {marker_z*1000:.2f} mm", flush=True)
@@ -272,7 +338,7 @@ def main() -> int:
             else:
                 joints, clearance, gap = solve_pose(
                     env, candidate["position"], seed=2000 + index,
-                    direction=candidate["direction"])
+                    direction=candidate["direction"], bounds=bounds)
                 # solve_pose hardcodes the stock jaw angle; the installed tool
                 # has its own travelled range, and the occlusion model refuses
                 # an out-of-limit measurement.
@@ -287,7 +353,13 @@ def main() -> int:
             mask = self_model.exclusion_mask(joints)
             found = observe_markers(
                 camera, joints, layout, board_origin=board.origin, board_yaw=board.yaw,
-                marker_z=marker_z, occlusion=mask)
+                marker_z=marker_z, occlusion=mask,
+                margin_px=args.edge_margin_px)
+            if len(found) < args.min_pose_markers:
+                print(f"{index}/{len(candidates)} {candidate.get('name') or index} "
+                      f"discard: {len(found)} tags < {args.min_pose_markers}",
+                      flush=True)
+                continue
             name = candidate.get("name") or f"{candidate['kind']}{index}"
             entries.append((name, tuple(float(v) for v in joints), found))
             positions[name] = tuple(float(v) for v in camera.camera_position)
@@ -336,7 +408,8 @@ def main() -> int:
                     set(observe_markers(
                         camera, joints, layout,
                         board_origin=(dx, dy), board_yaw=yaw,
-                        marker_z=marker_z, occlusion=mask))
+                        marker_z=marker_z, occlusion=mask,
+                        margin_px=args.edge_margin_px))
                     for dx, dy, yaw in placements]
             # Start from the nominal-quality plan: a tolerant scan must not
             # trade away the case that actually happens most of the time.
@@ -399,6 +472,37 @@ def main() -> int:
                               layout_offset_mm=plan.layout_offset_mm,
                               note=plan.note, recovery=recovery,
                               marker_ids=plan.marker_ids)
+        # Per-pose evidence and the hard limit gate: a pose with fewer than
+        # --min-pose-markers decoded tags, or a joint outside the live limits,
+        # is not allowed into the saved plan.
+        worst_margin = float("inf")
+        pose_rows = []
+        bad = []
+        for pose in plan.poses:
+            margins = limit_margins(pose.joints, limits) if limits else {}
+            if margins:
+                tight = min(margins.items(), key=lambda kv: kv[1])
+                worst_margin = min(worst_margin, tight[1])
+            row = {"name": pose.name, "tags": len(pose.visible),
+                   "ids": sorted(pose.visible),
+                   "edge_px_min": round(min(pose.edge_px), 1) if pose.edge_px else None,
+                   "camera_position_mm": [round(float(v) * 1000, 1)
+                                          for v in (pose.camera_position or [])] or None,
+                   "margins_deg": margins}
+            pose_rows.append(row)
+            for joint, margin in margins.items():
+                if margin < 0:
+                    bad.append({"pose": pose.name, "joint": joint, "margin": margin})
+            if len(pose.visible) < args.min_pose_markers:
+                bad.append({"pose": pose.name, "tags": len(pose.visible)})
+        print(f'\n{"pose":>12} {"tags":>4} {"min edge":>8}  ids', flush=True)
+        for row in pose_rows:
+            print(f'{row["name"]:>12} {row["tags"]:>4} {str(row["edge_px_min"]):>8}  '
+                  f'{row["ids"]}', flush=True)
+        if limits:
+            print(f"worst joint margin: {worst_margin:+.2f} deg", flush=True)
+        if bad:
+            raise SystemExit("plan rejected: " + json.dumps(bad[:8]))
         out = save_plan(plan, args.out,
                         generated_at="2026-11-15",
                         tolerance_mm=args.tolerance_mm,
@@ -418,6 +522,10 @@ def main() -> int:
             "min_views": plan.min_views,
             "views_per_marker": {str(k): v for k, v in counts.items()},
             "missing": list(plan.missing()),
+            "poses": pose_rows,
+            "joint_limits": limits or None,
+            "worst_joint_margin_deg": None if worst_margin == float("inf")
+            else round(worst_margin, 2),
             "candidates": meta,
             "sources": {"calibration": calibration.calibration_id,
                         "occlusion": self_model.sources},
