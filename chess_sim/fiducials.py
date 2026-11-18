@@ -32,7 +32,9 @@ MARKER_MM = 40.0
 QUIET_MM = 6.0                     # minimum white margin around a marker
 CELLS = 6                          # 4 data modules + 1 border each side
 MIN_MARKERS = 2
-MAX_RMS_PX = 1.2
+# Approved by Brian 2026-11-18 (block 5l) after the measured floor was
+# established at 1.322 px on 22 real views (4c: 1.53 px over 256 corners).
+MAX_RMS_PX = 1.5
 PRINT_RAISE_M = 0.00006            # ink sits this far above the printed face
 DEFAULT_BOARD_THICKNESS = 0.0032
 MAT_THICKNESS_M = 0.0005      # default mat when markers are mat-mounted
