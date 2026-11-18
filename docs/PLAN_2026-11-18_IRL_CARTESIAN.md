@@ -677,6 +677,34 @@ Receipt: `reports/block5d_2026-11-18.md`; on-arm validation
 Receipt: `reports/block5e_2026-11-18.md`. `chess_sim/self_occlusion.py` left
 unchanged (experiments reverted). No plan, no `/scan`, no sweep.
 
+## Block 5f — 140 mm probe, ruler needed for the tool mount (2026-11-18)
+
+- [x] **Correction:** the 5f shift-fit that reported 0.5 % coverage / 0 suppressed
+  was **wrong** (it omitted `transforms["gripper"]`, placing the tool at the arm
+  base). Retracted. `self_occlusion.py` reverted to HEAD; shipped coverage is
+  **48.19 %**.
+- [x] **Model camera verified as the 4c mount**: `camera_in_tool` translation
+  (67.66, −2.92, −10.89) mm from the live calibration. The mask is not using a
+  stale camera; the **tool placement** is what is wrong.
+- [!] **Off-board fit not possible.** The sim scene at those joints is a plain
+  tabletop while the real bench has printer parts, a white perforated printed
+  bracket, a cable and hard shadows — no common background. The visible hardware
+  does not cleanly match the black CAD parallel gripper, and one frame is half
+  shadow. No fit with a meaningful residual; need a **ruler measurement**
+  (lens front element ↔ nearest tool face along the view axis) and confirmation
+  of which tool is installed.
+- [x] **140 mm probe measured** (17 poses, 5 markers × centre + four 30 mm
+  offsets, bridge limits): **0/17 with ≥3 tags masked**; masked counts 0–2,
+  unmasked 1–4 (median **3**), 6 IK rejects. At 140 mm fewer, larger tags fit the
+  frame than at 160 mm (unmasked median 4 there), so 140 mm is the *weaker*
+  standoff on this data.
+- [ ] Mask must be corrected first; then regenerate (160 mm preferred), validate,
+  and run the sheet.
+- [ ] Gates unchanged: 20 mm, 3 tags / 12 px, `pose_tolerance_deg` 1.5.
+
+Receipt: `reports/block5f_2026-11-18.md`; probe
+`reports/block5f_probe_140mm.json`. No `/scan`, no `/sanity`, no sweep.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
