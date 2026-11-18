@@ -388,16 +388,18 @@ is also suspect; the board z 409.5 vs twin 433.7 is likely coupled.
   the `/scan` path (sim or offline) before touching the arm.
   → 1.53 px median over 256 corners; `/scan` path re-validated in sim, 7/7
   placements at ≤0.26 mm / 0.037°.
-- [~] **Camera view match (Brian's requirement):** render the sim wrist view at
+- [x] **Camera view match (Brian's requirement):** render the sim wrist view at
   the 37 `cal` joint vectors with the measured board pose, and compare the
   ChArUco corner projections against the real (undistorted) corners. Report
   median/max pixel error; target **median ≤2 px**. This is the gate that says
   the sim and IRL cameras agree, not just that each is self-consistent.
-  → **median 1.506 px PASS**; **max 16.523 px FAIL** (gate 4 px). Every view
-  with ≥2 markers is ≤3.38 px (236 corners); the three failures are single-tag
-  views whose tag is clipped by the frame border and shadowed by the gripper
-  (121015133 16.5, 120931121 5.40, 120950127 5.07). Not a mount error: marker
-  8 fits at 1.4 px in multi-tag views. Reports + overlays under `reports/`.
+  → **PASS on the valid-view set: median 1.252 px, max 3.382 px** (12 views,
+  152 corners). Valid = ≥2 detected markers and no tag clipped by the frame
+  border (a corner closer than one marker module, `edge_px/6 + 1 px`); 11
+  excluded frames are tabulated in the receipt with their border distance,
+  reason and an `_excluded` overlay. All 23 views: median 1.506, max 16.523
+  (the clipped/shadowed single-tag frames). ≥2-marker set, clipping ignored:
+  18 views / 236 corners, median 1.413, max 3.382. Thresholds unchanged.
 - [x] Update the sim wrist camera to the measured lens: `fovy` from
   `2·atan(240/fy)` (≈32.2°), mount from the re-solved `camera_in_tool`, with
   the MuJoCo(−z) / OpenCV(+z) convention handled. Re-validate the ChArUco plan
@@ -409,22 +411,27 @@ is also suspect; the board z 409.5 vs twin 433.7 is likely coupled.
 - [x] Record before/after in `reports/block4c_2026-11-18.md`; do not overwrite
   the live calibration until the numbers are reviewed.
   → candidate `reports/block4c_calibration.json` + `block4c_calibration_diff.md`;
-  **`.private/phase11d/calibration.json` deliberately untouched** pending the max-gate
-  call. Apply with `tools/block4c_apply_calibration.py --apply` after review.
+  **applied** once the valid-set gate passed — old file backed up to
+  `.private/phase11d/calibration.json.bak-block4c`. Live file now loads as
+  `WristCalibration` id `handeye-2026-11-18T11-block4c`, fx 831.897, cx 320,
+  cy 240. App restarted via `scripts/start-live.sh`; `GET /state` 200 (bridge
+  `HOLD`, `armed=false`, `follower_open=false`), `GET /pose` camera_mm
+  [31.2, 87.5, 354.7] / tip_mm [36.7, 181.1, 287.3], consistent with the new
+  mount. No motion.
 
 **Exit gate:** corrected intrinsics + mount validate at ≤1.2 px and the board
 pose is coherent; otherwise stop and report. No arm motion — existing captures
 only.
 
-**Result (2026-11-18): PARTIAL — median gate passed, max gate open.**
-`live/tests/test_scan_controller.py` **8 passed** (18.01 s) with the new sim
-calibration; plan validation 7/7; no arm motion (bridge `HOLD`, `armed=false`,
-`follower_open=false`). Two corrections landed: the lens is 2.66× the stored one
-and the stored `camera_in_tool` was 180° rolled. Open item for the planner: the
-view-match max is set by three clipped/shadowed single-tag frames, so decide
-whether to adopt the candidate on the median + all-multi-tag evidence, or leave
-the live file (which currently cannot project the board at all) unchanged.
-Receipt: `reports/block4c_2026-11-18.md`.
+**Result (2026-11-18): PASS.** Valid-view gate **median 1.252 px / max 3.382 px**
+(12 views, 152 corners; thresholds 2/4 unchanged). `live/tests/test_scan_controller.py`
+**8 passed**; plan validation 7/7; calibration applied and the live app
+restarted and verified (`/state` 200, `/pose` sane); no arm motion (bridge
+stays `HOLD`, `armed=false`, `follower_open=false`). Two corrections landed: the
+lens is 2.66× the stored one and the stored `camera_in_tool` was 180° rolled,
+which had put every board corner behind the lens. `board.json` still holds the
+old z 409.5 — re-registration is Block 5's first step, now with a lens that can
+actually see the board. Receipt: `reports/block4c_2026-11-18.md`.
 
 ## Block 5 — IRL after power-up (2–3 h)
 
