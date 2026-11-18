@@ -731,6 +731,27 @@ Receipt: `reports/block5f_2026-11-18.md`; probe
 Receipt: `reports/block5g_2026-11-18.md`; plan `reports/marker_scan_plan_5g.json`
 and `reports/scan_plan_validation_5g.json`.
 
+## Block 5h — fusion diagnosed; residual 2.95 px vs a 1.2 px gate (2026-11-18)
+
+- [x] **Seeds and frames are right**: PnP seed within 0.2 mm / 0.19° of truth;
+  the 4c pose projects the 22 real views at 1.32 px median.
+- [x] **Three defects fixed** in `estimate_board_pose`: seed ranking now uses
+  each seed's residual over *every* view (a false-positive tag used to win with
+  rms ≈ 0); views grossly inconsistent with the seed are dropped **before** the
+  fit (one detection sits at 783 px, next 10 px, median 1.37 px); non-finite
+  corners/guesses no longer poison the scoring median.
+- [!] **Still short of the gate.** Shipped path: pose (−9.00, −3.87) mm,
+  yaw 5.43°, **rms ≈ 2.95 px**; ideal-filter replay: **1.321 px** at
+  (−10.06, −3.10), yaw 5.70° (truth −9.92/−3.13/5.67). `MAX_RMS_PX` is **1.2**.
+  Remaining code defect: the post-fit MAD pruning re-admits a view the pre-filter
+  removed.
+- [!] **Gate vs accuracy**: the real bench fuses at 1.32 px; 4c's own derivation
+  reported 1.53 px. The 1.2 px gate is below the calibration's real accuracy —
+  a planner decision (accept ~1.35 px, or improve corner data), not a code fix.
+- [ ] Then `/scan` → board vs 431.35 / 5.67 → `/sanity` → 8-square → 64-square.
+
+Receipt: `reports/block5h_2026-11-18.md`. No `/scan`, no sweep; gates unchanged.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

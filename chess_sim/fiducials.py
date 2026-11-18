@@ -305,8 +305,14 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
                 # A tag this layout has no geometry for (e.g. a stray mat tag
                 # on a ChArUco board) must not contribute corners.
                 continue
+            quad = np.asarray(detection.corners, dtype=float)
+            # A single non-finite corner poisons the whole fusion: the scoring
+            # median goes NaN and every gate returns None (block 5h, one
+            # detection in 22 views).
+            if not np.isfinite(quad).all():
+                continue
             object_list.extend(obj_points[base:base + 4])
-            image_list.extend(detection.corners)
+            image_list.extend(quad)
             seen.add(detection.marker_id)
         if not object_list:
             continue
@@ -356,9 +362,43 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     span = search_mm / 1000.0
     yaw_span = math.radians(search_deg)
     if guesses:
-        guesses.sort(key=lambda item: item[0])
-        best = np.median(np.asarray([g for _, g in guesses[:4]]), axis=0)
+        # Rank the seeds by how well they explain EVERY view, not by their own
+        # view's residual.  A false-positive detection fits its own PnP
+        # perfectly (rms ~0), so ranking on that let one bogus marker win and
+        # drag the median seed far from the board (block 5h: every gate from
+        # 1.2 to 3.0 px returned None on 22 known-good views whose true pose
+        # projects at 1.32 px).
+        scored = []
+        for _, guess in guesses:
+            total = float(np.sqrt(np.mean(np.concatenate([
+                (_project(guess, calibration, points, marker_z) - pixels).ravel()
+                for calibration, points, pixels in observations]))))
+            if np.isfinite(total):
+                scored.append((total, guess))
+        if not scored:
+            scored = [(rms_self, guess) for rms_self, guess in guesses
+                      if np.isfinite(rms_self)]
+        scored.sort(key=lambda item: item[0])
+        best = np.median(np.asarray([g for _, g in scored[:4]]), axis=0)
+        best_seed_rms = scored[0][0]
+        # Drop views that disagree with the seed by a gross margin BEFORE the
+        # fit.  One false-positive detection (block 5h: a single frame at
+        # 782 px) otherwise drags the unweighted least squares far enough that
+        # the post-fit MAD test can no longer tell it apart from the rest.
+        view_rms = [float(np.sqrt(np.mean((_project(best, calibration, points,
+                                                    marker_z) - pixels) ** 2)))
+                    for calibration, points, pixels in observations]
+        median = float(np.median(view_rms))
+        mad = float(np.median(np.abs(np.asarray(view_rms) - median))) + 1e-6
+        # Real views fuse at ~1.3 px on this bench, so an 8 px ceiling is
+        # generous; without it a single 10 px view held the fused rms at
+        # 3.0 px instead of 1.32 px (block 5h replay).
+        limit = min(max(median + 3.0 * mad, 4.0), 8.0)
+        keep = [index for index, value in enumerate(view_rms) if value <= limit]
+        if len(keep) < len(observations) and len(keep) >= max(2, len(observations) // 2):
+            observations = [observations[index] for index in keep]
     else:
+        best_seed_rms = None
         best = None
         best_cost = float("inf")
         for dx in np.linspace(-span, span, 9):
