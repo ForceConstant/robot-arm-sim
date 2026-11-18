@@ -373,6 +373,15 @@ is also suspect; the board z 409.5 vs twin 433.7 is likely coupled.
   twin's 433.7 and the x/y/yaw offsets.
 - [ ] Validate reprojection **≤1.2 px** across the calibration views and run
   the `/scan` path (sim or offline) before touching the arm.
+- [ ] **Camera view match (Brian's requirement):** render the sim wrist view at
+  the 37 `cal` joint vectors with the measured board pose, and compare the
+  ChArUco corner projections against the real (undistorted) corners. Report
+  median/max pixel error; target **median ≤2 px**. This is the gate that says
+  the sim and IRL cameras agree, not just that each is self-consistent.
+- [ ] Update the sim wrist camera to the measured lens: `fovy` from
+  `2·atan(240/fy)` (≈32.2°), mount from the re-solved `camera_in_tool`, with
+  the MuJoCo(−z) / OpenCV(+z) convention handled. Re-validate the ChArUco plan
+  coverage after the camera change; regenerate if a pose loses its tags.
 - [ ] Record before/after in `reports/block4c_2026-11-18.md`; do not overwrite
   the live calibration until the numbers are reviewed.
 
