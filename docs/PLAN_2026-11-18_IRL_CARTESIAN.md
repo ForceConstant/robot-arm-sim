@@ -882,6 +882,29 @@ Receipt: `reports/block5m_2026-11-18.md`.
 
 Receipt: `reports/block5n_2026-11-18.md`.
 
+## Block 5o — model vs real: aim disagrees, incidence does not (2026-11-18)
+
+- [x] **Overlay built** (`reports/block5o_model_vs_real.png`): every real 5m
+  frame with the model's projected tags (cyan) and board centre (red), sim
+  render below at the same measured joints.
+- [x] **Incidence is 0.8–3.3°** — the model is nadir, so chain/`reference`/sign
+  conventions are consistent in the aim direction.
+- [!] **The projected tags do not land on the real tags** (they sit on the table
+  and the board edge), and the model's **board centre falls outside the
+  640×480 frame at 4 of 5 poses** (667/726 px right, 637/585 px below).
+- [!] Single-view PnP at marker14 (3 tags, 0.88 px) gives board
+  (−57.1, −10.0, yaw −4.31°) vs board.json (−9.9, −3.1, 5.67°) — **47 mm / 10°**,
+  but 3 near-planar tags in one view are weakly constrained, so this is
+  suggestive, not proof.
+- [ ] Decisive test (one pose, ~10 min motion): 6 views at ±10 mm around
+  marker14, solved with the **multi-view** fusion. At board.json → the
+  single-view PnP was biased and the plan must keep the board nearer frame
+  centre. At (−57, −10) → the 4c mount does not extrapolate and needs a
+  hand-eye re-solve over a wider pose set.
+- Plan, detector, gates, `MAX_RMS_PX`, lighting untouched; no `/sanity`, no sweep.
+
+Receipt: `reports/block5o_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
