@@ -770,6 +770,27 @@ Receipt: `reports/block5h_2026-11-18.md`. No `/scan`, no sweep; gates unchanged.
 
 Receipt: `reports/block5i_2026-11-18.md`.
 
+## Block 5j — function residual ≠ its own data's residual (2026-11-18)
+
+- [x] Removed the pre-filter (it scored views at a 0.3°-off seed and kept the
+  wrong 20); absolute 8 px prune limit; robust first pass; refit from every PnP
+  seed plus a deterministic 7×7×5 grid. The module now keeps the **same 20
+  views** as the direct computation.
+- [!] **The bug is inside `error()`.** At the 4c truth pose, on the module's own
+  20 observations (240 corners), the function's residual is **4.547 px**; the
+  same pose over the same views computed directly from the same arrays is
+  **1.38 px** (per-view median 1.32). Candidate causes: point/pixel pairing,
+  per-view `marker_z`, corner order, a duplicated observation. Next step is to
+  dump one observation from inside the function and diff it.
+- [!] **Retraction**: the "1.321 px floor" reported in 5h/5i came from a replay
+  whose seed ranking was affected by a NaN sort; it is not reproducible. The
+  real floor at the truth pose is **1.38 px**. The estimator is ~1.6 px from the
+  gate, not 0.12 px.
+- Function still returns `None` at 1.2 px; best fit (−8.94, −3.80) mm, yaw
+  5.39°, **3.008 px**. No `/scan`; `MAX_RMS_PX` untouched.
+
+Receipt: `reports/block5j_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

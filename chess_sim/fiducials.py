@@ -381,22 +381,6 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         scored.sort(key=lambda item: item[0])
         best = np.median(np.asarray([g for _, g in scored[:4]]), axis=0)
         best_seed_rms = scored[0][0]
-        # Drop views that disagree with the seed by a gross margin BEFORE the
-        # fit.  One false-positive detection (block 5h: a single frame at
-        # 782 px) otherwise drags the unweighted least squares far enough that
-        # the post-fit MAD test can no longer tell it apart from the rest.
-        view_rms = [float(np.sqrt(np.mean((_project(best, calibration, points,
-                                                    marker_z) - pixels) ** 2)))
-                    for calibration, points, pixels in observations]
-        median = float(np.median(view_rms))
-        mad = float(np.median(np.abs(np.asarray(view_rms) - median))) + 1e-6
-        # Real views fuse at ~1.3 px on this bench, so an 8 px ceiling is
-        # generous; without it a single 10 px view held the fused rms at
-        # 3.0 px instead of 1.32 px (block 5h replay).
-        limit = min(max(median + 3.0 * mad, 4.0), 8.0)
-        keep = [index for index, value in enumerate(view_rms) if value <= limit]
-        if len(keep) < len(observations) and len(keep) >= max(2, len(observations) // 2):
-            observations = [observations[index] for index in keep]
     else:
         best_seed_rms = None
         best = None
@@ -414,8 +398,14 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     lower = np.array([-span * 2, -span * 2, -yaw_span * 2])
     upper = np.array([span * 2, span * 2, yaw_span * 2])
     best = np.clip(np.asarray(best, dtype=float), lower + 1e-9, upper - 1e-9)
-    result = least_squares(error, best, method="trf", xtol=1e-12, ftol=1e-12,
-                           gtol=1e-12, bounds=(lower, upper))
+    # First pass is robust: a single 780 px false-positive detection dominates
+    # an unweighted sum and drags the pose so far that the MAD pruner can no
+    # longer tell it apart from the rest (block 5j: rms 97.8, no pruning).
+    # soft_l1 survives it; the post-prune refit below is plain least squares so
+    # the residual the gate measures is the raw one.
+    result = least_squares(error, best, method="trf", loss="soft_l1", f_scale=3.0,
+                           xtol=1e-12, ftol=1e-12, gtol=1e-12,
+                           bounds=(lower, upper))
 
     # One occluded marker or a bad corner in a single view can dominate an
     # unweighted fusion: the docs already warn that one view was inflating RMS
@@ -432,15 +422,51 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         # Same ceiling as the pre-filter.  A bare median+3MAD on a good fit
         # is ~1.8 px and deletes healthy 2 px views, re-optimising to a worse
         # pose (block 5i).  This keeps the pruner to genuine outliers.
-        limit = min(max(median + 3.0 * mad, 4.0), 8.0)
+        # Absolute 8 px, not median+3MAD: on this bench every real view fuses
+        # at ~1.3 px, and a MAD-relative limit either keeps the 10 px view or
+        # deletes healthy 2 px ones depending on where the robust pass landed
+        # (block 5j: the module and the replay pruned different views).
+        limit = 8.0
         keep = [index for index, value in enumerate(view_rms) if value <= limit]
         if (len(keep) == len(observations)
                 or len(keep) < max(2, len(observations) // 2)):
             break
         observations = [observations[index] for index in keep]
-        result = least_squares(error, np.clip(result.x, lower + 1e-9, upper - 1e-9),
-                               method="trf", xtol=1e-12, ftol=1e-12,
-                               gtol=1e-12, bounds=(lower, upper))
+        # Refit from the SEED as well as the previous result.  Warm-starting
+        # only from the outlier-biased pose re-converges to its local minimum:
+        # 2.95 px while the same 20 views reach 1.321 px from the seed
+        # (block 5j).
+        # Every finite PnP seed, plus the robust result: the 3-parameter
+        # residual has local minima and a 1.6 mm / 0.19 deg seed difference is
+        # enough to land in one (block 5j: 3.0 px from the median seed, 1.32 px
+        # from a better one).
+        starts = [np.clip(result.x, lower + 1e-9, upper - 1e-9)]
+        starts += [np.clip(np.asarray(g, dtype=float), lower + 1e-9, upper - 1e-9)
+                   for _, g in (scored if guesses else [])]
+        if not starts:
+            starts = [best]
+        fits = [least_squares(error, start, method="trf", xtol=1e-12,
+                              ftol=1e-12, gtol=1e-12, bounds=(lower, upper))
+                for start in starts]
+        result = min(fits, key=lambda r: float(np.mean(r.fun ** 2)))
+
+    # Final safety net: a deterministic coarse grid over the whole allowed box.
+    # The seed ranking is sensitive (one NaN or a 1.6 mm difference flips the
+    # local minimum this 3-parameter residual lands in), and a 7x7x5 grid is
+    # cheap next to the risk of shipping a local minimum (block 5j).
+    grid_best, grid_cost = None, float("inf")
+    for gx in np.linspace(lower[0], upper[0], 7):
+        for gy in np.linspace(lower[1], upper[1], 7):
+            for gyaw in np.linspace(lower[2], upper[2], 5):
+                candidate = np.array([gx, gy, gyaw])
+                cost = float(np.mean(error(candidate) ** 2))
+                if cost < grid_cost:
+                    grid_cost, grid_best = cost, candidate
+    if grid_best is not None:
+        grid = least_squares(error, grid_best, method="trf", xtol=1e-12,
+                             ftol=1e-12, gtol=1e-12, bounds=(lower, upper))
+        if float(np.mean(grid.fun ** 2)) < float(np.mean(result.fun ** 2)):
+            result = grid
 
     pose = result.x
     rms = float(np.sqrt(np.mean(result.fun ** 2)))
