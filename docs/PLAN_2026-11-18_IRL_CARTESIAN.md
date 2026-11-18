@@ -354,6 +354,32 @@ Receipt: `reports/block4b_2026-11-18.md`.
 **Block 4 final status (2026-11-18): COMPLETE.** 4b resolved the scan-plan
 blocker. Block 5 is ready, subject to the bench run sheet.
 
+## Block 4c — live camera intrinsics and mount (pre-Block 5)
+
+**Why:** the independent intrinsics solve on the existing 106 ChArUco frames
+returns **fx 831.9 / fy 833.0**, cx 309.1, cy 242.4, distortion
+[−0.1166, 0.8027, 0.00247, −0.00097, 0], **RMS 1.067 px**. The stored live
+calibration is **fx 312.77**, zero distortion — 2.66× smaller, implying
+**91° HFOV** instead of **42°**. The hand-eye mount (`camera_in_tool`, 64 mm
+off-axis) was derived with that wrong lens, so the camera's location in space
+is also suspect; the board z 409.5 vs twin 433.7 is likely coupled.
+
+- [ ] Adopt the measured intrinsics (fx 831.9, fy 833.0, cx 309.1, cy 242.4,
+  distortion as above) as the candidate live lens.
+- [ ] Re-solve `camera_in_tool` on the **fixed-board `cal` frames** (37) with
+  the corrected intrinsics, using FK + ChArUco PnP; compare to the stored
+  64 mm mount.
+- [ ] Re-derive the board pose with the corrected mount; compare z 409.5 to the
+  twin's 433.7 and the x/y/yaw offsets.
+- [ ] Validate reprojection **≤1.2 px** across the calibration views and run
+  the `/scan` path (sim or offline) before touching the arm.
+- [ ] Record before/after in `reports/block4c_2026-11-18.md`; do not overwrite
+  the live calibration until the numbers are reviewed.
+
+**Exit gate:** corrected intrinsics + mount validate at ≤1.2 px and the board
+pose is coherent; otherwise stop and report. No arm motion — existing captures
+only.
+
 ## Block 5 — IRL after power-up (2–3 h)
 
 - [ ] Boot Pi and arm; verify port ownership before any motion
