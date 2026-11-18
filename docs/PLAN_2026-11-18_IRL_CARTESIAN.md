@@ -1017,6 +1017,22 @@ Receipt: `reports/block5s_2026-11-18.md`.
 
 Receipt: `reports/block5t_2026-11-18.md`.
 
+## Block 5v — CAD camera mount in the sim (2026-11-18)
+
+- [x] `Camera_Mount_v3.stl` (ASCII) converted to binary and added at runtime as
+  a **visual** geom on `so101:gripper` with the assembly occurrence transform
+  `pos (-0.0000208, -0.0094625, 0.0514519)`, `quat (0, 0.707107, 0, -0.707107)`;
+  no collision. Sim `wrist` camera unchanged and still on the 4c lens (0.00 mm).
+- [x] `reports/tool_external_views_updated.png`: side / front / other / lower /
+  wrist at marker14. The mount box reads correctly beside the wrist.
+- [!] Part **origin** sits 86.6 mm from the sim lens (mostly +85.5 y) — that is
+  the origin, not the lens. Need the `CAMERA_CENTER` mate connector (position +
+  axes) to compare the CAD lens with (67.66, −2.92, −10.89) mm exactly.
+- `TIP_IN_CHAIN`, plan, detector, gates, board, camera calibration untouched; no
+  arm motion.
+
+Receipt: `reports/block5v_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
