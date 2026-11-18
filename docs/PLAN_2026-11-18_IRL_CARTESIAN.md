@@ -812,6 +812,28 @@ Receipt: `reports/block5j_2026-11-18.md`.
 
 Receipt: `reports/block5k_2026-11-18.md`.
 
+## Block 5l — gate 1.5 set; scan captures but cannot fuse (2026-11-18)
+
+- [x] **`MAX_RMS_PX 1.2 → 1.5`** (Brian's approval), committed `3f612c1`.
+  Verified on the 22 `_cal` views: (−10.06, −3.10) mm, yaw 5.70°, **1.322 px**,
+  0.14 mm / 0.03° from truth.
+- [x] **13/13 scan poses reached and captured**, settle 0.86–1.19° — the 45 s
+  pose budget and residual correction work.
+- [!] **The scan decoded 13 tags across 13 views — a median of ONE per view**
+  (the plan needs 3–5). Fusion rejected at **rms 40.122 px** over 9 views.
+  `board:null`, so `/sanity`, the 8-square dry run and the 64-square sweep did
+  not run.
+- [!] **Not a gate problem**: the same code fuses the cal frames at 1.322 px.
+  Single-tag views are rotationally ambiguous; with ~1 tag/view no fusion works.
+  The plan was validated against `observe_markers`, the *model* of detection,
+  which overstates the real yield (5e: 43 %).
+- [ ] Planning decisions: many more poses per region (2–3×) so each is seen
+  repeatedly; or investigate the detector on a real scan frame (focus is
+  healthy, `/focus-score` 144); or a single-tag + FK-prior estimator.
+- Gates unchanged apart from the approved `MAX_RMS_PX`.
+
+Receipt: `reports/block5l_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

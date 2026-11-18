@@ -473,6 +473,10 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     pose = result.x
     rms = float(np.sqrt(np.mean(result.fun ** 2)))
     if not np.isfinite(rms) or rms > max_rms_px:
+        import sys as _sys
+        print(f"[fusion] reject rms={rms:.3f} gate={max_rms_px} "
+              f"views={len(observations)} pose="
+              f"{[round(float(v), 5) for v in pose]}", file=_sys.stderr)
         return None
     return BoardRegistration(
         origin=(float(pose[0]), float(pose[1])),
