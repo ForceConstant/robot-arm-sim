@@ -791,6 +791,27 @@ Receipt: `reports/block5i_2026-11-18.md`.
 
 Receipt: `reports/block5j_2026-11-18.md`.
 
+## Block 5k — the estimator bug was the marker plane (2026-11-18)
+
+- [x] **Root cause: plane mismatch, not code.** The app passed
+  `marker_z_m = 0.4337` while the measured board plane is **0.43135 m**. A
+  2.35 mm plane error at 160 mm standoff is the whole 3× residual inflation
+  (4.547 px vs 1.38 px at the truth pose on the same arrays).
+- [x] **With 0.43135 the unmodified function recovers the pose at 1.322 px**:
+  (−10.06, −3.10) mm, yaw 5.70° vs truth (−9.92, −3.13, 5.67) — **0.14 mm /
+  0.03°**. Verified with the 5j changes stashed, so `chess_sim/fiducials.py` is
+  back at HEAD and the estimator code is exactly as accepted in 5h/5i.
+- [x] `live/live_config.json` (bench, gitignored): `marker_z_m` and `board_z_m`
+  0.4337 → **0.43135** (backup `live_config.json.bak-block5k`), app restarted.
+  This is the 4c measurement, not a gate.
+- [!] **Still above the gate**: 1.322 px vs `MAX_RMS_PX` 1.2, so `/scan` would
+  still return None. Gate untouched; no `/scan`. Brian's decision (1.4–1.5
+  recommended) is the only thing left.
+- [ ] After the gate decision: `/scan` → board vs 431.35 / 5.67 → `/sanity` →
+  8-square → 64-square.
+
+Receipt: `reports/block5k_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
