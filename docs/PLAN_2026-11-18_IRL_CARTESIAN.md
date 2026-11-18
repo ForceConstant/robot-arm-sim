@@ -571,6 +571,48 @@ Receipt: `reports/block5b_2026-11-18.md`; 160 mm regeneration report
 `reports/marker_scan_plan_block5b.json`. No `/scan`, no `/sanity`, no dry run,
 no sweep — all gated on a plan that does not exist.
 
+## Block 5c — occlusion model audited against real frames (2026-11-18)
+
+- [x] **Root cause found: the mask does not match the installation.** With the
+  installed CAD parallel tool (`ROBOT_GRIPPER=cad_parallel`, what the planner
+  uses), the mask covers **48.2 % of every frame** — a rigid, camera-fixed block
+  — and covers **52 % of the tags the real camera actually decoded** (32/62 over
+  35 `_cal` frames). One decoded tag is 99.9 % masked. Side-by-side at
+  `20261117T120835104_cal`: sim + mask = gripper over the right half; real frame
+  = board edge to edge, no gripper. The model's camera↔tool relation is wrong
+  for this installation (same family as the 178° 4c mount fix), so the mask
+  vetoes poses the hardware can use.
+  My first audit read 16 % because it ran without `ROBOT_GRIPPER`; that measured
+  the stock jaw, not the installed tool. 48.2 % is the correct figure.
+- [x] **Second, independent of geometry:** the 2 % overlap rule rejects 52 % of
+  genuinely decodable tags. Quantified, not changed.
+- [x] Coverage probe: 17 near-nadir poses at 160 mm, all inside the bridge
+  limits at 0.00 mm gap → **0/17 with ≥3 tags masked; 3–5 per pose unmasked**.
+- [x] **Settling: measured, fix implemented.** A 6 s hold of the same target
+  moves nothing (elbow held 1.57° short, 0.00° drift); commanding
+  `target + residual` moves it. One round: **1.57 → 0.34°**. `_goto` now ends
+  with `_hold_and_correct()` (2 s hold, ≤2 correction rounds, clamped to the
+  bridge limits). `pose_tolerance_deg` still **1.5**, no gate touched.
+- [x] **Focus/exposure quantified.** 43 % detector yield; 13/35 frames decode
+  nothing. `corr(brightness, sharpness) −0.84`, `corr(sharpness, yield) +0.48`;
+  frames <70 mean brightness decode 51 %, frames >90 decode 24–30 %.
+  `/focus-score` 144.3 — exposure/glare, not defocus. Physical fix: diffuse the
+  light, check exposure-gain, re-capture.
+- [x] `GET /keep-in` now evaluates the **jaw tip** like the move guard, and
+  reports `tip_mm` / `checked:"jaw_tip"`.
+- [!] **No plan regenerated, no `/scan`, no `/sanity`, no sweep.** The mask is
+  invalid for this installation; planning with it produced 0 poses in 5b and
+  would do so again.
+- [ ] Fix the tool↔camera relation in `SelfOcclusionModel` (or identify the pack
+  actually installed) and re-run the audit until the mask suppresses ~0 decoded
+  tags; then revisit the 2 % rule; then regenerate the near-nadir plan.
+- [ ] `live/tests/test_scan_controller.py` is 4 failed / 4 passed — reproduced
+  with the 5c controller change stashed, so it is the **5a clamped plan** in the
+  fixture (2 tags), not this change.
+
+Receipt: `reports/block5c_2026-11-18.md`; data `reports/block5c_cal_frames.json`,
+`block5c_occlusion_probe.json`, `block5c_settle_hold.json`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

@@ -160,7 +160,8 @@ def _candidates(board, layout, marker_ids, args) -> list[dict]:
             # The near-edge markers (ids 0 and 1) only resolve from directly
             # overhead, so give them a lateral fan: a second, independent
             # viewpoint beats a duplicate pose at another height.
-            fan = list(offsets) if marker_id in (0, 1) else list(offsets[:1])
+            fan = (list(offsets) if (marker_id in (0, 1) or args.fan_all)
+                   else list(offsets[:1]))
             if args.tolerance_mm > 0:
                 sx = 1.0 if centre[0] > 0 else -1.0
                 sy = 1.0 if centre[1] > 0 else -1.0
@@ -226,6 +227,8 @@ def main() -> int:
     parser.add_argument("--heights", default="0.20,0.26,0.32")
     parser.add_argument("--offsets", default="0.04",
                         help="lateral fan around the near markers, comma-separated metres")
+    parser.add_argument("--fan-all", action="store_true",
+                        help="apply the lateral fan to every marker, not just ids 0 and 1")
     parser.add_argument("--extent", type=float, default=0.15)
     parser.add_argument("--grid", type=int, default=3)
     parser.add_argument("--oblique", action="store_true")

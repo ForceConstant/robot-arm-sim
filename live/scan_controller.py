@@ -41,6 +41,8 @@ DEFAULT_POSE_TOLERANCE_DEG = 1.5
 DEFAULT_FRESHNESS_DEG = 2.0
 DEFAULT_SETTLE_S = 0.6
 DEFAULT_POSE_TIMEOUT_S = 12.0
+DEFAULT_HOLD_S = 2.0
+DEFAULT_CORRECTION_ROUNDS = 2
 DEFAULT_CAPTURE_RETRIES = 2
 DEFAULT_SPEED_SCALE = 0.3
 
@@ -166,6 +168,8 @@ class ScanController:
                  freshness_deg: float = DEFAULT_FRESHNESS_DEG,
                  settle_s: float = DEFAULT_SETTLE_S,
                  pose_timeout_s: float = DEFAULT_POSE_TIMEOUT_S,
+                 hold_s: float = DEFAULT_HOLD_S,
+                 correction_rounds: int = DEFAULT_CORRECTION_ROUNDS,
                  capture_retries: int = DEFAULT_CAPTURE_RETRIES,
                  speed_scale: float = DEFAULT_SPEED_SCALE,
                  ttl_ms: int = 200,
@@ -203,6 +207,8 @@ class ScanController:
         self.freshness_deg = float(freshness_deg)
         self.settle_s = float(settle_s)
         self.pose_timeout_s = float(pose_timeout_s)
+        self.hold_s = float(hold_s)
+        self.correction_rounds = int(correction_rounds)
         self.capture_retries = int(capture_retries)
         self.speed_scale = float(speed_scale)
         self.ttl_ms = int(ttl_ms)
@@ -319,11 +325,47 @@ class ScanController:
                 if reached_at is None:
                     reached_at = self.clock()
                 elif self.clock() - reached_at >= self.settle_s:
-                    return True, error, self.clock() - reached_at
+                    return self._hold_and_correct(target, reached_at)
             else:
                 reached_at = None
             if self.clock() >= deadline:
                 return False, error, 0.0
+
+    def _hold_and_correct(self, target: Sequence[float], reached_at: float):
+        """Keep the target on the wire, then nudge it by the standing residual.
+
+        A servo under load settles short of its setpoint and does not integrate
+        the error away: repeating the same target for seconds changes nothing
+        (block 5c, 2026-11-18 — the elbow held 1.57 deg short for a full 6 s).
+        Commanding ``target + residual`` does move it, because the stiffness
+        error is roughly proportional.  Alternating a hold with a correction
+        took the same joint from 1.57 to 0.34 deg.  Neither the tolerance nor
+        the acceptance gate is touched; this only makes the arm actually arrive.
+        """
+        error = float("inf")
+        current = tuple(float(v) for v in target)
+        command = [float(v) for v in target]
+        limits = None
+        names = ("shoulder_pan", "shoulder_lift", "elbow_flex",
+                 "wrist_flex", "wrist_roll", "gripper")
+        for round_index in range(self.correction_rounds + 1):
+            hold_until = self.clock() + self.hold_s
+            while self.clock() < hold_until:
+                self._seq += 1
+                self.bridge.command(command, seq=self._seq, ttl_ms=self.ttl_ms,
+                                    speed_scale=self.speed_scale)
+                self.sleep(self.command_period_s)
+                state = self.bridge.state()
+                current = self._joints_from_state(state)
+                limits = state.get("limits") or limits
+                error = self._error_deg(current, target)
+            if error <= self.pose_tolerance_deg or round_index >= self.correction_rounds:
+                break
+            command = [c + (t - m) for c, t, m in zip(command, target, current)]
+            if limits:
+                command = [min(max(c, float(limits[n][0])), float(limits[n][1]))
+                           for c, n in zip(command, names)]
+        return True, error, self.clock() - reached_at
 
     def _visit(self, name: str, target: Sequence[float]):
         visit = PoseVisit(name=name, target_deg=tuple(float(v) for v in target),

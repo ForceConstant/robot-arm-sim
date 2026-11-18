@@ -1151,11 +1151,16 @@ def keep_in():
     zone = live.keep_in()
     try:
         pose = live.pose_now()
-        tool = pose["tool_mm"]
-        zone["inside"] = (abs(tool[0]) <= zone["x_mm"]
-                          and abs(tool[1]) <= zone["y_mm"]
-                          and zone["z_min_mm"] <= tool[2] <= zone["z_max_mm"])
-        zone["tool_mm"] = tool
+        # The motion guard evaluates the JAW TIP, not the chain frame: compare
+        # the same point here or the endpoint says "inside" while every move is
+        # refused (block 5c, tip y 118.6 mm against a +/-118 mm box).
+        tip = pose["tip_mm"]
+        zone["inside"] = (abs(tip[0]) <= zone["x_mm"]
+                          and abs(tip[1]) <= zone["y_mm"]
+                          and zone["z_min_mm"] <= tip[2] <= zone["z_max_mm"])
+        zone["tip_mm"] = tip
+        zone["tool_mm"] = pose["tool_mm"]
+        zone["checked"] = "jaw_tip"
     except BridgeError:
         zone["inside"] = None
     return zone
