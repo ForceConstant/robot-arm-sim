@@ -978,6 +978,23 @@ Receipt: `reports/block5q_2026-11-18.md`.
 
 Receipt: `reports/block5r_2026-11-18.md`.
 
+## Block 5s — jaw quat sweep: none gives a top view (2026-11-18)
+
+- [x] Eight jaw geom quats rendered over the five 5m poses
+  (`reports/block5s_jaw_quats.png`), installed mesh, nothing else changed.
+- [!] **Four are degenerate** (striped): opposite 90° y, 180° x, identity, and
+  partially 180° z. **Best candidate is 90° about z** (`0.707107 0 0 0.707107`):
+  one serrated finger edge reads like a fingertip from above, but the second
+  finger never appears.
+- [!] So the fault is the **jaw body transform** (`pos/quat` for
+  `gripper_jaw_1__solid1` and `…_solid1_2`), not the geom quat — the pair is
+  mirrored about the wrong axis and no single geom rotation fixes a mirrored
+  pair. Need the Onshape assembly export with both jaw occurrences.
+- No sim/tool change committed; no camera/plan/detector/gate/tip change; no arm
+  motion.
+
+Receipt: `reports/block5s_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
