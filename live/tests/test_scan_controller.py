@@ -4,10 +4,17 @@ The controller never touches MuJoCo; these fakes give it the two things it
 expects from the real system — a bridge that moves to joint targets and reports
 where it is, and a camera that returns a frame with the joints that produced it.
 That is enough to test the orchestration contract without a robot.
+
+The scene is the **printed ChArUco face**: that is what the live config selects
+(``layout_kind: charuco``) and what the scan plan covers.  The older mat-tag
+layout put its marker sheet under the wooden face, where no wrist camera can see
+it, so a scan against it returns nothing and every accuracy assertion fails for
+a fixture reason rather than a controller one.
 """
 from __future__ import annotations
 
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -19,24 +26,43 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from chess_sim import fiducials  # noqa: E402
+from chess_sim.charuco_face import CharucoLayout  # noqa: E402
 from chess_sim.config import Camera  # noqa: E402
 from chess_sim.env import ChessSimEnv  # noqa: E402
-from chess_sim.marker_scan import (MarkerLayout, MarkerScanPlan,  # noqa: E402
-                                   PoseCoverage, board_offset, load_plan,
-                                   marker_corners_world)
+from chess_sim.marker_scan import (MarkerScanPlan, board_offset,  # noqa: E402
+                                   load_plan)
 from chess_sim.product import current_layout, layout_env_config  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from scan_controller import Frame, ScanController, plan_in_degrees  # noqa: E402
 
-# These tests render the MuJoCo wrist view, so the mount must be the one the model
-# exports (fx 738.64). The real hand-eye mount (fx 312.77) belongs to the bench arm
-# and projects the sim scene to zero markers, failing the accuracy assertions for a
-# fixture reason rather than a controller one.
+# Sim-exported camera (fx 738.64), not the bench hand-eye mount (fx 312.77):
+# these tests render the MuJoCo wrist view, so the mount must be the one the
+# model exports or nothing projects into frame.
 CALIBRATION = (Path(__file__).resolve().parents[2]
-               / "reports/block3_sim_calibration.json")
-PLAN = Path(__file__).resolve().parents[2] / "chess_sim/assets/marker_scan_plan.json"
+               / "reports/block4b_sim_calibration.json")
+PLAN = (Path(__file__).resolve().parents[2]
+        / "chess_sim/assets/marker_scan_plan_charuco.json")
 NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
          "wrist_flex", "wrist_roll", "gripper")
+
+
+def _printed_pack() -> Path | None:
+    env = os.environ.get("ROBOT_PIECE_ASSETS")
+    if env and (Path(env) / "set.json").exists():
+        return Path(env)
+    root = Path(__file__).resolve().parents[2] / ".private"
+    for candidate in sorted(root.glob("piece-assets-*")):
+        if (candidate / "set.json").exists():
+            return candidate
+    return None
+
+
+@pytest.fixture(autouse=True)
+def _piece_assets(monkeypatch):
+    pack = _printed_pack()
+    if pack is None:
+        pytest.skip("no printed piece pack (ROBOT_PIECE_ASSETS)")
+    monkeypatch.setenv("ROBOT_PIECE_ASSETS", str(pack))
 
 
 class FakeClock:
@@ -83,15 +109,22 @@ class FakeBridge:
 
 
 class FakeFrames:
-    """Renders the wrist view and pairs it with the joints that produced it."""
+    """Renders the wrist view and pairs it with the joints that produced it.
+
+    ``hide_all_but`` paints over every detected marker except the first few, so
+    a view can be starved of markers the same way glare or an occluding jaw
+    would starve it.  ``hide_captures`` bounds how long that lasts.
+    """
 
     def __init__(self, env, clock, calibration: WristCalibration, *,
-                 stale_first: bool = False, hide: dict | None = None) -> None:
+                 stale_first: bool = False, hide_all_but: int | None = None,
+                 hide_captures: int = 10 ** 9) -> None:
         self.env = env
         self.clock = clock
         self.calibration = calibration
         self.stale_first = stale_first
-        self.hide = hide or {}
+        self.hide_all_but = hide_all_but
+        self.hide_captures = hide_captures
         self.captures = 0
 
     def joints(self) -> tuple[float, ...]:
@@ -102,24 +135,13 @@ class FakeFrames:
         self.captures += 1
         joints = self.joints()
         image = self.env.render(Camera.WRIST).copy()
-        hide_markers = self.hide.get(self.captures, ())
-        if hide_markers:
-            calibration = self.calibration.camera(
-                tuple(math.radians(v) for v in joints))
-            draw = ImageDraw.Draw(Image.fromarray(image))
+        if self.hide_all_but is not None and self.captures <= self.hide_captures:
+            detections = fiducials.detect_markers(image)
             frame_image = Image.fromarray(image)
             draw = ImageDraw.Draw(frame_image)
-            for marker in hide_markers:
-                world = marker_corners_world(
-                    MarkerLayout.for_board(224.0, 15.0, plane="mat", margin_mm=40.0),
-                    marker, origin_xy=self.env.board.origin,
-                    yaw=self.env.board.yaw,
-                    marker_z=self.env.board.table_top
-                    + fiducials.marker_height_above_table(self.env.board.mat))
-                pixels = [calibration.project(point) for point in world]
-                if any(pixel is None for pixel in pixels):
-                    continue
-                draw.polygon([tuple(p) for p in pixels], fill=(120, 140, 160))
+            for detection in detections[self.hide_all_but:]:
+                draw.polygon([tuple(p) for p in detection.corners],
+                             fill=(120, 140, 160))
             image = np.asarray(frame_image)
         if self.stale_first and self.captures == 1:
             joints = tuple(v + 3.0 for v in joints)
@@ -127,9 +149,12 @@ class FakeFrames:
 
 
 def build_env(origin=(0.0, 0.0), yaw_deg=0.0):
+    """The printed ChArUco board at the current mount, optionally displaced."""
     config = layout_env_config("printed", cameras=())
-    board = config.board.model_copy(update={"origin": (float(origin[0]), float(origin[1])),
-                                            "yaw": math.radians(yaw_deg)})
+    board = config.board.model_copy(update={
+        "face": "charuco",
+        "origin": (float(origin[0]), float(origin[1])),
+        "yaw": math.radians(yaw_deg)})
     env = ChessSimEnv(config.model_copy(update={"board": board}))
     env.reset("8/8/8/8/8/8/8/8")
     return env
@@ -144,8 +169,7 @@ def controller(env, clock, calibration, plan=None, bridge=None, frames=None, **k
     plan = plan_in_degrees(plan or load_plan(PLAN))
     bridge = bridge or FakeBridge(env, clock)
     frames = frames or FakeFrames(env, clock, calibration)
-    layout = MarkerLayout.for_board(224.0, 15.0, plane="mat", margin_mm=40.0)
-    marker_z = env.board.table_top + fiducials.marker_height_above_table(env.board.mat)
+    layout = CharucoLayout(square_mm=env.board.square * 1000.0)
     mount = current_layout()["mount"]
     base_xy = (mount["white_arm_base_frame_mm"][0] / 1000.0,
                mount["white_arm_base_frame_mm"][1] / 1000.0)
@@ -154,7 +178,8 @@ def controller(env, clock, calibration, plan=None, bridge=None, frames=None, **k
         lambda joints_deg: calibration.camera(
             tuple(math.radians(v) for v in joints_deg)),
         plan, layout=layout,
-        square_m=env.board.square, board_z_m=env.board.top, marker_z_m=marker_z,
+        square_m=env.board.square, board_z_m=env.board.top,
+        marker_z_m=env.board.top,
         base_xy_m=base_xy, board_half_mm=env.board.width * 500.0,
         clock=clock, sleep=clock.sleep, **kwargs), bridge, frames
 
@@ -223,7 +248,7 @@ def test_recovery_runs_when_too_few_markers_are_seen():
                                layout_offset_mm=full.layout_offset_mm,
                                note="test subset", recovery=full.recovery)
         frames = FakeFrames(env, clock, calibration,
-                            hide={1: (2, 3), 2: (2, 3)})
+                            hide_all_but=1, hide_captures=2)
         ctrl, _, _ = controller(env, clock, calibration, plan=short, frames=frames)
         report = ctrl.run()
         assert report.recovery_used, report.note

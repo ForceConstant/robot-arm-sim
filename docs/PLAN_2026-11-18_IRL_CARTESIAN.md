@@ -293,20 +293,48 @@ Receipt: `reports/block4_2026-11-18.md`.
 
 ## Block 4b — ChArUco scan plan (pre-bench code task)
 
-- [ ] Extend `tools/plan_marker_scan.py` with `--layout charuco` (or add a
+- [x] Extend `tools/plan_marker_scan.py` with `--layout charuco` (or add a
   dedicated planner) using `CharucoLayout` (ids 5–36, 20 mm tags, playing
   surface z).
-- [ ] Generate `chess_sim/assets/marker_scan_plan_charuco.json`; layout offset
+  → `--layout {mat,charuco}`; ids derived from `charuco_face.square_of`,
+  plane `board.top`, and the scene is built with `board.face="charuco"`.
+- [x] Generate `chess_sim/assets/marker_scan_plan_charuco.json`; layout offset
   **0**, marker plane **0.4337**, all ids in 5–36.
-- [ ] Validate every pose sees enough unique tags and the `/scan` fusion
+  → 11 poses, `marker_ids` 5–36, 4–15 ids per pose, every edge ≥56.8 px,
+  75/75 sampled placements reach ≥3 markers.
+- [x] Validate every pose sees enough unique tags and the `/scan` fusion
   registers at nominal plus ±8 mm / ±2.5° placements against the 1.2 px RMS
   gate.
-- [ ] Point `live/live_config.json` `plan` at the new file (record before/after).
-- [ ] `live/tests/test_scan_controller.py` **8/8** with the sim calibration.
-- [ ] Commit; no push; no arm motion.
+  → **7/7 placements**, 32 markers per scan, worst **0.21 mm / 0.025°** at the
+  enforced 1.2 px gate. `reports/scan_plan_validation.json`.
+- [x] Point `live/live_config.json` `plan` at the new file (record before/after).
+  → `marker_scan_plan.json` → `marker_scan_plan_charuco.json`; the app was
+  restarted so it loaded it.
+- [x] `live/tests/test_scan_controller.py` **8/8** with the sim calibration.
+  → 8 passed in 14.69 s.
+- [x] Commit; no push; no arm motion.
+  → bridge stayed `HOLD`, `armed=false`, `follower_open=false`.
 
 **Exit gate:** `/scan` registers at nominal and displaced placements with the
 ChArUco plan; no pose relies on mat tags; scan-controller tests green.
+
+**Result (2026-11-18): PASS, and it uncovered a bigger fault than the plan.**
+
+- The first plan run used `reports/block3_sim_calibration.json` and registered
+  **0/7** placements with 28 markers visible. Cause: that calibration's camera
+  pose is **44.4 mm and 22.17°** away from the scene's MuJoCo `wrist` camera
+  (exported with a different gripper pack). Reprojection at the true board pose
+  was **116 px** — the plan's coverage predictions were from a phantom camera.
+- Re-exported from the same scene (`reports/block4b_sim_calibration.json`, FK
+  vs MuJoCo max error 0.000000 mm). Truth reprojection **0.59–0.79 px** at
+  `marker_z` 433.7 mm; the mat plane 430.56 mm gives 1.5–1.9 px, measured.
+- Regenerated plan against it: 11 poses, 7/7 placements, 32 markers per scan,
+  ≤0.21 mm XY / ≤0.025° yaw.
+- `MarkerScanPlan` gained an optional `marker_ids` so a face-scoped plan can be
+  complete without pretending mat tags 0–4 are missing; additive, old plans
+  unchanged.
+
+Receipt: `reports/block4b_2026-11-18.md`.
 
 ## Block 5 — IRL after power-up (2–3 h)
 

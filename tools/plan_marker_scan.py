@@ -28,6 +28,7 @@ import numpy as np
 from PIL import Image
 
 from chess_sim import fiducials, gripper
+from chess_sim.charuco_face import CharucoLayout, square_of as charuco_square_of
 from chess_sim.config import Camera
 from chess_sim.env import ChessSimEnv
 from chess_sim.marker_scan import (MarkerLayout, MarkerObservation,
@@ -101,14 +102,20 @@ def order_poses(poses: list[PoseCoverage]) -> list[PoseCoverage]:
     return ordered
 
 
-def _candidates(board, layout: fiducials.MarkerLayout, args) -> list[dict]:
+def charuco_ids() -> tuple[int, ...]:
+    """Every id printed on the ChArUco face (5..36 on the 8x8 field)."""
+    return tuple(marker_id for marker_id in range(5, 5 + 64)
+                 if charuco_square_of(marker_id) is not None)
+
+
+def _candidates(board, layout, marker_ids, args) -> list[dict]:
     items: list[dict] = []
     heights = [float(v) for v in args.heights.split(",")]
     offsets = [(0.0, 0.0)]
     for step in (float(v) for v in args.offsets.split(",") if v):
         offsets += [(step, 0.0), (-step, 0.0), (0.0, step), (0.0, -step)]
     for height in heights:
-        for marker_id in fiducials.MARKER_IDS:
+        for marker_id in marker_ids:
             corners = np.asarray(layout.corners_mm(marker_id), dtype=float) / 1000.0
             centre = corners.mean(axis=0)
             # The near-edge markers (ids 0 and 1) only resolve from directly
@@ -163,6 +170,9 @@ def _candidates(board, layout: fiducials.MarkerLayout, args) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default="chess_sim/assets/marker_scan_plan.json")
+    parser.add_argument("--layout", choices=("mat", "charuco"), default="mat",
+                        help="marker face the plan must cover: the mat tags (0..4) "
+                             "or the printed ChArUco face (5..36)")
     parser.add_argument("--calibration", default=".private/phase9/calibration.json")
     parser.add_argument("--min-views", type=int, default=2)
     parser.add_argument("--min-separation", type=float, default=0.025,
@@ -189,22 +199,42 @@ def main() -> int:
     parser.add_argument("--save-dir", default=".private/phase11d/marker-plan")
     args = parser.parse_args()
 
-    env = ChessSimEnv(layout_env_config("printed", cameras=()))
+    config = layout_env_config("printed", cameras=())
+    if args.layout == "charuco":
+        # The measured layout names a wooden face with the tags on a mat; the
+        # ChArUco markers only exist if the board renders its printed face.
+        config = config.model_copy(update={
+            "board": config.board.model_copy(update={"face": "charuco"})})
+    env = ChessSimEnv(config)
     try:
         env.reset("8/8/8/8/8/8/8/8")
         board = env.board
         calibration = WristCalibration.load(args.calibration)
         field_mm = (board.width - 2 * board.border) * 1000.0
-        layout = fiducials.MarkerLayout.for_board(
-            field_mm, board.border * 1000.0, plane=board.marker_plane,
-            margin_mm=40.0)
-        marker_z = board.table_top + fiducials.marker_height_above_table(board.mat)
+        if args.layout == "charuco":
+            # Markers printed into the playing surface: ids 5..36 in the white
+            # squares, 20 mm tags, plane = board top, layout offset 0.
+            layout = CharucoLayout(square_mm=board.square * 1000.0)
+            marker_ids = charuco_ids()
+            marker_z = board.top
+            layout_offset_mm = 0.0
+        else:
+            layout = fiducials.MarkerLayout.for_board(
+                field_mm, board.border * 1000.0, plane=board.marker_plane,
+                margin_mm=40.0)
+            # A mat layout can only describe 0..4; the global id set spans the
+            # ChArUco face as well and asking the layout for id 5 raises.
+            marker_ids = tuple(fiducials.GEOM_MARKER_IDS)
+            marker_z = (board.table_top
+                        + fiducials.marker_height_above_table(board.mat))
+            layout_offset_mm = layout.offset_mm
         self_model = SelfOcclusionModel(calibration)
         jaw_angle = 0.5 * (gripper.JOINT_MIN + gripper.JOINT_MAX)
-        print(f"board {board.width*1000:.1f} mm, marker offset {layout.offset_mm:.1f} mm, "
+        print(f"board {board.width*1000:.1f} mm, layout {args.layout}, "
+              f"offset {layout_offset_mm:.1f} mm, ids {len(marker_ids)}, "
               f"marker_z {marker_z*1000:.2f} mm", flush=True)
 
-        candidates = _candidates(board, layout, args)
+        candidates = _candidates(board, layout, marker_ids, args)
         if args.reuse_plan:
             for pose in load_plan(args.reuse_plan).poses:
                 joints = np.asarray(pose.joints, dtype=float)
@@ -312,8 +342,8 @@ def main() -> int:
             # trade away the case that actually happens most of the time.
             seed_plan = plan_from_observations(
                 entries, min_views=args.min_views,
-                layout_offset_mm=layout.offset_mm, positions=positions,
-                min_separation_m=args.min_separation)
+                layout_offset_mm=layout_offset_mm, positions=positions,
+                min_separation_m=args.min_separation, marker_ids=marker_ids)
             seed_names = [pose.name for pose in seed_plan.poses]
             chosen, uncovered = robust_cover(
                 entries, visibility, placements, min_markers=args.min_markers,
@@ -327,7 +357,8 @@ def main() -> int:
             plan = MarkerScanPlan(
                 poses=tuple(ordered),
                 min_views=args.min_views,
-                layout_offset_mm=layout.offset_mm,
+                layout_offset_mm=layout_offset_mm,
+                marker_ids=marker_ids,
                 note=(f"placement tolerance +/-{args.tolerance_mm:.0f} mm, "
                       f"+/-{args.tolerance_yaw_deg:.0f} deg; "
                       f"{len(placements)-uncovered}/{len(placements)} placements "
@@ -337,9 +368,10 @@ def main() -> int:
                   f"poses {len(ordered)}", flush=True)
         else:
             plan = plan_from_observations(entries, min_views=args.min_views,
-                                          layout_offset_mm=layout.offset_mm,
+                                          layout_offset_mm=layout_offset_mm,
                                           positions=positions,
-                                          min_separation_m=args.min_separation)
+                                          min_separation_m=args.min_separation,
+                                          marker_ids=marker_ids)
         counts = plan.views_per_marker()
         print("views per marker:", counts, flush=True)
         if plan.missing():
@@ -353,7 +385,7 @@ def main() -> int:
             return {int(key) for key in value} if isinstance(value, dict) else set(value)
 
         recovery = {}
-        for marker_id in fiducials.MARKER_IDS:
+        for marker_id in marker_ids:
             options = [item for item in meta
                        if marker_id in visible_ids(item)
                        and item["name"] not in chosen_names]
@@ -365,13 +397,15 @@ def main() -> int:
                 "edge_px": best["edge_px"][str(marker_id)]}
         plan = MarkerScanPlan(poses=plan.poses, min_views=plan.min_views,
                               layout_offset_mm=plan.layout_offset_mm,
-                              note=plan.note, recovery=recovery)
+                              note=plan.note, recovery=recovery,
+                              marker_ids=plan.marker_ids)
         out = save_plan(plan, args.out,
                         generated_at="2026-11-15",
                         tolerance_mm=args.tolerance_mm,
                         tolerance_yaw_deg=args.tolerance_yaw_deg,
                         min_markers=args.min_markers,
-                        layout="hardware/current_layout.json (90 mm gap, 30 mm riser)",
+                        layout=(f"hardware/current_layout.json (90 mm gap, 30 mm riser); "
+                                f"marker face {args.layout}"),
                         calibration=args.calibration,
                         method="wrist-lens targets over the marker ring and board grid, "
                                "solved inside hard joint limits; coverage scored by "

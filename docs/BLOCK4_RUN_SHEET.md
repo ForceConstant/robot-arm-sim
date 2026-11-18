@@ -55,17 +55,22 @@ going on; a scan with the mat plane cannot pass the fusion RMS gate.
 
 ```fish
 grep -E '"plan"|"layout_kind"' live/live_config.json
-python3 -c "import json;d=json.load(open('chess_sim/assets/marker_scan_plan.json'));print(sorted({m for p in d['poses'] for m in p['visible']}))"
+python3 -c "import json;d=json.load(open('chess_sim/assets/marker_scan_plan_charuco.json'));print('offset',d['layout_offset_mm'],'ids',sorted({m for p in d['poses'] for m in p['visible']})[:4],'... n=',len({m for p in d['poses'] for m in p['visible']}))"
 ```
 
-**Pass:** `layout_kind` is `charuco` **and** the plan's marker ids are the
-ChArUco set (5–36).
-**Abort — hard:** the plan prints `[0, 1, 2, 3]`. That is the old mat-tag plan
-(`layout_offset_mm` 152, tags on a sheet 40 mm outside the board edge). With the
-ChArUco face those poses look *past* the board and `/scan` will see nothing.
-There is no ChArUco scan plan in the repo and `tools/plan_marker_scan.py`
-still hard-codes `MarkerLayout.for_board(...)`, so this is a **pre-bench code
-task for the planner**, not something to work around at the arm.
+**Pass:** `layout_kind` is `charuco`, `plan` ends in
+`marker_scan_plan_charuco.json`, `offset 0.0`, and the ids are exactly 5–36
+(32 of them).
+**Abort:** `plan` still points at `marker_scan_plan.json`, or the ids print
+`[0, 1, 2, 3]`. That is the mat-tag plan (offset 152, tags 40 mm outside the
+board edge); with the ChArUco face those poses look *past* the board and
+`/scan` comes back with no markers, which reads like a hardware fault. Point
+`live_config.json` at `chess_sim/assets/marker_scan_plan_charuco.json` — do not
+work around it at the arm.
+
+The ChArUco plan (Block 4b, 11 poses) was validated in sim at nominal and at
+±8 mm x/y, ±2.5° yaw: 7/7 placements register, 32 markers per scan, ≤0.21 mm XY
+and ≤0.025° yaw. `reports/scan_plan_validation.json` is the baseline.
 
 ## 1. Pi and bridge alive
 
@@ -287,7 +292,7 @@ board is a frame problem — stop and re-scan.
 
 | step | condition | call it when | action |
 |---|---|---|---|
-| 0b | plan ids are `0..3` while layout is `charuco` | before the bench trip | regenerate the plan first |
+| 0b | `plan` still the mat plan while layout is `charuco` | before the bench trip | point it at `marker_scan_plan_charuco.json` |
 | 1 | `fault`/`error` non-null, limits differ | before anything moves | stop, report |
 | 2 | `lelab_active: true` | before opening follower | stop LeLab first |
 | 3 | `joints_source:"none"` with follower open | before arming | stop, dead sensor bus |

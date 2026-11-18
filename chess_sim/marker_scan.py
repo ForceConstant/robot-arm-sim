@@ -83,9 +83,17 @@ class MarkerScanPlan:
     note: str = ""
     # Per-marker fallback pose, keyed by marker id: {"name", "joints", "edge_px"}.
     recovery: dict[int, dict] = field(default_factory=dict)
+    # The markers this plan is responsible for.  ``None`` keeps the old
+    # behaviour (every id in the dictionary), which is only right for a plan
+    # that covers a whole face and is why a ChArUco plan has to say so: the
+    # mat tags 0..4 are not on the printed face and are not "missing".
+    marker_ids: tuple[int, ...] | None = None
+
+    def expected(self) -> tuple[int, ...]:
+        return tuple(self.marker_ids) if self.marker_ids else MARKER_IDS
 
     def views_per_marker(self) -> dict[int, int]:
-        counts = {marker_id: 0 for marker_id in MARKER_IDS}
+        counts = {marker_id: 0 for marker_id in self.expected()}
         for pose in self.poses:
             for marker_id in pose.visible:
                 counts[marker_id] = counts.get(marker_id, 0) + 1
@@ -260,9 +268,11 @@ def plan_from_observations(entries: list[tuple[str, tuple[float, ...],
                            min_views: int = 2,
                            layout_offset_mm: float = 152.0,
                            positions: dict[str, tuple[float, float, float]] | None = None,
-                           min_separation_m: float = 0.025) -> MarkerScanPlan:
+                           min_separation_m: float = 0.025,
+                           marker_ids: tuple[int, ...] | None = None) -> MarkerScanPlan:
     """Build a plan from already-scored poses (the offline tool's output)."""
     positions = positions or {}
+    expected = tuple(marker_ids) if marker_ids else MARKER_IDS
     coverages = [
         PoseCoverage(name=name, joints=tuple(float(v) for v in joints),
                      visible=tuple(sorted(found)),
@@ -271,15 +281,17 @@ def plan_from_observations(entries: list[tuple[str, tuple[float, ...],
         for name, joints, found in entries
     ]
     chosen = select_poses(coverages, min_views=min_views,
+                          marker_ids=expected,
                           min_separation_m=min_separation_m)
-    missing = [m for m, count in _counts(chosen).items() if count < min_views]
+    missing = [m for m, count in _counts(chosen, expected).items() if count < min_views]
     note = "" if not missing else f"uncovered markers: {missing}"
     return MarkerScanPlan(poses=tuple(chosen), min_views=min_views,
-                          layout_offset_mm=float(layout_offset_mm), note=note)
+                          layout_offset_mm=float(layout_offset_mm), note=note,
+                          marker_ids=tuple(marker_ids) if marker_ids else None)
 
 
-def _counts(poses) -> dict[int, int]:
-    counts = {marker_id: 0 for marker_id in MARKER_IDS}
+def _counts(poses, marker_ids=MARKER_IDS) -> dict[int, int]:
+    counts = {marker_id: 0 for marker_id in marker_ids}
     for pose in poses:
         for marker_id in pose.visible:
             counts[marker_id] = counts.get(marker_id, 0) + 1
@@ -335,6 +347,7 @@ def save_plan(plan: MarkerScanPlan, path: str | Path, **extra) -> Path:
         "min_views": plan.min_views,
         "layout_offset_mm": plan.layout_offset_mm,
         "note": plan.note,
+        **({"marker_ids": list(plan.marker_ids)} if plan.marker_ids else {}),
         "poses": [{"name": pose.name, "joints": list(pose.joints),
                    "visible": list(pose.visible),
                    "edge_px": [round(v, 2) for v in pose.edge_px],
@@ -370,4 +383,6 @@ def load_plan(path: str | Path) -> MarkerScanPlan:
                 for key, value in (data.get("recovery") or {}).items()}
     return MarkerScanPlan(poses=tuple(poses), min_views=int(data.get("min_views", 2)),
                           layout_offset_mm=float(data.get("layout_offset_mm", 152.0)),
-                          note=str(data.get("note", "")), recovery=recovery)
+                          note=str(data.get("note", "")), recovery=recovery,
+                          marker_ids=(tuple(int(v) for v in data["marker_ids"])
+                                      if data.get("marker_ids") else None))
