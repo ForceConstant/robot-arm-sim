@@ -37,13 +37,20 @@ class SelfOcclusionModel:
     ``sources`` records hashes of every authored dependency for receipts.
     """
 
-    def __init__(self, calibration: WristCalibration, *, padding_pixels: int = 2):
+    def __init__(self, calibration: WristCalibration, *, padding_pixels: int = 2,
+                 near_plane_m: float = 0.02):
         from . import gripper
         calibration.validate()
         if not isinstance(padding_pixels, int) or padding_pixels < 0:
             raise ValueError('nonnegative integer image margin required')
         self.calibration = calibration
         self.padding_pixels = padding_pixels
+        # Physical lens aperture, not an epsilon.  Geometry that hugs the lens
+        # (the installed tool is mounted millimetres from the camera) would
+        # otherwise be clipped at 0.1 mm and rasterised into huge polygons that
+        # cover half the frame (block 5c: 48.2 %, unchanged across 35 poses,
+        # while the real frames at those joints show no tool at all).
+        self.near_plane_m = float(near_plane_m)
         self.sources = {}
         self._meshes = {}
         self._triangles = {}
@@ -187,7 +194,7 @@ class SelfOcclusionModel:
         for vertices, world in parts:
             xyz = (vertices @ world[:3, :3].T + world[:3, 3] - camera.camera_position) @ rotation
             depth = -xyz[:, 2]
-            if np.max(depth) <= 0:
+            if np.max(depth) <= self.near_plane_m:
                 continue
             # Rasterize actual triangles: a hull would fill jaw gaps and
             # the camera aperture, incorrectly removing useful board views.
@@ -195,7 +202,7 @@ class SelfOcclusionModel:
             triangles = (triangles @ world[:3, :3].T + world[:3, 3]
                          - camera.camera_position) @ rotation
             d = -triangles[:, :, 2]
-            keep = d.max(axis=1) > 1e-4
+            keep = d.max(axis=1) > self.near_plane_m
             for values in (camera.fx * triangles[:, :, 0] + camera.cx * d,
                            (camera.width - camera.cx) * d - camera.fx * triangles[:, :, 0],
                            camera.cy * d - camera.fy * triangles[:, :, 1],
@@ -205,10 +212,10 @@ class SelfOcclusionModel:
                 polygon = []
                 for a, b in zip(triangle, np.roll(triangle, -1, axis=0)):
                     da, db = -a[2], -b[2]
-                    if da >= 1e-4:
+                    if da >= self.near_plane_m:
                         polygon.append(a)
-                    if (da < 1e-4) != (db < 1e-4):
-                        polygon.append(a + (1e-4 - da) / (db - da) * (b - a))
+                    if (da < self.near_plane_m) != (db < self.near_plane_m):
+                        polygon.append(a + (self.near_plane_m - da) / (db - da) * (b - a))
                 if len(polygon) >= 3:
                     polygon = np.asarray(polygon)
                     dd = -polygon[:, 2]

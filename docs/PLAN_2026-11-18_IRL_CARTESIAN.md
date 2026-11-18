@@ -613,6 +613,38 @@ no sweep — all gated on a plan that does not exist.
 Receipt: `reports/block5c_2026-11-18.md`; data `reports/block5c_cal_frames.json`,
 `block5c_occlusion_probe.json`, `block5c_settle_hold.json`.
 
+## Block 5d — mask relation, transition defect, settle validation (2026-11-18)
+
+- [x] **Mask mismatch delimited.** 48.2 % coverage on all 35 cal frames, 52 % of
+  decoded tags suppressed, 99.9 % worst; camera↔board reprojection **1.32 px**
+  is right, so the **camera↔tool** relation is what is wrong. A physical 20 mm
+  near plane (`near_plane_m`) changes nothing — it is real geometry in front of
+  the lens, not a clipping sliver. The correct mount cannot be inferred from
+  frames that never show the tool; needs a physical look at the wrist.
+- [x] **NEW defect: HOLD→REMOTE moves the arm ~3°.** lift 46.55 → 49.71 → 52.79
+  → 56.13 across three transitions (+3.1° each), elbow +0.6° each; tip
+  descended 125.4 → **40.3 mm** over the session. HOLD changes nothing and
+  static drift is **0.00° over 180 s**, so it is the transition, not gravity.
+  Suspect `_open_follower()` (`connect` → `write_calibration` → `configure`).
+  Entering REMOTE must not move the arm.
+- [x] **Settle fix validated on the arm.** `_hold_and_correct` reached in 2.9 s
+  with final max error **0.70°** (elbow 0.64°, remainder from the transition
+  shift); manual elbow-only nudge **1.57 → 0.34°**. `pose_tolerance_deg` 1.5
+  untouched.
+- [x] **Second-scan bug fixed.** `ScanController._seq` now seeds from
+  `last_seq`; before this any scan after the first motion failed with
+  `seq 1 is not newer than …`.
+- [ ] Fix the REMOTE transition motion (first priority — nothing downstream is
+  meaningful while arming moves the arm).
+- [ ] Inspect the camera/tool mount physically, correct the tool placement, and
+  re-run the 35-frame audit until the mask suppresses ~0 decoded tags.
+- [ ] Then revisit the 2 % overlap rule, then regenerate the near-nadir plan.
+- [ ] `live/tests/test_scan_controller.py` still 4 failed / 4 passed (5a
+  clamped plan in the fixture), unchanged by 5c/5d.
+
+Receipt: `reports/block5d_2026-11-18.md`; on-arm validation
+`reports/block5d_settle_controller.json`. No plan, no `/scan`, no sweep.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

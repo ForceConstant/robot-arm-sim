@@ -227,6 +227,15 @@ class ScanController:
                               note=f"bridge is in {state.get('mode')}, not REMOTE")
         if not state.get("armed"):
             return ScanReport(False, None, None, note="bridge is not armed")
+        # The bridge rejects any sequence that is not newer than the last one
+        # it accepted, and that counter is session-global (it survives /move).
+        # A controller built with ``_seq = 0`` could therefore never command a
+        # second scan in the same session (block 5c probe hit exactly this:
+        # "seq 1 is not newer than 1795020098210").
+        try:
+            self._seq = max(self._seq, int(state.get("last_seq") or 0))
+        except (TypeError, ValueError):
+            pass
         limits = state.get("limits") or {}
         if limits:
             checks = [(pose.name, pose.joints) for pose in self.plan.poses]
