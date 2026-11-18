@@ -120,20 +120,35 @@ stop-and-report under Block 2's gate.
 
 ## Block 2 — Sim sweep to 64/64 honestly (45–60 min)
 
-- [ ] Run `tools/cartesian_squares.py --backend sim` with the production
+**Owner session:** `robot arm 11/18 block2`
+(`agent:librarian:dashboard:2dfc88e3-8039-4e71-8f13-114a6aa9fc1f`, done)
+
+- [x] Run `tools/cartesian_squares.py --backend sim` with the production
   solver (sim and IRL must execute identical maths)
-- [ ] Record per square: target, IK error, achieved tip, marker count, starts
-- [ ] **Symmetry check first:** solve a1/h1 and a8/h8 from a neutral seed.
+- [x] Record per square: target, IK error, achieved tip, marker count, starts
+- [x] **Symmetry check first:** solve a1/h1 and a8/h8 from a neutral seed.
   Equal within the measured board offset/yaw is expected; a ~20 mm split means
   a model asymmetry (tip-frame rotation sign, joint limits, board yaw), not
   reach. Record the joint vectors for the mirrored pair.
-- [ ] Iterate only on failing squares via dry-run, never a full sweep per tweak
-- [ ] Confirm `move_tolerance_mm` is 20 (Block 1 already set it)
-- [ ] Save the receipt under `reports/`
+- [x] Iterate only on failing squares via dry-run, never a full sweep per tweak
+- [x] Confirm `move_tolerance_mm` is 20 (Block 1 already set it)
+- [x] Save the receipt under `reports/`
+
+**Result (2026-11-18): 64/64 solved, worst 14.9 mm (f8), worst approach
+2.59°, all tips inside keep-in; reverse-order sweep also 64/64 with only 0.1 mm
+rounding differences.** h8 was **not** reach and **not** a model asymmetry: the
+mirror split was 2.30 mm and a `TIP_IN_CHAIN` sign flip changed nothing
+identical to 3 decimals, while a bounded solve from the extended arm branch
+returns 12.20 mm inside the real wrist limits. The residual was a seed-basin
+miss — `solve_tip` only seeded the folded arm family. Added the extended-branch
+seeds (`[pan, 58, −64, 90, ...]`); h8 → 12.30 mm mid-sequence, guard 12.32 mm.
+Receipt: `reports/block2_2026-11-18.md`. Carry-forward for Block 5: a8 solves at
+wrist_roll 160.8° (2.0° from the limit) — confirm the bridge's roll range before
+the IRL sweep.
 
 **Exit gate:** 64/64 solved, achieved tip ≤20 mm, approach ≤8°, every square
 inside keep-in, no order-dependent failures. `63/64` with a named physical
-cause is a valid stop-and-report, not a pass.
+cause is a valid stop-and-report, not a pass. **— PASSED.**
 
 ## Block 3 — Prove the calibration pipeline in sim (45 min)
 

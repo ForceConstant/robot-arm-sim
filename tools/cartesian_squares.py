@@ -87,7 +87,7 @@ def run_sim(live_dir: Path, squares, hover_mm: float) -> dict:
     env.reset("8/8/8/8/8/8/8/8")
     model, data = env.model, env.data
     rows = []
-    for name, x, y, z, span in square_targets(hover_mm):
+    for name, x, y, z, span in squares:
         point = kinematics.board_point(x, y, z)
         seed = [float(data.qpos[env._joint_qpos[i]]) for i in range(6)]
         solved, goal = kinematics.solve_tip(point, seed, jaw, span)
@@ -116,7 +116,7 @@ def run_sim(live_dir: Path, squares, hover_mm: float) -> dict:
 def run_irl(squares, hover_mm: float, base: str) -> dict:
     import cv2
     rows = []
-    for name, x, y, z, span in square_targets(hover_mm):
+    for name, x, y, z, span in squares:
         body = json.dumps({"mode": "xyz", "x_mm": x, "y_mm": y, "z_mm": z,
                            "span_deg": span}).encode()
         request = urllib.request.Request(base + "/move", data=body,
@@ -162,6 +162,8 @@ def main() -> None:
     parser.add_argument("--base", default="http://192.168.1.171:8080")
     parser.add_argument("--out", default="reports/squares_sim.json")
     parser.add_argument("--compare", nargs=2)
+    parser.add_argument("--reverse", action="store_true",
+                        help="visit the squares in reverse order (order check)")
     args = parser.parse_args()
 
     if args.compare:
@@ -169,6 +171,8 @@ def main() -> None:
         return
 
     targets = square_targets(args.hover_mm)
+    if args.reverse:
+        targets = list(reversed(targets))
     if args.backend == "sim":
         result = run_sim(Path(args.live_dir), targets, args.hover_mm)
     else:

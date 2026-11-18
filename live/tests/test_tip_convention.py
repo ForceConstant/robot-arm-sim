@@ -94,14 +94,13 @@ def test_solver_and_guard_agree_mid_sequence():
         guard_mm = guard_tip_error(kin, joints, target)
         print(f"{square}: solver {solver_mm:.2f} mm, guard tip {guard_mm:.2f} mm, "
               f"delta {abs(solver_mm - guard_mm):.3f} mm")
-        # a1 is comfortably reachable; h8 is ~20 mm beyond the horizontal
-        # envelope (the base sits at board (0, -217) mm, so h8 is ~330 mm out).
-        # The contract here is agreement: even when the solve has a residual,
-        # the solver and the guard must be looking at the same tip.
-        if square == "a1":
-            assert solver_mm <= TOLERANCE_MM, (
-                f"a1: solver missed by {solver_mm} mm")
-        assert solver_mm < 40.0, f"{square}: unexpectedly large residual"
+        # Both squares must clear the gate, and the solver and the guard must
+        # be looking at the same tip.  h8 sits at the far edge (the base is at
+        # board (0, -217) mm, so h8 is ~330 mm out); it clears the gate only
+        # from the extended-branch seeds in ``solve_tip`` -- the folded family
+        # alone stalls at 20.8 mm.
+        assert solver_mm <= TOLERANCE_MM, (
+            f"{square}: solver missed by {solver_mm} mm")
         assert abs(solver_mm - guard_mm) <= AGREEMENT_MM, (
             f"{square}: solver and guard disagree by "
             f"{abs(solver_mm - guard_mm):.2f} mm")

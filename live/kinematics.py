@@ -387,6 +387,15 @@ class ArmKinematics:
         seeds = [list(seed)]
         for pan in (0.0, -45.0, 45.0, -80.0, 80.0):
             seeds.append([pan, -55.0, 72.0, 39.0, 0.0, seed[5]])
+        # The same pans on the *extended* branch.  A downward approach at the
+        # board's far +y edge needs the arm stretched with the elbow folded
+        # back (lift positive, elbow negative, wrist flexed past the forearm),
+        # and the folded-family seeds above sit in a basin that cannot get
+        # there: from the home posture h8 stalls at 20.8 mm, while a seed on
+        # this branch reaches 12.4 mm inside the same joint limits.  Without
+        # these the sweep reports a reach failure that is really a seed miss.
+        for pan in (0.0, -20.0, 20.0, -45.0, 45.0):
+            seeds.append([pan, 58.0, -64.0, 90.0, 0.0, seed[5]])
 
         goal = goal_for(span_deg)
         probe = self.solve_multi(goal, seeds[0], tool_frame=jaw_frame)
