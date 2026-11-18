@@ -429,7 +429,10 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
             view_rms.append(float(np.sqrt(np.mean(residual ** 2))))
         median = float(np.median(view_rms))
         mad = float(np.median(np.abs(np.asarray(view_rms) - median))) + 1e-6
-        limit = median + 3.0 * mad
+        # Same ceiling as the pre-filter.  A bare median+3MAD on a good fit
+        # is ~1.8 px and deletes healthy 2 px views, re-optimising to a worse
+        # pose (block 5i).  This keeps the pruner to genuine outliers.
+        limit = min(max(median + 3.0 * mad, 4.0), 8.0)
         keep = [index for index, value in enumerate(view_rms) if value <= limit]
         if (len(keep) == len(observations)
                 or len(keep) < max(2, len(observations) // 2)):

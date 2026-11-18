@@ -752,6 +752,24 @@ and `reports/scan_plan_validation_5g.json`.
 
 Receipt: `reports/block5h_2026-11-18.md`. No `/scan`, no sweep; gates unchanged.
 
+## Block 5i — pruning fix applied; shipped fit 2.95 px vs a 1.321 px floor (2026-11-18)
+
+- [x] **Post-fit pruning fixed**: `limit = min(max(median + 3·MAD, 4), 8)` — it
+  now removes only the 787.66 px and 10.44 px views instead of deleting healthy
+  1.8–2.5 px ones and refitting worse. Robust loss and all-seed multi-start were
+  tried and rejected (still 3.0 px).
+- [!] **Still above the gate.** Shipped: (−9.00, −3.87) mm, yaw 5.43°,
+  **2.95 px**. Standalone replay of the same steps on the same 20 views:
+  **1.321 px** at (−10.06, −3.10), yaw 5.70° (truth −9.92/−3.13/5.67).
+  The remaining fault is the module's refit path, not the frame conventions.
+- [!] **Data floor 1.321 px vs gate 1.2 px.** 4c's own derivation reported a
+  1.53 px median. The gate is the binding constraint — awaiting Brian's decision.
+  `MAX_RMS_PX` untouched; no `/scan`.
+- [ ] After the gate decision: fix the refit path, then `/scan` → board vs
+  431.35 / 5.67 → `/sanity` → 8-square → 64-square.
+
+Receipt: `reports/block5i_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
