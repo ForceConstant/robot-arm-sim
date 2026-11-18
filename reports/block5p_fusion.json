@@ -1,0 +1,20 @@
+{
+  "board_json": {
+    "x_mm": -9.92,
+    "y_mm": -3.13,
+    "z_mm": 431.35,
+    "yaw_deg": 5.67
+  },
+  "results": [
+    {
+      "base": "marker14",
+      "views": 6,
+      "registration": null
+    },
+    {
+      "base": "marker26",
+      "views": 6,
+      "registration": null
+    }
+  ]
+}

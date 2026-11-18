@@ -905,6 +905,29 @@ Receipt: `reports/block5n_2026-11-18.md`.
 
 Receipt: `reports/block5o_2026-11-18.md`.
 
+## Block 5p — multi-view test: board lands ~50 mm off board.json (2026-11-18)
+
+- [x] Six views per base (±10 mm x/y) through `/move xyz` at speed 0.3,
+  keep-in enforced, fused with the production estimator at the 1.5 px gate.
+- [!] **Both bases land far from `board.json` and both are rejected:**
+  marker14 → (−51.9, −10.9) mm, yaw −3.9°, **rms 21.640 px**;
+  marker26 → (−68.7, 0.0) mm, yaw −9.2°, **rms 19.829 px**;
+  `board.json` = (−9.9, −3.1), yaw 5.67°. Two independent bases and the 5o
+  single-view PnP all agree on the ~50 mm displacement.
+- [!] **Conclusion: the 4c camera model does not extrapolate to the scan
+  postures.** It reproduces the board to 0.14 mm at the calibration postures and
+  puts it ~50 mm away at marker14, whose joints are close to that family. That
+  also explains the 5o overlays drawing tags on the table and the 0–1 tags/view
+  in 5l: the model never had the board where the tags are.
+- [ ] Root fix (planner): hand-eye re-solve over a pose set spanning pan ±40°,
+  lift −80…+40°, wrist_flex 20…95°, validated on held-out views; or a per-pose
+  visual servo. Recompute plan coverage from the corrected model before another
+  scan.
+- Plan, detector, gates, `MAX_RMS_PX`, lighting untouched. No `/sanity`, no
+  sweep, no refusals or faults.
+
+Receipt: `reports/block5p_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
