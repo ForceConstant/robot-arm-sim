@@ -995,6 +995,28 @@ Receipt: `reports/block5r_2026-11-18.md`.
 
 Receipt: `reports/block5s_2026-11-18.md`.
 
+## Block 5t — specified jaw combination still fuses (2026-11-18)
+
+- [x] Applied exactly: jaw bodies `(0.707107,0,0,±0.707107)` at
+  `(0.023279, 0.020537, −0.013873)` / `(0.022979, −0.039462, −0.013873)`, geom
+  quat identity, installed mesh, `TIP_IN_CHAIN` untouched. Two
+  quat assignments, jaws as-recorded and pinion-open.
+- [!] **Both variants render one fused silhouette**, not two fingers with a gap.
+  The pinion position changes nothing, so it is not a gripper-state artefact.
+- [!] **Mismatch:** the part's long axis is its local **z**; ±90° about z leaves
+  it along z (tips down ✓) but the two bodies collapse onto one line in the
+  view. The supplied y values (−0.0395/+0.0205) are only 4 mm narrower than the
+  old pair, which cannot close a 60 mm gap — so the occurrence's frame
+  (sign/order, or the assembly's +y vs the tool's −y) is not resolvable from the
+  two positions alone.
+- [ ] Need, per occurrence, the Onshape transform **with its rotation order** in
+  the tool base frame, or a one-line confirmation of which occurrence (+90/−90)
+  sits at negative y.
+- No sim/tool commit; no calibration/plan/detector/gate/tip change; no arm
+  motion.
+
+Receipt: `reports/block5t_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
