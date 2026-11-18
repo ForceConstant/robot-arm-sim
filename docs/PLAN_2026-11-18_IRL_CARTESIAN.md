@@ -291,6 +291,23 @@ an explicit go/no-go for Block 5.
 
 Receipt: `reports/block4_2026-11-18.md`.
 
+## Block 4b — ChArUco scan plan (pre-bench code task)
+
+- [ ] Extend `tools/plan_marker_scan.py` with `--layout charuco` (or add a
+  dedicated planner) using `CharucoLayout` (ids 5–36, 20 mm tags, playing
+  surface z).
+- [ ] Generate `chess_sim/assets/marker_scan_plan_charuco.json`; layout offset
+  **0**, marker plane **0.4337**, all ids in 5–36.
+- [ ] Validate every pose sees enough unique tags and the `/scan` fusion
+  registers at nominal plus ±8 mm / ±2.5° placements against the 1.2 px RMS
+  gate.
+- [ ] Point `live/live_config.json` `plan` at the new file (record before/after).
+- [ ] `live/tests/test_scan_controller.py` **8/8** with the sim calibration.
+- [ ] Commit; no push; no arm motion.
+
+**Exit gate:** `/scan` registers at nominal and displaced placements with the
+ChArUco plan; no pose relies on mat tags; scan-controller tests green.
+
 ## Block 5 — IRL after power-up (2–3 h)
 
 - [ ] Boot Pi and arm; verify port ownership before any motion
