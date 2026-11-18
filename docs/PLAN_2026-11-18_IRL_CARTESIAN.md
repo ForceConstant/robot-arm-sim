@@ -66,6 +66,17 @@ for Block 1; review and complete them, do not revert.
   `tools/audit_tip_frame.py`, `docs/TIP_FRAME_CONVENTION.md`,
   `reports/tip_frame_*.json`).
 
+## Repo state (2026-11-18 07:50)
+
+- Block 1, Phase 11d live console, ChArUco calibration and tip-frame work are
+  committed on `main`: **`78c460c`**.
+- Working tree is clean. Ignored on purpose: `live/live_config.json`,
+  `live/board.json`, `live/bridge_token.txt`, `live/captures*/`,
+  `sim/captures_wrist/`, `live/*.bak*`.
+- The stray older `live/test_tip_convention.py` was moved to
+  `/tmp/test_tip_convention.stray.py` on the BC-250, not deleted.
+- Not pushed to `origin` yet.
+
 ## Block 1 — Settle the tip-frame convention (sim, 60–75 min)
 
 **Owner session:** `robot arm 11/18 block1`
