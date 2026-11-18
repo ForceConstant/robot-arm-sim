@@ -127,7 +127,16 @@ def object_points(layout: MarkerLayout) -> tuple[np.ndarray, np.ndarray]:
     ids: list[int] = []
     points: list[tuple[float, float, float]] = []
     for marker_id in MARKER_IDS:
-        for x_mm, y_mm in layout.corners_mm(marker_id):
+        # MARKER_IDS spans both faces (mat tags 0..4 and printed ChArUco
+        # 5..36), but a layout only defines one face's markers.  Asking a
+        # mat layout for marker 5 used to raise "unknown marker id 5" and
+        # take the whole scan down; the same happened to the ChArUco layout
+        # for ids 0..4.  Skip what this layout cannot describe.
+        try:
+            corners = layout.corners_mm(marker_id)
+        except (ValueError, KeyError):
+            continue
+        for x_mm, y_mm in corners:
             ids.append(marker_id)
             points.append((x_mm / 1000.0, y_mm / 1000.0, 0.0))
     return np.asarray(ids, dtype=np.int32), np.asarray(points, dtype=np.float64)
@@ -276,8 +285,12 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     """
     if not np.isfinite(marker_z):
         raise ValueError("marker_z must be a finite world height")
-    _, obj_points = object_points(layout)
-    base_index = {marker_id: 4 * index for index, marker_id in enumerate(MARKER_IDS)}
+    marker_ids, obj_points = object_points(layout)
+    # The point block for each marker is four consecutive corners in the
+    # order ``object_points`` emitted them; that order need not be MARKER_IDS
+    # when the layout covers only one face.
+    order = list(dict.fromkeys(int(marker_id) for marker_id in marker_ids))
+    base_index = {marker_id: 4 * index for index, marker_id in enumerate(order)}
     observations: list[tuple[CameraCalibration, np.ndarray, np.ndarray]] = []
     seen: set[int] = set()
     for frame, calibration in views:
@@ -287,10 +300,16 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         object_list: list[np.ndarray] = []
         image_list: list[np.ndarray] = []
         for detection in detections:
-            base = base_index[detection.marker_id]
+            base = base_index.get(detection.marker_id)
+            if base is None:
+                # A tag this layout has no geometry for (e.g. a stray mat tag
+                # on a ChArUco board) must not contribute corners.
+                continue
             object_list.extend(obj_points[base:base + 4])
             image_list.extend(detection.corners)
             seen.add(detection.marker_id)
+        if not object_list:
+            continue
         observations.append((calibration, np.asarray(object_list, dtype=np.float64),
                              np.asarray(image_list, dtype=np.float64)))
     if len(seen) < min_markers or not observations:
@@ -315,12 +334,21 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         if not ok:
             continue
         rotation, _ = cv2.Rodrigues(rvec)
-        world_rotation = np.asarray(calibration.camera_rotation).reshape(3, 3) @ rotation
-        world_position = (np.asarray(calibration.camera_position)
-                          + np.asarray(calibration.camera_rotation).reshape(3, 3)
-                          @ np.asarray(tvec).ravel())
-        guess = np.array([world_position[0], world_position[1],
-                          math.atan2(world_rotation[1, 0], world_rotation[0, 0])])
+        # solvePnP's camera looks +z with +y down; the calibrated frame looks
+        # -z with +y up.  Flip before composing base<-camera, exactly as the
+        # single-marker path does.  Without the flip the seed yaw was ~180 deg
+        # off and the bounded refinement either found the board by luck or
+        # failed with "board solve failed" depending on the placement.
+        flip = np.diag([1.0, -1.0, -1.0])
+        camera_from_board = np.eye(4)
+        camera_from_board[:3, :3] = flip @ rotation
+        camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+        base_from_camera = np.eye(4)
+        base_from_camera[:3, :3] = np.asarray(calibration.camera_rotation).reshape(3, 3)
+        base_from_camera[:3, 3] = np.asarray(calibration.camera_position)
+        board_guess = base_from_camera @ camera_from_board
+        guess = np.array([board_guess[0, 3], board_guess[1, 3],
+                          math.atan2(board_guess[1, 0], board_guess[0, 0])])
         rms = float(np.sqrt(np.mean(
             (_project(guess, calibration, points, marker_z) - pixels) ** 2)))
         guesses.append((rms, guess))
@@ -348,6 +376,29 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
     best = np.clip(np.asarray(best, dtype=float), lower + 1e-9, upper - 1e-9)
     result = least_squares(error, best, method="trf", xtol=1e-12, ftol=1e-12,
                            gtol=1e-12, bounds=(lower, upper))
+
+    # One occluded marker or a bad corner in a single view can dominate an
+    # unweighted fusion: the docs already warn that one view was inflating RMS
+    # from 1 px to 65 px.  Prune views whose residual at the fused pose is an
+    # outlier (median + 3 MAD) and refit, but never below two views.
+    for _ in range(2):
+        view_rms = []
+        for calibration, points, pixels in observations:
+            residual = (_project(result.x, calibration, points, marker_z)
+                        - pixels).ravel()
+            view_rms.append(float(np.sqrt(np.mean(residual ** 2))))
+        median = float(np.median(view_rms))
+        mad = float(np.median(np.abs(np.asarray(view_rms) - median))) + 1e-6
+        limit = median + 3.0 * mad
+        keep = [index for index, value in enumerate(view_rms) if value <= limit]
+        if (len(keep) == len(observations)
+                or len(keep) < max(2, len(observations) // 2)):
+            break
+        observations = [observations[index] for index in keep]
+        result = least_squares(error, np.clip(result.x, lower + 1e-9, upper - 1e-9),
+                               method="trf", xtol=1e-12, ftol=1e-12,
+                               gtol=1e-12, bounds=(lower, upper))
+
     pose = result.x
     rms = float(np.sqrt(np.mean(result.fun ** 2)))
     if not np.isfinite(rms) or rms > max_rms_px:

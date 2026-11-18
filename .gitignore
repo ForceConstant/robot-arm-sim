@@ -41,3 +41,6 @@ live/captures_archive/
 live/*.bak
 live/*.bak-*
 sim/captures_wrist/
+
+# Block 3 generated capture frames (reproducible with tools/block3_placement_matrix.py)
+reports/block3_captures/

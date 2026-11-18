@@ -163,17 +163,42 @@ cause is a valid stop-and-report, not a pass. **— PASSED.**
 
 ## Block 3 — Prove the calibration pipeline in sim (45 min)
 
-- [ ] Inject known board placements (±8 mm x/y, ±2.5° yaw, plus a z offset)
+- [x] Inject known board placements (±8 mm x/y, ±2.5° yaw, plus a z offset)
   and run the multi-pose `/scan` path
-- [ ] Measure recovered x/y/z/yaw error per placement
-- [ ] Compare estimators: `/scan` fusion vs `/board/derive` single-marker vs
+- [x] Measure recovered x/y/z/yaw error per placement
+- [x] Compare estimators: `/scan` fusion vs `/board/derive` single-marker vs
   offline median tool
-- [ ] Repeat the board-plane fit from markers; confirm z correction stable to
+- [x] Repeat the board-plane fit from markers; confirm z correction stable to
   ≤0.2 mm across poses
-- [ ] Name the estimator that becomes the bench procedure
+- [x] Name the estimator that becomes the bench procedure
 
 **Exit gate:** calibration errors quantified per estimator; multi-pose path
 inside 2 mm / 1° in sim; one procedure named.
+
+**Result (2026-11-18): PASS.** Ten physical placements (centre, ±8 mm x/y,
+±2.5° yaw, +3.0 mm z, two corners) recovered by the multi-pose `/scan` path to
+**worst 0.22 mm XY / 0.048° yaw** (median 0.17/0.19 mm, 0.036°). Single-marker
+PnP: x median 0.34 mm but **2.23 mm worst**; **z biased −3.1 mm** (worst
+−9.4 mm). Offline median: x/y ≤0.37 mm, yaw ≤0.06°, z biased −3.4 mm.
+Board-plane z from the same captures: shared four-parameter fit bias
+**+0.042 mm**, spread **0.159 mm** across the matrix; per-view spread median
+0.102 mm / worst 0.416 mm (a two-tag view). **Named procedure: multi-pose
+ChArUco fusion for x/y/yaw + a multi-marker planar z fit over the same
+captures** — `/scan` itself does not estimate z. Planes settled: `/scan`
+returns the board origin on the supplied marker plane, single-marker PnP and
+the offline median return the tag plane (ChArUco → playing surface; mat →
+0.5 mm above table); `board.json` z is the playing surface. Receipt:
+`reports/block3_2026-11-18.md`.
+
+**Block 5 action from Block 3:** live `marker_z_m` is 0.43056 (mat plane) while
+`layout_kind` is `charuco`; with that plane every placement fails the fusion's
+1.2 px gate (RMS 1.33–2.56 px). Set it to `board_z_m` 0.4337. The four
+scan-controller accuracy tests still load `.private/phase11d/calibration.json`
+(real hand-eye mount, fx 312.77) against the sim's 36° camera (fx 738.64); the
+sim proof uses the model-exported calibration. `/board/derive` and the offline
+tool were composing the PnP transform inverted and without the MuJoCo axis
+flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
+20 mm model — fixed at 224 px/square.
 
 ## Block 4 — IRL run sheet and dry-run harness (30 min)
 

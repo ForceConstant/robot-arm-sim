@@ -1,0 +1,1380 @@
+{
+  "schema": "robot-arm-block3-placement-matrix/1",
+  "solver": "production plan + ChArUco face, board moved physically",
+  "calibration": {
+    "path": "/home/brian/robot-arm-sim/reports/block3_sim_calibration.json",
+    "id": "sim-1.15.0-model.xml-462.4mm-2026-11-15",
+    "intrinsics": [
+      738.644048922061,
+      738.644048922061,
+      320.0,
+      240.0
+    ]
+  },
+  "marker_plane_m": 0.4337,
+  "stale_live_marker_z_m": 0.43056,
+  "summary": {
+    "scan": {
+      "ex": {
+        "median": 0.174,
+        "max": 0.19
+      },
+      "ey": {
+        "median": 0.188,
+        "max": 0.219
+      },
+      "eyaw": {
+        "median": 0.036,
+        "max": 0.048
+      }
+    },
+    "scan_stale_plane": {},
+    "derive": {
+      "ex": {
+        "median": 0.336,
+        "max": 2.227
+      },
+      "ey": {
+        "median": 0.571,
+        "max": 1.438
+      },
+      "ez": {
+        "median": 3.097,
+        "max": 9.406
+      },
+      "eyaw": {
+        "median": 0.027,
+        "max": 0.048
+      }
+    },
+    "offline": {
+      "ex": {
+        "median": 0.325,
+        "max": 0.37
+      },
+      "ey": {
+        "median": 0.215,
+        "max": 0.29
+      },
+      "ez": {
+        "median": 3.415,
+        "max": 4.09
+      },
+      "eyaw": {
+        "median": 0.02,
+        "max": 0.06
+      }
+    },
+    "plane_fit": {
+      "within_placement_spread_median_mm": 0.102,
+      "within_placement_spread_max_mm": 0.416,
+      "per_view_bias_spread_mm": 0.191,
+      "per_view_bias_median_mm": -0.19,
+      "shared_bias_spread_mm": 0.159,
+      "shared_bias_median_mm": 0.042,
+      "z_only_spread_median_mm": 0.833,
+      "z_only_spread_max_mm": 134.016,
+      "z_only_bias_spread_mm": 0.948,
+      "z_only_bias_median_mm": 0.295
+    }
+  },
+  "rows": [
+    {
+      "placement": {
+        "name": "centre",
+        "dx_mm": 0.0,
+        "dy_mm": 0.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        0.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 0.175,
+        "y_mm": 216.815,
+        "yaw_deg": -0.0385,
+        "ex": 0.175,
+        "ey": -0.185,
+        "eyaw": 0.0385,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 21 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.349,
+        "ex": 0.167,
+        "ey": 0.051,
+        "eyaw": 0.017
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 15,
+        "reproj_px": 0.017,
+        "x_mm": 0.698,
+        "y_mm": -0.623,
+        "z_mm": 430.468,
+        "yaw_deg": -0.0118,
+        "ex": 0.698,
+        "ey": -0.623,
+        "ez": -3.232,
+        "eyaw": 0.0118
+      },
+      "offline": {
+        "x_mm": 0.21,
+        "y_mm": 0.13,
+        "z_mm": 430.18,
+        "yaw_deg": 0.02,
+        "ex": 0.21,
+        "ey": 0.13,
+        "ez": -3.52,
+        "eyaw": 0.02,
+        "sightings": 22,
+        "worst_axis_spread_mm": 3.29
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.467,
+          433.371
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.467,
+            "markers": 17,
+            "rms_px": 0.311
+          },
+          {
+            "z_mm": 433.371,
+            "markers": 2,
+            "rms_px": 0.275
+          }
+        ],
+        "z_median_mm": 433.419,
+        "z_min_mm": 433.371,
+        "z_max_mm": 433.467,
+        "z_spread_mm": 0.096,
+        "z_bias_mm": -0.281,
+        "rms_px_median": 0.293,
+        "z_only_median_mm": 433.947,
+        "z_only_spread_mm": 0.888,
+        "z_only_bias_mm": 0.247,
+        "shared": {
+          "views": 5,
+          "x_mm": 0.176,
+          "y_mm": -0.192,
+          "z_mm": 433.747,
+          "yaw_deg": -0.0325,
+          "rms_px": 0.386,
+          "ex": 0.176,
+          "ey": -0.192,
+          "ez": 0.047,
+          "eyaw": 0.0325
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "x-8",
+        "dx_mm": -8.0,
+        "dy_mm": 0.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": -8.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        -8.0,
+        0.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": -7.81,
+        "y_mm": 216.819,
+        "yaw_deg": -0.0339,
+        "ex": 0.19,
+        "ey": -0.181,
+        "eyaw": 0.0339,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 20 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.936,
+        "ex": 0.265,
+        "ey": 0.302,
+        "eyaw": 0.001
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 27,
+        "reproj_px": 0.011,
+        "x_mm": -7.678,
+        "y_mm": 0.188,
+        "z_mm": 430.738,
+        "yaw_deg": 0.042,
+        "ex": 0.322,
+        "ey": 0.188,
+        "ez": -2.962,
+        "eyaw": 0.042
+      },
+      "offline": {
+        "x_mm": -7.67,
+        "y_mm": 0.06,
+        "z_mm": 430.31,
+        "yaw_deg": 0.01,
+        "ex": 0.33,
+        "ey": 0.06,
+        "ez": -3.39,
+        "eyaw": 0.01,
+        "sightings": 23,
+        "worst_axis_spread_mm": 3.1
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.616,
+          433.2
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.616,
+            "markers": 17,
+            "rms_px": 0.32
+          },
+          {
+            "z_mm": 433.2,
+            "markers": 2,
+            "rms_px": 0.266
+          }
+        ],
+        "z_median_mm": 433.408,
+        "z_min_mm": 433.2,
+        "z_max_mm": 433.616,
+        "z_spread_mm": 0.416,
+        "z_bias_mm": -0.292,
+        "rms_px_median": 0.293,
+        "z_only_median_mm": 434.033,
+        "z_only_spread_mm": 0.833,
+        "z_only_bias_mm": 0.333,
+        "shared": {
+          "views": 4,
+          "x_mm": -7.813,
+          "y_mm": -0.192,
+          "z_mm": 433.75,
+          "yaw_deg": -0.0323,
+          "rms_px": 0.412,
+          "ex": 0.187,
+          "ey": -0.192,
+          "ez": 0.05,
+          "eyaw": 0.0323
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "x+8",
+        "dx_mm": 8.0,
+        "dy_mm": 0.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 8.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        8.0,
+        0.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 8.176,
+        "y_mm": 216.818,
+        "yaw_deg": -0.04,
+        "ex": 0.176,
+        "ey": -0.182,
+        "eyaw": 0.04,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 21 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.387,
+        "ex": 0.248,
+        "ey": 0.054,
+        "eyaw": 0.018
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 14,
+        "reproj_px": 0.012,
+        "x_mm": 8.115,
+        "y_mm": -0.625,
+        "z_mm": 430.738,
+        "yaw_deg": 0.0427,
+        "ex": 0.115,
+        "ey": -0.625,
+        "ez": -2.962,
+        "eyaw": 0.0427
+      },
+      "offline": {
+        "x_mm": 8.26,
+        "y_mm": 0.07,
+        "z_mm": 430.62,
+        "yaw_deg": 0.02,
+        "ex": 0.26,
+        "ey": 0.07,
+        "ez": -3.08,
+        "eyaw": 0.02,
+        "sightings": 22,
+        "worst_axis_spread_mm": 3.37
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.603,
+          433.438
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.603,
+            "markers": 17,
+            "rms_px": 0.337
+          },
+          {
+            "z_mm": 433.438,
+            "markers": 2,
+            "rms_px": 0.3
+          }
+        ],
+        "z_median_mm": 433.52,
+        "z_min_mm": 433.438,
+        "z_max_mm": 433.603,
+        "z_spread_mm": 0.165,
+        "z_bias_mm": -0.18,
+        "rms_px_median": 0.318,
+        "z_only_median_mm": 434.005,
+        "z_only_spread_mm": 0.698,
+        "z_only_bias_mm": 0.305,
+        "shared": {
+          "views": 5,
+          "x_mm": 8.169,
+          "y_mm": -0.196,
+          "z_mm": 433.854,
+          "yaw_deg": -0.0375,
+          "rms_px": 0.396,
+          "ex": 0.169,
+          "ey": -0.196,
+          "ez": 0.154,
+          "eyaw": 0.0375
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "y-8",
+        "dx_mm": 0.0,
+        "dy_mm": -8.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 209.0,
+        "yaw_deg": 0.0,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        -8.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 0.186,
+        "y_mm": 208.814,
+        "yaw_deg": -0.0236,
+        "ex": 0.186,
+        "ey": -0.186,
+        "eyaw": 0.0236,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 25 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.437,
+        "ex": 0.178,
+        "ey": 0.092,
+        "eyaw": 0.001
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 11,
+        "reproj_px": 0.013,
+        "x_mm": 0.3,
+        "y_mm": -9.04,
+        "z_mm": 430.04,
+        "yaw_deg": 0.0244,
+        "ex": 0.3,
+        "ey": -1.04,
+        "ez": -3.66,
+        "eyaw": 0.0244
+      },
+      "offline": {
+        "x_mm": 0.3,
+        "y_mm": -7.76,
+        "z_mm": 429.84,
+        "yaw_deg": -0.0,
+        "ex": 0.3,
+        "ey": 0.24,
+        "ez": -3.86,
+        "eyaw": 0.0,
+        "sightings": 26,
+        "worst_axis_spread_mm": 3.13
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.566,
+          433.433
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.566,
+            "markers": 21,
+            "rms_px": 0.313
+          },
+          {
+            "z_mm": 433.433,
+            "markers": 2,
+            "rms_px": 0.255
+          }
+        ],
+        "z_median_mm": 433.5,
+        "z_min_mm": 433.433,
+        "z_max_mm": 433.566,
+        "z_spread_mm": 0.134,
+        "z_bias_mm": -0.2,
+        "rms_px_median": 0.284,
+        "z_only_median_mm": 433.985,
+        "z_only_spread_mm": 0.815,
+        "z_only_bias_mm": 0.285,
+        "shared": {
+          "views": 4,
+          "x_mm": 0.188,
+          "y_mm": -8.19,
+          "z_mm": 433.721,
+          "yaw_deg": -0.0187,
+          "rms_px": 0.369,
+          "ex": 0.188,
+          "ey": -0.19,
+          "ez": 0.021,
+          "eyaw": 0.0187
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "y+8",
+        "dx_mm": 0.0,
+        "dy_mm": 8.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 225.0,
+        "yaw_deg": 0.0,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        8.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 0.161,
+        "y_mm": 224.793,
+        "yaw_deg": -0.0251,
+        "ex": 0.161,
+        "ey": -0.207,
+        "eyaw": 0.0251,
+        "views": 11,
+        "markers": [
+          6,
+          7,
+          9,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 22 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.512,
+        "ex": 0.131,
+        "ey": 0.021,
+        "eyaw": 0.005
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 25,
+        "reproj_px": 0.013,
+        "x_mm": -0.303,
+        "y_mm": 8.083,
+        "z_mm": 432.347,
+        "yaw_deg": -0.011,
+        "ex": -0.303,
+        "ey": 0.083,
+        "ez": -1.353,
+        "eyaw": 0.011
+      },
+      "offline": {
+        "x_mm": 0.32,
+        "y_mm": 8.29,
+        "z_mm": 429.61,
+        "yaw_deg": -0.01,
+        "ex": 0.32,
+        "ey": 0.29,
+        "ez": -4.09,
+        "eyaw": 0.01,
+        "sightings": 25,
+        "worst_axis_spread_mm": 3.18
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 1,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.563
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.563,
+            "markers": 20,
+            "rms_px": 0.529
+          }
+        ],
+        "z_median_mm": 433.563,
+        "z_min_mm": 433.563,
+        "z_max_mm": 433.563,
+        "z_spread_mm": 0.0,
+        "z_bias_mm": -0.137,
+        "rms_px_median": 0.529,
+        "z_only_median_mm": 433.688,
+        "z_only_spread_mm": 0.0,
+        "z_only_bias_mm": -0.012,
+        "shared": {
+          "views": 4,
+          "x_mm": 0.187,
+          "y_mm": 7.788,
+          "z_mm": 433.726,
+          "yaw_deg": -0.0155,
+          "rms_px": 0.542,
+          "ex": 0.187,
+          "ey": -0.212,
+          "ez": 0.026,
+          "eyaw": 0.0155
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "yaw-2.5",
+        "dx_mm": 0.0,
+        "dy_mm": 0.0,
+        "yaw_deg": -2.5,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": -2.5,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        0.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 0.149,
+        "y_mm": 216.811,
+        "yaw_deg": -2.5396,
+        "ex": 0.149,
+        "ey": -0.189,
+        "eyaw": 0.0396,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 22 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.503,
+        "ex": 0.122,
+        "ey": -0.004,
+        "eyaw": 0.044
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 31,
+        "reproj_px": 0.015,
+        "x_mm": 0.628,
+        "y_mm": 0.335,
+        "z_mm": 430.987,
+        "yaw_deg": -2.4765,
+        "ex": 0.628,
+        "ey": 0.335,
+        "ez": -2.713,
+        "eyaw": 0.0235
+      },
+      "offline": {
+        "x_mm": 0.22,
+        "y_mm": 0.23,
+        "z_mm": 431.14,
+        "yaw_deg": -2.51,
+        "ex": 0.22,
+        "ey": 0.23,
+        "ez": -2.56,
+        "eyaw": 0.01,
+        "sightings": 24,
+        "worst_axis_spread_mm": 3.33
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.532,
+          433.311
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.532,
+            "markers": 18,
+            "rms_px": 0.722
+          },
+          {
+            "z_mm": 433.311,
+            "markers": 2,
+            "rms_px": 0.27
+          }
+        ],
+        "z_median_mm": 433.422,
+        "z_min_mm": 433.311,
+        "z_max_mm": 433.532,
+        "z_spread_mm": 0.221,
+        "z_bias_mm": -0.278,
+        "rms_px_median": 0.496,
+        "z_only_median_mm": 434.01,
+        "z_only_spread_mm": 0.496,
+        "z_only_bias_mm": 0.31,
+        "shared": {
+          "views": 5,
+          "x_mm": 0.173,
+          "y_mm": -0.193,
+          "z_mm": 433.751,
+          "yaw_deg": -2.5322,
+          "rms_px": 0.695,
+          "ex": 0.173,
+          "ey": -0.193,
+          "ez": 0.051,
+          "eyaw": 0.0322
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "yaw+2.5",
+        "dx_mm": 0.0,
+        "dy_mm": 0.0,
+        "yaw_deg": 2.5,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": 2.5,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        0.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 0.165,
+        "y_mm": 216.81,
+        "yaw_deg": 2.4519,
+        "ex": 0.165,
+        "ey": -0.19,
+        "eyaw": 0.0481,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 21 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.355,
+        "ex": 0.16,
+        "ey": 0.074,
+        "eyaw": 0.031
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 11,
+        "reproj_px": 0.017,
+        "x_mm": 0.35,
+        "y_mm": -0.962,
+        "z_mm": 429.527,
+        "yaw_deg": 2.5067,
+        "ex": 0.35,
+        "ey": -0.962,
+        "ez": -4.173,
+        "eyaw": 0.0067
+      },
+      "offline": {
+        "x_mm": 0.34,
+        "y_mm": 0.27,
+        "z_mm": 430.36,
+        "yaw_deg": 2.54,
+        "ex": 0.34,
+        "ey": 0.27,
+        "ez": -3.34,
+        "eyaw": 0.04,
+        "sightings": 25,
+        "worst_axis_spread_mm": 3.93
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 3,
+        "views_rejected": 0,
+        "z_values_mm": [
+          433.482,
+          433.374,
+          433.401
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.482,
+            "markers": 17,
+            "rms_px": 0.309
+          },
+          {
+            "z_mm": 433.374,
+            "markers": 2,
+            "rms_px": 0.268
+          },
+          {
+            "z_mm": 433.401,
+            "markers": 2,
+            "rms_px": 0.239
+          }
+        ],
+        "z_median_mm": 433.401,
+        "z_min_mm": 433.374,
+        "z_max_mm": 433.482,
+        "z_spread_mm": 0.108,
+        "z_bias_mm": -0.299,
+        "rms_px_median": 0.268,
+        "z_only_median_mm": 434.161,
+        "z_only_spread_mm": 0.846,
+        "z_only_bias_mm": 0.461,
+        "shared": {
+          "views": 4,
+          "x_mm": 0.169,
+          "y_mm": -0.196,
+          "z_mm": 433.738,
+          "yaw_deg": 2.4579,
+          "rms_px": 0.398,
+          "ex": 0.169,
+          "ey": -0.196,
+          "ez": 0.038,
+          "eyaw": 0.0421
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "z+3.0",
+        "dx_mm": 0.0,
+        "dy_mm": 0.0,
+        "yaw_deg": 0.0,
+        "dz_mm": 3.0
+      },
+      "truth": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "z_mm": 436.7
+      },
+      "truth_origin_world_mm": [
+        0.0,
+        0.0,
+        436.7
+      ],
+      "scan": {
+        "x_mm": 0.174,
+        "y_mm": 216.81,
+        "yaw_deg": -0.0297,
+        "ex": 0.174,
+        "ey": -0.19,
+        "eyaw": 0.0297,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 21 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 2.558,
+        "ex": 0.159,
+        "ey": 0.276,
+        "eyaw": 0.013
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 10,
+        "reproj_px": 0.006,
+        "x_mm": -0.58,
+        "y_mm": -1.438,
+        "z_mm": 430.965,
+        "yaw_deg": 0.0452,
+        "ex": -0.58,
+        "ey": -1.438,
+        "ez": -5.735,
+        "eyaw": 0.0452
+      },
+      "offline": {
+        "x_mm": 0.34,
+        "y_mm": 0.2,
+        "z_mm": 433.26,
+        "yaw_deg": 0.04,
+        "ex": 0.34,
+        "ey": 0.2,
+        "ez": -3.44,
+        "eyaw": 0.04,
+        "sightings": 22,
+        "worst_axis_spread_mm": 5.51
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 2,
+        "views_rejected": 0,
+        "z_values_mm": [
+          436.522,
+          436.544
+        ],
+        "views_detail": [
+          {
+            "z_mm": 436.522,
+            "markers": 17,
+            "rms_px": 0.33
+          },
+          {
+            "z_mm": 436.544,
+            "markers": 2,
+            "rms_px": 0.259
+          }
+        ],
+        "z_median_mm": 436.533,
+        "z_min_mm": 436.522,
+        "z_max_mm": 436.544,
+        "z_spread_mm": 0.022,
+        "z_bias_mm": -0.167,
+        "rms_px_median": 0.295,
+        "z_only_median_mm": 436.981,
+        "z_only_spread_mm": 0.834,
+        "z_only_bias_mm": 0.281,
+        "shared": {
+          "views": 5,
+          "x_mm": 0.175,
+          "y_mm": -0.198,
+          "z_mm": 436.776,
+          "yaw_deg": -0.0261,
+          "rms_px": 0.385,
+          "ex": 0.175,
+          "ey": -0.198,
+          "ez": 0.076,
+          "eyaw": 0.0261
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "x+8_y-8_yaw+2.5",
+        "dx_mm": 8.0,
+        "dy_mm": -8.0,
+        "yaw_deg": 2.5,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": 8.0,
+        "y_mm": 209.0,
+        "yaw_deg": 2.5,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        8.0,
+        -8.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": 8.168,
+        "y_mm": 208.781,
+        "yaw_deg": 2.4766,
+        "ex": 0.168,
+        "ey": -0.219,
+        "eyaw": 0.0234,
+        "views": 11,
+        "markers": [
+          5,
+          8,
+          10,
+          11,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 24 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.333,
+        "ex": 0.128,
+        "ey": 0.01,
+        "eyaw": 0.01
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 24,
+        "reproj_px": 0.019,
+        "x_mm": 10.227,
+        "y_mm": -7.954,
+        "z_mm": 424.294,
+        "yaw_deg": 2.4522,
+        "ex": 2.227,
+        "ey": 0.046,
+        "ez": -9.406,
+        "eyaw": 0.0478
+      },
+      "offline": {
+        "x_mm": 8.37,
+        "y_mm": -7.93,
+        "z_mm": 430.86,
+        "yaw_deg": 2.56,
+        "ex": 0.37,
+        "ey": 0.07,
+        "ez": -2.84,
+        "eyaw": 0.06,
+        "sightings": 25,
+        "worst_axis_spread_mm": 5.86
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 1,
+        "views_rejected": 1,
+        "z_values_mm": [
+          433.592
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.592,
+            "markers": 20,
+            "rms_px": 0.335
+          }
+        ],
+        "z_median_mm": 433.592,
+        "z_min_mm": 433.592,
+        "z_max_mm": 433.592,
+        "z_spread_mm": 0.0,
+        "z_bias_mm": -0.108,
+        "rms_px_median": 0.994,
+        "z_only_median_mm": 434.545,
+        "z_only_spread_mm": 1.821,
+        "z_only_bias_mm": 0.845,
+        "shared": {
+          "views": 4,
+          "x_mm": 8.171,
+          "y_mm": -8.22,
+          "z_mm": 433.695,
+          "yaw_deg": 2.4793,
+          "rms_px": 0.379,
+          "ex": 0.171,
+          "ey": -0.22,
+          "ez": -0.005,
+          "eyaw": 0.0207
+        }
+      },
+      "frames": 11
+    },
+    {
+      "placement": {
+        "name": "x-8_y+8_yaw-2.5",
+        "dx_mm": -8.0,
+        "dy_mm": 8.0,
+        "yaw_deg": -2.5,
+        "dz_mm": 0.0
+      },
+      "truth": {
+        "x_mm": -8.0,
+        "y_mm": 225.0,
+        "yaw_deg": -2.5,
+        "z_mm": 433.7
+      },
+      "truth_origin_world_mm": [
+        -8.0,
+        8.0,
+        433.7
+      ],
+      "scan": {
+        "x_mm": -7.816,
+        "y_mm": 224.814,
+        "yaw_deg": -2.5397,
+        "ex": 0.184,
+        "ey": -0.186,
+        "eyaw": 0.0397,
+        "views": 11,
+        "markers": [
+          5,
+          6,
+          7,
+          9,
+          11,
+          14,
+          15,
+          16,
+          17,
+          19,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "note": ""
+      },
+      "scan_note": "",
+      "scan_stale_plane": null,
+      "scan_stale_note": "board solve failed with 22 markers",
+      "stale_plane_relaxed": {
+        "rms_px": 1.579,
+        "ex": 0.157,
+        "ey": 0.156,
+        "eyaw": 0.046
+      },
+      "derive": {
+        "pose": "frame00",
+        "marker_id": 14,
+        "reproj_px": 0.006,
+        "x_mm": -7.993,
+        "y_mm": 7.482,
+        "z_mm": 430.956,
+        "yaw_deg": -2.4713,
+        "ex": 0.007,
+        "ey": -0.518,
+        "ez": -2.744,
+        "eyaw": 0.0287
+      },
+      "offline": {
+        "x_mm": -7.65,
+        "y_mm": 8.29,
+        "z_mm": 430.09,
+        "yaw_deg": -2.56,
+        "ex": 0.35,
+        "ey": 0.29,
+        "ez": -3.61,
+        "eyaw": 0.06,
+        "sightings": 26,
+        "worst_axis_spread_mm": 5.02
+      },
+      "offline_note": null,
+      "plane_fit": {
+        "views": 1,
+        "views_rejected": 2,
+        "z_values_mm": [
+          433.578
+        ],
+        "views_detail": [
+          {
+            "z_mm": 433.578,
+            "markers": 19,
+            "rms_px": 0.427
+          }
+        ],
+        "z_median_mm": 433.578,
+        "z_min_mm": 433.578,
+        "z_max_mm": 433.578,
+        "z_spread_mm": 0.0,
+        "z_bias_mm": -0.122,
+        "rms_px_median": 2.017,
+        "z_only_median_mm": 433.597,
+        "z_only_spread_mm": 134.016,
+        "z_only_bias_mm": -0.103,
+        "shared": {
+          "views": 4,
+          "x_mm": -7.807,
+          "y_mm": 7.793,
+          "z_mm": 433.737,
+          "yaw_deg": -2.5265,
+          "rms_px": 0.462,
+          "ex": 0.193,
+          "ey": -0.207,
+          "ez": 0.037,
+          "eyaw": 0.0265
+        }
+      },
+      "frames": 11
+    }
+  ]
+}

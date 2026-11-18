@@ -228,10 +228,17 @@ class Live:
             if not ok:
                 continue
             rotation, _ = cv2.Rodrigues(rvec)
-            board_camera = np.eye(4)
-            board_camera[:3, :3] = rotation
-            board_camera[:3, 3] = np.ravel(tvec)
-            board = base_camera @ np.linalg.inv(board_camera)
+            # cv2.solvePnP returns board -> OpenCV camera (+z forward, +y down).
+            # The calibrated camera frame is MuJoCo's (-z forward, +y up), so
+            # flip y/z and compose base<-camera with board->camera.  The old
+            # code skipped the flip *and* inverted the transform: on the sim
+            # bench that put the board plane 641 mm above the true surface and
+            # turned yaw by 20 deg, while x/y looked deceptively plausible.
+            flip = np.diag([1.0, -1.0, -1.0])
+            camera_from_board = np.eye(4)
+            camera_from_board[:3, :3] = flip @ rotation
+            camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+            board = base_camera @ camera_from_board
             projected, _ = cv2.projectPoints(corners, rvec, tvec, camera_matrix, None)
             error_px = float(np.mean(np.linalg.norm(
                 projected.reshape(-1, 2) - np.asarray(detection.corners, dtype=float),

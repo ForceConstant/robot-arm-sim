@@ -79,8 +79,15 @@ def _marker_black(marker_id: int) -> np.ndarray:
     return small < 128
 
 
-def write_face(path: str, board, px_per_square: int = 128) -> str:
-    """Render the ChArUco face to `path`, sized to `board`."""
+def write_face(path: str, board, px_per_square: int = 224) -> str:
+    """Render the ChArUco face to `path`, sized to `board`.
+
+    224 px per 28 mm square is the smallest multiple of 28 that makes the
+    20 mm marker exactly 160 px, so every square and marker edge lands on an
+    integer pixel.  At 128 px the 20 mm marker rounded to 91 px (19.906 mm),
+    a 0.47 % size error against the declared geometry that showed up as a
+    ~0.7 px reprojection floor in the block-3 calibration matrix.
+    """
     from PIL import Image, ImageDraw, ImageFont
 
     square_px = px_per_square

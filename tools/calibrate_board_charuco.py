@@ -66,7 +66,20 @@ def flange_pose(calibration, joints_rad):
     return world
 
 
-def layout_for(name: str) -> MarkerLayout:
+def layout_for(name: str):
+    """Geometry adapter for the selected printed face.
+
+    The ChArUco face is not a corner-marker ring: its ids 5..36 sit in the
+    white squares of the playing field, so a ``MarkerLayout`` (which only
+    knows the four border tags and the centre tag) cannot describe them.  It
+    used to be built that way here, which made every ChArUco detection raise
+    "unknown marker id 5" and be skipped, so the offline median always
+    reported "no usable marker sightings" on a ChArUco board.
+    """
+    if name == "charuco":
+        from chess_sim.charuco_face import CharucoLayout
+        return CharucoLayout(square_mm=28.0,
+                             marker_mm=LAYOUTS[name]["size_mm"])
     spec = LAYOUTS[name]
     return MarkerLayout(offset_mm=spec["offset_mm"], size_mm=spec["size_mm"])
 
@@ -114,10 +127,16 @@ def estimate(captures: Path, calibration: WristCalibration, layout_name: str,
                 rejected.append((record_path.stem, detection.marker_id, round(error, 2)))
                 continue
             rotation, _ = cv2.Rodrigues(rvec)
-            board_camera = np.eye(4)
-            board_camera[:3, :3] = rotation
-            board_camera[:3, 3] = np.ravel(tvec)
-            board = base_camera @ np.linalg.inv(board_camera)
+            # solvePnP is board -> OpenCV camera (+z forward, +y down); the
+            # calibrated camera is MuJoCo's (-z forward, +y up).  Compose
+            # base<-camera with board->camera after the axis flip.  Inverting
+            # the PnP transform here (the old code) made the board plane
+            # several hundred millimetres high yet left x/y plausible.
+            flip = np.diag([1.0, -1.0, -1.0])
+            camera_from_board = np.eye(4)
+            camera_from_board[:3, :3] = flip @ rotation
+            camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+            board = base_camera @ camera_from_board
             estimates.append({
                 "capture": record_path.stem,
                 "marker_id": detection.marker_id,
