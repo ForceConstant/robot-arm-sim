@@ -1,0 +1,1014 @@
+{
+  "backend": "irl",
+  "hover_mm": 60.0,
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 38.8 mm / 0.19 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.2,
+      "detail": null,
+      "achieved": [
+        -46.4,
+        -80.2,
+        64.2
+      ]
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.34,
+      "detail": null,
+      "achieved": [
+        -32.9,
+        -99.3,
+        57.4
+      ]
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.16,
+      "detail": null,
+      "achieved": [
+        -23.0,
+        -98.9,
+        58.2
+      ]
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.66,
+      "detail": null,
+      "achieved": [
+        -14.1,
+        -97.7,
+        58.2
+      ]
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.39,
+      "detail": null,
+      "achieved": [
+        -23.8,
+        -74.3,
+        58.0
+      ]
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.11,
+      "detail": null,
+      "achieved": [
+        -12.1,
+        -75.1,
+        55.4
+      ]
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 44.5 mm / 0.06 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 37.0 mm / 0.19 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.5,
+      "detail": null,
+      "achieved": [
+        -45.0,
+        -77.5,
+        55.4
+      ]
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.03,
+      "detail": null,
+      "achieved": [
+        -41.6,
+        -74.3,
+        57.1
+      ]
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.32,
+      "detail": null,
+      "achieved": [
+        -29.1,
+        -70.9,
+        57.2
+      ]
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.41,
+      "detail": null,
+      "achieved": [
+        -32.6,
+        -58.8,
+        57.7
+      ]
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.28,
+      "detail": null,
+      "achieved": [
+        -21.8,
+        -55.9,
+        56.0
+      ]
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.52,
+      "detail": null,
+      "achieved": [
+        -6.5,
+        -49.4,
+        55.8
+      ]
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 37.3 mm / 0.18 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.14,
+      "detail": null,
+      "achieved": [
+        -67.6,
+        -49.0,
+        55.7
+      ]
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.24,
+      "detail": null,
+      "achieved": [
+        -59.3,
+        -46.8,
+        56.5
+      ]
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.01,
+      "detail": null,
+      "achieved": [
+        -43.3,
+        -45.3,
+        56.9
+      ]
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.23,
+      "detail": null,
+      "achieved": [
+        -27.2,
+        -42.0,
+        56.9
+      ]
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.58,
+      "detail": null,
+      "achieved": [
+        -12.6,
+        -41.8,
+        55.9
+      ]
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.31,
+      "detail": null,
+      "achieved": [
+        29.8,
+        -41.0,
+        56.4
+      ]
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.29,
+      "detail": null,
+      "achieved": [
+        45.5,
+        -43.4,
+        54.9
+      ]
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.07,
+      "detail": null,
+      "achieved": [
+        70.4,
+        -42.3,
+        53.1
+      ]
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.27,
+      "detail": null,
+      "achieved": [
+        -64.5,
+        -26.0,
+        55.7
+      ]
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.36,
+      "detail": null,
+      "achieved": [
+        -54.3,
+        -24.5,
+        54.8
+      ]
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.37,
+      "detail": null,
+      "achieved": [
+        -31.0,
+        -52.7,
+        56.6
+      ]
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.48,
+      "detail": null,
+      "achieved": [
+        -26.4,
+        -17.4,
+        54.9
+      ]
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.66,
+      "detail": null,
+      "achieved": [
+        -9.3,
+        -16.5,
+        54.8
+      ]
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.15,
+      "detail": null,
+      "achieved": [
+        32.6,
+        -16.7,
+        55.2
+      ]
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.29,
+      "detail": null,
+      "achieved": [
+        50.4,
+        -16.9,
+        54.9
+      ]
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.46,
+      "detail": null,
+      "achieved": [
+        74.6,
+        -14.7,
+        53.6
+      ]
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.32,
+      "detail": null,
+      "achieved": [
+        -69.8,
+        2.3,
+        54.4
+      ]
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.08,
+      "detail": null,
+      "achieved": [
+        -58.3,
+        5.4,
+        53.8
+      ]
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.66,
+      "detail": null,
+      "achieved": [
+        -29.3,
+        -24.3,
+        53.9
+      ]
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.44,
+      "detail": null,
+      "achieved": [
+        -25.2,
+        10.5,
+        52.2
+      ]
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.02,
+      "detail": null,
+      "achieved": [
+        -5.4,
+        11.9,
+        52.8
+      ]
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.7,
+      "detail": null,
+      "achieved": [
+        34.7,
+        9.1,
+        52.0
+      ]
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.4,
+      "detail": null,
+      "achieved": [
+        52.5,
+        10.1,
+        54.2
+      ]
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.06,
+      "detail": null,
+      "achieved": [
+        79.7,
+        9.2,
+        51.5
+      ]
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.39,
+      "detail": null,
+      "achieved": [
+        -74.2,
+        30.0,
+        54.2
+      ]
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.66,
+      "detail": null,
+      "achieved": [
+        -62.6,
+        33.2,
+        53.8
+      ]
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.57,
+      "detail": null,
+      "achieved": [
+        -29.3,
+        3.3,
+        52.5
+      ]
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.45,
+      "detail": null,
+      "achieved": [
+        -23.8,
+        38.0,
+        50.6
+      ]
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.08,
+      "detail": null,
+      "achieved": [
+        -1.9,
+        39.1,
+        51.2
+      ]
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.27,
+      "detail": null,
+      "achieved": [
+        19.5,
+        43.7,
+        51.9
+      ]
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.37,
+      "detail": null,
+      "achieved": [
+        59.3,
+        37.4,
+        48.6
+      ]
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.48,
+      "detail": null,
+      "achieved": [
+        81.9,
+        40.0,
+        53.0
+      ]
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 12.56,
+      "detail": null,
+      "achieved": [
+        -96.9,
+        19.8,
+        53.5
+      ]
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.3,
+      "detail": null,
+      "achieved": [
+        -91.4,
+        20.3,
+        52.7
+      ]
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.43,
+      "detail": null,
+      "achieved": [
+        -33.2,
+        27.7,
+        50.7
+      ]
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.53,
+      "detail": null,
+      "achieved": [
+        -22.4,
+        62.7,
+        48.8
+      ]
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.12,
+      "detail": null,
+      "achieved": [
+        -1.8,
+        68.2,
+        52.7
+      ]
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.06,
+      "detail": null,
+      "achieved": [
+        36.6,
+        63.4,
+        46.1
+      ]
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.63,
+      "detail": null,
+      "achieved": [
+        56.2,
+        64.6,
+        50.0
+      ]
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.43,
+      "detail": null,
+      "achieved": [
+        84.8,
+        60.8,
+        49.5
+      ]
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 16.71,
+      "detail": null,
+      "achieved": [
+        -101.2,
+        43.5,
+        51.6
+      ]
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.33,
+      "detail": null,
+      "achieved": [
+        -99.6,
+        43.1,
+        51.7
+      ]
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.14,
+      "detail": null,
+      "achieved": [
+        -55.7,
+        42.2,
+        46.3
+      ]
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.6,
+      "detail": null,
+      "achieved": [
+        -39.5,
+        38.6,
+        41.1
+      ]
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.06,
+      "detail": null,
+      "achieved": [
+        -17.8,
+        42.8,
+        45.6
+      ]
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.28,
+      "detail": null,
+      "achieved": [
+        1.3,
+        43.4,
+        46.4
+      ]
+    },
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.48,
+      "detail": null,
+      "achieved": [
+        18.9,
+        46.9,
+        50.5
+      ]
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.12,
+      "detail": null,
+      "achieved": [
+        48.1,
+        50.7,
+        50.7
+      ]
+    }
+  ]
+}

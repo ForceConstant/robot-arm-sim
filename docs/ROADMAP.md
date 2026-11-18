@@ -84,6 +84,9 @@ No next-stage physical work until the simulation release gate passes.
   (2026-11-10, sim envelope):** 11a infrastructure/execution and 11b control-policy
   training complete; 11c vision-model training closed with measured evidence
   (c/a frozen/geometry accepted; b frozen B1-alone rejected with documented fallback).
+- **11d — live BC-250/Pi teleop and board-discovery demo (bring-forward, next).**
+  A deliberately narrow vertical slice on real hardware. It consumes parts of 9,
+  11, 13 and 15 and closes none of them; 12–22 keep their numbers and gates.
 - **12 — audited training, corrections and local-policy comparison.**
 - **13 — complete simulated game coordinator and UI.**
 - **14 — simulated recovery, soak tests and release candidate.**
@@ -110,10 +113,14 @@ dependency:**
   no defensible label set or error budget.
 
 13 consumes 9+10+12 (a measured rejection may select scripted control).
-14 → 15 → **hardware boundary** → 16 → 17 → 18 → 19. Extension software/simulation
-qualification happens before its physical rollout, never by testing first on
-hardware. No new purchases, cloud uploads or host-driver changes are authorized
-by this planning document.
+11d is a supervised bench demo requested by Brian (2026-11-15) and is the only
+planned exception to "no physical deployment before 15/17": it may move the real
+arm for camera-only scan poses under the safety gates in its section, but it does
+not manipulate pieces, does not replace 14's release gate, and does not count as
+17's measured commissioning. 14 → 15 → **hardware boundary** → 16 → 17 → 18 → 19.
+Extension software/simulation qualification happens before its physical rollout,
+never by testing first on hardware. No new purchases, cloud uploads or
+host-driver changes are authorized by this planning document.
 
 ## Historical foundation evidence — measured scope, not current live status
 
@@ -728,6 +735,306 @@ Prior floor (geometric registration, 32-unit NumPy occupancy/colour MLP, legal-s
 
 Evidence: [PHASE11_RUNTIME_QUALIFICATION.md](PHASE11_RUNTIME_QUALIFICATION.md)
 and [PHASE11_LOCAL_TRAINING_PATHS.md](PHASE11_LOCAL_TRAINING_PATHS.md).
+
+## Phase 11d — live BC-250/Pi teleop and board-discovery demo
+
+**Outcome:** one supervised bench session where the BC-250 is the only brain. It
+receives the Pi's wrist-camera stream, switches the arm between leader teleop and
+remote joint control, drives a scripted scan that finds all four board ArUco tags,
+solves the chess-board pose in the arm-base frame, and serves a browser page on
+the BC-250 showing camera, tags and the measured board offset.
+
+**Why 11d and not 12:** 11c is closed, so this is genuinely next, and inserting a
+lettered slice keeps 12–22's numbers and gates untouched. It is a vertical-slice
+demo, not product acceptance: it borrows the registration math from 9, the
+BC-250 runtime from 11, the UI shell from 13 and the transport contract from 15,
+and **closes none of them**. It is the one planned exception to "no physical
+deployment before 15/17" (Brian, 2026-11-15); it may move the real arm for
+camera-only scan poses, never to touch a piece, and it does not replace 14's
+release gate or 17's measured commissioning.
+
+**Assumed present, no purchases:** BC-250 `192.168.1.171` (`ssh bazzite`,
+CachyOS) with its gaming drivers/kernel/compositor untouched — the app runs in a
+container or user-level venv, never system Python; Pi 4B `192.168.1.167`
+(`robot_arm`, hostname `robot1`) with the existing LeLab autostart
+(`lelab.service`, `so101-teleop.service`), C270 wrist camera at `/dev/video0` and
+the `so101-viewer` service on :8099; SO-101 follower with the 30 mm base datum
+and 90 mm board gap from `hardware/current_layout.json`; four 40 mm
+`DICT_4X4_50` markers at ±152 mm on the mat (Option A in
+[`BOARD_MARKER_LAYOUT.md`](BOARD_MARKER_LAYOUT.md)).
+
+**Services (two, one bus owner).**
+
+- Pi `so101-bridge` (:8100, FastAPI/uvicorn, user systemd unit): owns the mode
+  arbiter, publishes joint state at 20–30 Hz, accepts bounded joint targets,
+  enforces TTL/sequence/envelope, holds the local watchdog and e-stop latch, and
+  is the single camera source. **v1 does not touch the Feetech bus directly** —
+  LeLab stays the bus owner and the bridge drives it through LeLab's HTTP API.
+  Verify `/move-arm`, `/teleoperation-status` and whether teleop can be stopped
+  independently before coding; if LeLab cannot yield safely, that is a separate
+  decision (bridge-owned lerobot loop), not a silent rewrite.
+- BC-250 `robot_live` (:8080): pulls the camera **once** and fans out to browsers,
+  runs ArUco detection and pose estimation, orchestrates the scan, solves the
+  board pose, records the session, serves the GUI. Reuse `robot_web`'s same-origin
+  POST guard, no-store headers and MJPEG pattern; do not expose to the Internet.
+
+**Protocol** (`robot_protocol`, versioned module so Phase 15 inherits it):
+`hello {v, roles, limits}`, `state {seq, t_ms, joints_deg[6], mode, bus_ok, cam_fps}`,
+`command {v, seq, t_ms, ttl_ms ≤ 250, joints_deg[6], speed_scale ≤ 0.3}`,
+`ack {seq, applied, clamped, err}`, `mode {teleop|remote|hold}`, `estop`.
+Reject stale, duplicate, out-of-envelope and out-of-order messages; never replay a
+queue after reconnect; all angles in degrees at the joint interface, raw servo
+counts stay inside the Pi.
+
+**Modes:** `TELEOP` (leader drives follower), `REMOTE` (bridge accepts BC-250
+targets), `HOLD` (no new targets, bounded stop/hold — not torque-off),
+`FAULT`/`ESTOP` (latched, needs an explicit re-arm). Exactly one owner at a time.
+`teleop → remote`: stop the mirroring loop, ramp to hold over ~300 ms, ack, then
+accept targets. `remote → teleop`: stop accepting targets, zero velocity, require
+the leader to be near the follower pose, then hand back. Any fault, TTL miss,
+link drop, Pi reboot or BC-250 restart lands in `HOLD` and requires re-arming,
+never auto-resume.
+
+**Scan for the four markers:** the wrist field of view cannot be assumed to hold
+all four corner tags at once, so the scan is a set of poses, not one picture.
+Generate 9–13 candidate poses (3×3 board grid plus edge mids, fixed height/tilt)
+offline in the simulator, verify each for IK, joint limits and collision, then
+store them as a versioned pose file. At runtime capture settle → detect → score
+coverage; if a tag is missing, visit its predicted pose and re-detect. Fuse tag
+corners into the base frame using FK at each capture timestamp, solve once ≥3
+tags agree, and report which poses contributed. No closed-loop visual servoing in
+this phase.
+
+**Sim-first slice (2026-11-15).** The scan is the engineering content, so it is
+planned and measured in the simulator before any live pose file is frozen. Phase
+9's committed six-pose plan was selected for the 64 playing squares and, measured
+on the current layout, sees only markers 2 and 3 — the near markers (ids 0 and 1
+at -y) never appear in any of its frames. That is a coverage failure, not a
+detector failure: every marker is individually resolvable from a pose above it.
+`chess_sim/marker_scan.py` scores a pose by frame margin, projected marker edge
+(a 40 mm, six-module marker needs ~42 px for ~7 px/module) and the authored-mesh
+arm silhouette, so planner and runtime share one definition of "usable".
+`tools/plan_marker_scan.py` solves wrist-lens targets over the marker ring and a
+board grid, then greedily covers every marker twice while rejecting repeat views
+from the same camera position. The committed plan is six poses, two independent
+views per marker, projected edges 38.7–47.5 px (threshold 36 px): two overhead
+views of the far pair (ids 2/3), and four near-side views at 47.5 px plus two
+higher, laterally offset views at 38.7 px for ids 0 and 1. No single frame holds
+all four: the near pair spans 304 mm and the wrist lens covers ~330 mm at that
+height, so the pose set is the mechanism, not a workaround. Predicted marker
+visibility matched the real ArUco detector on the rendered frames; in one frame
+the detector also resolved id 2 that the conservative planner had not credited.
+`tests/test_marker_scan.py` pins the projection, occlusion, diversity and offset
+arithmetic, and guards the committed plan's completeness.
+This closes the scan *planning* question only; capture, fusion, hand-eye
+calibration and live offset reporting remain open. The near-side views carry the
+open jaws across a large part of the frame; detection still resolves the markers
+there, but a frame-clutter budget is the first tuning knob once live detection
+rates exist.
+
+**Board from base offset:** per tag, `solvePnP` with calibrated intrinsics gives
+`T_cam_tag`; the board frame is defined by the known ±152 mm marker layout.
+Eye-in-hand: `T_base_board = T_base_flange(q) · T_flange_cam · T_cam_board`, where
+`T_flange_cam` comes from a one-time hand-eye calibration (`cv2.calibrateHandEye`
+over 10–15 poses, refined against the CAD mount transform), and `q` is the
+timestamped joint state, not the latest one. Report `x/y/z` of the board centre
+relative to the base frame, yaw, residual RMS, tag count and pose age. The demo
+also prints the nominal expectation so a mounting error is visible rather than
+absorbed. Hand-eye calibration is a hard prerequisite: without it the offset is a
+camera-frame number, not a base-frame one.
+
+**GUI (BC-250 :8080):** live camera with tag overlay; teleop ON/OFF plus HOLD and
+E-STOP; mode and link banner (RTT, FPS, staleness); board offset in mm/degrees;
+tag table (id, corners, reprojection error, age); "Find board" button with scan
+progress and coverage; joint readout and command latency; recording indicator.
+Every control needs an explicit session "arm" click first.
+
+**Safety gates:** speed ≤30% of teleop and a configured workspace box, both
+enforced on the Pi, not just the GUI; z-guard above the board plane plus margin
+so a scan pose cannot descend into the pieces; physical servo-power/e-stop within
+reach, GUI stop secondary; hands-clear arming every session; no autostart into
+`TELEOP` or `REMOTE`; every command and mode transition logged with timestamps;
+one upstream camera pull only, or the Pi's USB bus and CPU become the bottleneck.
+
+**Exit gates (proposed tolerances, fix before the run):**
+
+1. Camera: ≥10 fps at 640×480 to the browser through a single upstream pull, added
+   latency ≤300 ms, 30 min without a dropped stream or Pi thermal alarm.
+2. Transport: 10 min remote session over Wi-Fi with zero executed
+   expired/duplicate commands; Wi-Fi drop and BC-250 restart each produce `HOLD`
+   and require re-arm; measured RTT and jitter recorded, with wired only if the
+   Wi-Fi budget fails.
+3. Teleop toggle: 10 clean round trips `TELEOP ↔ REMOTE` with no jump >2° at the
+   handover and no bus contention error in the Pi log.
+4. Detection: 4/4 tags found within 60 s from cold start on 5 consecutive runs;
+   each tag's reprojection error recorded.
+5. Board pose: repeated solves agree within ±2 mm and ±1° across ≥5 scans, and
+   agree with a tape-measured base-to-board offset within ±5 mm.
+6. Recovery: camera unplug, tag removal, Pi service restart and BC-250 service
+   restart each surface a visible fault and never leave the arm moving.
+7. Evidence: session recording (frames + joints + detections + commands), a
+   receipt JSON, and a hand-off note; sim release checks untouched.
+
+**Out of scope:** chess rules/engine, piece or occupancy recognition, grasp
+planning, any manipulation, model training, reflashing the Pi, changing BC-250
+drivers/kernel, purchases, and Internet exposure.
+
+**Locked with Brian (2026-11-15):** the four tags are already fabricated and
+mounted on the board, so the scan gate does not wait on Phase 16; the C270 is the
+operational wrist camera and is integrated into the jaw; Wi-Fi is the first path,
+with wired Ethernet recorded as a fallback measurement rather than a
+prerequisite; teleop on/off is implemented by starting and stopping LeLab's
+mirroring loop through its API, not by taking the bus. Both the Pi and the BC-250
+were powered off when this was written, so the LeLab API check is the first action
+once they are up.
+
+**LeLab boundary — measured 2026-11-15 (LeLab 0.6.1, lerobot 0.6.1, Python
+3.12.16, Pi up):** the follower is `ttyACM0` (`...5C93128208`), the leader
+`ttyACM1` (`...5C93131956`), and the LeLab process holds both ports for as long
+as teleoperation runs. `POST /move-arm` *starts teleoperation* — its body is two
+ports plus two calibration names, not joint targets — so **remote joint commands
+cannot pass through LeLab**. `POST /stop-teleoperation` sets the worker flag and
+the worker disconnects both devices, which releases the ports. Joint state is
+already broadcast at 30 Hz on `ws://127.0.0.1:8000/ws/joint-data` (what the
+existing viewer consumes); the REST `/joint-positions` poll is the path that
+previously killed the teleop loop. `/camera-feed/{cam_key}` exists only during an
+active recording, so the bridge must own `/dev/video0` itself.
+
+Consequence for the design: the bridge is the mode arbiter, but it delegates
+TELEOP to LeLab and only takes the follower bus in REMOTE. Entering REMOTE stops
+teleoperation and waits for `teleoperation_active` to clear. Returning to TELEOP
+stops commanding, closes the follower, opens the leader read-only to compare its
+pose with the follower's, and refuses to start teleoperation when they are more
+than ~10 degrees apart — otherwise LeLab's mirroring loop would jump the wrist
+and jaw to the leader's pose the instant it connects.
+
+**Fusion gate measured (2026-11-15, BC-250).** `tools/benchmark_marker_fusion.py`
+renders the committed plan against a displaced board, runs the real detector and
+fuses through `estimate_board_pose`; no simulator camera or board transform
+reaches the estimator. Results: the five named placements pass at 0.30–0.38 mm /
+0.07–0.08°; the **±20 mm × ±20 mm × ±5° grid passes 27/27**; the ±40 mm grid
+passes 26/27, the outlier being the far edge at +40 mm with zero yaw. Board-pose
+gate is 2 mm / 1°.
+
+Two findings worth keeping. First, **installation geometry goes stale**: the
+Phase 9 calibration was exported for the 460 mm datum, and on the current
+462.4 mm layout it produced a ~0.9 mm board bias and solver rejections at the
+placement extremes. `tools/export_wrist_calibration.py` exports and verifies the
+chain for the live scene (0.000000 mm reproduction error), and with it the bias
+returned to ~0.3 mm. Regenerate calibration and plan together after any mount,
+riser or gripper change. Second, the plan now carries per-marker **recovery
+poses** from the scored candidates; they help a small miss, but they are aimed at
+the nominal marker position, so a 40 mm placement error moves the marker out of
+the recovery frame too — the live fallback for that case is a wide re-scan, not a
+fixed pose. Set the user-facing tolerance at ±20 mm / ±5° and ask for
+repositioning outside it.
+
+**50 mm tolerant plan (2026-11-15).** `--tolerance-mm 50 --min-markers 3` seeds
+the selection with the nominal six-pose set, then adds poses until every sampled
+placement (±50 mm in 25 mm steps, ±5° yaw) sees at least three markers. Result:
+11 poses, nominal coverage still two views per marker, ordered
+nearest-neighbour in joint space. Measured with `benchmark_marker_fusion.py`:
+**75/75 placements solve**, worst board error 0.51 mm / 0.12°, no recovery pose
+needed. One placement misses the planner's 3-marker criterion (74/75) but still
+solves from two.
+
+Scan cost is dominated by ordering, not pose count: the six-pose tight plan
+travels 649° of slowest-joint motion in its generated order, 399° reordered; the
+11-pose tolerant plan travels 398° ordered. At the bridge's current 10.5°/s cap
+(35°/s × 0.3) that is ~44 s plus 0.5 s settle per pose; at 35°/s it is ~17 s.
+Raising the cap is a safety-envelope change, not a scan change. Candidate scores
+are cached in `.private/phase11d/marker_scores.json`, so re-selecting a plan is
+seconds instead of a 20-minute IK sweep.
+
+**Scan controller and fake-bridge harness (2026-11-16).** `live/scan_controller.py`
+closes the gap between the plan and the fusion math: it commands each pose
+through the bridge, waits for arrival, requires the settle dwell, captures a
+frame **with the joints that produced it**, rejects a stale pair, fuses one board
+pose, falls back to per-marker recovery poses when fewer than two markers are
+seen, and reports the offset in the base frame. It refuses to run unless the
+bridge is already in REMOTE and armed, and it never changes the speed cap.
+`live/bridge_client.py` supplies the `/state`, `/command` and `/capture` (JPEG
+plus joint snapshot) adapters. `live/tests/test_scan_controller.py` runs eight
+simulator-backed cases — nominal, displaced board, stale-frame rejection,
+recovery after hidden markers, TELEOP and unarmed refusal, pose-timeout
+reporting, and a degrees-vs-radians guard. 48 tests pass on the BC-250 (8
+controller, 21 marker, 19 protocol).
+
+Two things the harness proved that the bench has not: a stale frame is caught by
+comparing the frame's joints with the bridge's current state, and a plan supplied
+in the wrong units fails immediately instead of driving the arm to 270,000
+degrees. Not yet exercised: `/capture` against the Pi — the Pi was offline when
+this was written, so the live dry run is the next action.
+
+**Transport verified end to end (2026-11-16, BC-250).** With the Pi switched
+off, `live/tests/test_http_pipeline.py` runs the real `HttpBridge`/`HttpFrames`
+clients over HTTP against a simulator-backed server that speaks the same API:
+`/state` with limits, `/command` with sequence rejection, and `/capture` with a
+base64 JPEG plus joint snapshot. The controller drove all 11 poses over the wire
+and recovered the nominal layout offset (0 mm, 217 mm, 90 mm gap) within 2 mm.
+28 live tests pass. Two unit traps were caught in the process and are now
+guards: a radian plan sent as degrees is refused against the bridge's reported
+joint limits, and the jaw is **not** a degrees conversion — sim radians map to
+lerobot's 0..100 command, and that map's direction is still an unverified
+convention to check on hardware. `/capture` itself remains untested against the
+real Pi.
+
+**Hand-eye solver and live console (2026-11-16, BC-250).**
+`tools/solve_hand_eye.py --sim-validate` recovers `T_flange_cam` from rendered
+marker views. OpenCV's closed-form `calibrateHandEye` was abandoned: it returned
+a 180 deg solution even on exact synthetic data, because its camera convention
+(+Z view axis) differs from this project's (-Z) and a planar target adds a mirror
+ambiguity. The tool instead refines the CAD prior on pixel residuals; from a
+prior perturbed by **10 deg / 15 mm** it reaches **0.11 deg / 0.11 mm**, and
+`tests/test_hand_eye.py` pins that. One instructive bug is recorded in the code:
+using the true camera rotation inside the residual leaves rotation unconstrained,
+so the fit silently absorbs tool rotation into translation and still looks good.
+
+`live/app.py` is the browser console: annotated camera stream, mode/joint state,
+offset readout, and Arm / Remote / Hold / Teleop / Find-board / E-STOP. It holds
+no motion authority; every POST carries the bridge token and all scan logic stays
+in `scan_controller.py`. `live/tests/test_app.py` drives a full scan through the
+page's own endpoint against the simulator-backed bridge. 51 tests pass on the
+BC-250 (marker, hand-eye, protocol, controller, HTTP pipeline, app). Not yet
+covered: the MJPEG `/stream` path, and any of it against the real Pi.
+
+**Chosen defaults (Brian, 2026-11-16):** the 50 mm tolerant plan is the default
+marker scan (`chess_sim/assets/marker_scan_plan.json`); the original six-pose set
+is kept as `marker_scan_plan_tight.json` for comparison. Motion stays at the
+conservative 10.5°/s cap (35°/s × 0.3) for the demo.
+
+**Future phase — full-speed action qualification (Brian, 2026-11-16).** The scan
+is ordering-bound, so raising command speed is the cheapest latency win: the same
+11-pose scan is ~44 s at 10.5°/s and ~17 s at 35°/s, with a lower bound near 13 s
+at the servos' real maximum. That is not a config flip: it needs measured
+overshoot, settle time and stop distance per joint, a raise of the bridge's
+`speed_scale` cap, and a re-qualified scan (higher speed changes where the arm is
+when the shutter opens). Keep it as its own phase with its own gates rather than
+folding it into this demo.
+
+**Bridge v1 verified on hardware (2026-11-15).** `live/pi_bridge/` runs on
+`robot1` (LeLab venv, port 8100, token-guarded): mode arbiter, bounded command
+path, camera and joint streaming. Measured on the real arm: TELEOP → REMOTE
+closed the follower and released LeLab; REMOTE → TELEOP passed the handover
+guard and restarted LeLab; a bridge restart adopted an already-running
+teleoperation instead of starting a second one; `+3°` shoulder-pan commands
+moved the joint and returned within 0.18°; the C270 streamed 640×480 over MJPEG
+with no contention against LeLab. One bug worth remembering: the per-cycle step
+budget must accumulate against the last **commanded** goal, not the measured
+position — a 0.23°/cycle ramp anchored on measurement is smaller than the servo
+deadband and stalls forever, which is exactly what the first test did. The
+bridge also never pulls a measured pose inward when it sits a degree outside the
+calibrated envelope, and a 12° goal-vs-measurement lag guard stops a blocked
+joint from running away. Installing `so101-bridge.service` needs a sudo
+password; until then it runs under `setsid nohup` and does not survive a reboot
+(LeLab's teleop autostart still does, which is the safe default).
+
+**Risks:** hand-eye residual may not reach 2 mm with the CAD mount as the only
+prior; the C270's integrated jaw mount fixes its near focus, so measure the
+working distance before trusting tag corner precision; Wi-Fi jitter may force the
+wired fallback sooner than expected; stopping and restarting teleoperation on
+every mode change is a real usability cost that may justify a bridge-owned
+teleop loop later.
 
 ## Phase 12 — train and compare goal-conditioned ACT
 

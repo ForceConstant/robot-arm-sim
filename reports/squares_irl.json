@@ -1,0 +1,866 @@
+{
+  "backend": "irl",
+  "hover_mm": 60.0,
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 27.6 mm / 1.37 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 43.5 mm / 2.0 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 39.6 mm / 2.18 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 29.4 mm / 2.05 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 26.7 mm / 1.76 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 31.6 mm / 1.3 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 27.8 mm / 0.58 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 22.2 mm / 0.71 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 33.6 mm / 0.76 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 42.7 mm / 1.3 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 29.3 mm / 1.35 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.32,
+      "detail": null,
+      "achieved": [
+        17.8,
+        -76.5,
+        213.6
+      ]
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.39,
+      "detail": null,
+      "achieved": [
+        30.0,
+        -73.6,
+        217.9
+      ]
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.61,
+      "detail": null,
+      "achieved": [
+        45.2,
+        -69.7,
+        220.1
+      ]
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 26.3 mm / 0.13 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 28.3 mm / 0.15 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 35.7 mm / 0.15 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 37.0 mm / 0.42 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 25.3 mm / 0.49 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.15,
+      "detail": null,
+      "achieved": [
+        23.9,
+        -55.3,
+        224.3
+      ]
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.56,
+      "detail": null,
+      "achieved": [
+        32.9,
+        -52.2,
+        222.9
+      ]
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.17,
+      "detail": null,
+      "achieved": [
+        51.6,
+        -48.3,
+        225.3
+      ]
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.02,
+      "detail": null,
+      "achieved": [
+        74.5,
+        -43.7,
+        224.9
+      ]
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 22.8 mm / 0.1 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 39.4 mm / 0.02 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 32.9 mm / 0.01 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 24.0 mm / 0.01 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.21,
+      "detail": null,
+      "achieved": [
+        26.2,
+        -24.6,
+        229.0
+      ]
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.09,
+      "detail": null,
+      "achieved": [
+        35.9,
+        -25.1,
+        228.1
+      ]
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.69,
+      "detail": null,
+      "achieved": [
+        54.6,
+        -21.6,
+        227.2
+      ]
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.09,
+      "detail": null,
+      "achieved": [
+        79.5,
+        -19.7,
+        224.2
+      ]
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.41,
+      "detail": null,
+      "achieved": [
+        104.4,
+        -16.2,
+        222.3
+      ]
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 34.5 mm / 0.09 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 29.6 mm / 0.02 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 22.9 mm / 0.05 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.69,
+      "detail": null,
+      "achieved": [
+        30.9,
+        5.4,
+        227.0
+      ]
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.28,
+      "detail": null,
+      "achieved": [
+        40.0,
+        3.2,
+        227.0
+      ]
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.42,
+      "detail": null,
+      "achieved": [
+        59.3,
+        4.7,
+        224.8
+      ]
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.63,
+      "detail": null,
+      "achieved": [
+        82.3,
+        5.4,
+        218.6
+      ]
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.38,
+      "detail": null,
+      "achieved": [
+        105.6,
+        6.5,
+        215.8
+      ]
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 31.1 mm / 0.93 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 26.7 mm / 0.71 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 21.3 mm / 0.62 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.35,
+      "detail": null,
+      "achieved": [
+        29.4,
+        31.9,
+        219.2
+      ]
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.46,
+      "detail": null,
+      "achieved": [
+        35.4,
+        30.7,
+        219.2
+      ]
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.05,
+      "detail": null,
+      "achieved": [
+        58.8,
+        29.7,
+        219.4
+      ]
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.54,
+      "detail": null,
+      "achieved": [
+        79.4,
+        29.3,
+        212.5
+      ]
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 21.2 mm / 2.16 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 32.3 mm / 2.12 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 27.8 mm / 1.85 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 23.5 mm / 1.73 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.26,
+      "detail": null,
+      "achieved": [
+        25.1,
+        49.5,
+        214.0
+      ]
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.6,
+      "detail": null,
+      "achieved": [
+        34.4,
+        49.9,
+        210.0
+      ]
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 20.2 mm / 2.28 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 25.5 mm / 2.75 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 33.1 mm / 3.34 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 40.7 mm / 3.45 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 36.3 mm / 3.18 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 33.1 mm / 3.05 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 31.5 mm / 3.07 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 32.2 mm / 3.24 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 35.3 mm / 3.53 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 40.8 mm / 3.95 deg\"}",
+      "achieved": null
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "{\"detail\":\"no reachable pose: off by 48.6 mm / 4.48 deg\"}",
+      "achieved": null
+    }
+  ]
+}

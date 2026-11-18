@@ -119,7 +119,19 @@ class BoardConfig(Config):
     border: float = 0.015          # wood border around the 8x8 field
     thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
-    marker_plane: str = "mat"      # where the markers print: "mat" or "board'
+    marker_plane: str = "mat"      # where the markers print: "mat" or "board"
+    # "wood" is the plain board; "charuco" prints the ArUco ChArUco face
+    # into the surface itself (ids 5..36), matching the printed target.
+    face: str = "wood"
+    # Measured on the real arm (2026-11-17): the calibrated chain's final frame
+    # sits this far above the physical jaw tip, so a tip-referenced Cartesian
+    # target must lift the frame by this much along the approach axis.
+    jaw_tip_mm: float = 83.0
+    # Same working envelope the live controller enforces.
+    keep_in_x_mm: float = 118.0
+    keep_in_y_mm: float = 118.0
+    keep_in_z_min_mm: float = -5.0
+    keep_in_z_max_mm: float = 320.0
     table_top: float = 0.43        # table height above the floor
     # Extended 30 mm base (2026-11-14): the printed base extends 32.4 mm below
     # the frame origin, so a 462.4 mm frame puts its bottom at 430 mm, coplanar

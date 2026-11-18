@@ -321,6 +321,14 @@ def ensure_scene_assets(board, appearance=None) -> str:
         os.makedirs(GENERATED_DIR, exist_ok=True)
         path = os.path.join(GENERATED_DIR, f"board_{appearance.board_key}.png")
         colors = (appearance.light_square, appearance.dark_square, appearance.border)
+    if getattr(board, "face", "wood") == "charuco":
+        # Printed calibration face: the markers live in the texture, not as geoms.
+        os.makedirs(GENERATED_DIR, exist_ok=True)
+        path = os.path.join(GENERATED_DIR, "board_charuco.png")
+        if not os.path.exists(path):
+            from .charuco_face import write_face
+            write_face(path, board)
+        return os.path.relpath(path, ASSET_DIR)
     if not os.path.exists(path):
         _write_board_texture(path, board, colors,
                              labels=bool(appearance is not None and appearance.board_labels),

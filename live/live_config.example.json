@@ -1,0 +1,17 @@
+{
+  "bridge_url": "http://192.168.1.167:8100",
+  "token_file": "live/bridge_token.txt",
+  "calibration": ".private/phase11d/calibration.json",
+  "plan": "chess_sim/assets/marker_scan_plan.json",
+  "board_half_mm": 127.0,
+  "square_m": 0.028,
+  "board_z_m": 0.4337,
+  "marker_z_m": 0.43056,
+  "layout_offset_mm": 152.0,
+  "settle_s": 0.6,
+  "pose_timeout_s": 12.0,
+  "speed_scale": 0.3,
+  "port": 8080,
+  "base_x_m": 0.0,
+  "base_y_m": -0.217
+}

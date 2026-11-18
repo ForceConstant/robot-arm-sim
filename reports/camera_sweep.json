@@ -1,0 +1,1032 @@
+{
+  "solved": 64,
+  "total": 64,
+  "aimed_within_60px": 63,
+  "all_have_markers": true,
+  "squares": [
+    {
+      "square": "a1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 2,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        13.79,
+        -29.65,
+        38.31,
+        34.65,
+        -67.06
+      ]
+    },
+    {
+      "square": "b1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 3,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        7.42,
+        -31.01,
+        37.84,
+        38.34,
+        -63.29
+      ]
+    },
+    {
+      "square": "c1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 4,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        0.86,
+        -30.26,
+        35.54,
+        42.08,
+        -59.63
+      ]
+    },
+    {
+      "square": "d1",
+      "ok": true,
+      "aim_offset_px": 42.9,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.37,
+      "aim_error_deg": 3.42,
+      "joints_deg": [
+        3.66,
+        -45.54,
+        52.08,
+        32.6,
+        -83.0
+      ]
+    },
+    {
+      "square": "e1",
+      "ok": true,
+      "aim_offset_px": 8.5,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.07,
+      "aim_error_deg": 0.68,
+      "joints_deg": [
+        -4.36,
+        -45.53,
+        52.07,
+        32.62,
+        -83.0
+      ]
+    },
+    {
+      "square": "f1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 5,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -11.52,
+        -43.11,
+        50.36,
+        32.38,
+        -79.58
+      ]
+    },
+    {
+      "square": "g1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 4,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -18.13,
+        -38.52,
+        46.86,
+        32.16,
+        -75.27
+      ]
+    },
+    {
+      "square": "h1",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 3,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -24.28,
+        -32.21,
+        41.6,
+        32.26,
+        -71.35
+      ]
+    },
+    {
+      "square": "a2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 2,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        15.5,
+        -45.07,
+        48.84,
+        39.1,
+        -68.1
+      ]
+    },
+    {
+      "square": "b2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        8.37,
+        -46.66,
+        48.08,
+        43.44,
+        -63.85
+      ]
+    },
+    {
+      "square": "c2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        0.97,
+        -45.52,
+        45.53,
+        47.31,
+        -59.69
+      ]
+    },
+    {
+      "square": "d2",
+      "ok": true,
+      "aim_offset_px": 45.2,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.45,
+      "aim_error_deg": 3.61,
+      "joints_deg": [
+        4.24,
+        -63.58,
+        60.06,
+        42.68,
+        -83.0
+      ]
+    },
+    {
+      "square": "e2",
+      "ok": true,
+      "aim_offset_px": 5.4,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.05,
+      "aim_error_deg": 0.43,
+      "joints_deg": [
+        -5.07,
+        -63.57,
+        60.04,
+        42.71,
+        -83.0
+      ]
+    },
+    {
+      "square": "f2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -13.09,
+        -60.29,
+        58.39,
+        41.7,
+        -78.55
+      ]
+    },
+    {
+      "square": "g2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -20.49,
+        -54.17,
+        55.0,
+        40.08,
+        -73.76
+      ]
+    },
+    {
+      "square": "h2",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 5,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -27.24,
+        -46.06,
+        49.84,
+        38.54,
+        -69.5
+      ]
+    },
+    {
+      "square": "a3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 5,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        17.68,
+        -62.17,
+        57.02,
+        47.49,
+        -69.44
+      ]
+    },
+    {
+      "square": "b3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        9.61,
+        -63.89,
+        55.82,
+        52.56,
+        -64.56
+      ]
+    },
+    {
+      "square": "c3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        1.11,
+        -62.03,
+        52.95,
+        56.34,
+        -59.77
+      ]
+    },
+    {
+      "square": "d3",
+      "ok": true,
+      "aim_offset_px": 48.2,
+      "markers": 12,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.58,
+      "aim_error_deg": 3.88,
+      "joints_deg": [
+        5.02,
+        -83.06,
+        64.77,
+        57.47,
+        -83.0
+      ]
+    },
+    {
+      "square": "e3",
+      "ok": true,
+      "aim_offset_px": 1.2,
+      "markers": 12,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.01,
+      "aim_error_deg": 0.1,
+      "joints_deg": [
+        -6.05,
+        -83.04,
+        64.74,
+        57.51,
+        -83.0
+      ]
+    },
+    {
+      "square": "f3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 11,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -15.15,
+        -78.67,
+        63.34,
+        55.39,
+        -77.21
+      ]
+    },
+    {
+      "square": "g3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -23.51,
+        -70.65,
+        60.34,
+        51.8,
+        -71.83
+      ]
+    },
+    {
+      "square": "h3",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -30.95,
+        -60.24,
+        55.56,
+        47.92,
+        -67.22
+      ]
+    },
+    {
+      "square": "a4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        20.53,
+        -80.52,
+        62.26,
+        59.96,
+        -71.23
+      ]
+    },
+    {
+      "square": "b4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 8,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        11.25,
+        -82.11,
+        60.44,
+        65.69,
+        -65.54
+      ]
+    },
+    {
+      "square": "c4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 10,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        1.31,
+        -79.12,
+        57.25,
+        69.07,
+        -59.88
+      ]
+    },
+    {
+      "square": "d4",
+      "ok": true,
+      "aim_offset_px": 44.9,
+      "markers": 2,
+      "standoff_mm": 110.0,
+      "position_error_mm": 0.52,
+      "aim_error_deg": 3.75,
+      "joints_deg": [
+        4.62,
+        3.14,
+        90.36,
+        -54.34,
+        -83.0
+      ]
+    },
+    {
+      "square": "e4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 14,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -7.28,
+        -101.28,
+        65.33,
+        75.22,
+        -82.38
+      ]
+    },
+    {
+      "square": "f4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 11,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -17.95,
+        -95.97,
+        64.49,
+        71.96,
+        -75.39
+      ]
+    },
+    {
+      "square": "g4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -27.51,
+        -86.21,
+        62.35,
+        66.23,
+        -69.33
+      ]
+    },
+    {
+      "square": "h4",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -35.68,
+        -73.53,
+        58.43,
+        59.68,
+        -64.4
+      ]
+    },
+    {
+      "square": "a5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 4,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        24.42,
+        -98.2,
+        63.95,
+        75.18,
+        -73.7
+      ]
+    },
+    {
+      "square": "b5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 8,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        13.57,
+        -99.32,
+        61.29,
+        81.41,
+        -66.93
+      ]
+    },
+    {
+      "square": "c5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 10,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        1.59,
+        -95.01,
+        57.88,
+        84.23,
+        -60.03
+      ]
+    },
+    {
+      "square": "d5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 11,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -10.6,
+        -86.28,
+        53.9,
+        84.12,
+        -53.95
+      ]
+    },
+    {
+      "square": "e5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 13,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -21.96,
+        -74.73,
+        49.13,
+        82.1,
+        -49.49
+      ]
+    },
+    {
+      "square": "f5",
+      "ok": true,
+      "aim_offset_px": 14.5,
+      "markers": 11,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.98,
+      "aim_error_deg": 1.34,
+      "joints_deg": [
+        -21.88,
+        -107.0,
+        60.47,
+        89.08,
+        -72.39
+      ]
+    },
+    {
+      "square": "g5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 10,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -32.97,
+        -98.27,
+        60.96,
+        81.11,
+        -66.0
+      ]
+    },
+    {
+      "square": "h5",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -41.83,
+        -84.05,
+        58.39,
+        72.21,
+        -60.89
+      ]
+    },
+    {
+      "square": "a6",
+      "ok": true,
+      "aim_offset_px": 38.2,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 2.51,
+      "aim_error_deg": 3.49,
+      "joints_deg": [
+        30.08,
+        -107.0,
+        58.82,
+        91.76,
+        -76.58
+      ]
+    },
+    {
+      "square": "b6",
+      "ok": true,
+      "aim_offset_px": 43.6,
+      "markers": 7,
+      "standoff_mm": 230.0,
+      "position_error_mm": 2.72,
+      "aim_error_deg": 3.91,
+      "joints_deg": [
+        17.35,
+        -107.0,
+        54.8,
+        98.74,
+        -67.38
+      ]
+    },
+    {
+      "square": "c6",
+      "ok": true,
+      "aim_offset_px": 9.5,
+      "markers": 10,
+      "standoff_mm": 230.0,
+      "position_error_mm": 1.48,
+      "aim_error_deg": 0.42,
+      "joints_deg": [
+        2.08,
+        -107.0,
+        54.88,
+        98.8,
+        -59.79
+      ]
+    },
+    {
+      "square": "d6",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 14,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -13.42,
+        -97.13,
+        51.53,
+        98.49,
+        -52.72
+      ]
+    },
+    {
+      "square": "e6",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 13,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -27.26,
+        -83.81,
+        48.05,
+        94.51,
+        -47.93
+      ]
+    },
+    {
+      "square": "f6",
+      "ok": true,
+      "aim_offset_px": 23.5,
+      "markers": 14,
+      "standoff_mm": 230.0,
+      "position_error_mm": 11.65,
+      "aim_error_deg": 3.03,
+      "joints_deg": [
+        -27.53,
+        -107.0,
+        53.41,
+        98.8,
+        -64.87
+      ]
+    },
+    {
+      "square": "g6",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 11,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -40.72,
+        -104.98,
+        56.82,
+        94.34,
+        -61.51
+      ]
+    },
+    {
+      "square": "h6",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -49.93,
+        -90.1,
+        55.87,
+        83.72,
+        -56.63
+      ]
+    },
+    {
+      "square": "a7",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 3,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        22.77,
+        -84.35,
+        49.76,
+        91.21,
+        -49.41
+      ]
+    },
+    {
+      "square": "b7",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        9.34,
+        -79.44,
+        45.45,
+        96.24,
+        -46.22
+      ]
+    },
+    {
+      "square": "c7",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 8,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -5.37,
+        -71.93,
+        41.41,
+        98.26,
+        -45.77
+      ]
+    },
+    {
+      "square": "d7",
+      "ok": true,
+      "aim_offset_px": 16.3,
+      "markers": 6,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.31,
+      "aim_error_deg": 1.36,
+      "joints_deg": [
+        -1.5,
+        -36.35,
+        44.76,
+        94.55,
+        61.0
+      ]
+    },
+    {
+      "square": "e7",
+      "ok": true,
+      "aim_offset_px": 62.2,
+      "markers": 8,
+      "standoff_mm": 200.0,
+      "position_error_mm": 4.94,
+      "aim_error_deg": 3.47,
+      "joints_deg": [
+        -28.96,
+        -105.18,
+        62.8,
+        98.8,
+        -45.84
+      ]
+    },
+    {
+      "square": "f7",
+      "ok": true,
+      "aim_offset_px": 1.9,
+      "markers": 13,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.07,
+      "aim_error_deg": 0.13,
+      "joints_deg": [
+        -47.91,
+        -74.33,
+        42.28,
+        98.78,
+        -45.7
+      ]
+    },
+    {
+      "square": "g7",
+      "ok": true,
+      "aim_offset_px": 44.5,
+      "markers": 6,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.8,
+      "aim_error_deg": 3.7,
+      "joints_deg": [
+        -37.52,
+        -30.07,
+        39.47,
+        91.52,
+        61.0
+      ]
+    },
+    {
+      "square": "h7",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 9,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        -60.6,
+        -90.93,
+        51.8,
+        92.94,
+        -51.82
+      ]
+    },
+    {
+      "square": "a8",
+      "ok": true,
+      "aim_offset_px": 31.0,
+      "markers": 2,
+      "standoff_mm": 200.0,
+      "position_error_mm": 5.44,
+      "aim_error_deg": 3.32,
+      "joints_deg": [
+        35.8,
+        -107.0,
+        62.97,
+        98.8,
+        -47.97
+      ]
+    },
+    {
+      "square": "b8",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 4,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        28.49,
+        -30.2,
+        41.46,
+        94.86,
+        57.04
+      ]
+    },
+    {
+      "square": "c8",
+      "ok": true,
+      "aim_offset_px": 0.0,
+      "markers": 4,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.0,
+      "aim_error_deg": 0.0,
+      "joints_deg": [
+        10.52,
+        -28.16,
+        41.46,
+        97.32,
+        51.98
+      ]
+    },
+    {
+      "square": "d8",
+      "ok": true,
+      "aim_offset_px": 26.0,
+      "markers": 2,
+      "standoff_mm": 175.0,
+      "position_error_mm": 4.77,
+      "aim_error_deg": 1.58,
+      "joints_deg": [
+        -4.24,
+        -51.03,
+        54.43,
+        98.8,
+        61.0
+      ]
+    },
+    {
+      "square": "e8",
+      "ok": true,
+      "aim_offset_px": 1.8,
+      "markers": 3,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.17,
+      "aim_error_deg": 0.12,
+      "joints_deg": [
+        -28.5,
+        -37.58,
+        47.63,
+        98.8,
+        53.34
+      ]
+    },
+    {
+      "square": "f8",
+      "ok": true,
+      "aim_offset_px": 52.1,
+      "markers": 8,
+      "standoff_mm": 200.0,
+      "position_error_mm": 3.33,
+      "aim_error_deg": 3.1,
+      "joints_deg": [
+        -54.82,
+        -90.98,
+        58.17,
+        98.8,
+        -45.95
+      ]
+    },
+    {
+      "square": "g8",
+      "ok": true,
+      "aim_offset_px": 0.8,
+      "markers": 4,
+      "standoff_mm": 175.0,
+      "position_error_mm": 0.01,
+      "aim_error_deg": 0.07,
+      "joints_deg": [
+        -52.16,
+        -34.56,
+        44.14,
+        94.85,
+        60.97
+      ]
+    },
+    {
+      "square": "h8",
+      "ok": true,
+      "aim_offset_px": 5.4,
+      "markers": 6,
+      "standoff_mm": 230.0,
+      "position_error_mm": 0.25,
+      "aim_error_deg": 0.36,
+      "joints_deg": [
+        -74.2,
+        -87.19,
+        47.55,
+        98.8,
+        -47.6
+      ]
+    }
+  ]
+}

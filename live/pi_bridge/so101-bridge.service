@@ -1,0 +1,25 @@
+[Unit]
+Description=SO-101 bridge (LeLab teleop / BC-250 remote joint owner)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/so101-bridge
+Environment=SO101_TOKEN_FILE=/home/pi/so101-bridge/token.txt
+Environment=SO101_PORT=8100
+Environment=SO101_MAX_SPEED=35
+Environment=SO101_HANDOVER_DEG=10
+ExecStart=/home/pi/.local/share/uv/tools/lelab/bin/python /home/pi/so101-bridge/app.py
+Restart=on-failure
+RestartSec=3
+# The bridge owns the serial port only in REMOTE mode; LeLab keeps teleop.
+# Do not add a device allow-list here, and never run it alongside a second
+# process that opens the follower port.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

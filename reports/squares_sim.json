@@ -1,0 +1,1054 @@
+{
+  "backend": "sim",
+  "hover_mm": 60.0,
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.4,
+      "ik_deg": 0.48,
+      "achieved": [
+        -100.4,
+        -112.3,
+        56.6
+      ],
+      "markers": 20
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.4,
+      "ik_deg": 0.48,
+      "achieved": [
+        -74.2,
+        -106.1,
+        54.5
+      ],
+      "markers": 13
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.8,
+      "ik_deg": 0.45,
+      "achieved": [
+        -41.5,
+        -94.5,
+        54.8
+      ],
+      "markers": 7
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.6,
+      "ik_deg": 0.46,
+      "achieved": [
+        -9.9,
+        -86.6,
+        54.7
+      ],
+      "markers": 3
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.4,
+      "ik_deg": 0.49,
+      "achieved": [
+        28.1,
+        -83.1,
+        54.4
+      ],
+      "markers": 0
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.1,
+      "ik_deg": 0.49,
+      "achieved": [
+        60.2,
+        -81.0,
+        56.5
+      ],
+      "markers": 0
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.8,
+      "ik_deg": 0.4,
+      "achieved": [
+        92.5,
+        -79.7,
+        56.4
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.6,
+      "ik_deg": 0.5,
+      "achieved": [
+        121.6,
+        -80.3,
+        55.6
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.9,
+      "ik_deg": 0.38,
+      "achieved": [
+        -101.9,
+        -80.0,
+        56.5
+      ],
+      "markers": 16
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.2,
+      "ik_deg": 0.5,
+      "achieved": [
+        -73.9,
+        -75.8,
+        56.4
+      ],
+      "markers": 13
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.4,
+      "ik_deg": 0.48,
+      "achieved": [
+        -41.6,
+        -67.3,
+        56.6
+      ],
+      "markers": 7
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.2,
+      "ik_deg": 0.48,
+      "achieved": [
+        -10.9,
+        -61.3,
+        56.6
+      ],
+      "markers": 4
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.3,
+      "ik_deg": 0.51,
+      "achieved": [
+        20.9,
+        -56.9,
+        56.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.8,
+      "ik_deg": 0.4,
+      "achieved": [
+        57.0,
+        -54.1,
+        56.4
+      ],
+      "markers": 0
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.5,
+      "ik_deg": 0.47,
+      "achieved": [
+        87.5,
+        -53.6,
+        55.8
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.0,
+      "ik_deg": 0.58,
+      "achieved": [
+        116.9,
+        -53.8,
+        55.1
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.5,
+      "ik_deg": 0.48,
+      "achieved": [
+        -101.3,
+        -50.8,
+        55.8
+      ],
+      "markers": 13
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.7,
+      "ik_deg": 0.43,
+      "achieved": [
+        -73.7,
+        -45.3,
+        56.1
+      ],
+      "markers": 12
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.8,
+      "ik_deg": 0.41,
+      "achieved": [
+        -41.8,
+        -38.7,
+        56.3
+      ],
+      "markers": 8
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.7,
+      "ik_deg": 0.41,
+      "achieved": [
+        -11.3,
+        -33.9,
+        56.3
+      ],
+      "markers": 5
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.6,
+      "ik_deg": 0.44,
+      "achieved": [
+        19.8,
+        -30.2,
+        56.1
+      ],
+      "markers": 2
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.6,
+      "ik_deg": 0.49,
+      "achieved": [
+        53.4,
+        -29.0,
+        55.7
+      ],
+      "markers": 1
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.0,
+      "ik_deg": 0.57,
+      "achieved": [
+        83.5,
+        -28.1,
+        55.2
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.3,
+      "ik_deg": 0.69,
+      "achieved": [
+        112.8,
+        -28.0,
+        54.4
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.3,
+      "ik_deg": 0.6,
+      "achieved": [
+        -100.6,
+        -22.7,
+        55.0
+      ],
+      "markers": 14
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.9,
+      "ik_deg": 0.55,
+      "achieved": [
+        -72.8,
+        -17.9,
+        55.3
+      ],
+      "markers": 12
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.7,
+      "ik_deg": 0.53,
+      "achieved": [
+        -41.6,
+        -12.6,
+        55.4
+      ],
+      "markers": 10
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.7,
+      "ik_deg": 0.53,
+      "achieved": [
+        -11.9,
+        -8.6,
+        55.4
+      ],
+      "markers": 6
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 4.9,
+      "ik_deg": 0.56,
+      "achieved": [
+        18.3,
+        -5.4,
+        55.2
+      ],
+      "markers": 4
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 5.6,
+      "ik_deg": 0.62,
+      "achieved": [
+        48.5,
+        -3.2,
+        54.9
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.7,
+      "ik_deg": 0.71,
+      "achieved": [
+        80.3,
+        -3.0,
+        54.3
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.2,
+      "ik_deg": 0.7,
+      "achieved": [
+        110.8,
+        -1.1,
+        53.5
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.7,
+      "ik_deg": 0.78,
+      "achieved": [
+        -99.7,
+        4.4,
+        53.8
+      ],
+      "markers": 15
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.8,
+      "ik_deg": 0.72,
+      "achieved": [
+        -70.0,
+        9.3,
+        54.2
+      ],
+      "markers": 12
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.4,
+      "ik_deg": 0.69,
+      "achieved": [
+        -41.5,
+        13.1,
+        54.4
+      ],
+      "markers": 9
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 6.5,
+      "ik_deg": 0.7,
+      "achieved": [
+        -12.4,
+        16.5,
+        54.4
+      ],
+      "markers": 7
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 7.0,
+      "ik_deg": 0.73,
+      "achieved": [
+        17.1,
+        19.3,
+        54.1
+      ],
+      "markers": 5
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.0,
+      "ik_deg": 0.8,
+      "achieved": [
+        46.6,
+        21.2,
+        53.7
+      ],
+      "markers": 1
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.1,
+      "ik_deg": 0.77,
+      "achieved": [
+        78.7,
+        23.4,
+        53.0
+      ],
+      "markers": 0
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 10.9,
+      "ik_deg": 0.95,
+      "achieved": [
+        107.1,
+        23.1,
+        51.7
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 10.2,
+      "ik_deg": 0.9,
+      "achieved": [
+        -99.3,
+        32.2,
+        52.0
+      ],
+      "markers": 12
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.9,
+      "ik_deg": 0.82,
+      "achieved": [
+        -69.9,
+        36.8,
+        52.6
+      ],
+      "markers": 9
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.3,
+      "ik_deg": 0.78,
+      "achieved": [
+        -41.5,
+        40.3,
+        52.9
+      ],
+      "markers": 10
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 8.4,
+      "ik_deg": 0.79,
+      "achieved": [
+        -12.6,
+        43.2,
+        52.9
+      ],
+      "markers": 9
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 9.1,
+      "ik_deg": 0.83,
+      "achieved": [
+        16.5,
+        45.5,
+        52.5
+      ],
+      "markers": 5
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 10.6,
+      "ik_deg": 0.93,
+      "achieved": [
+        45.6,
+        46.8,
+        51.8
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 13.3,
+      "ik_deg": 1.1,
+      "achieved": [
+        74.1,
+        47.1,
+        50.6
+      ],
+      "markers": 1
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 17.9,
+      "ik_deg": 1.36,
+      "achieved": [
+        103.1,
+        45.3,
+        48.7
+      ],
+      "markers": 0
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 18.0,
+      "ik_deg": 1.36,
+      "achieved": [
+        -97.6,
+        55.1,
+        48.6
+      ],
+      "markers": 11
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 15.7,
+      "ik_deg": 1.24,
+      "achieved": [
+        -69.0,
+        59.7,
+        49.6
+      ],
+      "markers": 10
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 14.8,
+      "ik_deg": 1.18,
+      "achieved": [
+        -41.3,
+        63.1,
+        50.0
+      ],
+      "markers": 9
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 14.9,
+      "ik_deg": 1.19,
+      "achieved": [
+        -13.1,
+        65.7,
+        49.9
+      ],
+      "markers": 7
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 16.1,
+      "ik_deg": 1.26,
+      "achieved": [
+        15.2,
+        67.3,
+        49.4
+      ],
+      "markers": 6
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "ik_mm": 18.8,
+      "ik_deg": 1.41,
+      "achieved": [
+        43.3,
+        67.9,
+        48.3
+      ],
+      "markers": 2
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 23.2,
+      "ik_deg": 1.65,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 29.9,
+      "ik_deg": 2.03,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 31.8,
+      "ik_deg": 2.13,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 28.5,
+      "ik_deg": 1.95,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 27.0,
+      "ik_deg": 1.87,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 27.2,
+      "ik_deg": 1.88,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 29.1,
+      "ik_deg": 1.98,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 32.9,
+      "ik_deg": 2.19,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 38.7,
+      "ik_deg": 2.51,
+      "achieved": null,
+      "markers": 0
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "ik_mm": 46.8,
+      "ik_deg": 2.95,
+      "achieved": null,
+      "markers": 0
+    }
+  ]
+}

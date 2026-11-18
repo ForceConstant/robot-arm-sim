@@ -1,0 +1,860 @@
+{
+  "schema": "robot-arm-marker-fusion/1",
+  "generated_at": "2026-11-15",
+  "plan": "chess_sim/assets/marker_scan_plan.json",
+  "calibration": "sim-1.15.0-model.xml-462.4mm-2026-11-15",
+  "gate": {
+    "position_mm": 2.0,
+    "yaw_deg": 1.0
+  },
+  "scenarios": [
+    {
+      "scenario": "nominal",
+      "dx_mm": 0.0,
+      "dy_mm": 0.0,
+      "dyaw_deg": 0.0,
+      "detections": {
+        "grid52": [
+          2,
+          3
+        ],
+        "marker27": [
+          3
+        ],
+        "marker24": [
+          0,
+          3
+        ],
+        "marker0": [
+          0
+        ],
+        "marker4": [],
+        "marker3": [],
+        "marker11": [],
+        "marker8": [
+          1
+        ],
+        "marker12": [],
+        "marker32": [
+          1,
+          2
+        ],
+        "grid55": [
+          2
+        ]
+      },
+      "recovery_used": [],
+      "marker_views": {
+        "0": 2,
+        "1": 2,
+        "2": 3,
+        "3": 3
+      },
+      "full_coverage": true,
+      "coverage": 1.0,
+      "views": 7,
+      "plan_missing": [
+        [
+          "grid52",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "marker27",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker24",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker0",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker4",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker3",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker11",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker8",
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker12",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker32",
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        [
+          "grid55",
+          [
+            0,
+            1,
+            3
+          ]
+        ]
+      ],
+      "registration": {
+        "x_mm": 0.182,
+        "y_mm": -0.19,
+        "yaw_deg": -0.0946,
+        "score": 0.634
+      },
+      "board_error": {
+        "dx_mm": 0.182,
+        "dy_mm": -0.19,
+        "dyaw_deg": -0.0946,
+        "position_mm": 0.263
+      },
+      "truth_offset": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "edge_gap_mm": 90.0,
+        "board_half_mm": 127.0
+      },
+      "seen_offset": {
+        "x_mm": 0.182,
+        "y_mm": 216.81,
+        "yaw_deg": -0.0946,
+        "edge_gap_mm": 89.81,
+        "board_half_mm": 127.0
+      },
+      "offset_error_mm": 0.372
+    },
+    {
+      "scenario": "shift_x_20mm",
+      "dx_mm": 20.0,
+      "dy_mm": 0.0,
+      "dyaw_deg": 0.0,
+      "detections": {
+        "grid52": [
+          2,
+          3
+        ],
+        "marker27": [
+          0,
+          3
+        ],
+        "marker24": [
+          0,
+          3
+        ],
+        "marker0": [
+          0
+        ],
+        "marker4": [],
+        "marker3": [],
+        "marker11": [
+          2
+        ],
+        "marker8": [
+          1
+        ],
+        "marker12": [],
+        "marker32": [
+          1,
+          2
+        ],
+        "grid55": [
+          2
+        ]
+      },
+      "recovery_used": [],
+      "marker_views": {
+        "0": 3,
+        "1": 2,
+        "2": 4,
+        "3": 3
+      },
+      "full_coverage": true,
+      "coverage": 1.0,
+      "views": 8,
+      "plan_missing": [
+        [
+          "grid52",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "marker27",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker24",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker0",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker4",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker3",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker11",
+          [
+            0,
+            1,
+            3
+          ]
+        ],
+        [
+          "marker8",
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker12",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker32",
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          "grid55",
+          [
+            0,
+            1,
+            3
+          ]
+        ]
+      ],
+      "registration": {
+        "x_mm": 20.162,
+        "y_mm": -0.188,
+        "yaw_deg": -0.079,
+        "score": 0.604
+      },
+      "board_error": {
+        "dx_mm": 0.162,
+        "dy_mm": -0.188,
+        "dyaw_deg": -0.079,
+        "position_mm": 0.248
+      },
+      "truth_offset": {
+        "x_mm": 20.0,
+        "y_mm": 217.0,
+        "yaw_deg": 0.0,
+        "edge_gap_mm": 90.0,
+        "board_half_mm": 127.0
+      },
+      "seen_offset": {
+        "x_mm": 20.162,
+        "y_mm": 216.812,
+        "yaw_deg": -0.079,
+        "edge_gap_mm": 89.84,
+        "board_half_mm": 127.0
+      },
+      "offset_error_mm": 0.35
+    },
+    {
+      "scenario": "shift_y_15mm",
+      "dx_mm": 0.0,
+      "dy_mm": -15.0,
+      "dyaw_deg": 0.0,
+      "detections": {
+        "grid52": [
+          2,
+          3
+        ],
+        "marker27": [
+          3
+        ],
+        "marker24": [
+          0,
+          3
+        ],
+        "marker0": [
+          0
+        ],
+        "marker4": [
+          0
+        ],
+        "marker3": [
+          3
+        ],
+        "marker11": [
+          2
+        ],
+        "marker8": [
+          1
+        ],
+        "marker12": [
+          1
+        ],
+        "marker32": [
+          1,
+          2
+        ],
+        "grid55": [
+          2
+        ]
+      },
+      "recovery_used": [],
+      "marker_views": {
+        "0": 3,
+        "1": 3,
+        "2": 4,
+        "3": 4
+      },
+      "full_coverage": true,
+      "coverage": 1.0,
+      "views": 11,
+      "plan_missing": [
+        [
+          "grid52",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "marker27",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker24",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker0",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker4",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker3",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker11",
+          [
+            0,
+            1,
+            3
+          ]
+        ],
+        [
+          "marker8",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker12",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker32",
+          [
+            0,
+            1,
+            3
+          ]
+        ],
+        [
+          "grid55",
+          [
+            0,
+            1,
+            3
+          ]
+        ]
+      ],
+      "registration": {
+        "x_mm": 0.162,
+        "y_mm": -15.14,
+        "yaw_deg": -0.0973,
+        "score": 0.616
+      },
+      "board_error": {
+        "dx_mm": 0.162,
+        "dy_mm": -0.14,
+        "dyaw_deg": -0.0973,
+        "position_mm": 0.214
+      },
+      "truth_offset": {
+        "x_mm": 0.0,
+        "y_mm": 202.0,
+        "yaw_deg": 0.0,
+        "edge_gap_mm": 75.0,
+        "board_half_mm": 127.0
+      },
+      "seen_offset": {
+        "x_mm": 0.162,
+        "y_mm": 201.86,
+        "yaw_deg": -0.0973,
+        "edge_gap_mm": 74.86,
+        "board_half_mm": 127.0
+      },
+      "offset_error_mm": 0.302
+    },
+    {
+      "scenario": "yaw_3deg",
+      "dx_mm": 0.0,
+      "dy_mm": 0.0,
+      "dyaw_deg": 3.0,
+      "detections": {
+        "grid52": [
+          2,
+          3
+        ],
+        "marker27": [
+          3
+        ],
+        "marker24": [
+          0,
+          3
+        ],
+        "marker0": [
+          0
+        ],
+        "marker4": [],
+        "marker3": [
+          3
+        ],
+        "marker11": [],
+        "marker8": [
+          1
+        ],
+        "marker12": [],
+        "marker32": [
+          1
+        ],
+        "grid55": [
+          2
+        ]
+      },
+      "recovery_used": [],
+      "marker_views": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 4
+      },
+      "full_coverage": true,
+      "coverage": 1.0,
+      "views": 8,
+      "plan_missing": [
+        [
+          "grid52",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "marker27",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker24",
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          "marker0",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker4",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker3",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker11",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker8",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker12",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker32",
+          [
+            0,
+            2,
+            3
+          ]
+        ],
+        [
+          "grid55",
+          [
+            0,
+            1,
+            3
+          ]
+        ]
+      ],
+      "registration": {
+        "x_mm": 0.298,
+        "y_mm": -0.148,
+        "yaw_deg": 2.8985,
+        "score": 0.684
+      },
+      "board_error": {
+        "dx_mm": 0.298,
+        "dy_mm": -0.148,
+        "dyaw_deg": -0.1015,
+        "position_mm": 0.333
+      },
+      "truth_offset": {
+        "x_mm": 0.0,
+        "y_mm": 217.0,
+        "yaw_deg": 3.0,
+        "edge_gap_mm": 89.703,
+        "board_half_mm": 127.0
+      },
+      "seen_offset": {
+        "x_mm": 0.298,
+        "y_mm": 216.852,
+        "yaw_deg": 2.8985,
+        "edge_gap_mm": 89.56,
+        "board_half_mm": 127.0
+      },
+      "offset_error_mm": 0.446
+    },
+    {
+      "scenario": "combined",
+      "dx_mm": -25.0,
+      "dy_mm": 18.0,
+      "dyaw_deg": -3.5,
+      "detections": {
+        "grid52": [
+          0,
+          2,
+          3
+        ],
+        "marker27": [
+          0,
+          3
+        ],
+        "marker24": [
+          0
+        ],
+        "marker0": [
+          0
+        ],
+        "marker4": [],
+        "marker3": [
+          0
+        ],
+        "marker11": [
+          1
+        ],
+        "marker8": [
+          1
+        ],
+        "marker12": [],
+        "marker32": [
+          1
+        ],
+        "grid55": [
+          2
+        ]
+      },
+      "recovery_used": [],
+      "marker_views": {
+        "0": 5,
+        "1": 3,
+        "2": 2,
+        "3": 2
+      },
+      "full_coverage": true,
+      "coverage": 1.0,
+      "views": 9,
+      "plan_missing": [
+        [
+          "grid52",
+          [
+            1
+          ]
+        ],
+        [
+          "marker27",
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "marker24",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker0",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker4",
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker3",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker11",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker8",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker12",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "marker32",
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          "grid55",
+          [
+            0,
+            1,
+            3
+          ]
+        ]
+      ],
+      "registration": {
+        "x_mm": -24.649,
+        "y_mm": 17.777,
+        "yaw_deg": -3.5912,
+        "score": 0.65
+      },
+      "board_error": {
+        "dx_mm": 0.351,
+        "dy_mm": -0.223,
+        "dyaw_deg": -0.0912,
+        "position_mm": 0.416
+      },
+      "truth_offset": {
+        "x_mm": -25.0,
+        "y_mm": 235.0,
+        "yaw_deg": -3.5,
+        "edge_gap_mm": 106.035,
+        "board_half_mm": 127.0
+      },
+      "seen_offset": {
+        "x_mm": -24.649,
+        "y_mm": 234.777,
+        "yaw_deg": -3.5912,
+        "edge_gap_mm": 105.772,
+        "board_half_mm": 127.0
+      },
+      "offset_error_mm": 0.574
+    }
+  ],
+  "passed": true,
+  "scenario_count": 5,
+  "failing": []
+}

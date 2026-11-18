@@ -21,7 +21,13 @@ from .board_registration import BoardRegistration
 from .vision_geometry import CameraCalibration
 
 DICTIONARY_ID = cv2.aruco.DICT_4X4_50
-MARKER_IDS: tuple[int, ...] = (0, 1, 2, 3)
+# 0..3 mat tags, 4 the loose centre target, 5..36 the printed ChArUco face.
+# Filtering to the mat set alone silently discarded every ChArUco sighting.
+MARKER_IDS: tuple[int, ...] = tuple(range(0, 37))
+# The mat/centre tags that have geometry.  The ChArUco face ids (5..36) live in
+# the printed texture and have no separate geoms, so they must not be built here
+# -- widening MARKER_IDS without this split crashed every marked-board scene.
+GEOM_MARKER_IDS: tuple[int, ...] = (0, 1, 2, 3, 4)
 MARKER_MM = 40.0
 QUIET_MM = 6.0                     # minimum white margin around a marker
 CELLS = 6                          # 4 data modules + 1 border each side
@@ -32,7 +38,10 @@ DEFAULT_BOARD_THICKNESS = 0.0032
 MAT_THICKNESS_M = 0.0005      # default mat when markers are mat-mounted
 
 # Unit offsets per marker id: (-x,-y), (+x,-y), (+x,+y), (-x,+y).
-_CENTRE_SIGNS = {0: (-1.0, -1.0), 1: (1.0, -1.0), 2: (1.0, 1.0), 3: (-1.0, 1.0)}
+# Marker 4 is the loose centre target taped to the middle of the board, so its
+# centre is the mat origin rather than a corner of the border.
+_CENTRE_SIGNS = {0: (-1.0, -1.0), 1: (1.0, -1.0), 2: (1.0, 1.0), 3: (-1.0, 1.0),
+                 4: (0.0, 0.0)}
 
 
 @dataclass(frozen=True)
@@ -151,7 +160,7 @@ def marker_geoms(board_thickness: float, layout: MarkerLayout, *,
         }]
     half = (layout.size_mm + 2 * layout.quiet_mm) / 2000.0
     cell = layout.size_mm / CELLS / 1000.0
-    for marker_id in MARKER_IDS:
+    for marker_id in GEOM_MARKER_IDS:
         bits = marker_bits(marker_id)
         cx, cy = (v / 1000.0 for v in layout.centre_mm(marker_id))
         geoms.append({
@@ -186,8 +195,21 @@ def _detector():
     params.adaptiveThreshWinSizeMax = 35
     params.adaptiveThreshWinSizeStep = 6
     params.minMarkerPerimeterRate = 0.02
-    params.maxMarkerPerimeterRate = 0.6
+    # A wrist camera 20-25 cm from the board fills much of the frame with one
+    # 40 mm marker; at 0.6 the perimeter gate rejected those candidates outright
+    # and the tag never decoded. 4.0 is OpenCV's own default.
+    params.maxMarkerPerimeterRate = 4.0
     params.errorCorrectionRate = 0.6
+    lenient = cv2.aruco.DetectorParameters()
+    lenient.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+    lenient.adaptiveThreshWinSizeMin = 3
+    lenient.adaptiveThreshWinSizeMax = 53
+    lenient.adaptiveThreshWinSizeStep = 4
+    lenient.minMarkerPerimeterRate = 0.01
+    lenient.maxMarkerPerimeterRate = 4.0
+    lenient.errorCorrectionRate = 0.9
+    lenient.polygonalApproxAccuracyRate = 0.06
+    globals()["_LENIENT_DETECTOR"] = cv2.aruco.ArucoDetector(_dictionary(), lenient)
     return cv2.aruco.ArucoDetector(_dictionary(), params)
 
 
@@ -204,6 +226,14 @@ def detect_markers(frame: np.ndarray) -> list[MarkerDetection]:
         raise ValueError("frame must be H x W x 3 RGB")
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     corners, ids, _ = _DETECTOR.detectMarkers(gray)
+    if ids is None or len(ids) == 0:
+        # The jaws routinely clip a marker's quiet zone, so the strict pass
+        # misses tags that are otherwise clean.  Retry with a wider adaptive
+        # window, a smaller perimeter gate and relaxed error correction, and
+        # once more on the inverted image in case the print polarity differs.
+        corners, ids, _ = _LENIENT_DETECTOR.detectMarkers(gray)
+    if ids is None or len(ids) == 0:
+        corners, ids, _ = _LENIENT_DETECTOR.detectMarkers(cv2.bitwise_not(gray))
     found: list[MarkerDetection] = []
     if ids is None:
         return found

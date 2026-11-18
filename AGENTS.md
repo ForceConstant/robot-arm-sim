@@ -95,7 +95,21 @@ user; the roadmap is not authorization to implement all future phases at once.
   architecture or measured environment readiness changes. Physical gates remain
   independent of simulator-environment readiness.
 
-## BC-250 CachyOS simulation workstation
+## BC-250 CachyOS simulation workstation — mandatory (2026-11-15)
+
+**No robot-arm simulation, render, benchmark, sweep, calibration solve or test
+run happens on the Unraid/Docker host. None. Not even one frame or one IK
+solve.** On 2026-11-15 a 27-scenario marker-fusion sweep on that host triggered
+an OOM condition that impacted Docker services; the rule is now absolute rather
+than a preference.
+
+- If the BC-250 is off or in the wrong OS, follow the `start-cachyos` procedure
+  (power check → power on → `boot-in-cachyos --now` → poll for CachyOS). If the
+  boot wrapper is unavailable, report the blocker and stop.
+- Local work is limited to editing, `git`, `py_compile`/lint, and reading files.
+  Anything that imports `chess_sim`, `mujoco`, `cv2` or a training stack runs on
+  the workstation.
+- Sync the working tree before running, and never mirror over generated data.
 
 Brian requested that future robot-arm simulation and test-case runs use the
 BC-250 on CachyOS rather than Unraid. The workstation is `cachyos`

@@ -31,3 +31,13 @@ chess_sim/assets/piece_sets/
 
 # User-supplied printed geometry, supplied only to the private LAN build
 chess_sim/assets/printed_pieces/
+
+# live bench state and captures (machine-specific, never commit)
+live/live_config.json
+live/board.json
+live/bridge_token.txt
+live/captures/
+live/captures_archive/
+live/*.bak
+live/*.bak-*
+sim/captures_wrist/

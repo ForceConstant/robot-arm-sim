@@ -1,0 +1,18 @@
+{
+  "schema": "robot-arm-hand-eye/1",
+  "generated_at": "2026-11-16",
+  "mode": "sim-validation",
+  "views_used": 12,
+  "prior_error": {
+    "rotation_deg": 10.0,
+    "translation_mm": 15.0
+  },
+  "error": {
+    "rotation_deg": 0.106,
+    "translation_mm": 0.113
+  },
+  "worst_pose_reproduction": {
+    "mm_or_matrix": 0.1132
+  },
+  "passed": true
+}

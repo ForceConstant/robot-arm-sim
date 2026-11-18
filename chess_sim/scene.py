@@ -41,8 +41,11 @@ class CameraMount(Config):
 
 # wrist camera in the gripperframe site frame (+x approach, +z jaw span):
 # beside the wrist-roll motor, looking at the fingertips, wide lens
+# fovy 36 deg matches the measured live lens (fx ~746 px at 640x480), not the
+# 75 deg placeholder this used to carry: a 91 deg horizontal field is more than
+# twice the real camera's 46 deg.
 WRIST_CAMERA = CameraMount(pos=(-0.075, 0.045, 0.012), target=(0.0, 0.0, 0.012),
-                           up=(-1.0, 0.0, 0.0), fovy=75)
+                           up=(-1.0, 0.0, 0.0), fovy=36)
 
 # The CAD gripper hangs a camera off the base, further to the side and less far
 # back than the stock wrist camera. Offsets from the tip centre (the
@@ -51,7 +54,7 @@ WRIST_CAMERA = CameraMount(pos=(-0.075, 0.045, 0.012), target=(0.0, 0.0, 0.012),
 # match this pose -- the housing below is placed to end exactly at the lens, so
 # the rendered model agrees with the image it produces.
 WRIST_CAMERA_CUSTOM = CameraMount(pos=(-0.060, 0.080, 0.0), target=(0.0, 0.0, 0.0),
-                                  up=(-1.0, 0.0, 0.0), fovy=75)
+                                  up=(-1.0, 0.0, 0.0), fovy=36)
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
                      wrist_flex=0.4, wrist_roll=0.0, gripper=0.6)
 
@@ -290,7 +293,7 @@ def _add_board(spec, board, texture_file, appearance):
                   size=[board.width / 2, board.width / 2, board.thickness / 2],
                   material="board_mat", friction=[grip, 0.005, 0.0001],
                   solimp=list(SURFACE_SOLIMP), priority=SURFACE_PRIORITY)
-    if appearance.board_markers:
+    if appearance.board_markers and getattr(board, "face", "wood") != "charuco":
         # Rigidly part of the board body, so a board shift moves the markers too.
         layout = fiducials.MarkerLayout.for_board(
             board.field * 1000.0, board.border * 1000.0, board.marker_plane)
