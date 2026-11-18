@@ -40,7 +40,10 @@ from chess_sim.wrist_calibration import WristCalibration
 DEFAULT_POSE_TOLERANCE_DEG = 1.5
 DEFAULT_FRESHNESS_DEG = 2.0
 DEFAULT_SETTLE_S = 0.6
-DEFAULT_POSE_TIMEOUT_S = 12.0
+# A 90 deg reorientation at speed_scale 0.3 (10.5 deg/s * 0.3 = 3.15 deg/s)
+# takes ~29 s; 12 s guaranteed a timeout on the first pose of a plan that
+# starts far from the parked posture (block 5g: 16.3 deg short after 12 s).
+DEFAULT_POSE_TIMEOUT_S = 45.0
 DEFAULT_HOLD_S = 2.0
 DEFAULT_CORRECTION_ROUNDS = 2
 DEFAULT_CAPTURE_RETRIES = 2
@@ -338,7 +341,12 @@ class ScanController:
             else:
                 reached_at = None
             if self.clock() >= deadline:
-                return False, error, 0.0
+                # A joint that settles short (gravity/stiffness) never reaches
+                # the band, so the correction must run on the timeout path too
+                # or the pose is abandoned before it is ever nudged.
+                _, final_error, _ = self._hold_and_correct(
+                    target, reached_at if reached_at is not None else self.clock())
+                return final_error <= self.pose_tolerance_deg, final_error, 0.0
 
     def _hold_and_correct(self, target: Sequence[float], reached_at: float):
         """Keep the target on the wire, then nudge it by the standing residual.

@@ -705,6 +705,32 @@ unchanged (experiments reverted). No plan, no `/scan`, no sweep.
 Receipt: `reports/block5f_2026-11-18.md`; probe
 `reports/block5f_probe_140mm.json`. No `/scan`, no `/sanity`, no sweep.
 
+## Block 5g — mask fixed from CAD, plan built, fusion fails (2026-11-18)
+
+- [x] **Mask pass condition met.** The CAD pack places the tool relative to its
+  own lens connector (−60,+80,0) mm → (80.0, 60.0, −0.1) in `so101:gripper`,
+  while the measured lens (4c, 1.32 px) is (67.66, −2.92, −10.88): **65.0 mm
+  apart**. `SelfOcclusionModel` now anchors the tool at the measured lens
+  (CAD-derived, not a pixel fit). Audit: coverage **48.2 % → 0.0 %**, suppressed
+  tags **32/62 → 0/62**.
+- [x] **Plan regenerated at 160 mm**: 13 poses, 3–5 tags each, min edge
+  **103.7 px**, worst joint margin **+7.05°**; validation **7/7**, ≤0.10 mm /
+  0.016°.
+- [x] **Scan executes end to end**: 13/13 poses reached and captured,
+  settle 0.86–1.45°, 13 distinct markers. Two controller bugs fixed to get
+  there — the correction now also runs on the timeout path, and the pose budget
+  is 45 s (12 s could not cover a 90° reorientation at 3.15 °/s).
+- [!] **`estimate_board_pose` returns nothing on good data.** On 22 real `_cal`
+  views with 62 tags it fails at gates 1.2, 1.5, 2.0 **and 3.0 px**, while direct
+  projection of the same frames is 1.32 px. So it is the fusion seed/bounds, not
+  the gate and not the camera. This is the last blocker before a board pose.
+- [ ] Fix the fusion (seed/bounds), then `/scan` → compare 431.35 / 5.67 →
+  `/sanity` → 8-square → 64-square. Gates unchanged: 20 mm, 3 tags / 12 px,
+  1.5°.
+
+Receipt: `reports/block5g_2026-11-18.md`; plan `reports/marker_scan_plan_5g.json`
+and `reports/scan_plan_validation_5g.json`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

@@ -37,8 +37,14 @@ class SelfOcclusionModel:
     ``sources`` records hashes of every authored dependency for receipts.
     """
 
+    # Lens position the tool pack was exported against (profile assumption:
+    # "CAD SIM_CAMERA_CENTER connector transforms to (-60,+80,0) mm in
+    # gripperframe").
+    CAD_LENS_MM = (-60.0, 80.0, 0.0)
+
     def __init__(self, calibration: WristCalibration, *, padding_pixels: int = 2,
-                 near_plane_m: float = 0.02):
+                 near_plane_m: float = 0.02, cad_lens_mm=CAD_LENS_MM,
+                 anchor_tool_to_measured_lens: bool = True):
         from . import gripper
         calibration.validate()
         if not isinstance(padding_pixels, int) or padding_pixels < 0:
@@ -77,6 +83,26 @@ class SelfOcclusionModel:
             self._tool_tree = tool.find('worldbody/body')
             self._tool_assets = self._assets(tool, tool_path.parent / tool.find('compiler').get('meshdir', '.'))
             self._mount = _transform(profile['mount_position'], profile['mount_rotation'])
+            # The CAD pack places the tool relative to ITS OWN lens connector,
+            # and that lens is not where the calibrated one is.  Anchor the
+            # tool at the measured lens so the mask and the camera agree.
+            #
+            #   CAD lens (profile note): (-60, +80, 0) mm in the gripper base
+            #   -> (80.0, 60.0, -0.1) mm in ``so101:gripper`` through the mount
+            #   measured lens (4c, validated at 1.32 px): (67.66, -2.92, -10.88)
+            #   -> offset 65.0 mm, which is exactly what put tool surfaces
+            #      60-140 mm in front of the lens (48.2 % of every frame) even
+            #      though the real frames never show the tool on a board view.
+            #
+            # This is a CAD/model correction, not a pixel fit: the tool keeps
+            # its CAD relation to the lens, and the lens is moved to the
+            # measured pose.
+            cad_lens = np.asarray(cad_lens_mm, dtype=float) / 1000.0
+            cad_lens_in_gripper = (self._mount @ np.r_[cad_lens, 1.0])[:3]
+            measured_lens = np.asarray(calibration.camera_in_tool, dtype=float)[:3, 3]
+            self.lens_anchor_m = measured_lens - cad_lens_in_gripper
+            if anchor_tool_to_measured_lens:
+                self._mount[:3, 3] = self._mount[:3, 3] + self.lens_anchor_m
             self._profile = profile
             self._tool_parts(np.zeros(6))  # eagerly hash all installed visual meshes
             servo = _transform(profile['servo_position'], profile['servo_rotation'])

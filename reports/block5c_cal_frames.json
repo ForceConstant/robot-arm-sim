@@ -26,7 +26,7 @@
         23
       ],
       "model_visible": 10,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.22,
       "sharpness": 193.7,
@@ -50,17 +50,8 @@
         22
       ],
       "model_visible": 8,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          21,
-          0.857
-        ],
-        [
-          10,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.12,
       "sharpness": 184.7,
       "mean_brightness": 59.3
@@ -83,17 +74,8 @@
         22
       ],
       "model_visible": 7,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          14,
-          0.524
-        ],
-        [
-          10,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.38,
       "sharpness": 155.8,
       "mean_brightness": 59.7
@@ -116,17 +98,8 @@
         18
       ],
       "model_visible": 6,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          17,
-          0.304
-        ],
-        [
-          10,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.06,
       "sharpness": 132.3,
       "mean_brightness": 62.3
@@ -148,13 +121,8 @@
         18
       ],
       "model_visible": 5,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          10,
-          0.968
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.47,
       "sharpness": 106.9,
       "mean_brightness": 65.9
@@ -177,17 +145,8 @@
         18
       ],
       "model_visible": 6,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          10,
-          1.0
-        ],
-        [
-          17,
-          0.295
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.4,
       "sharpness": 125.6,
       "mean_brightness": 61.2
@@ -210,21 +169,8 @@
         18
       ],
       "model_visible": 6,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          14,
-          0.341
-        ],
-        [
-          10,
-          1.0
-        ],
-        [
-          17,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.35,
       "sharpness": 145.4,
       "mean_brightness": 59.9
@@ -246,17 +192,8 @@
         19
       ],
       "model_visible": 6,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          10,
-          1.0
-        ],
-        [
-          18,
-          0.107
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 0.93,
       "sharpness": 145.4,
       "mean_brightness": 58.8
@@ -278,13 +215,8 @@
         19
       ],
       "model_visible": 8,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          11,
-          0.945
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.23,
       "sharpness": 143.9,
       "mean_brightness": 59.1
@@ -307,13 +239,8 @@
         20
       ],
       "model_visible": 7,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          11,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.26,
       "sharpness": 152.2,
       "mean_brightness": 61.9
@@ -334,13 +261,8 @@
         12
       ],
       "model_visible": 7,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          11,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.29,
       "sharpness": 138.7,
       "mean_brightness": 60.7
@@ -361,17 +283,8 @@
         12
       ],
       "model_visible": 7,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          12,
-          0.116
-        ],
-        [
-          11,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.09,
       "sharpness": 115.8,
       "mean_brightness": 63.8
@@ -392,7 +305,7 @@
         16
       ],
       "model_visible": 6,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.14,
       "sharpness": 93.3,
@@ -415,13 +328,8 @@
         20
       ],
       "model_visible": 7,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          20,
-          0.797
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.84,
       "sharpness": 74.8,
       "mean_brightness": 92.9
@@ -439,7 +347,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 5,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 59.4,
@@ -460,13 +368,8 @@
         16
       ],
       "model_visible": 3,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          16,
-          0.996
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 2.36,
       "sharpness": 42.2,
       "mean_brightness": 101.0
@@ -484,7 +387,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 3,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 32.0,
@@ -503,7 +406,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 1,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 24.0,
@@ -524,13 +427,8 @@
         8
       ],
       "model_visible": 3,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          8,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 3.04,
       "sharpness": 44.4,
       "mean_brightness": 108.6
@@ -550,13 +448,8 @@
         12
       ],
       "model_visible": 5,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          12,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.49,
       "sharpness": 85.5,
       "mean_brightness": 103.7
@@ -578,21 +471,8 @@
         28
       ],
       "model_visible": 8,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          12,
-          1.0
-        ],
-        [
-          24,
-          0.04
-        ],
-        [
-          28,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.04,
       "sharpness": 126.4,
       "mean_brightness": 92.3
@@ -616,17 +496,8 @@
         28
       ],
       "model_visible": 9,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          15,
-          1.0
-        ],
-        [
-          12,
-          0.956
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.2,
       "sharpness": 180.3,
       "mean_brightness": 81.6
@@ -648,21 +519,8 @@
         24
       ],
       "model_visible": 5,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          12,
-          1.0
-        ],
-        [
-          8,
-          1.0
-        ],
-        [
-          24,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 1.84,
       "sharpness": 83.4,
       "mean_brightness": 113.7
@@ -682,7 +540,7 @@
         17
       ],
       "model_visible": 1,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": 782.89,
       "sharpness": 41.8,
@@ -701,7 +559,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 1,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 40.7,
@@ -720,7 +578,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 36.5,
@@ -739,7 +597,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 27.3,
@@ -758,7 +616,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 1,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 32.0,
@@ -779,13 +637,8 @@
         8
       ],
       "model_visible": 2,
-      "mask_pct": 48.2,
-      "mask_suppressed_decoded": [
-        [
-          8,
-          1.0
-        ]
-      ],
+      "mask_pct": 0.0,
+      "mask_suppressed_decoded": [],
       "reproj_rms_px": 10.15,
       "sharpness": 25.0,
       "mean_brightness": 114.8
@@ -803,7 +656,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 1,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 28.8,
@@ -822,7 +675,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 27.1,
@@ -841,7 +694,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 27.8,
@@ -860,7 +713,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 38.4,
@@ -879,7 +732,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 40.5,
@@ -898,7 +751,7 @@
       "decoded": 0,
       "decoded_ids": [],
       "model_visible": 0,
-      "mask_pct": 48.2,
+      "mask_pct": 0.0,
       "mask_suppressed_decoded": [],
       "reproj_rms_px": null,
       "sharpness": 26.0,
