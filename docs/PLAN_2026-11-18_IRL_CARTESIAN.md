@@ -150,6 +150,17 @@ the IRL sweep.
 inside keep-in, no order-dependent failures. `63/64` with a named physical
 cause is a valid stop-and-report, not a pass. **— PASSED.**
 
+### Planner verification (2026-11-18 08:55)
+
+- `reports/squares_sim_2026-11-18.json`: **64/64**, worst **14.9 mm (f8)**,
+  zero failures.
+- Regression re-run independently: a1 **3.90 / 3.88** mm (Δ0.025),
+  h8 **12.30 / 12.32** mm (Δ0.025), `1 passed in 151.74s`.
+- Tree clean at `238080a`; gate still **20 mm**; no `jaw_frame` or
+  `tool_tip_mm`.
+- The extended-branch seed fix is a legitimate search change: it does not alter
+  the tip constant, the gate or the acceptance criteria.
+
 ## Block 3 — Prove the calibration pipeline in sim (45 min)
 
 - [ ] Inject known board placements (±8 mm x/y, ±2.5° yaw, plus a z offset)
@@ -189,6 +200,24 @@ inside 2 mm / 1° in sim; one procedure named.
 **Exit gate:** 64/64 agreement with sim at the 20 mm gate; zero guard refusals
 misread as unreachability. A disagreement is a hardware/calibration finding —
 record it, do not retune the solver to hide it.
+
+### Known carry-forwards from Block 2
+
+- **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
+  limit) and wrist_flex 1.6° from its limit. Check the Pi bridge's actual roll
+  range before the IRL sweep; a narrower servo range would make a8 the first
+  sim/IRL disagreement.
+- **13 squares see zero wrist-camera markers**, including a8 (its roll branch
+  flips the camera). Do not expect marker fusion there in Block 3.
+- **c8–f8 at 13.5–14.9 mm** are fast-path accepts (the ≤15 mm fast path skips
+  escalation and leaves them folded). Harmless at the 20 mm gate; do not treat
+  them as solver failures.
+- **Test runner gotcha:** `robot-arm-sim test <path>` ignores the path and runs
+  the whole suite. Use `robot-arm-sim python -m pytest <path>` for a single
+  file. The full suite has 11 pre-existing failures in `tests/test_marker_scan.py`,
+  `test_hand_eye.py` and `test_wrist_scan.py` (`unknown marker id 5`, from the
+  ChArUco layout change) — unrelated to Block 2.
+
 
 ## Rules for the day
 
