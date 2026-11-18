@@ -200,8 +200,33 @@ tool were composing the PnP transform inverted and without the MuJoCo axis
 flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 20 mm model — fixed at 224 px/square.
 
+### Planner verification (2026-11-18 09:15)
+
+- Re-ran the **centre** placement with the documented env (CAD gripper assets,
+  piece assets, `PYTHONPATH=.`, `MUJOCO_GL=egl`): scan **ex 0.175, ey −0.185,
+  eyaw 0.0385°**, shared plane bias **+0.047 mm** — matches the receipt.
+- `reports/block3_matrix.json`: 10 placements; scan max **0.190 / 0.219 mm,
+  0.048°**; shared plane spread **0.159 mm**.
+- `live_config.json` still has `marker_z_m = 0.43056` (mat plane). This is a
+  Block 4 preflight, not changed by Block 3.
+- Test status confirmed: `live/tests/test_scan_controller.py` **4 passed /
+  4 failed** (the file loads the real hand-eye calibration, so the sim camera
+  sees 0 markers); the 11 ChArUco test failures in the three older files remain.
+
 ## Block 4 — IRL run sheet and dry-run harness (30 min)
 
+- [ ] **Preflight — ChArUco marker plane:** set `live/live_config.json`
+  `marker_z_m = 0.4337` (equal to `board_z_m`). The current **0.43056** is the
+  mat plane; with `layout_kind=charuco` a valid scan fails the fusion RMS gate
+  (1.33–2.56 px vs 1.2). Mandatory before any `/scan`.
+- [ ] **Preflight — test fixture calibration:** `live/tests/test_scan_controller.py`
+  loads `.private/phase11d/calibration.json`, which is now the real hand-eye
+  mount; in sim, 4 accuracy tests fail with 0 markers. Point the fixture at the
+  sim-exported calibration (or add a sim fixture) before trusting the suite.
+- [ ] **Preflight — ChArUco test assumptions:** 11 failures in
+  `tests/test_marker_scan.py`, `test_hand_eye.py`, `test_wrist_scan.py` assume
+  the old 0–4 mat marker set. Update or xfail with a reason; do not use the
+  suite as a gate while it is red for the wrong reason.
 - [ ] One command to dry-run the 8 known-problem squares with `dry_run` only
 - [ ] Distinguish in output: keep-in refusal vs IK failure vs bridge fault
 - [ ] Write the bench sequence as a numbered run sheet:
@@ -216,7 +241,15 @@ flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 
 - [ ] Boot Pi and arm; verify port ownership before any motion
 - [ ] `/scan` board calibration; compare to saved pose. Large z/yaw change
-  means stop and re-fit, not fudge
+  means stop and re-fit, not fudge.
+- [ ] **`/scan` is x/y/yaw only** — run the multi-marker plane fit for z. Do not
+  treat the scan offset as a full 6-DoF pose.
+- [ ] **Frame semantics:** `board.json` x/y are absolute in the arm frame
+  (base link at y = −217); `/scan` offsets are base-relative. Compare relative
+  offsets, never absolute z against the twin's 433.7.
+- [ ] **Re-check live intrinsics/mount before trusting `/board/derive`:**
+  saved `fx = 312.77` vs the 36° lens comment (~746). If inconsistent, rerun
+  hand-eye; single-tag z is biased −3.1 mm median (worst −9.4).
 - [ ] `/sanity` corners + centre; any corner over 6 mm stops the sweep
 - [ ] 8-square dry run
 - [ ] Full 64-square sweep with the same solver and targets as sim
@@ -226,7 +259,7 @@ flip — fixed; the ChArUco face texture was rendering a 19.906 mm tag for a
 misread as unreachability. A disagreement is a hardware/calibration finding —
 record it, do not retune the solver to hide it.
 
-### Known carry-forwards from Block 2
+### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
   limit) and wrist_flex 1.6° from its limit. Check the Pi bridge's actual roll
