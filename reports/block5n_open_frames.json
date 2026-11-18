@@ -1,0 +1,157 @@
+[
+  {
+    "pose": "marker26",
+    "move_error_deg": 0.53,
+    "frames": [
+      {
+        "file": "scan_5n_open_marker26_0.jpg",
+        "sharpness": 60.6,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker26_1.jpg",
+        "sharpness": 67.4,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker26_2.jpg",
+        "sharpness": 68.5,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker26_3.jpg",
+        "sharpness": 69.5,
+        "ids": []
+      }
+    ],
+    "best": "scan_5n_open_marker26_3.jpg"
+  },
+  {
+    "pose": "marker24",
+    "move_error_deg": 0.65,
+    "frames": [
+      {
+        "file": "scan_5n_open_marker24_0.jpg",
+        "sharpness": 38.5,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker24_1.jpg",
+        "sharpness": 38.2,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker24_2.jpg",
+        "sharpness": 40.7,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker24_3.jpg",
+        "sharpness": 38.6,
+        "ids": []
+      }
+    ],
+    "best": "scan_5n_open_marker24_2.jpg"
+  },
+  {
+    "pose": "marker15",
+    "move_error_deg": 0.31,
+    "frames": [
+      {
+        "file": "scan_5n_open_marker15_0.jpg",
+        "sharpness": 61.9,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker15_1.jpg",
+        "sharpness": 62.4,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker15_2.jpg",
+        "sharpness": 62.6,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker15_3.jpg",
+        "sharpness": 62.7,
+        "ids": []
+      }
+    ],
+    "best": "scan_5n_open_marker15_3.jpg"
+  },
+  {
+    "pose": "marker23",
+    "move_error_deg": 0.05,
+    "frames": [
+      {
+        "file": "scan_5n_open_marker23_0.jpg",
+        "sharpness": 41.1,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker23_1.jpg",
+        "sharpness": 42.8,
+        "ids": []
+      },
+      {
+        "file": "scan_5n_open_marker23_2.jpg",
+        "sharpness": 42.6,
+        "ids": [
+          17
+        ]
+      },
+      {
+        "file": "scan_5n_open_marker23_3.jpg",
+        "sharpness": 41.4,
+        "ids": [
+          17
+        ]
+      }
+    ],
+    "best": "scan_5n_open_marker23_1.jpg"
+  },
+  {
+    "pose": "marker14",
+    "move_error_deg": 0.24,
+    "frames": [
+      {
+        "file": "scan_5n_open_marker14_0.jpg",
+        "sharpness": 178.7,
+        "ids": [
+          23,
+          24,
+          28
+        ]
+      },
+      {
+        "file": "scan_5n_open_marker14_1.jpg",
+        "sharpness": 181.6,
+        "ids": [
+          23,
+          24,
+          28
+        ]
+      },
+      {
+        "file": "scan_5n_open_marker14_2.jpg",
+        "sharpness": 177.6,
+        "ids": [
+          23,
+          24,
+          28
+        ]
+      },
+      {
+        "file": "scan_5n_open_marker14_3.jpg",
+        "sharpness": 178.9,
+        "ids": [
+          23,
+          24,
+          28
+        ]
+      }
+    ],
+    "best": "scan_5n_open_marker14_1.jpg"
+  }
+]

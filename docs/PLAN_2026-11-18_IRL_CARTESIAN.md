@@ -860,6 +860,28 @@ Receipt: `reports/block5l_2026-11-18.md`.
 
 Receipt: `reports/block5m_2026-11-18.md`.
 
+## Block 5n — jaws excluded, incidence gate added, anomaly open (2026-11-18)
+
+- [x] **Jaw A/B (4 frames per pose, 2 s settle):** jaw command tracks 1:1
+  (commanded 45 → measured **44.17**; 78.5 → 78.2; 0 → 0.9). No mapping bug.
+  Sharpness is unchanged across jaw 0 / 45 / 78.5 (marker14 ~180, marker24 ~39)
+  and the same tags decode. **The jaws are not occluding or softening the view.**
+  Also: the plan's jaw is 0.0 rad → app command **50**, so 5l ran at ~50, not 0.9
+  (my 5m script commanded 0). Montage `reports/block5n_jaw_ab.png`.
+- [x] Frames are stable across four shots (spread <5), so **not settle timing**.
+- [x] **Incidence gate added** (`--max-incidence-deg`, default 40) on top of the
+  3-tag / 12 px / bridge-limit gates. The current plan measures **0.0–0.2°**
+  incidence (nadir, 593.7 mm camera height) so the gate admits all 13; the
+  regenerated plan is identical and still validates 7/7 at ≤0.10 mm / 0.016°.
+- [!] **Open anomaly:** the model says 0° incidence, but four of the five bench
+  frames are oblique-looking and soft; only marker14 is nadir and sharp. Not
+  jaws, not settle, not modelled incidence. Same class as the 5c tool mount —
+  needs an FK-predicted view beside the real frame at one pose.
+- Detector, `MAX_RMS_PX` 1.5, 20 mm gate and lighting untouched. No `/sanity`,
+  no sweep.
+
+Receipt: `reports/block5n_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°

@@ -243,6 +243,8 @@ def main() -> int:
                         help="read joint limits from a Pi bridge base URL (GET only)")
     parser.add_argument("--edge-margin-px", type=float, default=12.0,
                         help="required frame-border margin for every accepted tag")
+    parser.add_argument("--max-incidence-deg", type=float, default=40.0,
+                        help="reject a pose whose view axis is this far off the board normal")
     parser.add_argument("--min-pose-markers", type=int, default=3,
                         help="a pose seeing fewer decoded tags is discarded")
     parser.add_argument("--report", default="reports/marker_scan_plan.json")
@@ -362,6 +364,18 @@ def main() -> int:
                 print(f"{index}/{len(candidates)} {candidate.get('name') or index} "
                       f"discard: {len(found)} tags < {args.min_pose_markers}",
                       flush=True)
+                continue
+            # Incidence gate: a pose that reaches the target but looks at the
+            # board edge-on is useless — at 160 mm the soft/oblique views
+            # decode 0-1 tags on the bench while the near-nadir ones decode 3
+            # (block 5m/5n).  The board is level, so its normal is +z.
+            view_axis = -np.asarray(camera.camera_rotation).reshape(3, 3)[:, 2]
+            incidence = math.degrees(math.acos(
+                max(-1.0, min(1.0, abs(float(view_axis[2]))))))
+            if incidence > args.max_incidence_deg:
+                print(f"{index}/{len(candidates)} {candidate.get('name') or index} "
+                      f"discard: incidence {incidence:.1f} deg > "
+                      f"{args.max_incidence_deg:.0f}", flush=True)
                 continue
             name = candidate.get("name") or f"{candidate['kind']}{index}"
             entries.append((name, tuple(float(v) for v in joints), found))
