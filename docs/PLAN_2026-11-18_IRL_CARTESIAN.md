@@ -928,6 +928,33 @@ Receipt: `reports/block5o_2026-11-18.md`.
 
 Receipt: `reports/block5p_2026-11-18.md`.
 
+## Block 5q — orientation audit (negative) + wide-cal prep (2026-11-18)
+
+- [x] **No 90° image-orientation mismatch.** `rotate_deg: 90` is applied only by
+  `annotate` (dashboard stream) and `/metrics`; the `_cal` frames
+  (`capture_view`), the scan views (`scan_controller`) and the bridge `/capture`
+  used for 5m/5n/5p are all **raw 640×480**. No EXIF orientation on any of them;
+  `collect_wrist_views.py` is a simulator tool, unrelated to the real `_cal` set.
+- [x] **Direct rotation test**: tag corner orientation, real vs sim at the 5m
+  measured joints, differs by **+6.7°** (one common tag, marker14) — not ±90°.
+  The 4c calibration also matched real corners at 1.25 px, which a 90° roll
+  could not do.
+- [x] **5p stands**: the ~50 mm board displacement at scan postures is a real
+  pose-dependent geometry error, not an image-frame convention.
+- [!] Open but separate: the **rendered tool** (fingers) looks rotated ~90°
+  against the real frame. That is the CAD tool's roll relative to the camera —
+  it does not move the board projection, but it would rotate the occlusion mask
+  (5c fixed the tool translation only). Worth a tool-only mask overlay check.
+- [x] **Wide-cal prepared, NOT run**: `tools/block5q_wide_cal.py` (dry-run
+  default) — 36 poses spanning pan ±40, lift −80…+40, wrist_flex 20…95, roll
+  0/±45; heights 94–271 mm; worst joint margin **+2.8°**; estimated **14.9 min**.
+  `reports/block5q_pose_list.json`.
+- [ ] Awaiting Brian: run `--execute`, then the wide-volume hand-eye re-solve.
+
+No motion, no plan/detector/gate change, no `/sanity`, no sweep.
+
+Receipt: `reports/block5q_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
