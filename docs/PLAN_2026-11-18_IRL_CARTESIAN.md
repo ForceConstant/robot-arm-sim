@@ -955,6 +955,29 @@ No motion, no plan/detector/gate change, no `/sanity`, no sweep.
 
 Receipt: `reports/block5q_2026-11-18.md`.
 
+## Block 5r — wide-cal aborted; new jaw needs the assembly export (2026-11-18)
+
+- [!] `tools/block5q_wide_cal.py --execute` ran to **11 of 36 poses** and was
+  interrupted by a bridge restart (`commands_applied 0`, `armed=false`). Frames
+  in `live/captures/wide_5q/`; **no mount solved from them**.
+- [x] New jaw mesh characterised: ASCII STL (converted to binary, 4 764 verts /
+  1 588 faces); bounds 51.04 × 61.19 × **64.50 mm** vs the installed
+  48.00 × 61.19 × 64.50 — same length, 3 mm more in x, principal axes within
+  ~1.5°. It is a variant of the same part, not a re-oriented one.
+- [!] **Cannot be placed from the single STL.** The old jaw is placed by body
+  `pos/quat` + geom `pos="0.022 -0.0187 0.019" quat="0 -0.707107 -0 0.707107"`
+  (that is the only 90°). Setting the jaw geoms to identity breaks the render
+  (striped surfaces); leaving it reproduces the old side-on tool. The Onshape
+  jaw occurrence transforms (±90° about z) and the part's frame mapping are not
+  in the file.
+- [ ] Need either the assembly re-export with jaws in their local frames, or the
+  two `occurrenceTransform` values; then it is a mesh swap plus those numbers.
+- No TIP_IN_CHAIN (104.425 mm), tip (54.5 mm), camera, plan, detector, gate or
+  `MAX_RMS_PX` change; no arm motion. Variant pack in
+  `.private/gripper-assets-5r/` (gitignored), XML restored.
+
+Receipt: `reports/block5r_2026-11-18.md`.
+
 ### Known carry-forwards from Blocks 2–3
 
 - **a8 is joint-limit-adjacent:** wrist_roll **160.8°** (2.0° from the 162.79°
