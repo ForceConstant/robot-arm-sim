@@ -1,0 +1,32 @@
+{
+  "measured": "2026-11-19T18:26 local, BC-250 bench, shoulder_lift, one pose",
+  "pose": {
+    "shoulder_pan": -27.52,
+    "elbow_flex": -44.35,
+    "wrist_flex": 94.46,
+    "wrist_roll": 3.52,
+    "gripper": 13.77
+  },
+  "target_lift_deg": 30.0,
+  "approach": {
+    "from_above_preposition_deg": 40.0,
+    "from_below_preposition_deg": 20.0,
+    "repeats": 3
+  },
+  "settled_lift_deg": {
+    "from_above": [34.24, 34.24, 34.24],
+    "from_below": [30.46, 30.46, 30.46]
+  },
+  "within_direction_spread_deg": 0.0,
+  "hysteresis_deg": -3.78,
+  "hysteresis_note": "approaching the same target from above settles 3.78 deg higher than approaching from below",
+  "tip_sensitivity_mm_per_deg": 3.7,
+  "implied_tip_hysteresis_mm": -14.0,
+  "also_observed": {
+    "travelling_down": "stops ~4.2 deg above the target",
+    "travelling_up": "stops ~0.5 deg above the target",
+    "reported_deadband_width_deg": 4.7,
+    "hand_test": "Brian can lift the tip ~20 mm at this pose before the arm takes up the slack"
+  },
+  "conclusion": "The reported joint vector does not determine the physical pose to better than about 4-5 deg at the shoulder under gravity at this extension, i.e. 15-20 mm at the tip. It is repeatable within one approach direction (0.00 deg spread over 3 repeats), so it is hysteresis/backlash, not random noise. Open-loop calculated positions are not usable for fine placement; fine positioning must be closed-loop on the wrist camera."
+}
