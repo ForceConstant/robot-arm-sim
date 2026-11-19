@@ -1,0 +1,11 @@
+{
+  "roll_adjust_deg": 6.0,
+  "pullback_mm": 13.0,
+  "sim_metrics": [
+    3,
+    99.75947765302489,
+    14.91956749605888
+  ],
+  "irl_side_px": 95.8,
+  "irl_angle_mod90": 86.6
+}
