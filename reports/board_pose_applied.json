@@ -1,0 +1,11 @@
+{
+  "applied_2026-11-19": {
+    "board_json_before": {"x_mm": -9.92, "y_mm": -3.13, "z_mm": 431.35, "yaw_deg": 5.67},
+    "board_json_after": {"x_mm": -34.92, "y_mm": -18.13, "z_mm": 431.35, "yaw_deg": 1.92},
+    "delta": {"dyaw_deg": -3.75, "dx_mm": -25.0, "dy_mm": -15.0},
+    "verification": {"sim_ids": [27, 28, 31], "irl_ids": [23, 27, 28, 31],
+                     "per_id_err_px": {"27": 0.6, "28": 7.9, "31": 3.1},
+                     "mean_err_px": 3.9},
+    "note": "live/board.json is gitignored runtime state; these values are the record of what was written to the Pi-side config"
+  }
+}
