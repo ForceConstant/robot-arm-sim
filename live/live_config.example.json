@@ -13,5 +13,7 @@
   "speed_scale": 0.3,
   "port": 8080,
   "base_x_m": 0.0,
-  "base_y_m": -0.217
+  "base_y_m": -0.217,
+  "gripper": "cad_parallel",
+  "gripper_assets": ".private/gripper-assets-5y"
 }

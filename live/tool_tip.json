@@ -1,0 +1,48 @@
+{
+  "pack": "cad_parallel",
+  "asset_root": "/home/brian/robot-arm-sim/.private/gripper-assets-5y",
+  "gripper_origin_to_tip_m": 0.11045,
+  "source_method": "compiled MJCF, max(-z) of jaw-body vertices in so101:gripper frame",
+  "profile_composed_m": 0.173026907,
+  "cross_check_delta_m": 0.0,
+  "ok": true,
+  "measured_at": "2026-11-19T12:19:30.659694+00:00",
+  "git_head": "941a8b8",
+  "profile_expected_m": 0.11045,
+  "profile_tcp_z_m": -0.11045,
+  "profile_tip_reach_m": 0.0,
+  "composition_delta_m": -0.062576907,
+  "mount_z_m": -0.062576907,
+  "spread_mm": 0.0,
+  "vertex_count": 10956,
+  "poses": [
+    {
+      "aperture_deg": 38.4,
+      "deepest_mm": 110.45,
+      "deepest_point_mm": [
+        -0.0,
+        -7.85,
+        -110.45
+      ]
+    },
+    {
+      "aperture_deg": 10.0,
+      "deepest_mm": 110.45,
+      "deepest_point_mm": [
+        -0.0,
+        -7.85,
+        -110.45
+      ]
+    },
+    {
+      "aperture_deg": 70.0,
+      "deepest_mm": 110.45,
+      "deepest_point_mm": [
+        -0.0,
+        -7.85,
+        -110.45
+      ]
+    }
+  ],
+  "note": "profile_composed_m composes the mount with tcp_position and is ~62.6 mm too deep by construction: the base body already sits at the mount, so the translation is applied twice. Recorded for audit only; the tip is |tcp_z| + tip_reach."
+}

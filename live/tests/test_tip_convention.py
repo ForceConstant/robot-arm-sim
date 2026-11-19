@@ -26,7 +26,7 @@ ROOT = LIVE.parent
 sys.path.insert(0, str(LIVE))
 
 from kinematics import JOINTS, ArmKinematics, square_xy  # noqa: E402
-from tip_frame import TIP_IN_CHAIN  # noqa: E402
+from tip_frame import TIP_IN_CHAIN, describe  # noqa: E402
 
 CONFIG = json.loads((LIVE / "live_config.json").read_text())
 CALIBRATION = ROOT / CONFIG.get("calibration", ".private/phase11d/calibration.json")
@@ -79,7 +79,11 @@ def guard_tip_error(kin: ArmKinematics, joints, target) -> float:
 def test_solver_and_guard_agree_mid_sequence():
     assert "tool_tip_mm" not in CONFIG
     assert "jaw_frame" not in CONFIG, "the tip frame must not be a config override"
-    assert abs(float(TIP_IN_CHAIN[2, 3]) * 1000.0 + 104.425) < 1e-6
+    tool = describe()
+    assert tool["ok"] is True
+    assert float(tool["gripper_origin_to_tip_m"]) > 0.0
+    assert abs(float(TIP_IN_CHAIN[2, 3]) * 1000.0
+               + float(tool["gripper_origin_to_tip_m"]) * 1000.0) < 1e-6
     # The tip must sit on the chain's approach axis: an off-axis origin turns
     # the solver's free in-plane rotation into millimetres of tip error.
     assert np.allclose(TIP_IN_CHAIN[:2, 3], 0.0, atol=1e-9)
@@ -105,3 +109,61 @@ def test_solver_and_guard_agree_mid_sequence():
             f"{square}: solver and guard disagree by "
             f"{abs(solver_mm - guard_mm):.2f} mm")
         seed = joints
+
+
+# --------------------------------------------------------------- tool stamp
+def _run_derive(pack: str, out: Path) -> dict:
+    """Measure one pack through the real CLI (a fresh process per pack)."""
+    import os
+    import subprocess
+    config = out.with_suffix(".config.json")
+    config.write_text(json.dumps({"gripper": "cad_parallel",
+                                  "gripper_assets": str(ROOT / ".private" / pack)}))
+    env = dict(os.environ, PYTHONPATH=str(ROOT), MUJOCO_GL="egl")
+    proc = subprocess.run([sys.executable, str(ROOT / "tools/derive_tool_tip.py"),
+                           "--config", str(config), "--out", str(out)],
+                          capture_output=True, text=True, env=env)
+    assert proc.returncode == 0, proc.stderr[-800:]
+    return json.loads(Path(out).read_text())
+
+
+def test_pack_change_moves_the_constant(tmp_path):
+    """A different installed tool must produce a different tip constant."""
+    old_pack = ROOT / ".private/gripper-assets"
+    new_pack = ROOT / ".private/gripper-assets-5y"
+    if not (old_pack / "profile.json").exists() or not (new_pack / "profile.json").exists():
+        pytest.skip("both packs are not in this checkout")
+
+    old = _run_derive("gripper-assets", tmp_path / "old.json")
+    new = _run_derive("gripper-assets-5y", tmp_path / "new.json")
+    print(f"old pack {old['gripper_origin_to_tip_m'] * 1000:.3f} mm, "
+          f"new pack {new['gripper_origin_to_tip_m'] * 1000:.3f} mm")
+    assert old["ok"] and new["ok"]
+    assert abs(old["gripper_origin_to_tip_m"] * 1000.0 - 100.450) < 0.05
+    assert abs(new["gripper_origin_to_tip_m"] * 1000.0 - 110.450) < 0.05
+    assert abs(new["gripper_origin_to_tip_m"]
+               - old["gripper_origin_to_tip_m"]) > 5e-3
+
+
+def test_configured_pack_without_stamp_is_an_error(tmp_path):
+    import tip_frame
+    config = tmp_path / "live_config.json"
+    config.write_text(json.dumps({"gripper": "cad_parallel",
+                                  "gripper_assets": str(ROOT / ".private/gripper-assets-5y")}))
+    with pytest.raises(RuntimeError, match="no tool-tip stamp"):
+        tip_frame.resolve(config, tmp_path / "missing.json")
+
+
+def test_bad_stamp_is_an_error(tmp_path):
+    import tip_frame
+    root = ROOT / ".private/gripper-assets-5y"
+    config = tmp_path / "live_config.json"
+    config.write_text(json.dumps({"gripper": "cad_parallel",
+                                  "gripper_assets": str(root)}))
+    stamp = tmp_path / "tool_tip.json"
+    stamp.write_text(json.dumps({"pack": "cad_parallel", "asset_root": str(root),
+                                 "ok": False, "gripper_origin_to_tip_m": 0.09145,
+                                 "profile_expected_m": 0.11045,
+                                 "cross_check_delta_m": -0.019}))
+    with pytest.raises(RuntimeError, match="not ok"):
+        tip_frame.resolve(config, stamp)

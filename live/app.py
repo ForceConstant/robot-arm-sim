@@ -30,7 +30,7 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
 from bridge_client import BridgeError, HttpBridge, HttpFrames
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
 from scan_controller import ScanController, plan_in_degrees
-from tip_frame import TIP_IN_CHAIN
+from tip_frame import TIP_IN_CHAIN, describe as describe_tip_frame
 from chess_sim import fiducials
 from chess_sim.marker_scan import (MarkerLayout, board_offset, load_plan,
                                    marker_corners_world)
@@ -962,6 +962,7 @@ def state():
         bridge_state = {"error": str(exc)}
     with live.lock:
         return {"bridge": bridge_state,
+                "tool_tip": describe_tip_frame(),
                 "scan": live.last_scan,
                 "scan_running": live.scan_running,
                 "error": live.last_error,
