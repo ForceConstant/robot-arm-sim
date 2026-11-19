@@ -89,8 +89,18 @@ WRIST_CAMERA_MEASURED = CameraMountMeasured(
 CAMERA_SOURCE = os.environ.get("ROBOT_WRIST_CAMERA", "reference")
 if CAMERA_SOURCE not in ("reference", "4c"):
     raise ValueError("ROBOT_WRIST_CAMERA must be 'reference' or '4c'")
+
+# Measured 2026-11-19: the render FOV that reproduces the real C270's image
+# scale from the same joint vector.  Sweeping fovy with the lens pose untouched
+# put the rendered ChArUco marker side at 95.60 px against 95.8 px measured in
+# the IRL frame (receipt: reports/sim_vs_irl_fovfit.json); the old 42.0283 deg
+# portrait value rendered the same markers 13% too large.  Portrait 480x640 is
+# the render orientation that matches the sensor (mounted 90 deg to the model).
+WRIST_REFERENCE_FOVY_DEG = float(os.environ.get("ROBOT_WRIST_FOVY", "47.0"))
+
 print(f"wrist camera: {CAMERA_SOURCE}"
-      + (f" (B5 reference 37e7232, fovy {tool_reference.fovy_deg():.4f} deg)"
+      + (f" (B5 reference 37e7232, fovy {WRIST_REFERENCE_FOVY_DEG:.4f} deg,"
+         f" measured vs IRL 95.8 px)"
          if CAMERA_SOURCE == "reference" else " (block4c calibration)"))
 
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
@@ -473,7 +483,11 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         pos, rot = tool_reference.camera_in_gripper()
         xyaxes = np.concatenate([rot[:, 0], rot[:, 1]])
         x_axis, y_axis = xyaxes[:3], xyaxes[3:]
-        fovy = tool_reference.fovy_deg()
+        # Measured bench FOV (reports/sim_vs_irl_fovfit.json), not the 32.14 deg
+        # that fy = 833 px implies for the landscape reference aspect: rendered
+        # portrait 480x640 at the same joints, 42.0283 deg put the marker side at
+        # 108.5 px where the IRL C270 measures 95.8 px.  Env override above.
+        fovy = WRIST_REFERENCE_FOVY_DEG
     elif gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
         # Calibrated bench camera: already expressed in the gripper body frame,
         # which is the frame `camera_in_tool` uses.  No site transform applies.
