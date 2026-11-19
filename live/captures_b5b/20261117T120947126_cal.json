@@ -1,0 +1,79 @@
+{
+  "name": "20261117T120947126_cal",
+  "target_deg": {
+    "shoulder_pan": 53.54,
+    "shoulder_lift": -94.11,
+    "elbow_flex": 82.07,
+    "wrist_flex": 76.44,
+    "wrist_roll": -62.42,
+    "gripper": 0.96
+  },
+  "measured_deg": {
+    "shoulder_pan": 53.19,
+    "shoulder_lift": -93.58,
+    "elbow_flex": 82.42,
+    "wrist_flex": 76.35,
+    "wrist_roll": -62.33,
+    "gripper": 1.91
+  },
+  "settle_error_deg": 0.53,
+  "worst_joint": "shoulder_lift",
+  "gripper_error_deg": 0.95,
+  "commands_sent": 13,
+  "seq_last": 1795120053427,
+  "settle_s": 1.69,
+  "trace": [
+    [
+      0.02,
+      9.67
+    ],
+    [
+      0.15,
+      9.23
+    ],
+    [
+      0.27,
+      8.62
+    ],
+    [
+      0.39,
+      7.83
+    ],
+    [
+      0.52,
+      7.21
+    ],
+    [
+      0.64,
+      5.72
+    ],
+    [
+      0.76,
+      5.01
+    ],
+    [
+      0.88,
+      4.4
+    ],
+    [
+      1.0,
+      3.69
+    ],
+    [
+      1.12,
+      2.99
+    ],
+    [
+      1.25,
+      1.5
+    ],
+    [
+      1.37,
+      0.88
+    ],
+    [
+      1.49,
+      0.53
+    ]
+  ]
+}

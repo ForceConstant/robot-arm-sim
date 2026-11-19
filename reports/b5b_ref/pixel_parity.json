@@ -1,0 +1,85 @@
+{
+  "captures_dir": "live/captures_b5b_ref",
+  "wrist_mode": "calibrated",
+  "valid_view_rule": ">=2 detected markers and no tag clipped at the frame border (corner closer than edge_px/6 + 1 px)",
+  "gate_thresholds_px": {
+    "median_px": 2.0,
+    "max_px": 4.0
+  },
+  "lens": {
+    "fx": 831.897,
+    "fy": 833.014,
+    "cx": 320.0,
+    "cy": 240.0,
+    "distortion": [
+      -0.102251,
+      0.685733,
+      0.001112,
+      0.003239,
+      0.0
+    ]
+  },
+  "sim": {
+    "mount": "reference (tool_reference.camera_in_gripper)",
+    "baked_fovy_deg": 47.0,
+    "measured_fovy_deg": 32.1445,
+    "board": {
+      "x_mm": -34.92,
+      "y_mm": -18.13,
+      "z_mm": 431.35,
+      "yaw_deg": 1.92
+    }
+  },
+  "views": 1,
+  "valid": {
+    "views": 1,
+    "corners": 16,
+    "median_px": 22.496,
+    "mean_px": 23.41,
+    "p90_px": 38.37,
+    "max_px": 42.564,
+    "gate": {
+      "median_pass": false,
+      "max_pass": false,
+      "pass": false
+    }
+  },
+  "all": {
+    "corners": 16,
+    "median_px": 22.496,
+    "max_px": 42.564
+  },
+  "excluded": [],
+  "per_view": [
+    {
+      "name": "ref_pose",
+      "markers": 4,
+      "ids": [
+        23,
+        27,
+        28,
+        31
+      ],
+      "corners": 16,
+      "median_px": 22.496,
+      "max_px": 42.564,
+      "mean_px": 23.41,
+      "border_px": 33.0,
+      "clip_margin_px": 16.2,
+      "valid": true,
+      "excluded_because": "",
+      "settle_error_deg": 0.0,
+      "sim_selfcheck_max_px": null,
+      "fit_scale": 0.8817,
+      "fit_rot_deg": 0.87,
+      "fit_t_px": [
+        29.9,
+        34.4
+      ],
+      "resid_after_fit_px": 1.73
+    }
+  ],
+  "overlays": [
+    "reports/b5b_ref/ref_pose_overlay.png"
+  ]
+}
