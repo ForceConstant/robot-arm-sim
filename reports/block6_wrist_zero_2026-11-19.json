@@ -1,0 +1,32 @@
+{
+  "block": "wrist-roll zero + IRL/sim wrist match, 2026-11-19",
+  "wrist_roll_zero": {
+    "operator_deg": 0.0,
+    "sim_so101_wrist_roll_deg": -87.21,
+    "how": "edge-nulled from a rendered roll sweep; operator 0 = gripper base level",
+    "code": "chess_sim/config.py: WRIST_ROLL_ZERO_SIM_DEG + sim_wrist_roll()"
+  },
+  "irl_pose_at_measurement": {
+    "shoulder_pan": -0.44, "shoulder_lift": -55.16, "elbow_flex": 74.07,
+    "wrist_flex": 40.22, "wrist_roll": -0.18, "gripper": 37.28
+  },
+  "sim_at_that_pose": {
+    "sim_wrist_roll_deg": -87.39,
+    "lens_world_mm": [-0.6, 0.5, 583.8],
+    "tip_world_mm": [-1.1, -6.8, 478.4],
+    "tip_over_board_mm": 47.0,
+    "board_coverage_pct": 83.01,
+    "board_centre_off_axis_deg": 4.24
+  },
+  "camera_fov": {
+    "intrinsic_fovy_deg": 32.1445,
+    "intrinsic_fovx_deg": 42.0283,
+    "rotated_irl_vertical_fov_deg": 42.0283,
+    "note": "portrait 480x640 render must use fovy = 42.0283; with fovy 32.1445 zero markers are detected"
+  },
+  "markers": {
+    "irl_rotated_90cw": {"ids": [27, 31], "mean_side_px": 95.8},
+    "sim_portrait": {"ids": [22, 23, 27], "mean_side_px": 108.5},
+    "note": "id sets differ: the sim board texture does not carry the printed board's tag ids"
+  }
+}

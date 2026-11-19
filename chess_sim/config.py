@@ -553,3 +553,18 @@ def square_index(square: int | str | Square) -> int:
 def square_at(square: int | str | Square) -> Square:
     """Anything that names a square -> the `Square` member."""
     return Square(square if isinstance(square, str) else chess.square_name(square))
+
+
+# --------------------------------------------------------------- wrist roll zero
+# Measured on the bench 2026-11-19: the orientation at which the gripper base
+# reads level (Brian's ruling) is so101:wrist_roll = -87.21 deg in the sim, and
+# the live bridge / operator convention calls that same *physical* orientation
+# 0 deg.  Convert an operator wrist_roll into the sim joint value with this
+# offset.  It is a frame convention only - it is not folded into calibration,
+# TIP_IN_CHAIN, the plan or any gate constant.
+WRIST_ROLL_ZERO_SIM_DEG: float = -87.21
+
+
+def sim_wrist_roll(live_deg: float) -> float:
+    """Operator wrist_roll (deg, 0 = gripper base level) -> so101:wrist_roll (deg)."""
+    return float(live_deg) + WRIST_ROLL_ZERO_SIM_DEG

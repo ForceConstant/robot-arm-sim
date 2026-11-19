@@ -1,0 +1,95 @@
+{
+  "git_head": "31483e2 + staged tree de66b06ec5bbbbd12f235e733e0e52f2ea6a3b19 (uncommitted, awaiting Brian)",
+  "gripper_pack": {
+    "kind": "cad_parallel",
+    "asset_root": "/home/brian/robot-arm-sim/.private/gripper-assets-5y",
+    "profile_name": "NormaCore \u00b7 custom PLA",
+    "custom": true
+  },
+  "tip_constant": {
+    "resolved_mm": 110.45,
+    "source": "live/tool_tip.json stamp (Block 2)",
+    "stock_literal_mm": 104.425,
+    "note": "Block 1 did not change it; these renders do not use it"
+  },
+  "board": {
+    "frame": "sim twin, face=charuco (chess_sim/config.py BoardConfig)",
+    "square_mm": 28.0,
+    "top_face_mm": 430.0,
+    "live_marker_plane_mm": 431.35
+  },
+  "camera": {
+    "intrinsics": "block4c measured, fx 831.9 fy 833.0, fovy 32.1445 deg",
+    "mount": "block4c solved hand-eye (67.656, -2.916, -10.885) mm"
+  },
+  "pose": {
+    "name": "marker14",
+    "joints_deg": {
+      "shoulder_pan": 11.69,
+      "shoulder_lift": -65.19,
+      "elbow_flex": 80.57,
+      "wrist_flex": 44.35,
+      "wrist_roll": 21.54,
+      "gripper": 0.86
+    },
+    "fingertip_hover_mm": 40.26
+  },
+  "measured": {
+    "tip_depth_mm": 110.45,
+    "tip_target_mm": 110.45,
+    "tip_delta_mm": -0.0,
+    "tip_gap_mm": 2.518,
+    "deepest_tip_left_mm": [
+      -2.5,
+      7.85,
+      -110.45
+    ],
+    "deepest_tip_right_mm": [
+      -0.0,
+      8.15,
+      -110.45
+    ],
+    "jaw_body_centres": {
+      "left": {
+        "body_origin_mm": [
+          -32.0,
+          18.55,
+          -54.45
+        ],
+        "vertex_centroid_mm": [
+          -5.786,
+          5.268,
+          -56.579
+        ],
+        "bbox_mid_mm": [
+          9.477,
+          -0.15,
+          -78.2
+        ]
+      },
+      "right": {
+        "body_origin_mm": [
+          32.0,
+          -18.55,
+          -54.45
+        ],
+        "vertex_centroid_mm": [
+          5.786,
+          -5.269,
+          -56.579
+        ],
+        "bbox_mid_mm": [
+          -9.478,
+          0.15,
+          -78.2
+        ]
+      }
+    },
+    "cad_body_centre_claimed_mm": [
+      -0.3,
+      -27.828,
+      -76.6
+    ],
+    "generated_utc": "2026-11-19T12:38:49+00:00"
+  }
+}

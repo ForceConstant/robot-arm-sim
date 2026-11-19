@@ -1,5 +1,8 @@
 # Tip-frame convention (settled 2026-11-18)
 
+> Tool-side frames (`so101:gripper` → tool base → jaw bodies → fingertips) are in
+> [`TOOL_FRAME.md`](TOOL_FRAME.md). This file owns the tip constant only.
+
 Block 1 of the IRL Cartesian plan. The question was which of three numbers in
 the tree is the chain→jaw-tip transform. The answer is **none of them as
 written**; the MJCF says the tip is on the wrist axis at the fingertip plane.
