@@ -23,7 +23,8 @@ from PIL import Image
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask, CaptureTask, Camera
 from chess_sim.dual import DualArmEnv
 from chess_sim.single import SingleFollowerEnv
-from chess_sim import gripper
+from chess_sim import gripper, tool_reference
+from chess_sim import scene as sim_scene
 from chess_sim.assets import set_properties
 from chess_sim.controller import PlanOverride
 from .incidents import (Store, Recording, restore, bookkeeping, physics_state,
@@ -135,6 +136,9 @@ class Lab:
                     "control": "oracle-state scripted IK; contact-based grasping",
                     "perception_validated": False, "hardware_connected": False,
                     "gripper": gripper.description(),
+                    # wrist camera source + the frozen B5 reference record (A2)
+                    "wrist_camera": {**tool_reference.summary(),
+                                     "source": sim_scene.CAMERA_SOURCE},
                     "gripper_feedback": getattr(self, 'gripper_feedback', {}),
                     "recording": None if self.recording is None else self.recording.id,
                     "record_enabled": self.record_enabled,

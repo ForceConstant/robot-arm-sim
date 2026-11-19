@@ -14,7 +14,7 @@ import chess
 import mujoco
 import numpy as np
 
-from . import assets, gripper
+from . import assets, gripper, tool_reference
 from .assets import (ASSET_DIR, DEFAULT_SET, SET_COUNTS, PieceGeometry, piece_asset_name,
                      piece_geometry, piece_obj_path, piece_texture_path, piece_tint)
 from . import fiducials
@@ -81,6 +81,18 @@ WRIST_CAMERA_MEASURED = CameraMountMeasured(
     xyaxes=(-0.845366, 0.155227, 0.511136,
             -0.218268, -0.973702, -0.065290),
     fovy=32.1445)
+
+# Wrist camera source.  "reference" is the accepted B5 arrangement frozen at
+# 37e7232 (tool_reference.py maps its tool_mount frame into the gripper body);
+# "4c" is the calibrated bench mount solved on the old tool.  Both stay
+# available; the active choice is printed at import and reported by /api/status.
+CAMERA_SOURCE = os.environ.get("ROBOT_WRIST_CAMERA", "reference")
+if CAMERA_SOURCE not in ("reference", "4c"):
+    raise ValueError("ROBOT_WRIST_CAMERA must be 'reference' or '4c'")
+print(f"wrist camera: {CAMERA_SOURCE}"
+      + (f" (B5 reference 37e7232, fovy {tool_reference.fovy_deg():.4f} deg)"
+         if CAMERA_SOURCE == "reference" else " (block4c calibration)"))
+
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
                      wrist_flex=0.4, wrist_roll=0.0, gripper=0.6)
 
@@ -453,7 +465,16 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     mujoco.mju_quat2Mat(rot, np.asarray(site.quat, dtype=float))
     rot = rot.reshape(3, 3)                      # site axes in the gripper body frame
     tool_body = spec.body(prefix + "gripper")
-    if gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
+    if gripper.CUSTOM and CAMERA_SOURCE == "reference":
+        # Accepted B5 arrangement (frozen at 37e7232).  Values are ported, not
+        # re-derived: tool_reference maps the reference tool frame into this
+        # body.  Same convention as camera_in_tool (MuJoCo xyaxes: +x right,
+        # +y up, view along -z).
+        pos, rot = tool_reference.camera_in_gripper()
+        xyaxes = np.concatenate([rot[:, 0], rot[:, 1]])
+        x_axis, y_axis = xyaxes[:3], xyaxes[3:]
+        fovy = tool_reference.fovy_deg()
+    elif gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
         # Calibrated bench camera: already expressed in the gripper body frame,
         # which is the frame `camera_in_tool` uses.  No site transform applies.
         pos = np.asarray(WRIST_CAMERA_MEASURED.pos, dtype=float)
@@ -476,18 +497,23 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
     mujoco.mju_mat2Quat(cam_quat, cam_R.reshape(-1))
     cam_size = [0.012, 0.012, 0.008]
     housing_centre = pos + cam_R @ np.array([0.0, 0.0, cam_size[2]])
-    tool_body.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=cam_size,
-                     pos=list(housing_centre), quat=list(cam_quat),
-                     rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0, group=1, density=0)
+    if not gripper.CUSTOM:
+        # Stock tool: a visual box stands in for a camera body that has no CAD
+        # geometry. With the CAD pack the mount is real geometry, and a box at
+        # the calibrated lens position renders as a floating cube 71 mm off the
+        # tool, so it is not added.
+        tool_body.add_geom(name=prefix + "wrist_camera", type=mujoco.mjtGeom.mjGEOM_BOX, size=cam_size,
+                         pos=list(housing_centre), quat=list(cam_quat),
+                         rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0, group=1, density=0)
     if gripper.CUSTOM:
-        housing = tool_body.add_body(name=prefix + 'camera_housing', pos=list(housing_centre),
-                                     quat=list(cam_quat))
-        housing.add_geom(name=prefix + 'camera_collision', type=mujoco.mjtGeom.mjGEOM_BOX,
-            size=cam_size, mass=gripper.PROFILE['camera_mass_kg'],
-            rgba=[.08, .08, .08, 1], group=3)
+        # The CAD pack carries the real camera mount as geometry, so the box
+        # proxy is gone: it sat on the calibrated lens position 71 mm off the
+        # tool and its front face landed exactly on the lens, which rendered
+        # the wrist view black. The IK-only clearance envelope stays where it
+        # was, so sweep and IK clearance results are unchanged.
         tool_body.add_geom(name=prefix + 'clearance_proxy_camera', type=mujoco.mjtGeom.mjGEOM_BOX,
-            pos=list(housing.pos), quat=list(cam_quat), size=cam_size,
-            contype=0, conaffinity=0, density=0, group=5)
+            pos=list(housing_centre), quat=list(cam_quat), size=cam_size,
+            contype=0, conaffinity=0, density=0, group=5, rgba=[0, 0, 0, 0])
 
 
 def arm_rest_pose() -> JointPose:
