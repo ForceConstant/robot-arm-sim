@@ -1,0 +1,13 @@
+{
+  "board_delta_yaw_deg": -3.75,
+  "board_delta_xy_mm": [
+    -25.0,
+    -15.0
+  ],
+  "rms_px": 2.372062447222809,
+  "board_json_now": {
+    "yaw_deg": 5.67,
+    "x_mm": -9.92,
+    "y_mm": -3.13
+  }
+}
