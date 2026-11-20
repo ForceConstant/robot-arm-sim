@@ -20,6 +20,7 @@ import os
 from pathlib import Path
 import threading
 import time
+from collections import deque
 
 import cv2
 import numpy as np
@@ -30,6 +31,7 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
 from bridge_client import BridgeError, HttpBridge, HttpFrames
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
 from scan_controller import ScanController, plan_in_degrees
+from target_overlay import TargetOverlay, draw as draw_target
 from tip_frame import TIP_IN_CHAIN, describe as describe_tip_frame
 from chess_sim import fiducials
 from chess_sim.marker_scan import (MarkerLayout, board_offset, load_plan,
@@ -50,6 +52,13 @@ DEFAULTS = {
     "layout_offset_mm": 152.0,
     # "mat" = the four border tags, "charuco" = the printed calibration face.
     "layout_kind": "mat",
+    # Target overlay on the camera view: the P1 perception path (printed-face
+    # registration + piece centroid) drawn where the arm would go.  Detection
+    # runs off the stream thread, once per ``target_refresh_s``.
+    "target_overlay": True,
+    "target_reference": "chess_sim/assets/scene/generated/board_charuco.png",
+    "target_px_per_mm": 4.0,
+    "target_refresh_s": 0.5,
     "settle_s": 0.6,
     "pose_timeout_s": 12.0,
     "speed_scale": 0.3,
@@ -132,6 +141,22 @@ class Live:
         self.motion = threading.Lock()
         self.board_path = Path(self.config.get("board_file", "live/board.json"))
         self.kinematics = ArmKinematics(self.calibration, {}, self._board_frame())
+        self.frame_times: deque[float] = deque(maxlen=40)
+        self.frame_cost_ms: deque[float] = deque(maxlen=40)
+        # Target overlay: one detector, its own thread.  It never runs on the
+        # stream thread and never touches motion state.
+        self.overlay = None
+        if self.config.get("target_overlay", True):
+            try:
+                self.overlay = TargetOverlay(
+                    self.config["calibration"],
+                    self.config["target_reference"],
+                    px_per_mm=float(self.config.get("target_px_per_mm", 4.0)),
+                    refresh_s=float(self.config.get("target_refresh_s", 0.5)),
+                    state_fn=self.bridge.state)
+            except Exception as exc:      # a broken overlay must not stop the view
+                self.last_error = (f"target overlay off: "
+                                   f"{type(exc).__name__}: {exc}")
 
     # ------------------------------------------------------------------ board
     def _board_frame(self):
@@ -888,22 +913,48 @@ class Live:
             return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
         return image
 
+    def _fps_locked(self) -> float | None:
+        """Frame rate from the served-frame timestamps; caller holds the lock."""
+        times = list(self.frame_times)
+        if len(times) < 2 or times[-1] <= times[0]:
+            return None
+        return round((len(times) - 1) / (times[-1] - times[0]), 2)
+
+    def stream_fps(self) -> float | None:
+        with self.lock:
+            return self._fps_locked()
+
     def annotate(self) -> bytes | None:
+        """One served frame: capture, undistort, draw the overlay, encode.
+
+        The marker pass that used to run here on every frame is now part of the
+        overlay's detection, which runs at ``target_refresh_s`` cadence on its
+        own thread; this method only draws the last result.  That keeps the
+        served frame rate set by the camera, not by the detector.
+        """
+        started = time.perf_counter()
         try:
             frame = self.frames.capture()
         except BridgeError as exc:
             with self.lock:
                 self.last_error = str(exc)
             return None
-        image = self._orient(cv2.cvtColor(frame.image, cv2.COLOR_RGB2BGR))
-        detections = fiducials.detect_markers(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        for detection in detections:
-            corners = np.asarray(detection.corners, dtype=np.int32).reshape(-1, 1, 2)
-            cv2.polylines(image, [corners], True, (0, 220, 120), 2)
-            centre = corners.reshape(-1, 2).mean(axis=0).astype(int)
-            cv2.putText(image, str(detection.marker_id), tuple(centre),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 220, 120), 2, cv2.LINE_AA)
+        raw = cv2.cvtColor(frame.image, cv2.COLOR_RGB2BGR)
+        snap = {"result": None}
+        if self.overlay is not None:
+            self.overlay.submit(raw.copy(), time.time())
+            # Draw on the undistorted frame: the detector solves pose there, so
+            # corners and centroid only line up on the same geometry.
+            image = self._orient(self.overlay.rectify(raw))
+            snap = self.overlay.snapshot()
+            draw_target(image, snap, layout_hw=raw.shape[:2],
+                        stream_fps=self.stream_fps())
+        else:
+            image = self._orient(raw)
         ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 75])
+        with self.lock:
+            self.frame_times.append(time.time())
+            self.frame_cost_ms.append((time.perf_counter() - started) * 1000.0)
         return encoded.tobytes() if ok else None
 
     def stream_loop(self) -> None:
@@ -954,12 +1005,31 @@ def _authorised(request: Request) -> None:
         raise HTTPException(403, "bad token")
 
 
+def _target_summary() -> dict | None:
+    if live.overlay is None:
+        return None
+    snap = live.overlay.snapshot()
+    result = snap.get("result") or {}
+    return {"status": result.get("status", "starting"),
+            "reason": result.get("reason", ""),
+            "piece": result.get("piece"),
+            "board": result.get("board"),
+            "age_s": None if snap["age_s"] is None else round(snap["age_s"], 2),
+            "runs": snap["runs"],
+            "mean_cost_ms": snap["mean_cost_ms"],
+            "errors": snap["errors"],
+            "last_error": snap["last_error"]}
+
+
 @app.get("/state")
 def state():
     try:
         bridge_state = live.bridge.state()
     except BridgeError as exc:
         bridge_state = {"error": str(exc)}
+    # Taken before ``live.lock``: the stream thread holds the overlay lock while
+    # it asks for the frame rate, so the opposite order here would deadlock.
+    target = _target_summary()
     with live.lock:
         return {"bridge": bridge_state,
                 "tool_tip": describe_tip_frame(),
@@ -967,7 +1037,11 @@ def state():
                 "scan_running": live.scan_running,
                 "error": live.last_error,
                 "stream_age_s": round(time.time() - live.annotated_ts, 2)
-                if live.annotated_ts else None}
+                if live.annotated_ts else None,
+                "stream_fps": live._fps_locked(),
+                "frame_cost_ms": round(float(np.mean(live.frame_cost_ms)), 1)
+                if live.frame_cost_ms else None,
+                "target": target}
 
 
 @app.post("/scan")

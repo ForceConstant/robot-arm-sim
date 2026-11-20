@@ -1,0 +1,20 @@
+{
+  "checked_at": "no target",
+  "dashboard_status": "no target",
+  "expected_line": "no target - no square fails the printed-face test",
+  "status_line_ncc": 0.839,
+  "status_line_at": [
+    4,
+    498
+  ],
+  "green_served": 3855,
+  "green_raw": 0,
+  "red_served": 2095,
+  "red_raw": 0,
+  "text_width_px": 467,
+  "text_height_px": 13,
+  "frame": [
+    480,
+    640
+  ]
+}

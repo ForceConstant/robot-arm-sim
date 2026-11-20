@@ -1,0 +1,447 @@
+{
+  "schema": "p2-overlay/1",
+  "recorded_at": "2026-11-20T11:06:37-0500",
+  "url": "http://127.0.0.1:8080",
+  "window_s": 8.82,
+  "stream": {
+    "frames": 41,
+    "fps": 4.54,
+    "gap_ms_mean": 220.4,
+    "gap_ms_p95": 252.3,
+    "fps_before": 2.75,
+    "reported_fps": 4.52,
+    "frame_cost_ms": 100.8,
+    "shape": [
+      480,
+      640
+    ],
+    "fps_after": 4.54,
+    "fps_after_window_s": 25.14,
+    "fps_after_frames": 113,
+    "fps_before_note": "2.75 fps measured on the same host against the pre-change app (28 frames in 10.17 s). The per-frame cost moved by +1.5 ms, so treat the rate difference as camera timing, not as a win from the overlay."
+  },
+  "target_from_dashboard": {
+    "status": "no target",
+    "reason": "no square fails the printed-face test",
+    "piece": null,
+    "board": {
+      "ids": [
+        19,
+        23,
+        20,
+        16
+      ],
+      "n_corners": 16,
+      "rms_px": 1.266,
+      "max_px": 2.077,
+      "range_mm": 150.3,
+      "camera_in_board_mm": [
+        -12.0,
+        -35.6,
+        145.6
+      ],
+      "n_in_view": 4
+    },
+    "age_s": 0.18,
+    "runs": 18,
+    "mean_cost_ms": 33.99,
+    "errors": 0,
+    "last_error": ""
+  },
+  "detection": {
+    "source": "raw /capture frames from the bridge (un-annotated)",
+    "frames_tested": 20,
+    "board_pose_frames": 20,
+    "target_frames": 0,
+    "rms_px_mean": 1.272,
+    "rms_px_max": 1.311,
+    "cost_ms_mean": 14.29,
+    "cost_ms_p95": 19.93,
+    "cost_ms_max": 39.85,
+    "runs": [
+      {
+        "index": 0,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.276,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 39.85
+      },
+      {
+        "index": 1,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.277,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 18.88
+      },
+      {
+        "index": 2,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.311,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 17.2
+      },
+      {
+        "index": 3,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.257,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.73
+      },
+      {
+        "index": 4,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.271,
+        "squares_in_view": 10,
+        "piece": null,
+        "cost_ms": 12.95
+      },
+      {
+        "index": 5,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.27,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.82
+      },
+      {
+        "index": 6,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.284,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.22
+      },
+      {
+        "index": 7,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.262,
+        "squares_in_view": 10,
+        "piece": null,
+        "cost_ms": 12.92
+      },
+      {
+        "index": 8,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.29,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.02
+      },
+      {
+        "index": 9,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.254,
+        "squares_in_view": 10,
+        "piece": null,
+        "cost_ms": 12.53
+      },
+      {
+        "index": 10,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.271,
+        "squares_in_view": 10,
+        "piece": null,
+        "cost_ms": 12.82
+      },
+      {
+        "index": 11,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.284,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.1
+      },
+      {
+        "index": 12,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.288,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.45
+      },
+      {
+        "index": 13,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.268,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 14.34
+      },
+      {
+        "index": 14,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.28,
+        "squares_in_view": 10,
+        "piece": null,
+        "cost_ms": 10.65
+      },
+      {
+        "index": 15,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.263,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 11.35
+      },
+      {
+        "index": 16,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.261,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.19
+      },
+      {
+        "index": 17,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.268,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 11.97
+      },
+      {
+        "index": 18,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          20,
+          19,
+          23,
+          16
+        ],
+        "rms_px": 1.241,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 11.67
+      },
+      {
+        "index": 19,
+        "arrival_s": 0.0,
+        "status": "no target",
+        "reason": "no square fails the printed-face test",
+        "markers": [
+          19,
+          23,
+          20,
+          16
+        ],
+        "rms_px": 1.27,
+        "squares_in_view": 9,
+        "piece": null,
+        "cost_ms": 12.06
+      }
+    ],
+    "cadence_s": 0.5,
+    "cost_ms_under_stream": 41.0,
+    "duty_percent": 8.2
+  },
+  "overlay_fields": [
+    "marker quads + ids (green, amber when the result is stale)",
+    "piece centroid crosshair + 'target <square> <x>,<y> mm'",
+    "status line: 'target ...' or 'no target - <reason>'",
+    "pnp <rms> px, ids, board range mm",
+    "detect age s, marker count, squares in view",
+    "cost ms, detection runs, stream fps",
+    "joint vector, joints_age_s, joints source, read age, mode",
+    "a result older than 2 s draws no geometry and says 'no target - detection idle N s' in amber (unit check: 0 green px at age 12 s, 1713 amber px)"
+  ],
+  "artefacts": [
+    "reports/p2_stream.mp4",
+    "reports/p2_stream_first.png",
+    "reports/p2_stream_middle.png",
+    "reports/p2_stream_last.png"
+  ],
+  "hook": "live/app.py :: Live.annotate() -> TargetOverlay.submit() + target_overlay.draw() (worker thread, every target_refresh_s)",
+  "per_frame_cost": {
+    "measured_on": "BC-250, warm CPU, 15 repeats after one discard",
+    "capture_cold_wait_ms": 215.4,
+    "orient_rotate90_ms": 0.4,
+    "rectify_undistort_ms": 3.5,
+    "detect_markers_ms": 2.2,
+    "draw_overlay_ms": 1.2,
+    "jpeg_encode_q75_ms": 0.9,
+    "full_detector_pass_ms": 12.3,
+    "old_loop_work_ms": 4.5,
+    "new_loop_work_ms": 6.0,
+    "delta_ms": 1.5,
+    "attribution": "per-frame work is +1.5 ms (rectify 3.5 + draw 1.2 added, marker pass 2.2 removed). The served rate is set by the camera's capture wait (215 ms cold, ~90 ms when the request lands on a fresh frame), so a rate change is not attributable to the overlay; the overlay does not cost frames"
+  },
+  "target_still_check": {
+    "file": "reports/p2_target_e4.png",
+    "source_frame": "live/captures_b5b_ref/ref_pose.jpg (recorded real frame)",
+    "expected_line": "target e4  12.1,-10.3 mm",
+    "line_ncc": 0.963,
+    "line_scale": 0.58,
+    "red_ink_px": 1643,
+    "note": "line_ncc is the template match of the status line; red_ink_px is the crosshair and its label"
+  },
+  "served_frame_check": {
+    "checked_at": "no target",
+    "dashboard_status": "no target",
+    "expected_line": "no target - no square fails the printed-face test",
+    "status_line_ncc": 0.834,
+    "status_line_at": [
+      4,
+      498
+    ],
+    "green_served": 3871,
+    "green_raw": 0,
+    "red_served": 2110,
+    "red_raw": 0,
+    "text_width_px": 467,
+    "text_height_px": 13,
+    "frame": [
+      480,
+      640
+    ]
+  }
+}
