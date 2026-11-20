@@ -7,6 +7,17 @@ Two processes, one bus:
 - **Live console** (`app.py`, port 8080) serves the page, pulls the camera with
   markers drawn on it, and runs scans through the Pi bridge.
 
+## Camera controls belong to the bridge
+
+The bridge re-applies `camera_controls.json` (on the Pi, currently
+`/home/pi/so101-bridge/camera_controls.json`) every time it opens the camera.
+A `v4l2-ctl --set-ctrl ...` sweep therefore reads back unchanged and looks like
+it had no effect: measured 2026-11-20, four different settings all rendered the
+same frame mean (215). Change camera settings through the console instead -
+`POST /camera/controls` writes the file the bridge reloads, so the setting
+survives the next reopen. Changing the device from a shell only lasts until the
+camera is closed.
+
 ## Run
 
 ```bash
