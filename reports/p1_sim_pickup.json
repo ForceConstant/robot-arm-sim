@@ -1,0 +1,60 @@
+{
+  "schema": "p1-sim-pickup/1",
+  "generated_at": "2026-11-20T09:30:45-0500",
+  "square": "e2",
+  "board_face": "charuco",
+  "pose_joints_deg": {
+    "shoulder_pan": 5.85,
+    "shoulder_lift": -99.5,
+    "elbow_flex": 76.32,
+    "wrist_flex": 89.67,
+    "wrist_roll": -80.03
+  },
+  "camera_world_mm": [
+    5.9,
+    -52.6,
+    592.0
+  ],
+  "camera_height_mm": 158.3,
+  "detection": {
+    "square": "e2",
+    "component_area_mm2": 174.0,
+    "centroid_on_plane_mm": [
+      13.7,
+      -70.1
+    ],
+    "offset_from_centre_mm": 0.3
+  },
+  "truth_world_mm": [
+    14.0,
+    -70.0
+  ],
+  "board_mm": [
+    13.7,
+    -70.1
+  ],
+  "world_mm": [
+    13.7,
+    -70.1
+  ],
+  "error_mm": 0.32,
+  "spread_mm": [
+    0.0,
+    0.05
+  ],
+  "frames": 3,
+  "grasp": {
+    "success": true,
+    "reason": null,
+    "steps": 616,
+    "square_empty_after": true
+  },
+  "localization": {
+    "world_xy_m": [
+      0.013699999999999999,
+      -0.0701
+    ],
+    "confidence": 1.0,
+    "sigma_m": 0.002
+  }
+}
