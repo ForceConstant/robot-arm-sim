@@ -130,7 +130,7 @@ class BoardConfig(Config):
     """
 
     square: float = 0.028          # square edge (mini set: SO-101 reach is ~33 cm)
-    border: float = 0.015          # wood border around the 8x8 field
+    border: float = 0.010          # printed border band; matches the 244 mm ChArUco print (2026-11-20)
     thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
     marker_plane: str = "mat"      # where the markers print: "mat" or "board"

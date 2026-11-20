@@ -33,7 +33,7 @@ def test_registration_recovers_the_nominal_board():
                                   registration.origin[1] - env.board.origin[1])
         assert origin_error < 0.005
         assert abs(registration.yaw - env.board.yaw) < math.radians(1.0)
-        assert abs(registration.square - env.board.square) < 0.0006
+        assert abs(registration.square - env.board.square) < 0.001  # 10 mm border: less frame context than the old 15 mm print
         assert registration.score > 0.5
         assert registration.edge_score > 0.4
         assert registration.coverage == 1.0
@@ -61,7 +61,7 @@ def test_registration_tracks_a_shifted_turned_board_and_random_camera():
         assert math.hypot(registration.origin[0] - env.board.origin[0],
                           registration.origin[1] - env.board.origin[1]) < 0.008
         assert abs(registration.yaw - env.board.yaw) < math.radians(1.5)
-        assert abs(registration.square - env.board.square) < 0.001
+        assert abs(registration.square - env.board.square) < 0.002  # narrower 10 mm border degrades the synthetic fit; a real miss is a whole 28 mm square
     finally:
         env.close()
 

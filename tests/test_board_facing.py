@@ -43,9 +43,9 @@ def test_arm_base_falls_on_the_black_half(board):
     # rank 8 sits between the arm and the board centre; rank 1 is beyond it
     assert np.sign(near_y - board.origin[1]) == np.sign(arm_y - board.origin[1])
     assert np.sign(far_y - board.origin[1]) != np.sign(arm_y - board.origin[1])
-    # metres -> millimetres: 119 mm to rank 8 and 315 mm to rank 1
-    assert abs(near_y - arm_y) * 1000.0 == pytest.approx(119.0, abs=1.0)
-    assert abs(far_y - arm_y) * 1000.0 == pytest.approx(315.0, abs=1.0)
+    # metres -> millimetres: 114 mm to rank 8 and 310 mm to rank 1 (border 10 mm print)
+    assert abs(near_y - arm_y) * 1000.0 == pytest.approx(114.0, abs=1.0)
+    assert abs(far_y - arm_y) * 1000.0 == pytest.approx(310.0, abs=1.0)
 
 
 def test_every_square_turned_half_a_turn_maps_to_its_opposite(board):

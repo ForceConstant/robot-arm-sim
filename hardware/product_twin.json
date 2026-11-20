@@ -10,7 +10,7 @@
     "camera": "simulator candidate wrist-camera pose from scene.WRIST_CAMERA_CUSTOM; physical lens, focus and mount are unmeasured",
     "evaluator": "chess_sim.config.ToleranceConfig, the same rule env.evaluate uses",
     "piece_masses": "Brian, 2026-11-04: final assembled weights K=5.3 g, Q=4.8 g, Kn=4.5 g, R=4.3 g, P=3.8 g, B=4.1 g; supersedes prior rook 4.8 g measurement",
-    "mass_sensitivity": "Brian, 2026-11-04: model each assembled piece at measured mass and at uniform ±0.1 g bounds as a separate sensitivity stratum; not a remeasurement"
+    "mass_sensitivity": "Brian, 2026-11-04: model each assembled piece at measured mass and at uniform \u00b10.1 g bounds as a separate sensitivity stratum; not a remeasurement"
   },
   "robot": {
     "model": "SO-101 follower",
@@ -33,21 +33,21 @@
   },
   "board": {
     "square_mm": 28.0,
-    "border_mm": 15.0,
+    "border_mm": 10.0,
     "thickness_mm": 3.2,
     "labels": true,
     "playing_field_mm": 224.0,
-    "overall_mm": 254.0,
+    "overall_mm": 244.0,
     "measurement": "IRL, Brian 2026-11-02",
-    "border_assumption": "15 mm on all four sides; no extra outer trim was reported"
+    "border_assumption": "10 mm border band; matches the printed 244 mm ChArUco face (Brian, 2026-11-20)"
   },
   "mount": {
     "table_top_mm": 430.0,
     "arm_riser_mm": 60.0,
-    "board_edge_to_arm_base_mm": 80.0,
+    "board_edge_to_arm_base_mm": 90.0,
     "arm_base_from_board_centre_mm": [
       0.0,
-      -207.0
+      -212.0
     ],
     "footprint_mm": [
       110.9,

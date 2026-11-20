@@ -22,15 +22,15 @@ REPORT = ROOT / "reports" / "phase8_product_qualification.json"
 def test_measured_board_and_single_follower():
     twin = load_product_twin()
     assert twin.board.square_mm == 28.0
-    assert twin.board.border_mm == 15.0
+    assert twin.board.border_mm == 10.0
     assert twin.board.thickness_mm == 3.2
     assert twin.board.labels is True
     assert twin.board.playing_field_mm == 224.0
-    assert twin.board.overall_mm == 254.0
+    assert twin.board.overall_mm == 244.0
     assert twin.robot.arms == 1
     assert twin.robot.arm_side == "white"
     assert tuple(twin.robot.joint_order) == tuple(str(j) for j in JOINTS)
-    assert twin.mount.arm_base_from_board_centre_mm == (0.0, -207.0)
+    assert twin.mount.arm_base_from_board_centre_mm == (0.0, -212.0)
     board = twin.board_config()
     assert board.square == pytest.approx(0.028)
     assert board.thickness == pytest.approx(0.0032)
@@ -38,7 +38,7 @@ def test_measured_board_and_single_follower():
     # rises by the mat thickness while the slab itself is unchanged.
     assert board.mat == pytest.approx(0.0005)
     assert board.top == pytest.approx(0.4337)
-    assert board.arm_base[1] == pytest.approx(-0.207)
+    assert board.arm_base[1] == pytest.approx(-0.212)
 
 
 def test_product_env_is_wrist_only_and_uses_frozen_evaluator():

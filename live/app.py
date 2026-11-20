@@ -46,7 +46,7 @@ DEFAULTS = {
     "token_file": "live/bridge_token.txt",
     "calibration": ".private/phase11d/calibration.json",
     "plan": "chess_sim/assets/marker_scan_plan.json",
-    "board_half_mm": 127.0,
+    "board_half_mm": 122.0,
     "square_m": 0.028,
     "board_z_m": 0.4337,
     "marker_z_m": 0.43056,

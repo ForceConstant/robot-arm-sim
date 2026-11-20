@@ -65,7 +65,7 @@ generated; edit `hardware/generate.py`, not the outputs.
 | board overall | 254.0 × 254.0 |
 | board thickness | 12.0 |
 
-`hardware/board_254mm.png` is the board artwork at 300 dpi - print at 100%
+`hardware/board_244mm.png` is the 244 mm board artwork at 300 dpi - print at 100%
 scale (254 mm across, borders included) and mount it on the substrate.
 
 | piece | per side | height | widest ⌀ | grasp ⌀ | grasp height |

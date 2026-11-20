@@ -3,8 +3,8 @@
 // All dimensions in millimetres.
 
 board_square      = 28.0;
-board_overall     = 254.0;
-arm_riser_height  = 60.0;
+board_overall     = 244.0;
+arm_riser_height  = 32.4;
 arm_base_x        = 110.9;
 arm_base_y        = 72.0;
 mast_plate        = [280.0, 140.0, 10.0];
