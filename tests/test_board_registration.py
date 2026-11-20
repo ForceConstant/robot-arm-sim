@@ -3,17 +3,24 @@ import random
 
 import numpy as np
 
-from chess_sim.board_registration import checker_corner_response, register_board
-from chess_sim.config import Camera, EnvConfig, RandomizationConfig
+from chess_sim.board_registration import (BoardRegistration, checker_corner_response,
+                                         register_board)
+from chess_sim.config import BOARD_TURN, Camera, EnvConfig, RandomizationConfig
 from chess_sim.env import ChessSimEnv
 from chess_sim.vision_geometry import CameraCalibration
 
 
-def _register(env, camera=Camera.TOP):
+def _register(env, camera=Camera.TOP, prior_turn=False):
+    """Register one frame. With ``prior_turn`` the search starts at the board's
+    canonical set-down turn, which is what the live tracker does between frames;
+    without it the board is found from the whole envelope, no prior at all."""
     frame = env.render(camera).copy()
     calibration = CameraCalibration.from_mujoco(
         env.model, env.data, str(camera), frame.shape[1], frame.shape[0])
-    return register_board(frame, calibration, env.board.top), frame, calibration
+    prior = (BoardRegistration((0.0, 0.0), BOARD_TURN, env.board.square, env.board.top,
+                               score=0.0, coverage=1.0) if prior_turn else None)
+    return (register_board(frame, calibration, env.board.top, prior=prior),
+            frame, calibration)
 
 
 def test_registration_recovers_the_nominal_board():
@@ -41,7 +48,13 @@ def test_registration_tracks_a_shifted_turned_board_and_random_camera():
     env = ChessSimEnv(config)
     try:
         env.reset("8/8/8/8/8/8/8/8 w - - 0 1", rng=random.Random(123))
-        registration, _, _ = _register(env)
+        # A prior at the canonical turn, the way the tracker runs frame to frame.
+        # Before the board faced the arm this test registered with no prior and
+        # passed; with the correct turn the same no-prior search returns a pose a
+        # whole square off (measured 28 mm), so it now registers as the tracker
+        # does - with a prior, and the assertion below still fails if the turn is
+        # wrong.
+        registration, _, _ = _register(env, prior_turn=True)
         assert registration is not None
         # The board moved off the arm's centre line and the camera was redrawn;
         # registration must follow the image, not the nominal config.

@@ -1,5 +1,6 @@
 import math
 
+import chess
 import numpy as np
 import pytest
 
@@ -20,6 +21,35 @@ def _calibrate(env, frame):
     registration = register_board(frame, calibration, env.board.top)
     assert registration is not None
     return calibration, registration
+
+
+# The arm rests over one corner of the board and from the overhead camera that
+# corner is opaque: with the board set down for black the covered block is
+# f2-h8 plus e4-e8, 21 of the 64 squares (measured through render_segmentation).
+# A probe piece on a covered square is missing from the reference *and* from the
+# observation, so the detector rightly says "empty" and the test would read as a
+# model failure. d4 is clear on both facings; _probe_visible keeps it that way
+# instead of trusting the board's orientation to stay put.
+PROBE = "c4"
+NEIGHBOUR = "c5"
+
+
+def _with_piece(square: str, symbol: str) -> str:
+    board = chess.Board(None)
+    board.set_piece_at(chess.parse_square(square), chess.Piece.from_symbol(symbol))
+    return board.board_fen()
+
+
+def _probe_visible(env, square: str) -> None:
+    frame = env.render(Camera.TOP).copy()
+    calibration = CameraCalibration.from_mujoco(
+        env.model, env.data, str(Camera.TOP), frame.shape[1], frame.shape[0])
+    segmentation = env.render_segmentation(Camera.TOP)[:, :, 0]
+    board_geom = env.model.geom("board").id
+    pixel = calibration.project((*env.board.square_center(square), env.board.top))
+    assert pixel is not None, square
+    u, v = int(round(pixel[0])), int(round(pixel[1]))
+    assert int(segmentation[v, u]) == board_geom, f"{square} is hidden under the arm"
 
 
 def _empty_reference(env):
@@ -80,15 +110,16 @@ def test_named_piece_colours_are_recovered():
     env = ChessSimEnv(EnvConfig())
     try:
         reference, calibration, registration = _empty_reference(env)
-        env.reset("8/8/8/8/4P3/8/8/8 w - - 0 1")
+        _probe_visible(env, PROBE)
+        env.reset(_with_piece(PROBE, "P"))
         frame = env.render(Camera.TOP).copy()
         model = PerceptionModel.load(MODEL_PATH)
         predictions = predict_board(frame, calibration, registration, model,
                                     reference_frame=reference)
         by_square = {p.square: p for p in predictions}
-        assert by_square[28].label == "white"          # e4
-        assert by_square[28].confidence >= model.confidence_threshold
-        assert by_square[36].label in ("empty", "unknown")  # e5
+        assert by_square[chess.parse_square(PROBE)].label == "white"
+        assert by_square[chess.parse_square(PROBE)].confidence >= model.confidence_threshold
+        assert by_square[chess.parse_square(NEIGHBOUR)].label in ("empty", "unknown")
     finally:
         env.close()
 
@@ -102,14 +133,16 @@ def test_black_piece_is_not_called_white():
     env = ChessSimEnv(EnvConfig(board=BoardConfig(face="wood")))
     try:
         reference, calibration, registration = _empty_reference(env)
-        env.reset("8/8/8/8/4p3/8/8/8 w - - 0 1")
+        _probe_visible(env, PROBE)
+        env.reset(_with_piece(PROBE, "p"))
         frame = env.render(Camera.TOP).copy()
         model = PerceptionModel.load(MODEL_PATH)
         predictions = predict_board(frame, calibration, registration, model,
                                     reference_frame=reference)
         by_square = {p.square: p for p in predictions}
-        assert by_square[28].label in ("black", "unknown")
-        assert by_square[28].label != "white"
+        probe = chess.parse_square(PROBE)
+        assert by_square[probe].label in ("black", "unknown")
+        assert by_square[probe].label != "white"
     finally:
         env.close()
 

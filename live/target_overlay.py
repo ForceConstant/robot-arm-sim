@@ -31,6 +31,14 @@ RED = (60, 60, 255)
 AMBER = (40, 200, 255)
 WHITE = (250, 250, 250)
 GREY = (175, 175, 175)
+# The board's own grid. Blue, because the markers are green and the target is
+# red: three colours, three meanings, still separable after JPEG q75 chroma.
+GRID = (255, 120, 60)
+HALO = (18, 18, 18)
+LABEL_EDGE_MIN_PX = 13.0   # below this a square name is a smudge, not a label
+LABEL_SCALE_MIN = 0.26     # floor: legible over JPEG at 480 px wide
+LABEL_SCALE_MAX = 0.95
+LABEL_FIT = 0.90           # a name may use this much of its square's width
 
 
 class TargetOverlay:
@@ -137,8 +145,54 @@ def _panel(canvas: np.ndarray, x: int, y: int, w: int, h: int,
     roi[:] = (roi * (1.0 - alpha)).astype(np.uint8)
 
 
+def _draw_grid(canvas: np.ndarray, grid: dict, to_portrait, stats) -> None:
+    """Board grid and square names, in the grid's own projected positions."""
+    points = [[to_portrait(point) for point in row] for row in grid["points"]]
+    for row in points:
+        cv2.polylines(canvas, [np.array(row, np.int32)], False, GRID, 1, cv2.LINE_AA)
+    for col in range(len(points[0])):
+        cv2.polylines(canvas, [np.array([points[row][col] for row in range(len(points))],
+                                        np.int32)], False, GRID, 1, cv2.LINE_AA)
+    drawn, heights, widths, names, edges, over = 0, [], [], [], [], 0
+    for centre in grid["centres"]:
+        edge = float(centre["edge_px"])
+        if edge < LABEL_EDGE_MIN_PX:
+            continue
+        u, v = to_portrait(centre["uv"])
+        if not (0 <= u < canvas.shape[1] and 0 <= v < canvas.shape[0]):
+            continue
+        # Size the name to the square it sits in: the largest scale whose glyphs
+        # still fit inside LABEL_FIT of the projected edge, bounded so it stays
+        # legible when the squares shrink and does not swamp them when they grow.
+        probe = float(cv2.getTextSize(centre["name"], cv2.FONT_HERSHEY_SIMPLEX, 1.0, 1)[0][0])
+        fit = LABEL_FIT * edge / probe if probe > 0 else LABEL_SCALE_MIN
+        scale = float(np.clip(fit, LABEL_SCALE_MIN, LABEL_SCALE_MAX))
+        if fit < LABEL_SCALE_MIN:
+            over += 1
+        (tw, th), _ = cv2.getTextSize(centre["name"], cv2.FONT_HERSHEY_SIMPLEX, scale, 1)
+        org = (int(u - tw / 2), int(v + th / 2))
+        cv2.putText(canvas, centre["name"], org, cv2.FONT_HERSHEY_SIMPLEX, scale,
+                    HALO, 2, cv2.LINE_AA)
+        cv2.putText(canvas, centre["name"], org, cv2.FONT_HERSHEY_SIMPLEX, scale,
+                    WHITE, 1, cv2.LINE_AA)
+        drawn += 1
+        heights.append(th)
+        widths.append(tw)
+        edges.append(edge)
+        names.append(centre["name"])
+    if stats is not None:
+        stats["labels"] = drawn
+        stats["label_names"] = names
+        stats["label_px"] = int(np.median(heights)) if heights else 0
+        stats["label_px_min"] = int(min(heights)) if heights else 0
+        stats["label_px_max"] = int(max(heights)) if heights else 0
+        stats["label_w_px"] = int(np.median(widths)) if widths else 0
+        stats["square_px"] = int(np.median(edges)) if edges else 0
+        stats["labels_over_square"] = over
+
+
 def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
-         stream_fps: float | None = None) -> np.ndarray:
+         stream_fps: float | None = None, stats: dict | None = None) -> np.ndarray:
     """Draw the overlay onto a portrait canvas.
 
     ``layout_hw`` is the landscape (height, width) of the frame the detection
@@ -168,6 +222,9 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
             px, py = int(centre[0]), int(centre[1])
             cv2.putText(canvas, str(marker["id"]), (px - 8, py + 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.55, colour, 2, cv2.LINE_AA)
+
+        if result.get("grid"):
+            _draw_grid(canvas, result["grid"], to_portrait, stats)
 
         piece = result.get("piece") or {}
         if result.get("status") == "target" and piece.get("uv"):

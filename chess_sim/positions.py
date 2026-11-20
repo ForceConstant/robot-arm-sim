@@ -12,7 +12,11 @@ import chess
 from pydantic import Field
 
 from .assets import SET_COUNTS
-from .config import Config
+from .config import ARM_PLAYS, Config
+
+# The arm plays black, so a practice position is one the arm is to move in, and
+# the piece it picks up is its own colour.
+ARM_COLOR = chess.BLACK if ARM_PLAYS == "black" else chess.WHITE
 
 PROMOTION_RANKS = (0, 7)        # a pawn cannot stand on the back ranks
 PLACEMENT_ATTEMPTS = 60         # tries before giving up on a position with a required move
@@ -31,7 +35,11 @@ class PositionConfig(Config):
     max_extra_pieces: int = Field(8, ge=0)
 
     def sample(self, rng: random.Random) -> chess.Board:
-        """Kings plus a few random pieces from one set; legal, white to move."""
+        """Kings plus a few random pieces from one set; legal, black to move.
+
+        Black to move because the arm plays black: the position handed to the arm
+        is one the arm is on turn in.
+        """
         extra = rng.randint(self.min_extra_pieces, self.max_extra_pieces)
         while True:
             board = chess.Board(None)
@@ -43,6 +51,7 @@ class PositionConfig(Config):
                     continue
                 board.set_piece_at(square, piece)
             if board.is_valid():
+                board.turn = ARM_COLOR
                 return board
 
     def sample_with_move(self, rng: random.Random, move: chess.Move) -> chess.Board | None:
@@ -57,8 +66,8 @@ class PositionConfig(Config):
                 continue
             board.remove_piece_at(move.to_square)
             board.remove_piece_at(move.from_square)
-            board.turn = chess.WHITE
-            spare = [p for p in spare_pieces(board, move.from_square) if p.color == chess.WHITE]
+            board.turn = ARM_COLOR
+            spare = [p for p in spare_pieces(board, move.from_square) if p.color == ARM_COLOR]
             rng.shuffle(spare)
             for piece in spare:
                 board.set_piece_at(move.from_square, piece)

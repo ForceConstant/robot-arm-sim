@@ -21,7 +21,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from .assets import piece_asset_name, piece_tint
-from .config import (JOINTS, START_FEN, AppearanceConfig, Camera, EnvConfig, FailureReason,
+from .config import (ARM_PLAYS, JOINTS, START_FEN, AppearanceConfig, Camera, EnvConfig, FailureReason,
                      JointName, JointPose, Square, square_at, square_index)
 from .controller import PickPlaceController, grasp_plan, SPAN_MARGIN_TOLERANCE
 from .ik import So101Ik
@@ -247,7 +247,10 @@ class ChessSimEnv:
             self._noise_rng = np.random.default_rng(rng.getrandbits(32))
         if isinstance(position, chess.Board):
             position = position.board_fen()
-        self.position = chess.Board(position if " " in position else f"{position} w - - 0 1")
+        # A bare board field is a position, not a game state: the side to move is
+        # whoever plays next, and the arm plays black.
+        side = "w" if ARM_PLAYS == "white" else "b"
+        self.position = chess.Board(position if " " in position else f"{position} {side} - - 0 1")
         self._square_slot = {}
         self._captured = []
         pool = {s.body: s for s in self.slots}

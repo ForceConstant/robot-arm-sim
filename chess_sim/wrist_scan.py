@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from .board_registration import BoardRegistration, register_board
+from .config import BOARD_TURN
 from .fiducials import MarkerLayout, estimate_board_pose
 from .perception import (CLASSES, PerceptionModel, SquarePrediction,
                          predict_board, square_features, board_patches, square_mask_fraction)
@@ -143,7 +144,7 @@ class WristScanner:
                 marker_z=self.marker_z, layout=self.marker_layout,
                 min_markers=self.min_markers)
         return register_board(views[0][0], views[0][1], self.board_z,
-                              prior=BoardRegistration((0.0, 0.0), 0.0, self.square,
+                              prior=BoardRegistration((0.0, 0.0), BOARD_TURN, self.square,
                                                       self.board_z, 0.0, 1.0),
                               origin_search=0.02, yaw_search_deg=5.0,
                               coarse_step=0.003,

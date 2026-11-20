@@ -17,12 +17,24 @@ from collections.abc import Sequence
 
 from enum import StrEnum
 
+import math
+
 import chess
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 START_FEN = chess.STARTING_BOARD_FEN
 FILES = "abcdefgh"
+
+# Which side of the board the arm plays (Brian, 2026-11-20: always black). A
+# board is authored with a1 at the -x/-y corner of its own frame and a1 is dark,
+# so playing black is a half turn of the board about its centre: rank 8 lands on
+# the arm's side and rank 1 on the far edge. It is a single constant because
+# every other statement of the convention - square centres, the ChArUco print,
+# marker ids, piece slots, the discard tray - is expressed in the board's own
+# frame and turns with the board.
+ARM_PLAYS = "black"
+BOARD_TURN = 0.0 if ARM_PLAYS == "white" else math.pi
 
 # The 64 squares as an enum, in python-chess index order: Square.E4 is "e4", and
 # a plain "e4" still validates into it.
@@ -112,7 +124,9 @@ class BoardConfig(Config):
 
     The board is procedural - a bordered slab with an 8x8 checker texture - so
     every square center is an exact analytic coordinate in the world frame. The
-    board center sits at `origin` in x/y and the arm sits on the -y side.
+    board center sits at `origin` in x/y and the arm sits on the -y side. The
+    board is set down turned by `yaw`, which defaults to `BOARD_TURN`, so the
+    side nearest the arm is the side the arm plays: black.
     """
 
     square: float = 0.028          # square edge (mini set: SO-101 reach is ~33 cm)
@@ -142,11 +156,14 @@ class BoardConfig(Config):
     arm_riser: float = 0.0324      # arm mounting datum above the board's underside/table
     arm_x: float = 0.0            # arm base frame offset from the board centreline
     arm_pedestal: bool = False     # separate riser block under the base (old mount)
-    arm_side: str = "white"       # the dual-arm scene mirrors the black mount
+    # Which mount this is, not which side is nearest the arm: the dual-arm
+    # scene mirrors a second arm onto the other side from it. The board's facing
+    # is `yaw` (BOARD_TURN), and it does not change with `arm_side`.
+    arm_side: str = "white"
     # where the board's centre sits on the table; the arm, camera mast, tray and
     # parked pieces do not move with it
     origin: tuple[float, float] = (0.0, 0.0)
-    yaw: float = 0.0                # radians: the board turned about its centre, as a person sets it down
+    yaw: float = BOARD_TURN         # radians: set down turned; BOARD_TURN faces the arm's side
 
     # Discard tray: the camera mast stands at x = +0.16 and unused pieces park
     # beyond x = +0.187, so the tray goes to the arm's left where nothing else is.
@@ -218,6 +235,11 @@ class BoardConfig(Config):
         return self.origin[0] + c * dx - s * dy, self.origin[1] + s * dx + c * dy
 
     @property
+    def facing(self) -> str:
+        """The side of the board nearest the arm, from the set-down turn."""
+        return "white" if math.cos(self.yaw) > 0 else "black"
+
+    @property
     def half_extent(self) -> float:
         """Half the board's footprint along x once turned - how far it reaches sideways."""
         return self.width / 2 * (abs(np.cos(self.yaw)) + abs(np.sin(self.yaw)))
@@ -242,7 +264,11 @@ class BoardConfig(Config):
         square, border = float(u(*BOARD_SQUARE_RANGE)), float(u(*BOARD_BORDER_RANGE))
         # the turn and the sideways offset are drawn here once per scene, or left for
         # `RandomizationConfig` to draw every episode (`ChessSimEnv.reset`)
-        yaw = 0.0 if per_episode_placement else float(np.radians(u(-BOARD_YAW_DEG, BOARD_YAW_DEG)))
+        # every sampled board is set down facing the arm's side and then turned a
+        # little by the person setting it down: the jitter clusters on BOARD_TURN,
+        # never on zero, or a random board would silently turn back to white
+        yaw = BOARD_TURN if per_episode_placement else BOARD_TURN + float(
+            np.radians(u(-BOARD_YAW_DEG, BOARD_YAW_DEG)))
         side = 0.0 if per_episode_placement else float(u(-BOARD_SIDEWAYS, BOARD_SIDEWAYS))
         riser = 0.0 if rng.random() < ARM_ON_TABLE_CHANCE else float(u(*ARM_RISER_RANGE))
         thickness = float(u(*BOARD_THICKNESS_RANGE))

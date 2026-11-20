@@ -724,14 +724,19 @@ class PickPlaceController:
             centre = np.array([(xs + xe) * 0.5, (ys + ye) * 0.5])
         except Exception:
             return vertical
-        # Rank 1 only. All four conversions were d1-e1 style rank-1 placements;
-        # every control regression (e8-d8 bishop/pawn, a5-a4 knight) sits off
-        # rank 1, so the tilt is restricted to the near edge where the outboard
-        # lane is genuinely open beyond the board.
+        # The near rank only. All four conversions were d1-e1 style placements on
+        # what is now the far edge once the board faces the arm's side; every
+        # control regression (e8-d8 bishop/pawn, a5-a4 knight) sits off that edge,
+        # where the outboard lane is genuinely open beyond the board. Take the
+        # edge from the arm's own y instead of naming a square: rank 1 was near
+        # when the sim played white, rank 8 is near now that it plays black.
         try:
-            x1, y1 = env.board.square_center('a1')
+            _, arm_y, _ = env.board.arm_base
+            near = min(('a1', 'a8'),
+                       key=lambda name: abs(env.board.square_center(name)[1] - arm_y))
+            near_y = env.board.square_center(near)[1]
             half = 0.5 * env.board.square
-            if abs(float(place_pt[1]) - float(y1)) > half:
+            if abs(float(place_pt[1]) - float(near_y)) > half:
                 return vertical
         except Exception:
             return vertical

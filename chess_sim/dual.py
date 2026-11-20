@@ -9,7 +9,7 @@ import chess
 import mujoco
 import numpy as np
 
-from .config import JOINTS, EnvConfig, square_index
+from .config import BOARD_TURN, JOINTS, EnvConfig, square_index
 from . import gripper
 from .controller import grasp_plan
 from .env import ChessSimEnv, GRASP_HEIGHT
@@ -30,6 +30,14 @@ class DualArmEnv(ChessSimEnv):
 
     def __init__(self, config: EnvConfig | None = None):
         config = (config or EnvConfig()).model_copy(update={"dual_arms": True})
+        # A two-arm rig stands an arm on each side of the board, so the board is
+        # not turned to face one of them: rank 1 belongs to the white mount on
+        # -y and rank 8 to the black mount on +y. BOARD_TURN is the single-arm
+        # convention (the lone arm plays black, measured 2026-11-20 on this
+        # fixture: with the turn applied, white's g1f3 fails 62 mm from its
+        # target because rank 1 is on the far side), so take it back out here.
+        board = (config.board.yaw - BOARD_TURN)
+        config = config.model_copy(update={"board": config.board.model_copy(update={"yaw": board})})
         super().__init__(config)
         self._contexts = {"white": {
             "board": self.board, "ik": self.ik, "qpos": self._joint_qpos,

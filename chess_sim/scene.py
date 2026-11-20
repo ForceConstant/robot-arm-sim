@@ -202,7 +202,9 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
                     (0.0, 0.0, board.top + 0.06), fovy=47)
     else:
         _add_camera(spec, Camera.EXTERNAL, (-0.31, -0.16, board.top + 0.26), (0.0, 0.02, board.top + 0.04))
-    # the overhead image is upright along the files (white at the bottom) and
+    # the overhead image is upright along the files, with the arm's own side at
+    # the bottom of the picture - black, since the board is set down facing the
+    # arm - and
     # framed on the board: at this distance the board fills ~86% of the frame
     # height, which is what a policy needs to tell one square from another
     pos, target, fovy, up = overhead_camera(board, appearance, camera_pos)

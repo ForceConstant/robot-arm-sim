@@ -86,6 +86,34 @@ class Board:
                                   solution["tvec"].reshape(3, 1), self.K, None)
         return uv.reshape(2)
 
+    def grid(self, solution: dict, z_mm: float = 0.0) -> dict:
+        """The board's own grid, projected: the 9x9 lattice and 64 named centres.
+
+        The names come from the same mapping `nearest_square` inverts, so a label
+        on screen and the square the target line prints cannot drift apart. Each
+        centre carries the projected length of one square edge, which is what the
+        overlay scales its text by.
+        """
+        def mm(col: float, rank: float) -> tuple[float, float]:
+            return (col * SQUARE_MM - 4.0 * SQUARE_MM,
+                    rank * SQUARE_MM - 4.0 * SQUARE_MM)
+
+        points = [[[round(float(v), 2) for v in self.project(solution, mm(col, rank), z_mm)]
+                   for col in range(9)] for rank in range(9)]
+        centres = []
+        for rank in range(8):
+            for col in range(8):
+                quad = np.array([points[rank][col], points[rank][col + 1],
+                                 points[rank + 1][col + 1], points[rank + 1][col]], float)
+                centre = quad.mean(axis=0)
+                edge = 0.5 * (np.linalg.norm(quad[1] - quad[0])
+                              + np.linalg.norm(quad[2] - quad[3]))
+                centres.append({"name": f"{chr(97 + col)}{rank + 1}",
+                                "uv": [round(float(centre[0]), 2),
+                                       round(float(centre[1]), 2)],
+                                "edge_px": round(float(edge), 2)})
+        return {"points": points, "centres": centres}
+
     def unproject(self, solution: dict, uv, z_mm: float) -> np.ndarray:
         """Pixel -> board millimetres on the horizontal plane at `z_mm`."""
         R = solution["R"]
@@ -335,6 +363,10 @@ class TargetDetector:
                                    for v in solution["camera_in_board_mm"]],
             "n_in_view": len(detections),
         }
+
+        # The grid goes out on every posed frame, target or not: the dashboard
+        # has to show where a1..h8 are before it can show what is on one.
+        result["grid"] = self.board.grid(solution)
 
         t_squares = time.perf_counter()
         grey = cv2.cvtColor(rect_frame, cv2.COLOR_BGR2GRAY)

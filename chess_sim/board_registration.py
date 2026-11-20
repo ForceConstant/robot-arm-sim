@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.optimize import minimize
 
+from .config import BOARD_TURN
 from .vision_geometry import CameraCalibration
 
 # A standard 8x8 field has 7x7 interior corners.
@@ -294,6 +295,7 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
                    coarse_step: float = 0.008,
                    coarse_radius: float | None = None,
                    prior: BoardRegistration | None = None,
+                   board_yaw: float = BOARD_TURN,
                    exclusion_mask: np.ndarray | None = None,
                    min_score: float = DEFAULT_MIN_SCORE,
                    refine_iterations: int = 400) -> BoardRegistration | None:
@@ -301,7 +303,10 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
 
     ``prior`` narrows the search around a previous registration (for example
     the last frame) but never replaces image evidence: a frame with no visible
-    checker pattern still returns ``None``.  ``exclusion_mask`` may hide known
+    checker pattern still returns ``None``.  ``board_yaw`` is the search centre
+    when there is no prior: the board's canonical set-down turn, not zero, or a
+    board facing the arm's side (``BOARD_TURN``) sits outside the yaw span and
+    registration abstains on every frame.  ``exclusion_mask`` may hide known
     moving geometry (a robot arm) from the corner response; it is optional and
     the fit is already trimmed against a contiguous occluder.
     """
@@ -351,8 +356,8 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
     else:
         centre = np.asarray(calibration.camera_position[:2], dtype=float) * 0.0
         # The board is roughly in front of the camera; use the board's nominal
-        # table position as the search centre when no prior exists.
-        yaw_centre = 0.0
+        # table position and canonical turn as the search centre without a prior.
+        yaw_centre = float(board_yaw)
         origin_span = float(origin_search)
         yaw_span = np.radians(float(yaw_search_deg))
         square_centre = 0.5 * (low_square + high_square)

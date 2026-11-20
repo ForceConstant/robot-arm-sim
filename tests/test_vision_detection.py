@@ -1,3 +1,4 @@
+import chess
 import numpy as np
 import mujoco
 
@@ -9,13 +10,18 @@ from chess_sim.tasks import MoveTask
 
 
 def test_foreground_detector_localizes_off_center_piece_and_abstains_when_empty():
+    # d4: e4 sits under the parked arm from the overhead camera once the board is
+    # set down for black, and a piece there is absent from reference and frame.
+    probe = "d4"
     env = ChessSimEnv(EnvConfig())
     try:
         env.reset("8/8/8/8/8/8/8/8 w - - 0 1")
         reference = env.render(Camera.TOP).copy()
-        env.reset("8/8/8/8/4P3/8/8/8 w - - 0 1")
-        slot = env.slot_at("e4")
-        nominal = np.asarray(env.board.square_center("e4"))
+        board = chess.Board(None)
+        board.set_piece_at(chess.parse_square(probe), chess.Piece.from_symbol("P"))
+        env.reset(board.board_fen())
+        slot = env.slot_at(probe)
+        nominal = np.asarray(env.board.square_center(probe))
         offset = np.asarray((0.004, -0.003))
         yaw = np.deg2rad(47.0)
         env.set_piece_pose(

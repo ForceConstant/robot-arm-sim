@@ -15,8 +15,9 @@ import mujoco
 import numpy as np
 
 from .board_registration import BoardRegistration, register_board
-from .config import (AppearanceConfig, BoardConfig, Camera, ControlConfig,
-                     EnvConfig, PUBLISHED_RIG_CAMERA, RandomizationConfig)
+from .config import (BOARD_TURN, AppearanceConfig, BoardConfig, Camera,
+                     ControlConfig, EnvConfig, PUBLISHED_RIG_CAMERA,
+                     RandomizationConfig)
 from .env import ChessSimEnv
 from .vision_geometry import CameraCalibration
 
@@ -150,8 +151,8 @@ def register_for_perception(frame: np.ndarray, calibration: CameraCalibration,
     than handed to perception, because a one-square slip would label the wrong
     pixels.  Callers may keep the previous accepted pose as their prior.
     """
-    prior = prior or BoardRegistration((0.0, 0.0), 0.0, float(square), float(board_z),
-                                       score=0.0, coverage=1.0)
+    prior = prior or BoardRegistration((0.0, 0.0), BOARD_TURN, float(square),
+                                       float(board_z), score=0.0, coverage=1.0)
     result = register_board(
         frame, calibration, board_z, prior=prior,
         origin_search=REGISTRATION_ORIGIN_SEARCH,

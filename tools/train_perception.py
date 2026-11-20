@@ -65,7 +65,7 @@ def collect_session(env, seed: int, positions: int,
         from chess_sim.board_registration import register_board, BoardRegistration
         registration = register_board(
             reference_frame, reference_cal, env.board.top,
-            prior=BoardRegistration((0.0, 0.0), 0.0, env.board.square,
+            prior=BoardRegistration((0.0, 0.0), env.board.yaw, env.board.square,
                                     env.board.top, score=0.0, coverage=1.0),
             origin_search=0.024, yaw_search_deg=6.0, coarse_step=0.003)
         if registration is not None and registration.score < 0.35:
