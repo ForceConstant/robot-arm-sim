@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from dataclasses import replace
 from pathlib import Path
 import threading
 import time
@@ -70,6 +71,9 @@ DEFAULTS = {
     "board_y_m": 0.0,
     "board_yaw_deg": 0.0,
     "board_file": "live/board.json",
+    # Wrist calibration: the roll angle accepted as "wrist 0" and the ±90°
+    # window around it that manual roll moves are allowed to use.
+    "wrist_file": "live/wrist_calibration.json",
     # Working envelope in board-frame mm.  The arm should stay over the playing
     # surface, both so the camera keeps the board in view and so a Cartesian
     # mistake cannot drive the jaws into the table beside it.
@@ -102,16 +106,76 @@ def load_config() -> dict:
     return config
 
 
+class _JointFrame:
+    """Servo frame -> model frame offset for wrist_roll.
+
+    Re-zeroing wrist_roll in the servo EEPROM changes the physical joint
+    coordinate.  The MJCF model and the hand-eye calibration were built in the
+    old frame, so the dashboard keeps working there and translates only at the
+    bridge boundary.  Zero until a servo zero is actually written.
+    """
+
+    def __init__(self) -> None:
+        self.offset_deg = 0.0
+
+
+class _FramedBridge:
+    def __init__(self, inner: HttpBridge, frame: _JointFrame) -> None:
+        self.inner = inner
+        self.frame = frame
+
+    def state(self) -> dict:
+        state = dict(self.inner.state())
+        offset = self.frame.offset_deg
+        joints = dict(state.get("joints") or {})
+        if "wrist_roll" in joints:
+            joints["wrist_roll"] = float(joints["wrist_roll"]) + offset
+        state["joints"] = joints
+        limits = dict(state.get("limits") or {})
+        if "wrist_roll" in limits:
+            low, high = limits["wrist_roll"]
+            limits["wrist_roll"] = [float(low) + offset, float(high) + offset]
+        state["limits"] = limits
+        return state
+
+    def command(self, joints, **kwargs):
+        values = [float(v) for v in joints]
+        values[4] -= self.frame.offset_deg
+        return self.inner.command(values, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.inner, name)
+
+
+class _FramedFrames:
+    def __init__(self, inner: HttpFrames, frame: _JointFrame) -> None:
+        self.inner = inner
+        self.frame = frame
+
+    def capture(self):
+        captured = self.inner.capture()
+        joints = list(captured.joints_deg)
+        joints[4] -= self.frame.offset_deg
+        return replace(captured, joints_deg=tuple(joints))
+
+    def __getattr__(self, name):
+        return getattr(self.inner, name)
+
+
 class Live:
     """Shared state: bridge handles, latest annotations, scan progress."""
 
     def __init__(self) -> None:
         self.config = load_config()
-        self.bridge = HttpBridge(self.config["bridge_url"],
-                                 token_file=self.config["token_file"],
-                                 timeout=6.0)
-        self.frames = HttpFrames(self.config["bridge_url"],
-                                 token_file=self.config["token_file"])
+        self.frame_offset = _JointFrame()
+        self.bridge = _FramedBridge(
+            HttpBridge(self.config["bridge_url"],
+                       token_file=self.config["token_file"], timeout=6.0),
+            self.frame_offset)
+        self.frames = _FramedFrames(
+            HttpFrames(self.config["bridge_url"],
+                       token_file=self.config["token_file"]),
+            self.frame_offset)
         self.calibration = WristCalibration.load(self.config["calibration"])
         self.plan = plan_in_degrees(load_plan(self.config["plan"]))
         # The board's marker layout: the mat tags, or the printed ChArUco face.
@@ -140,6 +204,10 @@ class Live:
         self.command_seq = int(time.time() * 1000)
         self.motion = threading.Lock()
         self.board_path = Path(self.config.get("board_file", "live/board.json"))
+        self.wrist_path = Path(self.config.get(
+            "wrist_file", "live/wrist_calibration.json"))
+        self.frame_offset.offset_deg = float(
+            self.wrist_cal().get("model_offset_deg", 0.0))
         self.kinematics = ArmKinematics(self.calibration, {}, self._board_frame())
         self.frame_times: deque[float] = deque(maxlen=40)
         self.frame_cost_ms: deque[float] = deque(maxlen=40)
@@ -214,6 +282,201 @@ class Live:
         z_mm = float(camera[2, 3]) * 1000.0 - float(height)
         return self.set_board({"x_mm": x_mm, "y_mm": y_mm,
                                "z_mm": z_mm, "yaw_deg": yaw_deg})
+
+    # -------------------------------------------------------- wrist calibration
+    def wrist_cal(self) -> dict:
+        data: dict = {}
+        if self.wrist_path.exists():
+            try:
+                data = json.loads(self.wrist_path.read_text())
+            except (OSError, ValueError):
+                data = {}
+        zero = float(data.get("zero_deg", 0.0))
+        # The window is stored relative to the zero.  Older files stored the
+        # absolute angles (zero ± 90), so migrate those on read.
+        if "min_rel_deg" in data or "max_rel_deg" in data:
+            min_rel = float(data.get("min_rel_deg", -90.0))
+            max_rel = float(data.get("max_rel_deg", 90.0))
+        else:
+            min_rel = float(data.get("min_deg", zero - 90.0)) - zero
+            max_rel = float(data.get("max_deg", zero + 90.0)) - zero
+        return {"zero_deg": round(zero, 2),
+                "min_rel_deg": round(min_rel, 2),
+                "max_rel_deg": round(max_rel, 2),
+                "min_deg": round(zero + min_rel, 2),
+                "max_deg": round(zero + max_rel, 2),
+                "model_offset_deg": round(
+                    float(data.get("model_offset_deg", 0.0)), 2),
+                "pan_zero_deg": round(float(data.get("pan_zero_deg", 0.0)), 2),
+                "calibrated": bool(data.get("calibrated")),
+                "updated": data.get("updated")}
+
+    def wrist_state(self, state: dict | None = None) -> dict:
+        """Calibration plus the live roll, so the tab needs no extra poll."""
+        cal = self.wrist_cal()
+        if state is None:
+            try:
+                state = self.bridge.state()
+            except BridgeError:
+                state = {}
+        joints = state.get("joints") or {}
+        out = dict(cal)
+        if "wrist_roll" in joints:
+            roll = float(joints["wrist_roll"]) - self.frame_offset.offset_deg
+            out["roll_deg"] = round(roll, 2)
+            out["roll_rel_deg"] = round(roll - cal["zero_deg"], 2)
+            out["inside"] = (cal["min_rel_deg"] - 0.01
+                             <= out["roll_rel_deg"]
+                             <= cal["max_rel_deg"] + 0.01)
+        return out
+
+    def set_wrist_zero(self, zero_deg: float | None = None) -> dict:
+        """Accept the current roll as wrist 0, saving to the servo when possible.
+
+        The servo write redefines its joint frame; the old servo zero is kept
+        as ``model_offset_deg`` so the MJCF/hand-eye frame does not move.
+        """
+        state = self.bridge.state()
+        joints = state.get("joints") or {}
+        if "wrist_roll" not in joints:
+            raise BridgeError("bridge has no wrist_roll state")
+        offset = self.frame_offset.offset_deg
+        servo_roll = (float(joints["wrist_roll"]) if zero_deg is None
+                      else float(zero_deg)) - offset
+        servo = None
+        servo_error = None
+        try:
+            servo = self.bridge.inner.wrist_zero(90.0)
+        except BridgeError as exc:
+            text = str(exc)
+            # The endpoint exists only after the bridge restart.  Until then,
+            # keep the dashboard zero local instead of pretending it persisted.
+            if "404" not in text and "Not Found" not in text:
+                raise BridgeError(f"servo calibration failed: {exc}") from exc
+            servo_error = text
+        if servo:
+            self.frame_offset.offset_deg = servo_roll
+            zero = 0.0
+            model_offset = servo_roll
+        else:
+            zero = servo_roll
+            model_offset = offset
+        current = self.wrist_cal()
+        data = {"zero_deg": round(zero, 2),
+                "min_rel_deg": -90.0,
+                "max_rel_deg": 90.0,
+                "model_offset_deg": round(model_offset, 2),
+                "pan_zero_deg": current["pan_zero_deg"],
+                "calibrated": True,
+                "servo": servo,
+                "updated": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+        self.wrist_path.parent.mkdir(parents=True, exist_ok=True)
+        self.wrist_path.write_text(json.dumps(data, indent=2) + "\n")
+        result = self.wrist_state()
+        result["servo_saved"] = bool(servo)
+        if servo_error:
+            result["servo_error"] = servo_error
+        return result
+
+    def _wrist_window(self) -> tuple[float, float] | None:
+        cal = self.wrist_cal()
+        if not cal.get("calibrated"):
+            return None
+        return cal["min_deg"], cal["max_deg"]
+
+    @staticmethod
+    def _marker_tilt(image) -> tuple[float | None, list]:
+        """Mean tilt of the ArUco edges away from horizontal, in degrees.
+
+        A square marker's edges are equivalent every 90°, so each edge angle is
+        folded into [-45, 45] and averaged on the doubled angle to survive the
+        ±45 seam.  Positive means the marker's top edge runs down to the right.
+        """
+        detections = fiducials.detect_markers(image)
+        angles = []
+        for detection in detections:
+            corners = np.asarray(detection.corners, dtype=float)
+            for a, b in ((0, 1), (3, 2)):
+                vector = corners[b] - corners[a]
+                if float(np.hypot(vector[0], vector[1])) < 1e-6:
+                    continue
+                angle = math.degrees(math.atan2(float(vector[1]), float(vector[0])))
+                angles.append((angle + 45.0) % 90.0 - 45.0)
+        if not angles:
+            return None, detections
+        sin_sum = sum(math.sin(math.radians(2.0 * a)) for a in angles)
+        cos_sum = sum(math.cos(math.radians(2.0 * a)) for a in angles)
+        return math.degrees(math.atan2(sin_sum, cos_sum)) / 2.0, detections
+
+    def auto_align_wrist(self, tolerance_deg: float = 0.8,
+                         max_iterations: int = 8) -> dict:
+        """Rotate the wrist until the ArUco marker edges are horizontal.
+
+        The roll->image gain and its sign are measured from the first move
+        instead of assumed: the camera mount can invert or scale the rotation,
+        and a wrong guess would drive the wrist the wrong way until the window
+        stopped it.  Each iteration is a normal speed-capped streamed move, so
+        the usual limit and fault guards still apply.
+        """
+        if not self.motion.acquire(timeout=5):
+            raise BridgeError("another motion is running")
+        try:
+            state = self._require_remote()
+            self._refresh_limits(state)
+            current = [float(state["joints"][name]) for name in JOINTS]
+            window = self._wrist_window()
+            frame = self.frames.capture()
+            tilt, detections = self._marker_tilt(frame.image)
+            if tilt is None:
+                raise BridgeError("no ArUco marker in view")
+            before = tilt
+            gain: float | None = None
+            history: list[dict] = []
+            iterations = 0
+            for _ in range(max_iterations):
+                if abs(tilt) <= tolerance_deg:
+                    break
+                if gain is None:
+                    delta = max(-8.0, min(8.0, tilt))
+                else:
+                    delta = max(-12.0, min(12.0, -tilt / gain))
+                if abs(delta) < 0.25:
+                    break
+                target = list(current)
+                target[4] += delta
+                if window:
+                    target[4] = max(window[0], min(window[1], target[4]))
+                previous_roll = current[4]
+                if abs(target[4] - previous_roll) < 0.2:
+                    raise BridgeError(
+                        "wrist roll is at the edge of its calibrated window")
+                self._keep_in_check(target)
+                moved = self._stream_to(target, current)
+                current = [float(moved["joints"][name]) for name in JOINTS]
+                actual = current[4] - previous_roll
+                iterations += 1
+                time.sleep(0.45)
+                frame = self.frames.capture()
+                new_tilt, detections = self._marker_tilt(frame.image)
+                if new_tilt is None:
+                    raise BridgeError("marker left the view during auto-align")
+                if abs(actual) > 0.2:
+                    observed = (new_tilt - tilt) / actual
+                    if 0.15 <= abs(observed) <= 5.0:
+                        gain = observed
+                history.append({"roll_deg": round(actual, 2),
+                                "tilt_deg": round(new_tilt, 2)})
+                tilt = new_tilt
+            return {"ok": abs(tilt) <= max(tolerance_deg * 1.5, 1.2),
+                    "tilt_before": round(before, 2),
+                    "tilt_after": round(tilt, 2),
+                    "tolerance_deg": tolerance_deg,
+                    "iterations": iterations,
+                    "roll_deg": round(current[4], 2),
+                    "markers": [d.marker_id for d in detections],
+                    "history": history}
+        finally:
+            self.motion.release()
 
     def derive_board(self, save: bool = True) -> dict:
         """Board pose in the arm base frame from one known marker sighting.
@@ -565,8 +828,21 @@ class Live:
             start = [float(state["joints"][n]) for n in names]
             target = list(start)
             target[names.index(joint)] += delta_deg
+            note = None
+            window = self._wrist_window()
+            if window and joint == "wrist_roll":
+                lo, hi = window
+                offset = self.frame_offset.offset_deg
+                clamped = max(lo, min(hi, target[4] - offset))
+                if abs(clamped - (target[4] - offset)) > 1e-9:
+                    note = (f"wrist roll clamped to {clamped:.1f}° "
+                            f"(window {lo:.1f}..{hi:.1f}°)")
+                    target[4] = clamped + offset
             self._keep_in_check(target)
-            return self._stream_to(target, start)
+            result = self._stream_to(target, start)
+            if note:
+                result["note"] = note
+            return result
         finally:
             self.motion.release()
 
@@ -856,6 +1132,14 @@ class Live:
                 raise BridgeError(f"unknown move mode {mode!r}")
             if body.get("jaw") is not None:
                 target[5] = float(body["jaw"])
+            window = self._wrist_window()
+            if window and abs(target[4] - start[4]) > 1e-9:
+                lo, hi = window
+                servo_target = target[4] - self.frame_offset.offset_deg
+                if not lo <= servo_target <= hi:
+                    raise BridgeError(
+                        f"wrist roll {servo_target:.1f}° outside calibrated window "
+                        f"{lo:.1f}..{hi:.1f}°")
             bad = self.kinematics.violations(target)
             if bad and self._excess(target) > self._excess(start) + 0.05:
                 # A joint sitting a hair outside its limit (post-jam resets do
@@ -872,13 +1156,15 @@ class Live:
                         "target_joints": dict(zip(JOINTS, [round(v, 2) for v in target])),
                         "max_joint_delta_deg": round(delta, 1)}
             self._keep_in_check(target)
-            result = self._stream_to(target, start)
+            settle = float(body.get("settle_deg", 0.7))
+            result = self._stream_to(target, start, tolerance=settle)
             result.update(requested=detail, pose=self.pose_now())
             return result
         finally:
             self.motion.release()
 
-    def _stream_to(self, target: list[float], start: list[float]) -> dict:
+    def _stream_to(self, target: list[float], start: list[float],
+                   tolerance: float = 0.7) -> dict:
         """Interpolate at the bridge's speed cap and stop when close."""
         names = ("shoulder_pan", "shoulder_lift", "elbow_flex",
                  "wrist_flex", "wrist_roll", "gripper")
@@ -887,7 +1173,7 @@ class Live:
         deadline = time.time() + 20.0
         while time.time() < deadline:
             error = max(abs(a - b) for a, b in zip(current, target))
-            if error <= 0.7:
+            if error <= max(0.05, tolerance):
                 break
             # The bridge rejects any command whose sequence is not newer than
             # the last one it accepted, so the counter must survive across calls.
@@ -1032,6 +1318,7 @@ def state():
     target = _target_summary()
     with live.lock:
         return {"bridge": bridge_state,
+                "wrist": live.wrist_state(bridge_state),
                 "tool_tip": describe_tip_frame(),
                 "scan": live.last_scan,
                 "scan_running": live.scan_running,
@@ -1048,6 +1335,29 @@ def state():
 async def scan(request: Request):
     _authorised(request)
     return live.start_scan()
+
+
+@app.get("/camera/controls")
+def camera_controls():
+    """Proxy the bridge's control list; ranges come from the device."""
+    try:
+        return live.bridge.camera_controls()
+    except BridgeError as exc:
+        raise HTTPException(502, str(exc)) from exc
+
+
+@app.post("/camera/controls")
+async def camera_controls_set(request: Request):
+    _authorised(request)
+    body = await request.json()
+    controls = body.get("controls")
+    if not isinstance(controls, dict) or not controls:
+        raise HTTPException(400, "controls must be a non-empty object")
+    try:
+        return live.bridge.set_camera_controls(controls,
+                                               save=bool(body.get("save")))
+    except BridgeError as exc:
+        raise HTTPException(502, str(exc)) from exc
 
 
 @app.post("/arm")
@@ -1304,6 +1614,45 @@ async def jog(request: Request):
         raise HTTPException(400, str(exc)) from exc
 
 
+@app.get("/wrist")
+def wrist():
+    try:
+        return live.wrist_state()
+    except BridgeError as exc:
+        return JSONResponse({**live.wrist_cal(), "error": str(exc)})
+
+
+@app.post("/wrist/zero")
+async def wrist_zero(request: Request):
+    _authorised(request)
+    body = await request.json()
+    try:
+        zero = body.get("zero_deg")
+        return live.set_wrist_zero(None if zero is None else float(zero))
+    except (BridgeError, ValueError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.post("/wrist/pan-zero")
+async def wrist_pan_zero(request: Request):
+    _authorised(request)
+    try:
+        pan = float(live.wrist_cal().get("pan_zero_deg", 0.0))
+        return live.move({"mode": "joint", "joints": {"shoulder_pan": pan},
+                          "settle_deg": 0.1})
+    except BridgeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.post("/wrist/auto-align")
+async def wrist_auto_align(request: Request):
+    _authorised(request)
+    try:
+        return live.auto_align_wrist()
+    except BridgeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
 def _mjpeg():
     live.attach()
     try:
@@ -1336,10 +1685,14 @@ PAGE = """<!doctype html>
 body { margin:0; font:14px/1.45 ui-sans-serif,system-ui,sans-serif; background:#0b0f14; color:#d8e1ea; }
 header { padding:10px 14px; border-bottom:1px solid #1d2733; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 h1 { font-size:14px; margin:0; letter-spacing:.05em; text-transform:uppercase; color:#8fb3d9; }
-main { display:grid; grid-template-columns:minmax(340px,1fr) 400px; gap:14px; padding:14px; }
+main { display:grid; grid-template-columns:minmax(300px,430px) 400px; gap:14px;
+       padding:14px; justify-content:center; }
 @media (max-width:980px){ main { grid-template-columns:1fr; } }
-.cam { background:#000; border:1px solid #1d2733; border-radius:6px; overflow:hidden; }
-.cam img { width:100%; display:block; }
+.cam { background:#000; border:1px solid #1d2733; border-radius:6px; overflow:hidden;
+       display:flex; justify-content:center; align-items:center; }
+.camframe { position:relative; max-width:100%; line-height:0; }
+.cam img { display:block; width:auto; height:auto; max-width:100%;
+           max-height:clamp(220px, calc(100vh - 360px), 520px); }
 .panel { background:#111823; border:1px solid #1d2733; border-radius:6px; padding:10px; margin-bottom:10px; }
 .panel h2 { font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:#6f8aa6; margin:0 0 8px; }
 .row { display:flex; justify-content:space-between; padding:1px 0; }
@@ -1349,6 +1702,16 @@ button { background:#1a2635; color:#d8e1ea; border:1px solid #2b3b4f; padding:6p
 button:hover { background:#223247; }
 button.danger { border-color:#7a2a2a; color:#ffb4b4; }
 button.go { border-color:#2c5f41; color:#9fe3b8; }
+.camcheck { display:flex; gap:6px; align-items:center; text-transform:none;
+            letter-spacing:0; font-size:12px; color:#d8e1ea; }
+.camcheck input { width:auto; }
+.camrow { margin:0 0 9px; }
+.camrow.off { opacity:.45; }
+.camrow .head { display:flex; justify-content:space-between; gap:6px; }
+.camrow input[type=range] { padding:0; height:18px; }
+.camrow input[type=number] { width:74px; }
+.camrow select { width:100%; padding:4px 6px; background:#0b0f14; color:#d8e1ea;
+                 border:1px solid #2b3b4f; border-radius:4px; font:inherit; }
 button.tab { padding:4px 10px; font-size:12px; }
 button.tab.on { background:#223247; border-color:#3f6288; color:#bcd8f6; }
 .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
@@ -1363,15 +1726,49 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
 .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#7a2a2a,#c9a227,#2c5f41); }
 #log { max-height:120px; overflow:auto; font-size:12px; color:#8fa6bd; }
 .hint { font-size:11px; color:#7f97ae; }
+.cross { position:absolute; inset:0; pointer-events:none; }
+.cross svg { width:100%; height:100%; display:block; }
+.cross line { stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
+.cross line.minor { opacity:.32; }
+.cross circle { fill:none; stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
 </style></head><body>
 <header><h1>Robot arm</h1>
 <span id="mode" class="badge">—</span><span id="link" class="badge">—</span>
 <span id="markers" class="badge">no marker</span><span id="dist" class="badge">—</span>
 <span id="err" class="badge bad" style="display:none"></span>
-<span id="keepin" class="badge">zone —</span></header>
+<span id="keepin" class="badge">zone —</span>
+<nav style="margin-left:auto;display:flex;gap:6px">
+  <button class="tab on" id="vtab-live">Live</button>
+  <button class="tab" id="vtab-wrist">Wrist calibration</button>
+  <button class="tab" id="vtab-camera">Camera</button>
+</nav></header>
 <main>
   <div>
-    <div class="cam"><img id="cam" src="/stream" alt="wrist camera"></div>
+    <div class="cam"><div class="camframe"><img id="cam" src="/stream" alt="wrist camera">
+      <div id="cross" class="cross" style="display:none">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="alignment crosshatch">
+          <line x1="50" y1="0" x2="50" y2="100"></line>
+          <line x1="0" y1="50" x2="100" y2="50"></line>
+          <line class="minor" x1="10" y1="48.4" x2="10" y2="51.6"></line>
+          <line class="minor" x1="20" y1="48.4" x2="20" y2="51.6"></line>
+          <line class="minor" x1="30" y1="48.4" x2="30" y2="51.6"></line>
+          <line class="minor" x1="40" y1="48.4" x2="40" y2="51.6"></line>
+          <line class="minor" x1="60" y1="48.4" x2="60" y2="51.6"></line>
+          <line class="minor" x1="70" y1="48.4" x2="70" y2="51.6"></line>
+          <line class="minor" x1="80" y1="48.4" x2="80" y2="51.6"></line>
+          <line class="minor" x1="90" y1="48.4" x2="90" y2="51.6"></line>
+          <line class="minor" x1="48.4" y1="10" x2="51.6" y2="10"></line>
+          <line class="minor" x1="48.4" y1="20" x2="51.6" y2="20"></line>
+          <line class="minor" x1="48.4" y1="30" x2="51.6" y2="30"></line>
+          <line class="minor" x1="48.4" y1="40" x2="51.6" y2="40"></line>
+          <line class="minor" x1="48.4" y1="60" x2="51.6" y2="60"></line>
+          <line class="minor" x1="48.4" y1="70" x2="51.6" y2="70"></line>
+          <line class="minor" x1="48.4" y1="80" x2="51.6" y2="80"></line>
+          <line class="minor" x1="48.4" y1="90" x2="51.6" y2="90"></line>
+          <circle cx="50" cy="50" r="2.4"></circle>
+        </svg>
+      </div></div>
+    </div>
     <div class="panel" style="margin-top:10px">
       <div class="row"><span class="hint">focus score</span><span class="mono hint" id="peak">peak —</span></div>
       <div class="big" id="score">—</div>
@@ -1383,6 +1780,7 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
     </div>
   </div>
   <div>
+   <div id="pane-live">
     <div class="panel"><h2>Session</h2>
       <div class="grid" style="grid-template-columns:repeat(3,1fr)">
         <button id="arm">Arm</button>
@@ -1532,6 +1930,64 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
     </div>
 
     <div class="panel"><h2>Log</h2><div id="log" class="mono"></div></div>
+   </div>
+   <div id="pane-wrist" style="display:none">
+    <div class="panel"><h2>Wrist calibration</h2>
+      <div class="row"><span class="hint">wrist roll (0 = calibrated)</span><span class="mono" id="wcRoll">—</span></div>
+      <div class="row"><span class="hint">servo angle</span><span class="mono" id="wcRel">—</span></div>
+      <div class="bar"><i id="wcBar"></i></div>
+      <div class="row hint"><span id="wcMin">min —</span><span id="wcMax">max —</span></div>
+      <div id="wcStatus" class="mono hint" style="margin-top:6px">—</div>
+    </div>
+    <div class="panel"><h2>Alignment overlay</h2>
+      <div class="grid2">
+        <button id="wcCross">Crosshair on</button>
+        <button id="wcPan" class="go">Zero pan (→ 0°)</button>
+      </div>
+      <button id="wcAuto" class="go" style="width:100%;margin-top:6px">Auto-align horizontally (ArUco)</button>
+      <div class="hint" style="margin-top:6px">The crosshatch marks the camera centre and square axes. Line the tool up with them, then zero the pan.</div>
+    </div>
+    <div class="panel"><h2>Roll</h2>
+      <div class="hint">coarse · 10°</div>
+      <div class="grid2" style="margin:4px 0 8px">
+        <button onclick="rollJog(-10)">coarse −10°</button>
+        <button onclick="rollJog(10)">coarse +10°</button>
+      </div>
+      <div class="hint">fine · 1°</div>
+      <div class="grid2" style="margin-top:4px">
+        <button onclick="rollJog(-1)">fine −1°</button>
+        <button onclick="rollJog(1)">fine +1°</button>
+      </div>
+    </div>
+    <div class="panel"><h2>Zero</h2>
+      <button id="wcAccept" class="go" style="width:100%">Accept current position as wrist 0</button>
+      <div class="hint" style="margin-top:6px">Sets the wrist window to ±90° around the current roll and saves it to live/wrist_calibration.json. The window is enforced on roll jogs and joint moves.</div>
+      <div id="wcZeroInfo" class="mono hint" style="margin-top:4px">—</div>
+    </div>
+   </div>
+   <div id="pane-camera" style="display:none">
+    <div class="panel"><h2>Auto</h2>
+      <div class="grid2">
+        <label class="camcheck"><input type="checkbox" id="camAutoExp"> Auto exposure</label>
+        <label class="camcheck"><input type="checkbox" id="camAutoWb"> Auto white balance</label>
+      </div>
+      <div class="hint" style="margin-top:6px">Off pins exposure and white balance, so consecutive frames agree. On, the camera hunts and a dark piece on a dark square stops separating.</div>
+    </div>
+    <div class="panel"><h2>Camera controls</h2>
+      <div class="row hint"><span class="mono" id="camDevice">—</span><span class="mono" id="camSavedAt">—</span></div>
+      <div id="camControls" style="margin-top:8px"></div>
+      <div class="grid2" style="margin-top:10px">
+        <button id="camApply" class="go">Apply</button>
+        <button id="camReset">Reset to defaults</button>
+      </div>
+      <div class="grid2" style="margin-top:6px">
+        <button id="camSave" class="go">Save as startup</button>
+        <button id="camReload">Reload from device</button>
+      </div>
+      <div id="camStatus" class="mono hint" style="margin-top:8px">—</div>
+      <div class="hint" style="margin-top:6px">Values shown are read back from the device after every write. Save as startup writes the profile the bridge re-applies whenever it reopens the camera.</div>
+    </div>
+   </div>
   </div>
 </main>
 <script>
@@ -1568,6 +2024,276 @@ function jogTab(mode){
 el('jtab-joints').onclick = () => jogTab('joints');
 el('jtab-xyz').onclick = () => jogTab('xyz');
 el('jtab-look').onclick = () => jogTab('look');
+
+// ---------------------------------------------------------- wrist calibration
+let crossOn = true;
+function showCross(on){
+  const wristVisible = el('pane-wrist').style.display !== 'none';
+  el('cross').style.display = (on && wristVisible) ? 'block' : 'none';
+  el('wcCross').textContent = 'Crosshair ' + (on ? 'on' : 'off');
+}
+function view(mode){
+  el('vtab-live').classList.toggle('on', mode === 'live');
+  el('vtab-wrist').classList.toggle('on', mode === 'wrist');
+  el('vtab-camera').classList.toggle('on', mode === 'camera');
+  el('pane-live').style.display = mode === 'live' ? 'block' : 'none';
+  el('pane-wrist').style.display = mode === 'wrist' ? 'block' : 'none';
+  el('pane-camera').style.display = mode === 'camera' ? 'block' : 'none';
+  if (mode === 'camera' && !camState) camLoad();
+  showCross(crossOn);
+}
+el('vtab-live').onclick = () => view('live');
+el('vtab-wrist').onclick = () => view('wrist');
+el('vtab-camera').onclick = () => view('camera');
+el('wcCross').onclick = () => { crossOn = !crossOn; showCross(crossOn); };
+function renderWrist(w){
+  if (!w) return;
+  if (w.roll_deg !== undefined && w.roll_deg !== null){
+    const rel = w.roll_rel_deg;
+    el('wcRoll').textContent = (rel >= 0 ? '+' : '') + rel.toFixed(1) + '°';
+    el('wcRel').textContent = w.roll_deg.toFixed(1) + '°';
+    const span = Math.max(1e-6, w.max_rel_deg - w.min_rel_deg);
+    el('wcBar').style.width = Math.max(0, Math.min(100, (rel - w.min_rel_deg) / span * 100)) + '%';
+  }
+  el('wcMin').textContent = 'min ' + w.min_rel_deg.toFixed(1) + '°';
+  el('wcMax').textContent = 'max ' + w.max_rel_deg.toFixed(1) + '°';
+  el('wcZeroInfo').textContent = w.calibrated
+    ? 'zero at servo ' + w.zero_deg.toFixed(1) + '° · window −90…+90°'
+    : 'not calibrated — default window −90…+90°';
+}
+async function rollJog(delta){
+  const r = await post('/jog', {joint: 'wrist_roll', delta: delta});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){ el('wcStatus').textContent = 'roll refused: ' + (d.detail || r.status); return; }
+  el('wcStatus').textContent = (d.note ? d.note : 'roll ' + (delta > 0 ? '+' : '') + delta + '°') +
+    ' · settle ' + d.error_deg + '°';
+}
+el('wcPan').onclick = async () => {
+  el('wcStatus').textContent = 'zeroing pan…';
+  const r = await post('/wrist/pan-zero', {});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){ el('wcStatus').textContent = 'pan zero failed: ' + (d.detail || r.status); return; }
+  el('wcStatus').textContent = 'pan zeroed · settle ' + d.error_deg + '°';
+};
+el('wcAccept').onclick = async () => {
+  const r = await post('/wrist/zero', {});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){ el('wcStatus').textContent = 'zero failed: ' + (d.detail || r.status); return; }
+  el('wcStatus').textContent = 'wrist 0 ' +
+    (d.servo_saved ? 'saved to servo' : 'saved locally (servo write unavailable)') +
+    ' · window ' + d.min_rel_deg.toFixed(0) + '…' + d.max_rel_deg.toFixed(0);
+  if (!d.servo_saved && d.servo_error) log('wrist servo: ' + d.servo_error);
+  renderWrist(d);
+};
+el('wcAuto').onclick = async () => {
+  el('wcStatus').textContent = 'auto-aligning on ArUco markers…';
+  const r = await post('/wrist/auto-align', {});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){ el('wcStatus').textContent = 'auto-align failed: ' + (d.detail || r.status); return; }
+  el('wcStatus').textContent = 'auto-align ' + (d.ok ? 'ok' : 'incomplete') +
+    ' · tilt ' + d.tilt_before.toFixed(1) + '° → ' + d.tilt_after.toFixed(1) +
+    '° in ' + d.iterations + ' moves';
+};
+
+// ----------------------------------------------------------------- camera tab
+// Ranges, menus and the inactive flags all come from the device, so the tab
+// cannot offer a value the driver would refuse.  After every write the panel
+// redraws from what the device reported, never from what was requested.
+let camState = null;
+let camRows = {};
+function camFind(name){
+  return (camState && camState.controls.find(c => c.name === name)) || null;
+}
+function camBuild(control){
+  const row = document.createElement('div');
+  row.className = 'camrow' + (control.inactive ? ' off' : '');
+  const head = document.createElement('div');
+  head.className = 'head';
+  const name = document.createElement('span');
+  name.className = 'hint';
+  name.textContent = control.name.replace(/_/g, ' ');
+  const shown = document.createElement('span');
+  shown.className = 'mono hint';
+  head.append(name, shown);
+  row.append(head);
+  const line = document.createElement('div');
+  line.style.cssText = 'display:flex;gap:6px;align-items:center';
+  let read;
+  if (control.type === 'bool'){
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = !!control.value;
+    box.disabled = control.inactive;
+    box.onchange = () => { shown.textContent = box.checked ? 'on' : 'off'; };
+    line.append(box);
+    read = () => (box.checked ? 1 : 0);
+    shown.textContent = control.value ? 'on' : 'off';
+  } else if (control.type === 'menu'){
+    const sel = document.createElement('select');
+    sel.disabled = control.inactive;
+    for (const item of control.menu){
+      const opt = document.createElement('option');
+      opt.value = item.value;
+      opt.textContent = item.value + ' · ' + item.label;
+      if (item.value === control.value) opt.selected = true;
+      sel.append(opt);
+    }
+    sel.onchange = () => { shown.textContent = sel.value; };
+    line.append(sel);
+    read = () => parseInt(sel.value, 10);
+    shown.textContent = control.value;
+  } else {
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.min = control.min; range.max = control.max;
+    range.step = control.step || 1;
+    range.value = control.value;
+    range.disabled = control.inactive;
+    range.style.flex = '1';
+    const num = document.createElement('input');
+    num.type = 'number';
+    num.min = control.min; num.max = control.max;
+    num.step = control.step || 1;
+    num.value = control.value;
+    num.disabled = control.inactive;
+    range.oninput = () => { num.value = range.value; shown.textContent = range.value; };
+    num.oninput = () => {
+      if (num.value !== '') range.value = num.value;
+      shown.textContent = num.value;
+    };
+    line.append(range, num);
+    read = () => parseInt(num.value, 10);
+    shown.textContent = control.value;
+  }
+  row.append(line);
+  const hint = document.createElement('div');
+  hint.className = 'hint';
+  hint.style.cssText = 'font-size:10px;color:#5f7b96';
+  hint.textContent = (control.type === 'bool'
+      ? 'bool · default ' + (control.default ? 'on' : 'off')
+      : 'range ' + control.min + '…' + control.max +
+        ' · step ' + (control.step || 1) + ' · default ' + control.default)
+    + (control.inactive ? ' · inactive while its auto is on' : '');
+  row.append(hint);
+  camRows[control.name] = {read: read};
+  return row;
+}
+function camRender(){
+  if (!camState) return;
+  const box = el('camControls');
+  box.innerHTML = '';
+  camRows = {};
+  el('camDevice').textContent = camState.device || '—';
+  el('camSavedAt').textContent = camState.saved_at
+    ? 'profile ' + camState.saved_at
+    : 'no saved profile';
+  for (const control of camState.controls) box.append(camBuild(control));
+  const exp = camFind('auto_exposure');
+  const wb = camFind('white_balance_automatic');
+  el('camAutoExp').checked = exp ? exp.value !== 1 : false;
+  el('camAutoExp').disabled = !exp;
+  el('camAutoWb').checked = wb ? !!wb.value : false;
+  el('camAutoWb').disabled = !wb;
+}
+function camGather(){
+  const exp = camFind('auto_exposure');
+  const wb = camFind('white_balance_automatic');
+  const manualExp = exp ? !el('camAutoExp').checked : false;
+  const manualWb = wb ? !el('camAutoWb').checked : false;
+  const controls = {};
+  for (const control of camState.controls){
+    // A dependent control is only writable while its auto is off: skip it
+    // whenever this request leaves it inactive, whatever the device says now.
+    if (control.name === 'exposure_time_absolute' && !manualExp) continue;
+    if (control.name === 'white_balance_temperature' && !manualWb) continue;
+    if (control.inactive) continue;
+    const row = camRows[control.name];
+    if (!row) continue;
+    const value = row.read();
+    if (!Number.isFinite(value)) continue;
+    controls[control.name] = value;
+  }
+  if (exp) controls.auto_exposure = manualExp ? 1 : 3;
+  if (wb) controls.white_balance_automatic = manualWb ? 0 : 1;
+  return controls;
+}
+function camReport(d, saved){
+  const read = Object.entries(d.applied || {}).map(([k, v]) => k + ' ' + v);
+  // The C270 snaps some values onto its own grid (exposure moves in 5s, gain
+  // in 2s).  A difference inside two steps is the device rounding, not a
+  // value that failed to take, so the two are reported separately.
+  const bad = [], rounded = [];
+  for (const [k, v] of Object.entries(d.mismatched || {})){
+    const control = camFind(k);
+    const step = (control && control.step) || 1;
+    const text = k + ' ' + v.requested + '→' + v.read_back;
+    (Math.abs(v.read_back - v.requested) <= 2 * step ? rounded : bad).push(text);
+  }
+  const skipped = Object.entries(d.skipped || {}).map(([k, why]) => k + ' (' + why + ')');
+  el('camStatus').textContent = 'read back: ' + (read.join(' · ') || 'nothing')
+    + (rounded.length ? ' · rounded by the device: ' + rounded.join(', ') : '')
+    + (bad.length ? ' · did not take: ' + bad.join(', ') : '')
+    + (skipped.length ? ' · skipped: ' + skipped.join(', ') : '')
+    + (saved ? ' · saved as startup' : '');
+  log('camera ' + read.join(' '));
+}
+async function camApply(save){
+  if (!camState) return;
+  el('camStatus').textContent = 'applying…';
+  const r = await post('/camera/controls', {controls: camGather(), save: !!save});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){
+    el('camStatus').textContent = 'apply failed: ' + (d.detail || r.status);
+    return;
+  }
+  camState = {device: d.device, controls: d.controls,
+              saved_at: d.saved_at || camState.saved_at};
+  camRender();
+  camReport(d, !!save);
+}
+async function camLoad(){
+  const r = await fetch('/camera/controls');
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){
+    el('camStatus').textContent = 'load failed: ' + (d.detail || r.status);
+    return;
+  }
+  camState = d;
+  camRender();
+  const saved = d.saved ? Object.keys(d.saved).length : 0;
+  el('camStatus').textContent = saved
+    ? 'device reports its current values · saved profile holds ' + saved + ' controls'
+    : 'device reports its current values · no saved profile yet';
+}
+el('camApply').onclick = () => camApply(false);
+el('camSave').onclick = () => camApply(true);
+el('camReload').onclick = () => camLoad();
+el('camAutoExp').onchange = () => camApply(false);
+el('camAutoWb').onchange = () => camApply(false);
+el('camReset').onclick = async () => {
+  if (!camState) return;
+  const exp = camFind('auto_exposure');
+  const wb = camFind('white_balance_automatic');
+  const manualExp = exp ? exp.default === 1 : false;
+  const manualWb = wb ? !wb.default : false;
+  const controls = {};
+  for (const control of camState.controls){
+    if (control.name === 'exposure_time_absolute' && !manualExp) continue;
+    if (control.name === 'white_balance_temperature' && !manualWb) continue;
+    controls[control.name] = control.default;
+  }
+  el('camStatus').textContent = 'resetting to defaults…';
+  const r = await post('/camera/controls', {controls: controls, save: true});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){
+    el('camStatus').textContent = 'reset failed: ' + (d.detail || r.status);
+    return;
+  }
+  camState = {device: d.device, controls: d.controls,
+              saved_at: d.saved_at || camState.saved_at};
+  camRender();
+  camReport(d, true);
+};
 let limits = null, look = {pitch: 0, az: 0, dist: 240};
 function bar(lo, hi, now){
   const span = Math.max(1e-6, hi - lo), pct = Math.max(0, Math.min(100, (now - lo)/span*100));
@@ -1820,6 +2546,7 @@ async function tick(){
     const s = await (await fetch('/state')).json();
     const b = s.bridge || {};
     renderJoints(b);
+    renderWrist(s.wrist);
     el('mode').textContent = (b.mode||'?') + (b.armed ? ' · armed' : ' · disarmed');
     el('mode').className = 'badge ' + (b.mode === 'FAULT' ? 'bad' : (b.mode === 'REMOTE' ? 'ok' : ''));
     el('link').textContent = b.follower_open ? 'follower open' : (b.lelab_active ? 'teleop' : 'idle');
@@ -1848,7 +2575,7 @@ async function tick(){
   } catch(e){}
   setTimeout(tick, 900);
 }
-tick(); listPoses(); listCaptures(); refreshProgress(); loadBoard();
+tick(); listPoses(); listCaptures(); refreshProgress(); loadBoard(); view('live');
 
 </script></body></html>
 """

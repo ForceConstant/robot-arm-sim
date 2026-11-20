@@ -36,6 +36,9 @@ import json
 import math
 import os
 from pathlib import Path
+import re
+import shutil
+import subprocess
 import threading
 import time
 import urllib.error
@@ -57,6 +60,18 @@ CAL_DIR = Path(os.environ.get("SO101_CAL_DIR",
                               str(Path.home() / ".cache/huggingface/lerobot/calibration")))
 TOKEN_FILE = Path(os.environ.get("SO101_TOKEN_FILE", "/home/pi/so101-bridge/token.txt"))
 CAM_INDEX = int(os.environ.get("SO101_CAM_INDEX", "0"))
+# A fixed index is not stable across reboots: after 2026-11-17 the C270 came
+# back as /dev/video1 and the bridge reported "camera read failed" with the
+# camera sitting right there.  Prefer a by-id path when one is configured.
+CAM_DEVICE = os.environ.get("SO101_CAM_DEVICE", "").strip()
+# The set of V4L2 controls the Camera tab last saved.  A UVC driver forgets
+# every control when the device is reopened, and this supervisor closes it a
+# few seconds after the last viewer, so a hand-tuned image would silently
+# revert to auto between sessions.  This file is the profile that makes a
+# tuning session stick; it is re-applied on every open.
+CAM_CONTROLS_FILE = Path(os.environ.get(
+    "SO101_CAM_CONTROLS_FILE",
+    str(Path(__file__).with_name("camera_controls.json"))))
 CAM_W, CAM_H, CAM_FPS = 640, 480, 15
 LOOP_HZ = 30.0
 MAX_JOINT_SPEED_DEG_S = float(os.environ.get("SO101_MAX_SPEED", "35"))
@@ -122,6 +137,9 @@ class Bridge:
         self.stop = threading.Event()
         self.thread: threading.Thread | None = None
         self.proxy_thread: threading.Thread | None = None
+        self.calib_request: dict | None = None
+        self.calib_result: dict | None = None
+        self.calib_event = threading.Event()
 
     # ---------------------------------------------------------------- config
     def load(self) -> None:
@@ -132,7 +150,8 @@ class Bridge:
         self.follower_cal = self._pick_config(follower_dir)
         self.leader_cal = self._pick_config(leader_dir)
         data = json.loads((follower_dir / f"{self.follower_cal}.json").read_text())
-        self.limits = limits_from_calibration(data)
+        self.limits = limits_from_calibration(
+            data, margin_by_joint={"wrist_roll": 0.0})
         _log(f"config follower={self.follower_port} leader={self.leader_port} "
              f"cal={self.follower_cal}/{self.leader_cal}")
 
@@ -159,6 +178,8 @@ class Bridge:
             try:
                 with self.lock:
                     desired = self.desired
+                if self.calib_request is not None:
+                    self._process_calib_request()
                 if desired and desired != self.mode:
                     self._transition(desired)
                 if self.mode == "REMOTE":
@@ -347,6 +368,138 @@ class Bridge:
             self.joints = values
             self.joints_ts = time.time()
             self.joints_source = "follower"
+
+    # ---------------------------------------------------------- calibration
+    def request_wrist_zero(self, span_deg: float = 90.0, dry_run: bool = False,
+                           timeout: float = 20.0) -> dict:
+        """Ask the worker to make the current wrist_roll pose the servo zero.
+
+        The worker owns all serial I/O, so the HTTP thread only posts a request
+        and waits.  A failed write returns an error; it does not latch FAULT,
+        because the arm is still usable and the old calibration is intact.
+        """
+        with self.lock:
+            if self.mode != "REMOTE" or not self.armed:
+                raise ProtocolError("bridge must be REMOTE and armed")
+            if self.follower is None:
+                raise ProtocolError("follower is not open")
+            if self.calib_request is not None:
+                raise ProtocolError("a calibration write is already running")
+            self.calib_request = {"span_deg": float(span_deg),
+                                  "dry_run": bool(dry_run)}
+            self.calib_result = None
+            self.calib_event.clear()
+        if not self.calib_event.wait(timeout):
+            with self.lock:
+                self.calib_request = None
+            raise ProtocolError("calibration write timed out")
+        with self.lock:
+            result = self.calib_result
+            self.calib_result = None
+        if not result:
+            raise ProtocolError("calibration write returned no result")
+        if result.get("error"):
+            raise ProtocolError(result["error"])
+        return result
+
+    @staticmethod
+    def _cal_entry(cal) -> dict:
+        return {"id": int(cal.id), "drive_mode": int(cal.drive_mode),
+                "homing_offset": int(cal.homing_offset),
+                "range_min": int(cal.range_min),
+                "range_max": int(cal.range_max)}
+
+    def _process_calib_request(self) -> None:
+        request = self.calib_request
+        if request is None:
+            return
+        result: dict = {}
+        robot = self.follower
+        torque_off = False
+        try:
+            if self.mode != "REMOTE" or not self.armed:
+                raise RuntimeError("bridge left REMOTE before the write")
+            if robot is None:
+                raise RuntimeError("follower is not open")
+            span_deg = float(request.get("span_deg", 90.0))
+            dry_run = bool(request.get("dry_run", False))
+            if not 5.0 <= span_deg <= 170.0:
+                raise RuntimeError("span_deg must be within 5..170")
+            bus = robot.bus
+            name = "wrist_roll"
+            cal = robot.calibration[name]
+            if not dry_run:
+                # EEPROM registers are write-protected while torque is enabled.
+                bus.disable_torque(name)
+                torque_off = True
+                time.sleep(0.15)
+            raw_before = int(bus.read("Present_Position", name, normalize=False))
+            old_offset = int(cal.homing_offset)
+            # Present_Position = Actual_Position - Homing_Offset.  Shift the
+            # offset so this pose reads exactly 2048, then centre the firmware
+            # limits on 2048.  Protocol 1 stores homing elsewhere; refuse rather
+            # than write a register that version treats as inert.
+            if int(bus.protocol_version) != 0:
+                raise RuntimeError("servo protocol is not 0; unsupported homing write")
+            new_offset = old_offset + raw_before - 2048
+            span_counts = int(round(span_deg / 360.0 * 4095.0))
+            low = 2048 - span_counts
+            high = 2048 + span_counts
+            if low < 0 or high > 4095:
+                raise RuntimeError("requested span does not fit the encoder")
+            if dry_run:
+                result = {"ok": True, "dry_run": True, "joint": name,
+                          "raw_before": raw_before,
+                          "old_homing_offset": old_offset,
+                          "homing_offset": new_offset,
+                          "range_min": low, "range_max": high,
+                          "span_deg": span_deg}
+                return
+            bus.write("Homing_Offset", name, new_offset, normalize=False)
+            bus.write("Min_Position_Limit", name, low, normalize=False)
+            bus.write("Max_Position_Limit", name, high, normalize=False)
+            cal.homing_offset = new_offset
+            cal.range_min = low
+            cal.range_max = high
+            robot.calibration[name] = cal
+            bus.calibration[name] = cal
+            data = {key: self._cal_entry(value)
+                    for key, value in robot.calibration.items()}
+            path = CAL_DIR / "robots" / "so_follower" / f"{self.follower_cal}.json"
+            if path.exists():
+                backup = path.with_name(
+                    path.name + ".bak-" + time.strftime("%Y%m%d-%H%M%S"))
+                shutil.copy2(path, backup)
+            path.write_text(json.dumps(data, indent=4) + "\n")
+            self.limits = limits_from_calibration(
+                data, margin_by_joint={"wrist_roll": 0.0})
+            # The degrees just changed frame: re-read before the next hold tick
+            # so the bridge does not command the old angle in the new frame.
+            self._read_follower()
+            with self.lock:
+                self.hold = dict(self.joints)
+                self.command = None
+                self.command_ts = 0.0
+            result = {"ok": True, "joint": name,
+                      "raw_before": raw_before,
+                      "old_homing_offset": old_offset,
+                      "homing_offset": new_offset,
+                      "range_min": low, "range_max": high,
+                      "span_deg": span_deg, "path": str(path),
+                      "limits": {k: [round(v[0], 2), round(v[1], 2)]
+                                 for k, v in self.limits.items()}}
+        except Exception as exc:  # noqa: BLE001 - report, never kill the worker
+            result = {"error": f"{type(exc).__name__}: {exc}"}
+        finally:
+            if torque_off and robot is not None:
+                try:
+                    robot.bus.enable_torque("wrist_roll")
+                except Exception as exc:  # noqa: BLE001
+                    _log(f"calibration re-enable torque failed: {exc!r}")
+            with self.lock:
+                self.calib_result = result
+                self.calib_request = None
+            self.calib_event.set()
 
     def _read_leader_once(self) -> dict[str, float]:
         from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig
@@ -554,8 +707,43 @@ class Camera:
                 self.cond.wait(timeout=min(remaining, 0.2))
             return self.frame, self.frame_ts
 
+    def _apply_controls(self) -> None:
+        """V4L2 controls reset when the device is reopened; reapply them.
+
+        The profile saved by the Camera tab wins; ``SO101_CAM_CONTROLS`` is only
+        the fallback for a device that has never been saved.  Applying it here,
+        on every open, is the whole point: the supervisor releases the device
+        when nobody is watching, so a one-off ``v4l2-ctl`` call by hand would be
+        gone by the next capture.
+        """
+        settings = load_saved_controls()
+        if not settings:
+            text = os.environ.get("SO101_CAM_CONTROLS",
+                                  "contrast=64,sharpness=64").strip()
+            for item in text.split(","):
+                name, sep, value = item.partition("=")
+                if sep:
+                    try:
+                        settings[name.strip()] = int(value)
+                    except ValueError:
+                        _log(f"camera control {item!r} is not an integer")
+        if not settings:
+            return
+        try:
+            applied = apply_camera_controls(settings)
+        except HTTPException as exc:
+            _log(f"camera controls refused: {exc.detail}")
+            return
+        except Exception as exc:  # noqa: BLE001 - controls are best-effort
+            _log(f"camera controls not applied: {exc!r}")
+            return
+        _log("camera controls applied on open: "
+             + ",".join(f"{name}={value}"
+                        for name, value in applied["applied"].items()))
+
     def _open(self):
-        capture = cv2.VideoCapture(CAM_INDEX, cv2.CAP_V4L2)
+        capture = (cv2.VideoCapture(CAM_DEVICE, cv2.CAP_V4L2) if CAM_DEVICE
+                   else cv2.VideoCapture(CAM_INDEX, cv2.CAP_V4L2))
         if not capture.isOpened():
             capture.release()
             return None
@@ -563,6 +751,7 @@ class Camera:
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_W)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_H)
         capture.set(cv2.CAP_PROP_FPS, CAM_FPS)
+        self._apply_controls()
         return capture
 
     def _loop(self) -> None:
@@ -607,6 +796,191 @@ class Camera:
 camera = Camera()
 
 
+# ------------------------------------------------------------ camera controls
+# The wrist image was unusable because auto-exposure and auto-white-balance
+# hunted between frames: identical code produced frame means of 83.6 / 40.9 /
+# 39.6 and 8 / 4 / 2 detected markers.  Ranges come from the driver, never from
+# the UI, so the tab cannot offer a value the device would refuse.
+
+CONTROL_LINE = re.compile(
+    r"^\s*([a-z0-9_]+)\s+0x[0-9a-fA-F]+\s+\((int|bool|menu)\)\s*:\s*(.*)$")
+MENU_LINE = re.compile(r"^\s*(\d+):\s*(.+?)\s*$")
+# An inactive control cannot be written until the switch that owns it is in the
+# manual position, so these are always written first.
+CONTROL_ORDER = ("auto_exposure", "white_balance_automatic")
+CONTROL_SCHEMA = "camera-controls/1"
+
+
+def _v4l2_device() -> str:
+    return CAM_DEVICE or f"/dev/video{CAM_INDEX}"
+
+
+def _v4l2(*args: str, timeout: float = 6.0) -> str:
+    result = subprocess.run(["v4l2-ctl", "-d", _v4l2_device(), *args],
+                            capture_output=True, text=True, timeout=timeout)
+    if result.returncode != 0:
+        raise RuntimeError((result.stderr or result.stdout).strip()
+                           or f"v4l2-ctl {' '.join(args)} failed")
+    return result.stdout
+
+
+def read_camera_controls() -> list[dict]:
+    """Every control the device advertises, with its live value.
+
+    ``v4l2-ctl --list-ctrls-menus`` prints one line per control followed by the
+    numbered items of a menu; the parse keeps the device's own order so the tab
+    lists controls the way the driver does.
+    """
+    controls: list[dict] = []
+    current: dict | None = None
+    for line in _v4l2("--list-ctrls-menus").splitlines():
+        found = CONTROL_LINE.match(line)
+        if found:
+            name, kind, rest = found.groups()
+            entry: dict = {"name": name, "type": kind, "value": None,
+                           "min": None, "max": None, "step": None,
+                           "default": None, "inactive": False, "menu": []}
+            for key in ("min", "max", "step", "default", "value"):
+                match = re.search(rf"\b{key}=(-?\d+)", rest)
+                if match:
+                    entry[key] = int(match.group(1))
+            # "flags=inactive" (int/bool) or a bare "(inactive)" (menu).
+            entry["inactive"] = "inactive" in rest
+            if kind == "bool":
+                entry["min"], entry["max"], entry["step"] = 0, 1, 1
+            controls.append(entry)
+            current = entry
+            continue
+        if current is not None and current["type"] == "menu":
+            item = MENU_LINE.match(line)
+            if item:
+                current["menu"].append({"value": int(item.group(1)),
+                                        "label": item.group(2)})
+    return controls
+
+
+def _coerce(entry: dict, value) -> int:
+    """Validate one requested value against the driver's own description."""
+    if entry["type"] == "bool":
+        if isinstance(value, bool):
+            return int(value)
+        if value in (0, 1):
+            return int(value)
+        text = str(value).strip().lower()
+        if text in ("true", "on", "yes"):
+            return 1
+        if text in ("false", "off", "no"):
+            return 0
+        raise ValueError("expects true or false")
+    if isinstance(value, bool):
+        raise ValueError("expects an integer, not a boolean")
+    if isinstance(value, str):
+        try:
+            value = int(value.strip())
+        except ValueError:
+            raise ValueError("expects an integer") from None
+    if not isinstance(value, int):
+        raise ValueError("expects an integer")
+    low, high = entry["min"], entry["max"]
+    if low is None or high is None:
+        raise ValueError("the device reports no range for this control")
+    if not low <= value <= high:
+        raise ValueError(f"{value} is outside {low}..{high}")
+    step = entry["step"] or 1
+    if step > 1 and (value - low) % step:
+        raise ValueError(f"{value} is not {low} + n*{step}")
+    if entry["type"] == "menu":
+        allowed = [item["value"] for item in entry["menu"]]
+        if allowed and value not in allowed:
+            raise ValueError(f"menu value must be one of {allowed}")
+    return value
+
+
+def apply_camera_controls(requested: dict) -> dict:
+    """Validate, write, then read back.  The device answers, not the request.
+
+    Unknown names and out-of-range values are refused before anything is
+    written, so a typo cannot half-apply a profile.
+    """
+    if not isinstance(requested, dict) or not requested:
+        raise HTTPException(400, "controls must be a non-empty object")
+    known = {control["name"]: control for control in read_camera_controls()}
+    clean: dict[str, int] = {}
+    errors: list[str] = []
+    for name, value in requested.items():
+        entry = known.get(str(name))
+        if entry is None:
+            errors.append(f"{name}: unknown control")
+            continue
+        try:
+            clean[str(name)] = _coerce(entry, value)
+        except ValueError as exc:
+            errors.append(f"{name}: {exc}")
+    if errors:
+        raise HTTPException(400, "rejected: " + "; ".join(errors))
+    # Two phases.  Switching an auto off is what makes its dependent control
+    # writable, and switching one *on* makes it unwritable again, so the
+    # enablers go first and the rest are filtered against what the device then
+    # reports rather than failing the whole write on one permission error.
+    enablers = [name for name in CONTROL_ORDER if name in clean]
+    try:
+        if enablers:
+            _v4l2(*sum((["-c", f"{name}={clean[name]}"]
+                        for name in enablers), []))
+    except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        raise HTTPException(502, f"the device refused the write: {exc}") from exc
+    now = {control["name"]: control for control in read_camera_controls()}
+    skipped: dict[str, str] = {}
+    args: list[str] = []
+    for name in clean:
+        if name in CONTROL_ORDER:
+            continue
+        entry = now.get(name)
+        if entry is not None and entry["inactive"]:
+            skipped[name] = "inactive after the auto switch"
+            continue
+        args += ["-c", f"{name}={clean[name]}"]
+    if args:
+        try:
+            _v4l2(*args)
+        except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+            raise HTTPException(502, f"the device refused the write: {exc}") from exc
+    after = {control["name"]: control["value"]
+             for control in read_camera_controls()}
+    applied = {name: after.get(name) for name in clean}
+    mismatched = {name: {"requested": clean[name], "read_back": applied[name]}
+                  for name in clean
+                  if name not in skipped and applied[name] != clean[name]}
+    return {"schema": CONTROL_SCHEMA, "device": _v4l2_device(),
+            "requested": clean, "applied": applied,
+            "mismatched": mismatched, "skipped": skipped,
+            "controls": read_camera_controls()}
+
+
+def load_saved_controls() -> dict:
+    """The saved profile, or {} when the device has never been saved."""
+    try:
+        data = json.loads(CAM_CONTROLS_FILE.read_text())
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError) as exc:
+        _log(f"saved camera controls unreadable: {exc!r}")
+        return {}
+    controls = data.get("controls")
+    return dict(controls) if isinstance(controls, dict) else {}
+
+
+def save_saved_controls(controls: dict) -> dict:
+    payload = {"schema": CONTROL_SCHEMA, "device": _v4l2_device(),
+               "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+               "controls": dict(controls)}
+    CAM_CONTROLS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    scratch = CAM_CONTROLS_FILE.with_suffix(".tmp")
+    scratch.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    scratch.replace(CAM_CONTROLS_FILE)
+    return payload
+
+
 def _authorised(request: Request) -> None:
     token = os.environ.get("SO101_BRIDGE_TOKEN", "")
     if not token and TOKEN_FILE.exists():
@@ -646,6 +1020,41 @@ def health():
 @app.get("/state")
 def state():
     return bridge.state()
+
+
+@app.get("/camera/controls")
+def camera_controls_get():
+    """Control metadata and live values; the tab renders from this alone."""
+    try:
+        controls = read_camera_controls()
+    except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        raise HTTPException(502, f"cannot read camera controls: {exc}") from exc
+    saved_at = None
+    try:
+        saved_at = json.loads(CAM_CONTROLS_FILE.read_text()).get("saved_at")
+    except (OSError, ValueError):
+        saved_at = None
+    return {"schema": CONTROL_SCHEMA, "device": _v4l2_device(),
+            "controls": controls, "saved": load_saved_controls(),
+            "saved_at": saved_at, "saved_file": str(CAM_CONTROLS_FILE)}
+
+
+@app.post("/camera/controls")
+async def camera_controls_post(request: Request):
+    """Apply a validated subset, then report the values read back."""
+    _authorised(request)
+    try:
+        body = await request.json()
+    except ValueError:
+        raise HTTPException(400, "body must be JSON") from None
+    result = apply_camera_controls(body.get("controls"))
+    if body.get("save"):
+        payload = save_saved_controls(result["applied"])
+        result["saved"] = payload["controls"]
+        result["saved_at"] = payload["saved_at"]
+        _log(f"camera profile saved: {CAM_CONTROLS_FILE} "
+             f"({len(payload['controls'])} controls)")
+    return result
 
 
 @app.post("/mode")
@@ -692,6 +1101,24 @@ async def estop(request: Request):
         bridge.desired = "FAULT"
         bridge.fault = "estop requested"
     return {"mode": "FAULT", "latched": True}
+
+
+@app.post("/calibration/wrist-zero")
+async def wrist_zero(request: Request):
+    """Make the current wrist_roll pose servo 0 and write ±span limits.
+
+    This is an EEPROM write: it changes Homing_Offset and the firmware
+    Min/Max_Position_Limit, then rewrites the LeRobot calibration JSON.  The
+    request is executed by the bridge worker, which owns the serial bus.
+    """
+    _authorised(request)
+    body = await request.json()
+    try:
+        span = float(body.get("span_deg", 90.0))
+        dry = bool(body.get("dry_run", False))
+        return await asyncio.to_thread(bridge.request_wrist_zero, span, dry)
+    except (ProtocolError, ValueError) as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @app.websocket("/joints")

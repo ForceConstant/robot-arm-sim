@@ -1,0 +1,281 @@
+{
+  "schema": "p3-camera-tab/1",
+  "generated": "2026-11-20T13:47:53-0500",
+  "task": "Camera tab: manual V4L2 control of the wrist camera, persisted across reopens",
+  "files": {
+    "dashboard": "live/app.py",
+    "bridge": "live/pi_bridge/app.py",
+    "client": "live/bridge_client.py",
+    "harness": "tools/p3_camera_stability.py",
+    "profile_on_pi": "/home/pi/so101-bridge/camera_controls.json",
+    "screenshot": "reports/p3_camera_tab.png",
+    "clip": "reports/p3_camera_tab.mp4"
+  },
+  "endpoints": {
+    "GET /camera/controls": "12 controls with live value, min, max, step, default, inactive and menu items, parsed from v4l2-ctl --list-ctrls-menus",
+    "POST /camera/controls": "validated subset (unknown name or out-of-range is a 400 before anything is written); returns the values read back from the device, plus skipped and mismatched",
+    "dashboard proxy": "GET/POST /camera/controls forward to the bridge with the token"
+  },
+  "tab": {
+    "name": "Camera",
+    "verified_in_browser": {
+      "controls_rendered": 12,
+      "device": "/dev/v4l/by-id/usb-046d_0825_742F6450-video-index0",
+      "apply": "brightness 200 read back as 200",
+      "reset": "contrast 32, sharpness 24, auto_exposure 3, white_balance_automatic 1",
+      "auto_white_balance_toggle": "on then off, no permission error, dependent control skipped while auto",
+      "buttons": [
+        "Apply",
+        "Reset to defaults",
+        "Save as startup",
+        "Reload from device"
+      ]
+    }
+  },
+  "deployment": {
+    "bridge_restarted": true,
+    "why": "new endpoints only exist in the new process",
+    "arm_effect": "REMOTE and armed were dropped: bridge now HOLD, armed false; no motion command was sent and the arm was not moved",
+    "dashboard_restarted": "robot-live.service, no arm effect"
+  },
+  "persistence": {
+    "mechanism": "the applied set is written to camera_controls.json next to the bridge module and re-applied in Camera._open()",
+    "observed": "after a 10 s idle close the reopen read back the saved set: brightness=128, contrast=64, saturation=40, gain=110, sharpness=32, power_line_frequency=2, backlight_compensation=0, auto_exposure=1, exposure_time_absolute=1205, white_balance_automatic=0, white_balance_temperature=4000, exposure_dynamic_framerate=0",
+    "before_this": "uncommitted env fallback re-applied contrast=64,sharpness=64 on every reopen; measured mid-run: contrast read 32 then 64 one second later without any request"
+  },
+  "measurement": {
+    "schema": "p3-camera/1",
+    "bridge": "http://192.168.1.167:8100",
+    "frames_per_set": 6,
+    "idle_s": 10.0,
+    "sets": {
+      "defaults": {
+        "requested": {
+          "brightness": 128,
+          "contrast": 32,
+          "saturation": 32,
+          "white_balance_automatic": 1,
+          "gain": 64,
+          "power_line_frequency": 2,
+          "sharpness": 24,
+          "backlight_compensation": 0,
+          "auto_exposure": 3,
+          "exposure_dynamic_framerate": 1
+        },
+        "read_back": {
+          "brightness": 128,
+          "contrast": 32,
+          "saturation": 32,
+          "white_balance_automatic": 1,
+          "gain": 131,
+          "power_line_frequency": 2,
+          "sharpness": 24,
+          "backlight_compensation": 0,
+          "auto_exposure": 3,
+          "exposure_dynamic_framerate": 1
+        },
+        "mismatched": {
+          "gain": {
+            "requested": 64,
+            "read_back": 131
+          }
+        },
+        "saved_at": "2026-11-20T13:46:26-0500",
+        "rows": [
+          {
+            "frame": 1,
+            "mean": 73.09,
+            "std": 71.14,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.658
+          },
+          {
+            "frame": 2,
+            "mean": 73.13,
+            "std": 71.17,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.714
+          },
+          {
+            "frame": 3,
+            "mean": 73.11,
+            "std": 71.18,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.763
+          },
+          {
+            "frame": 4,
+            "mean": 73.21,
+            "std": 71.24,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.606
+          },
+          {
+            "frame": 5,
+            "mean": 73.2,
+            "std": 71.23,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.644
+          },
+          {
+            "frame": 6,
+            "mean": 73.23,
+            "std": 71.23,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 89 mm2",
+            "rms_px": 0.669
+          }
+        ],
+        "summary": {
+          "frames": 6,
+          "mean_first": 73.09,
+          "mean_last": 73.23,
+          "mean_spread": 0.14,
+          "mean_sd": 0.05,
+          "std_spread": 0.1,
+          "markers_min": 2,
+          "markers_max": 2,
+          "markers_stable": true,
+          "targets": 0
+        }
+      },
+      "tuned": {
+        "requested": {
+          "brightness": 128,
+          "contrast": 64,
+          "saturation": 40,
+          "gain": 110,
+          "sharpness": 32,
+          "power_line_frequency": 2,
+          "backlight_compensation": 0,
+          "auto_exposure": 1,
+          "exposure_time_absolute": 1200,
+          "white_balance_automatic": 0,
+          "white_balance_temperature": 4000,
+          "exposure_dynamic_framerate": 0
+        },
+        "read_back": {
+          "brightness": 128,
+          "contrast": 64,
+          "saturation": 40,
+          "gain": 110,
+          "sharpness": 32,
+          "power_line_frequency": 2,
+          "backlight_compensation": 0,
+          "auto_exposure": 1,
+          "exposure_time_absolute": 1200,
+          "white_balance_automatic": 0,
+          "white_balance_temperature": 4000,
+          "exposure_dynamic_framerate": 0
+        },
+        "mismatched": {},
+        "saved_at": "2026-11-20T13:46:37-0500",
+        "rows": [
+          {
+            "frame": 1,
+            "mean": 51.52,
+            "std": 91.47,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.589
+          },
+          {
+            "frame": 2,
+            "mean": 51.52,
+            "std": 91.48,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.598
+          },
+          {
+            "frame": 3,
+            "mean": 51.52,
+            "std": 91.45,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.619
+          },
+          {
+            "frame": 4,
+            "mean": 51.5,
+            "std": 91.43,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.621
+          },
+          {
+            "frame": 5,
+            "mean": 51.5,
+            "std": 91.43,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.568
+          },
+          {
+            "frame": 6,
+            "mean": 51.48,
+            "std": 91.44,
+            "markers": 2,
+            "status": "no target",
+            "piece": "component area 94 mm2",
+            "rms_px": 0.628
+          }
+        ],
+        "summary": {
+          "frames": 6,
+          "mean_first": 51.52,
+          "mean_last": 51.48,
+          "mean_spread": 0.04,
+          "mean_sd": 0.01,
+          "std_spread": 0.05,
+          "markers_min": 2,
+          "markers_max": 2,
+          "markers_stable": true,
+          "targets": 0
+        }
+      }
+    },
+    "reopen": {
+      "values": {
+        "brightness": 128,
+        "contrast": 64,
+        "saturation": 40,
+        "gain": 110,
+        "sharpness": 32,
+        "power_line_frequency": 2,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 1205,
+        "white_balance_automatic": 0,
+        "white_balance_temperature": 4000,
+        "exposure_dynamic_framerate": 0
+      },
+      "saved_at": "2026-11-20T13:46:37-0500"
+    }
+  },
+  "notes": [
+    "Frame-to-frame brightness spread: defaults 0.14 levels, locked 0.04 levels (6 frames, first frames after a real reopen).",
+    "The piece gate (component area >= 150 mm2) is not met in this camera pose: the candidate measures 94 mm2 in both sets, so the detector reports no target in all 12 frames.",
+    "At a brighter moment earlier in this session the same defaults flickered 3 of 6 frames as target with the centroid moving from -38.4,35.4 to -42.7,38.8 mm; the locked set was 0 of 6 with no movement. That flicker is the symptom Brian described.",
+    "gain cannot be set while auto exposure owns AGC: request 64 reads back 131. The tab reports that honestly instead of pretending it took.",
+    "The device snaps exposure onto 5-unit steps and gain onto 2-unit steps; the tab labels those as rounded, not as failures.",
+    "Ambient light changes between runs (mean 51 to 88 with identical settings), so a fixed preset has to be re-tuned under the final lighting."
+  ],
+  "question": "The camera is currently in a pose that looks at the ChArUco markers, not the piece: the best piece candidate is 94 mm2 against a 150 mm2 gate, so the detector says no target at every setting. Do you want me to leave the pose alone and call the piece column not in view, or should I ask you to move the arm to the playing pose before the next camera test?"
+}

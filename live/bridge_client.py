@@ -45,15 +45,20 @@ class HttpBridge:
         raise BridgeError("no bridge token configured")
 
     # --------------------------------------------------------------- requests
-    def _request(self, path: str, payload: dict | None = None) -> dict:
+    def _request(self, path: str, payload: dict | None = None,
+                 timeout: float | None = None, auth: bool | None = None) -> dict:
         data = None if payload is None else json.dumps(payload).encode()
         headers = {"Content-Type": "application/json"} if data else {}
-        if data is not None:
+        # A GET can need the token too; default keeps the old behaviour of
+        # authenticating exactly the requests that carry a body.
+        use_token = (data is not None) if auth is None else auth
+        if use_token:
             headers["x-bridge-token"] = self.token
         request = urllib.request.Request(self.base_url + path, data=data,
                                          headers=headers)
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with urllib.request.urlopen(
+                    request, timeout=self.timeout if timeout is None else timeout) as response:
                 return json.loads(response.read().decode() or "{}")
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode(errors="replace")
@@ -64,6 +69,14 @@ class HttpBridge:
     def state(self) -> dict:
         return self._request("/state")
 
+    def camera_controls(self) -> dict:
+        return self._request("/camera/controls", auth=True)
+
+    def set_camera_controls(self, controls: dict, save: bool = False) -> dict:
+        return self._request("/camera/controls",
+                             {"controls": controls, "save": bool(save)},
+                             timeout=20.0)
+
     def arm(self) -> dict:
         return self._request("/arm", {"confirm": True})
 
@@ -72,6 +85,12 @@ class HttpBridge:
 
     def estop(self) -> dict:
         return self._request("/estop", {})
+
+    def wrist_zero(self, span_deg: float = 90.0, dry_run: bool = False) -> dict:
+        """Persist the current wrist pose as servo zero (EEPROM write)."""
+        return self._request("/calibration/wrist-zero",
+                             {"span_deg": float(span_deg),
+                              "dry_run": bool(dry_run)}, timeout=25.0)
 
     def command(self, joints: Sequence[float], *, seq: int, ttl_ms: int,
                 speed_scale: float) -> dict:
