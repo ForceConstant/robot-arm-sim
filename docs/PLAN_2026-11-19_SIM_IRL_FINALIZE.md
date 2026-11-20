@@ -550,3 +550,43 @@ perfect geometry the sim would refuse reachable poses and mis-screen reach.
    thousands looks plausible and is ~40 minutes old. Always check the age.
 7. **No model vision.** Images are for Brian; every conclusion must be a printed
    number.
+
+---
+
+# Brian's rulings — 2026-11-20
+
+1. **Tip constant: use the real CAD measurement.** Verified already in force:
+   `live/tip_frame.py` resolves `TIP_IN_CHAIN = -110.45 mm` from
+   `live/tool_tip.json` (pack `cad_parallel`, stamp `31483e2`, `ok: true`,
+   `cross_check_delta_m = 0.0`). The 104.425 figure quoted in an earlier report
+   was the **stock** SO-101 literal printed in that module's docstring, not the
+   resolved value. **No code change was needed and the claimed 7.6 mm live
+   grasp-height error does not exist.** Correction recorded so the error is not
+   re-chased.
+
+2. **Joint limits: use the real limits with a 3° soft margin.**
+   Applied to `chess_sim/assets/so101/so101.xml` (the MJCF `build_scene()`
+   actually loads — note `assets/scene/chess_so101.xml` is an unused export and
+   was left untouched). Both `range=` and `ctrlrange=` updated; the jaw keeps its
+   full 0–100 command range because it is an aperture, not a swing joint.
+
+   | joint | bridge limit | sim range now (3° inside) |
+   |---|---|---|
+   | shoulder_pan | −108.99 … +121.38 | **−105.99 … +118.38** |
+   | shoulder_lift | −107.05 … +108.64 | **−104.05 … +105.64** |
+   | elbow_flex | −96.68 … +94.75 | **−93.68 … +91.75** |
+   | wrist_flex | −104.59 … +98.79 | **−101.59 … +95.79** |
+   | wrist_roll | −81.82 … +91.05 | **−78.82 … +88.05** |
+
+   Two consequences worth stating: the sim can now command the reach the real arm
+   has (lift and flex were up to 9.6°/8.8° narrower), and `wrist_roll` is now
+   **narrower** than it was (−157/+163 → −79/+88), which removes a class of
+   sim-only poses the arm cannot reach.
+
+3. **The picking loop replaces the 2 px pixel-parity gate.** The 2 px threshold
+   (~2 mm at 175 mm) is an order of magnitude below the arm's ±16–20 mm
+   joint-derived repeatability, so it was measuring servo slack, not the camera.
+   Parity is judged instead by the picking loop: pre-grasp from the observed
+   pose, one-directional vision-closed approach, camera-verified grasp. A
+   camera-orientation/scale check (which the deadband does not move) may be kept
+   as a companion, but not as a positional gate on bridge-reported joints.
