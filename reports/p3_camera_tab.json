@@ -30,6 +30,16 @@
         "Save as startup",
         "Reload from device"
       ]
+    },
+    "behaviour": {
+      "applies_on_change": true,
+      "how": "input events queue one write per gesture (350 ms debounce); releasing the slider or leaving the number box applies at once; Apply just forces one now",
+      "save_is_explicit": "only Save as startup writes the profile; a plain change leaves the saved_at timestamp untouched",
+      "verified": {
+        "drag": "brightness slider swept 132..164 with no Apply: device read 164, slider held 164",
+        "save_independence": "profile 2026-11-20T15:07:43 stayed put through a change, then became 15:08:01 on Save as startup",
+        "no_row_yank": "a row under the pointer is not rewritten from the read-back for 1.5 s, so rounding cannot pull the slider away"
+      }
     }
   },
   "deployment": {

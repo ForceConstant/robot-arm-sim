@@ -1985,7 +1985,7 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
         <button id="camReload">Reload from device</button>
       </div>
       <div id="camStatus" class="mono hint" style="margin-top:8px">—</div>
-      <div class="hint" style="margin-top:6px">Values shown are read back from the device after every write. Save as startup writes the profile the bridge re-applies whenever it reopens the camera.</div>
+      <div class="hint" style="margin-top:6px">A change applies as soon as you make it — no Apply needed; Apply just forces one now. Every write is read back from the device. Save as startup is the only thing that stores the profile the bridge re-applies whenever it reopens the camera.</div>
     </div>
    </div>
   </div>
@@ -2097,10 +2097,14 @@ el('wcAuto').onclick = async () => {
 
 // ----------------------------------------------------------------- camera tab
 // Ranges, menus and the inactive flags all come from the device, so the tab
-// cannot offer a value the driver would refuse.  After every write the panel
-// redraws from what the device reported, never from what was requested.
+// cannot offer a value the driver would refuse.  Moving a control applies it;
+// the profile is only written when Save as startup is pressed.
 let camState = null;
 let camRows = {};
+let camTimer = null;
+let camBusy = false;
+let camPending = false;
+let camTouched = {name: null, at: 0};
 function camFind(name){
   return (camState && camState.controls.find(c => c.name === name)) || null;
 }
@@ -2118,15 +2122,25 @@ function camBuild(control){
   row.append(head);
   const line = document.createElement('div');
   line.style.cssText = 'display:flex;gap:6px;align-items:center';
-  let read;
+  const hint = document.createElement('div');
+  hint.className = 'hint';
+  hint.style.cssText = 'font-size:10px;color:#5f7b96';
+  const describe = (c) => (c.type === 'bool'
+      ? 'bool · default ' + (c.default ? 'on' : 'off')
+      : 'range ' + c.min + '…' + c.max +
+        ' · step ' + (c.step || 1) + ' · default ' + c.default)
+    + (c.inactive ? ' · inactive while its auto is on' : '');
+
+  let read, set;
   if (control.type === 'bool'){
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.checked = !!control.value;
     box.disabled = control.inactive;
-    box.onchange = () => { shown.textContent = box.checked ? 'on' : 'off'; };
+    box.onchange = () => { shown.textContent = box.checked ? 'on' : 'off'; camTouch(control.name); camQueue(); };
     line.append(box);
     read = () => (box.checked ? 1 : 0);
+    set = (c) => { box.checked = !!c.value; box.disabled = c.inactive; };
     shown.textContent = control.value ? 'on' : 'off';
   } else if (control.type === 'menu'){
     const sel = document.createElement('select');
@@ -2138,9 +2152,10 @@ function camBuild(control){
       if (item.value === control.value) opt.selected = true;
       sel.append(opt);
     }
-    sel.onchange = () => { shown.textContent = sel.value; };
+    sel.onchange = () => { shown.textContent = sel.value; camTouch(control.name); camQueue(0); };
     line.append(sel);
     read = () => parseInt(sel.value, 10);
+    set = (c) => { sel.value = c.value; sel.disabled = c.inactive; };
     shown.textContent = control.value;
   } else {
     const range = document.createElement('input');
@@ -2156,26 +2171,40 @@ function camBuild(control){
     num.step = control.step || 1;
     num.value = control.value;
     num.disabled = control.inactive;
-    range.oninput = () => { num.value = range.value; shown.textContent = range.value; };
+    // Dragging is a stream of values: apply during the drag, but let the last
+    // one land instead of firing a write per pixel.
+    range.oninput = () => { num.value = range.value; shown.textContent = range.value; camTouch(control.name); camQueue(); };
+    range.onchange = () => { camTouch(control.name); camQueue(0); };
     num.oninput = () => {
       if (num.value !== '') range.value = num.value;
       shown.textContent = num.value;
+      camTouch(control.name); camQueue();
     };
+    num.onchange = () => { camTouch(control.name); camQueue(0); };
     line.append(range, num);
     read = () => parseInt(num.value, 10);
+    set = (c) => {
+      range.value = c.value; num.value = c.value;
+      range.disabled = c.inactive; num.disabled = c.inactive;
+    };
     shown.textContent = control.value;
   }
   row.append(line);
-  const hint = document.createElement('div');
-  hint.className = 'hint';
-  hint.style.cssText = 'font-size:10px;color:#5f7b96';
-  hint.textContent = (control.type === 'bool'
-      ? 'bool · default ' + (control.default ? 'on' : 'off')
-      : 'range ' + control.min + '…' + control.max +
-        ' · step ' + (control.step || 1) + ' · default ' + control.default)
-    + (control.inactive ? ' · inactive while its auto is on' : '');
+  hint.textContent = describe(control);
   row.append(hint);
-  camRows[control.name] = {read: read};
+  camRows[control.name] = {
+    read: read,
+    // Skip the row the hand is on, so a rounded read-back cannot pull the
+    // slider out from under a drag.
+    set: (c) => {
+      const recent = camTouched.name === c.name && Date.now() - camTouched.at < 1500;
+      if (!recent) set(c);
+      shown.textContent = c.value === null ? '—'
+        : (c.type === 'bool' ? (c.value ? 'on' : 'off') : c.value);
+      row.classList.toggle('off', c.inactive);
+      hint.textContent = describe(c);
+    },
+  };
   return row;
 }
 function camRender(){
@@ -2194,6 +2223,12 @@ function camRender(){
   el('camAutoExp').disabled = !exp;
   el('camAutoWb').checked = wb ? !!wb.value : false;
   el('camAutoWb').disabled = !wb;
+}
+function camUpdate(controls){
+  for (const control of controls || []){
+    const row = camRows[control.name];
+    if (row) row.set(control);
+  }
 }
 function camGather(){
   const exp = camFind('auto_exposure');
@@ -2235,22 +2270,41 @@ function camReport(d, saved){
     + (bad.length ? ' · did not take: ' + bad.join(', ') : '')
     + (skipped.length ? ' · skipped: ' + skipped.join(', ') : '')
     + (saved ? ' · saved as startup' : '');
-  log('camera ' + read.join(' '));
 }
 async function camApply(save){
   if (!camState) return;
+  clearTimeout(camTimer); camTimer = null;
+  if (camBusy){ camPending = true; return; }
+  camBusy = true;
+  const payload = camGather();
   el('camStatus').textContent = 'applying…';
-  const r = await post('/camera/controls', {controls: camGather(), save: !!save});
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok){
-    el('camStatus').textContent = 'apply failed: ' + (d.detail || r.status);
-    return;
+  try {
+    const r = await post('/camera/controls', {controls: payload, save: !!save});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok){
+      el('camStatus').textContent = 'apply failed: ' + (d.detail || r.status);
+      return;
+    }
+    camState = {device: d.device, controls: d.controls,
+                saved_at: d.saved_at || camState.saved_at};
+    camUpdate(d.controls);
+    el('camSavedAt').textContent = camState.saved_at
+      ? 'profile ' + camState.saved_at
+      : 'no saved profile';
+    camReport(d, !!save);
+  } finally {
+    camBusy = false;
+    if (camPending){ camPending = false; camQueue(0); }
   }
-  camState = {device: d.device, controls: d.controls,
-              saved_at: d.saved_at || camState.saved_at};
-  camRender();
-  camReport(d, !!save);
 }
+// One write per gesture: a drag queues the next apply instead of sending one
+// per pixel, and releasing the slider sends it at once.
+function camQueue(delay){
+  if (camTouched.name) camTouched.at = Date.now();
+  clearTimeout(camTimer);
+  camTimer = setTimeout(() => camApply(false), delay === undefined ? 350 : delay);
+}
+function camTouch(name){ camTouched = {name: name, at: Date.now()}; }
 async function camLoad(){
   const r = await fetch('/camera/controls');
   const d = await r.json().catch(() => ({}));
@@ -2294,6 +2348,7 @@ el('camReset').onclick = async () => {
   camRender();
   camReport(d, true);
 };
+
 let limits = null, look = {pitch: 0, az: 0, dist: 240};
 function bar(lo, hi, now){
   const span = Math.max(1e-6, hi - lo), pct = Math.max(0, Math.min(100, (now - lo)/span*100));
