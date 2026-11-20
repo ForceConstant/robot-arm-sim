@@ -306,6 +306,42 @@ def piece_from_squares(rows, reference, rect, valid, n, px_per_mm, board, soluti
     }
 
 
+
+def board_view(rect, valid, rows, reference, px_per_mm):
+    """Whole-board view at the rectified scale: what the camera covers, and where."""
+    n = rect.shape[0]
+    canvas = np.zeros((n, n, 3), np.uint8)
+    covered = (valid > 0).astype(np.uint8)
+    tint = cv2.cvtColor(cv2.GaussianBlur(rect, (5, 5), 0), cv2.COLOR_GRAY2BGR)
+    canvas[covered > 0] = tint[covered > 0]
+    ghost = (cv2.cvtColor(reference, cv2.COLOR_GRAY2BGR) * 0.28).astype(np.uint8)
+    canvas[covered == 0] = ghost[covered == 0]
+    step = int(round(SQUARE_MM * px_per_mm))
+    for i in range(9):
+        v = i * step
+        cv2.line(canvas, (v, 0), (v, n - 1), (70, 70, 70), 1)
+        cv2.line(canvas, (0, v), (n - 1, v), (70, 70, 70), 1)
+    for row in rows:
+        u = int(round((row["centre_mm"][0] + 128.0) * px_per_mm))
+        v = int(round((128.0 - row["centre_mm"][1]) * px_per_mm))
+        colour = (0, 220, 255) if row["parity"] == "light" else (150, 150, 150)
+        cv2.circle(canvas, (u, v), 5, colour, -1)
+        cv2.putText(canvas, row["square"], (u + 7, v + 5), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, colour, 1, cv2.LINE_AA)
+    contours, _ = cv2.findContours(covered, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        box = cv2.boundingRect(max(contours, key=cv2.contourArea))
+        cv2.rectangle(canvas, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]),
+                      (0, 200, 0), 2)
+    area = float(covered.sum()) / px_per_mm ** 2
+    cv2.putText(canvas, f"board 224x224 mm | camera covers {area:.0f} mm2 "
+                        f"({100.0 * area / 50176.0:.1f}%)",
+                (12, n - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(canvas, "dim = outside the wrist view", (12, n - 14),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1, cv2.LINE_AA)
+    return canvas
+
+
 # ------------------------------------------------------------------ overlay
 def annotate(frame, board, solution, rows, piece, meta, scale=2):
     portrait = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
@@ -462,6 +498,8 @@ def main() -> int:
     annotated = annotate(frame, board, solution, rows, piece, meta)
     (ROOT / "reports").mkdir(exist_ok=True)
     cv2.imwrite(str(ROOT / "reports/p1_annotated.png"), annotated)
+    cv2.imwrite(str(ROOT / "reports/p1_board_view.png"),
+                board_view(rect, valid, rows, expected, pxm))
 
     # clip: the same overlay on the live stream
     clip_path = ROOT / "reports/p1_clip.mp4"
