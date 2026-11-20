@@ -280,10 +280,26 @@ def piece_from_squares(rows, reference, rect, valid, n, px_per_mm, board, soluti
     if label == 0:
         return {"square": row["square"], "rejected": "no deviating component at the square centre"}
     area_mm2 = stats[label, cv2.CC_STAT_AREA] / px_per_mm ** 2
-    if not 150.0 <= area_mm2 <= 2000.0:
-        return {"square": row["square"], "rejected": f"component area {area_mm2:.0f} mm2"}
+    # Size gate relative to the square, not an absolute window (Brian 2026-11-20:
+    # with a full set of pieces a blob must not be able to pass as a different
+    # piece).  A piece seen from above cannot exceed ~1.5 square areas; the lower
+    # bound keeps small pawn specks out.
+    square_area_mm2 = SQUARE_MM * SQUARE_MM
+    lo_area, hi_area = 0.20 * square_area_mm2, 1.5 * square_area_mm2
+    if not lo_area <= area_mm2 <= hi_area:
+        return {"square": row["square"],
+                "rejected": f"component area {area_mm2:.0f} mm2 outside "
+                            f"{lo_area:.0f}-{hi_area:.0f} mm2 (0.2-1.5 square)"}
     cx_px, cy_px = centroids[label]
     rect_mm = np.array([cx_px / px_per_mm - 128.0, 128.0 - cy_px / px_per_mm])
+    # The candidate must be contained by the square it is named after, otherwise
+    # a shadow spilling across a border gets labelled as a neighbour.
+    centre = np.asarray(row["centre_mm"], dtype=float)
+    off = float(np.linalg.norm(rect_mm - centre))
+    if off > 0.5 * SQUARE_MM:
+        return {"square": row["square"],
+                "rejected": f"centroid {off:.0f} mm from the square centre "
+                            f"(limit {0.5 * SQUARE_MM:.0f} mm)"}
     return {
         "square": row["square"],
         "component_area_mm2": round(float(area_mm2), 0),
