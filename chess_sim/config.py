@@ -120,9 +120,11 @@ class BoardConfig(Config):
     thickness: float = 0.0032      # measured printed board slab (Brian, 2026-11-02)
     mat: float = 0.0               # printed fiducial mat under the slab (Phase 9)
     marker_plane: str = "mat"      # where the markers print: "mat" or "board"
-    # "wood" is the plain board; "charuco" prints the ArUco ChArUco face
-    # into the surface itself (ids 5..36), matching the printed target.
-    face: str = "wood"
+    # "charuco" prints the ArUco ChArUco face into the surface itself (ids
+    # 5..36), matching the printed target; "wood" is the bare slab. The printed
+    # face is the default because the physical board carries it (Brian,
+    # 2026-11-20) and a close wrist view otherwise has no fiducial to register.
+    face: str = "charuco"
     # Measured on the real arm (2026-11-17): the calibrated chain's final frame
     # sits this far above the physical jaw tip, so a tip-referenced Cartesian
     # target must lift the frame by this much along the approach axis.

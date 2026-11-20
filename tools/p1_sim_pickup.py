@@ -171,15 +171,17 @@ def board_xy_to_world(env, xy_mm):
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--square", default="e2")
-    parser.add_argument("--face", default="charuco", choices=("charuco", "wood"))
+    parser.add_argument("--face", default=None, choices=("charuco", "wood"),
+                        help="override the scene board face; the default follows the config")
     parser.add_argument("--frames", type=int, default=3)
     parser.add_argument("--no-grasp", action="store_true")
     parser.add_argument("--out", default="reports/p1_sim_pickup.json")
     args = parser.parse_args()
 
     config = layout_env_config()
-    config = config.model_copy(update={"board": config.board.model_copy(
-        update={"face": args.face})})
+    if args.face is not None:
+        config = config.model_copy(update={"board": config.board.model_copy(
+            update={"face": args.face})})
     env = ChessSimEnv(config)
     obs = env.reset()
     slot = env.slot_at(args.square)
@@ -253,6 +255,7 @@ def main() -> int:
                                 confidence=1.0, sigma_m=0.002)
     result = None
     clip = []
+    wrist = []
     if not args.no_grasp:
         before = env.piece_snapshot()
         orbit = env.orbit_default()
@@ -261,6 +264,10 @@ def main() -> int:
             if env._step_count % 6 == 0:
                 picture = env.render(orbit=orbit)
                 clip.append(cv2.cvtColor(picture, cv2.COLOR_RGB2BGR).copy())
+                eye = cv2.cvtColor(env.render(Camera.WRIST), cv2.COLOR_RGB2BGR)
+                cv2.putText(eye, f"wrist | {args.square} | step {env._step_count}", (10, 24),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
+                wrist.append(eye)
 
         result = env.execute_localized(CaptureTask(square=args.square), localization,
                                        on_step=on_step)
@@ -276,7 +283,7 @@ def main() -> int:
         "schema": "p1-sim-pickup/1",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "square": args.square,
-        "board_face": args.face,
+        "board_face": config.board.face,
         "pose_joints_deg": {name: round(float(v), 2) for name, v in
                             zip(("shoulder_pan", "shoulder_lift", "elbow_flex",
                                  "wrist_flex", "wrist_roll"), np.degrees(joints))},
@@ -325,6 +332,22 @@ def main() -> int:
             sheet[r * 240:(r + 1) * 240, c * 320:(c + 1) * 320] = tile
         cv2.imwrite(str(ROOT / "reports/p1_sim_sheet.png"), sheet)
         print("clip frames", len(clip))
+    if wrist:
+        height, width = wrist[0].shape[:2]
+        writer = cv2.VideoWriter(str(ROOT / "reports/p1_sim_wrist.mp4"),
+                                 cv2.VideoWriter_fourcc(*"mp4v"), 12.0, (width, height))
+        for picture in wrist:
+            writer.write(picture)
+        writer.release()
+        picks = wrist[::max(1, len(wrist) // 12)][:12]
+        cols = 4
+        rows_n = (len(picks) + cols - 1) // cols
+        sheet = np.zeros((rows_n * 240, cols * 320, 3), np.uint8)
+        for index, frame in enumerate(picks):
+            r, c = divmod(index, cols)
+            sheet[r * 240:(r + 1) * 240, c * 320:(c + 1) * 320] = cv2.resize(frame, (320, 240))
+        cv2.imwrite(str(ROOT / "reports/p1_sim_wrist_sheet.png"), sheet)
+        print("wrist frames", len(wrist))
     return 0
 
 

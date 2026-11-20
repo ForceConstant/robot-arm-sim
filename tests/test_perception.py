@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from chess_sim.board_registration import register_board
-from chess_sim.config import Camera, EnvConfig
+from chess_sim.config import BoardConfig, Camera, EnvConfig
 from chess_sim.env import ChessSimEnv
 from chess_sim.perception import (CLASSES, FEATURE_COUNT, FEATURE_NAMES, MODEL_PATH,
                                   PerceptionModel, SquarePrediction, board_patches,
@@ -95,7 +95,11 @@ def test_named_piece_colours_are_recovered():
 
 @pytest.mark.skipif(not MODEL_PATH.exists(), reason="perception model not trained")
 def test_black_piece_is_not_called_white():
-    env = ChessSimEnv(EnvConfig())
+    # The shipped model was trained against the bare slab. The simulator now
+    # defaults to the printed ChArUco face (Brian, 2026-11-20), which changes
+    # what the top camera sees, so this test pins the environment the weights
+    # actually know. Retraining for the printed face is a separate job.
+    env = ChessSimEnv(EnvConfig(board=BoardConfig(face="wood")))
     try:
         reference, calibration, registration = _empty_reference(env)
         env.reset("8/8/8/8/4p3/8/8/8 w - - 0 1")
