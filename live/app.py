@@ -2255,14 +2255,15 @@ function camGather(){
 function camReport(d, saved){
   const read = Object.entries(d.applied || {}).map(([k, v]) => k + ' ' + v);
   // The C270 snaps some values onto its own grid (exposure moves in 5s, gain
-  // in 2s).  A difference inside two steps is the device rounding, not a
-  // value that failed to take, so the two are reported separately.
+  // in 2s) whatever the descriptor advertises.  A difference that small is the
+  // device rounding, not a value that failed to take, so the two are reported
+  // separately.
   const bad = [], rounded = [];
   for (const [k, v] of Object.entries(d.mismatched || {})){
     const control = camFind(k);
     const step = (control && control.step) || 1;
     const text = k + ' ' + v.requested + '→' + v.read_back;
-    (Math.abs(v.read_back - v.requested) <= 2 * step ? rounded : bad).push(text);
+    (Math.abs(v.read_back - v.requested) <= Math.max(2 * step, 5) ? rounded : bad).push(text);
   }
   const skipped = Object.entries(d.skipped || {}).map(([k, why]) => k + ' (' + why + ')');
   el('camStatus').textContent = 'read back: ' + (read.join(' · ') || 'nothing')
