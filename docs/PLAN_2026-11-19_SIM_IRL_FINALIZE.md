@@ -443,3 +443,110 @@ and the day's goal answered explicitly: does sim now match IRL completely?
   inconsistency, not a fourth theory.
 - Never calibrate against a photo of a monitor or a phone image. Raw wrist
   frames or existing artefacts only.
+
+---
+
+# What we learned — 2026-11-19 / 20 (added to the plan as required reading)
+
+Everything below is measured, with the receipt named. It supersedes earlier
+numbers where they conflict.
+
+## 1. Wrist-roll zero
+
+- **Operator `wrist_roll` 0° = sim `so101:wrist_roll` −87.21°.** Implemented as
+  `chess_sim/config.py: WRIST_ROLL_ZERO_SIM_DEG` + `sim_wrist_roll(deg)`.
+- Method: rendered a roll sweep, nulled on the base's own edge (−87.21° made the
+  base `+y` edge horizontal in the front view; −90.00 was Brian's pick within
+  1.7° of it).
+- **Range correction:** the sim joint allows −157.2…+162.8°; the *bridge* limit
+  is **−81.82…+91.05°**. Do not plan a sim pose outside the bridge range.
+
+## 2. Camera-side conventions
+
+- The real C270 is mounted **90° rotated** relative to the model. Renders that
+  match the real frame are **portrait 480×640**; the rotated vertical FOV is the
+  old horizontal FOV, **42.0283°** (fx 831.897 / fy 833.014 differ 0.13 %;
+  MuJoCo carries one `fovy`, so both cannot be exact).
+- **`fovy 47.0` is baked but PROVISIONAL** (`e4dba38`, env `ROBOT_WRIST_FOVY`).
+  It matches the *average gravity sag* at the reference pose, not a stable
+  measurement. Do not treat it as a solved constant; see §5.
+- Rotation cannot be validated by marker detection — the detector is
+  rotation-invariant (same ids, same side length at 0/90/180/270°).
+
+## 3. Board pose (applied)
+
+`live/board.json` (gitignored; record in `reports/board_pose_applied.json`):
+
+| | before | after |
+|---|---|---|
+| `yaw_deg` | 5.67 | **1.92** |
+| `x_mm` | −9.92 | **−34.92** |
+| `y_mm` | −3.13 | **−18.13** |
+| `z_mm` | 431.35 | 431.35 |
+
+Sim/IRL markers then match to **3.9 px mean** over ids 27/28/31.
+
+## 4. Nine bench checks — all within ±3 mm
+
+| check | measured | model |
+|---|---|---|
+| base mesh top above table | 102 | 102 |
+| board stack (slab) | 3.20 | 3.20 |
+| marker pitch | 28.00 | 28.00 |
+| tool span (tip → camera point) | 105.0 | 105.2 |
+| hand (tip → wrist-roll axis) | 112 | 110.45 (+1.55) |
+| upper arm (horn→horn) | 116.00 | 116.00 |
+| forearm (horn→horn) | 135.00 | 135.00 |
+| table → `shoulder_lift` axis | 152 | 149.0 |
+| wrist section | 170 | 172.50 |
+
+**Conclusion: the geometry is sound. The residual is mechanical, not dimensional.**
+
+## 5. Arm slack — the number that governs everything
+
+- Shoulder deadband measured two ways, both agreeing: commanded downward moves
+  stopped **4.19°** and **4.44°** short *in the direction of travel*.
+- Directional test, 3 repeats each: approached from above settled **34.24°**,
+  from below **30.46°** — difference **3.78° ≈ 14 mm at the tip** (3.7 mm/deg),
+  with **0.00° spread within a direction**.
+- Hand test: ~**20 mm** of slack at extension (gravity).
+- **Deterministic, not noise** — a one-directional approach lands on the same
+  side of the slack every time. **Usable, if the move is built that way.**
+- **Withdrawn claim:** the earlier "22.1 mm / 13 % camera range short" is inside
+  this slack and must not be cited as geometry.
+- **Gate consequence:** Block 5b's median ≤ 2.0 px ≈ **2 mm** at 175 mm range,
+  while tip repeatability is **±16–20 mm**. The 2 px gate is an order of
+  magnitude below what the hardware can promise from bridge-reported joints.
+  Any replacement gate must be set from measured repeatability (3–5× looser),
+  or be a camera-**orientation** test, which the deadband does not move.
+
+## 6. Live solver defect — unruled
+
+`TIP_IN_CHAIN` is **104.425 mm**; CAD and tape both say **112 mm**. That is
+**7.6 mm short of the physical tip**, so every live Cartesian move believes the
+fingertip is 7.6 mm higher than it is. No calibration file changed pending a
+ruling.
+
+## 7. Sim vs bridge joint ranges — unruled
+
+The sim declares narrower ranges than the arm can reach (e.g. `shoulder_lift`
+±100 vs bridge −107.05/+108.64; `wrist_flex` ±95 vs −104.59/+98.79). Even with
+perfect geometry the sim would refuse reachable poses and mis-screen reach.
+
+## 8. Design rules that follow (binding)
+
+1. **The sim plans; the camera closes.** Planning, IK seeds and clearance checks
+   live in the sim. Final positioning is vision-closed — no joint-space plan can
+   absorb a load-dependent 20 mm sag.
+2. **One direction, never reverse.** Fine-approach moves descend only; a
+   reversal pays the full deadband twice.
+3. **Never trust a calculated contact.** Contact is verified with the wrist
+   camera, not inferred from a commanded position.
+4. **Vision budget:** at 175 mm and fx 832, **1 px ≈ 0.21 mm** — the camera
+   resolves ~100× finer than the deadband. That is the closing mechanism.
+5. **Scripted-move floor:** sim-check every leg; refuse any whose minimum
+   fingertip height over the board plane is below ~25 mm.
+6. **Stale joint reads are dangerous:** a `/state` with `joints_age_s` in the
+   thousands looks plausible and is ~40 minutes old. Always check the age.
+7. **No model vision.** Images are for Brian; every conclusion must be a printed
+   number.
