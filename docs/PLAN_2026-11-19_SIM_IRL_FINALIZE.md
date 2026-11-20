@@ -644,3 +644,49 @@ the current fit.
   problem first**, not a detector problem — today it read `c6/d5` at
   (−26.8, 25.3) mm for a queen Brian states is on `e5`, a 42 mm disagreement that
   is consistent with a stale board frame.
+
+---
+
+# Board registration findings — 2026-11-20 (evening)
+
+**1. `board.json` does not affect the displayed square.** The overlay is built from
+the calibration + the printed-face reference only (`live/app.py:217`); `board.json`
+is consumed for **arm motion**, not for naming. So a `board.json` re-fit can never
+change a piece's label — that hypothesis was wrong and is recorded here so it is
+not retried.
+
+**2. A `board.json` re-fit from this view does not fit.** Eight frames, camera held
+fixed (joints + calibrated chain), only the 16–32 detected marker corners as
+evidence: **fit RMS 8.4–9.6 px** against the same corners the marker solve fits at
+2.3 px, and it wants to move the board surface **76 mm** (z 392 instead of 431).
+That is not a board offset — it is the joint-derived camera and the marker geometry
+not being in one convention. **Not applied.** The file is byte-identical.
+
+**3. The real fault is registration coverage, not naming or the board pose.** With
+only **2–4 markers clustered in the b1–d2 corner**, the far side of the board is
+undetermined and the frame is free to rotate — which is exactly a one-square error
+that wanders between frames (observed: d4, c5, d5, c6, a4, b5, a1). The corroborating
+number: **`light_ncc_min` 0.00–0.03** — the rectified frame does not match the printed
+reference anywhere away from the marker corner. So the homography extrapolates badly,
+and every downstream square inherits the error.
+
+**Consequence for the picking loop:** it cannot start until a frame resolves the
+board across its full extent. Three routes, in order of cost:
+
+1. **Nothing moves:** make registration robust to clustered markers — use **all**
+   detected corners with RANSAC rather than 3–4 corner markers, and re-check
+   `light_ncc_min` across the whole board as the acceptance number (target: > 0.5
+   everywhere, not 0.00–0.03 near one corner).
+2. **Pose the wrist over the board centre** so 6+ markers spread across the board
+   are visible — the acceptance test is the same `light_ncc_min` figure plus PnP
+   RMS < 2 px.
+3. **`POST /sanity`**, which visits a1/h1/a8/h8 and reports landing error.
+
+Only route 1 needs no arm motion, and it is the one that makes routes 2 and 3
+meaningful — a better view of a bad homography is still a bad homography.
+
+**Process note.** Three separate hypotheses were raised and withdrawn this evening
+(stale board yaw, parallax, `board.json` position). Each was killed by a measured
+number, which is the correct outcome — but the pattern is worth naming: when a
+square is off by ~1, check *how much of the board the registration actually sees*
+before touching any frame constant.
