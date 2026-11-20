@@ -590,3 +590,57 @@ perfect geometry the sim would refuse reachable poses and mis-screen reach.
    pose, one-directional vision-closed approach, camera-verified grasp. A
    camera-orientation/scale check (which the deadband does not move) may be kept
    as a companion, but not as a positional gate on bridge-reported joints.
+
+---
+
+# Piece-first camera calibration (Brian, 2026-11-20 15:14)
+
+**Why this exists.** Auto-exposure optimises for the brightest thing in frame — the
+printed ChArUco board and its white squares — so a black piece on a dark square is
+crushed to the same level as the print and the detector sees a fragment (measured:
+**94 mm² against a 150 mm² gate**, while the same scene at a brighter moment gave
+736–967 mm²). Marker registration was never the problem: PnP held at **1.0–1.5 px
+RMS** throughout. The camera must be tuned for *pieces*, not for markers.
+
+## The pipeline (add as a block before any picking run)
+
+1. **Fix the frame first.** Before tuning, confirm frame stability: 6 consecutive
+   frames with frame-mean spread < 0.5 levels and a constant marker count. Unstable
+   frames invalidate every tuning result — that is what produced today's earlier
+   contradictory sweeps (means 83.6 / 40.9 / 39.6, markers 8 / 4 / 2). Root cause
+   found and fixed: the bridge closed the camera when idle, and every re-open
+   restarted auto-exposure **and** re-applied an env fallback `contrast=64,
+   sharpness=64`. The applied set now persists in `camera_controls.json` and is
+   re-applied in `_open()`.
+2. **Put the hardest case in view.** A dark piece on a dark square, not a pawn on a
+   white square and never the bare board. That is the worst case the loop will meet.
+3. **Measure separation, not brightness.** For the piece's square and for a bare
+   square of the same parity, report: detected component area (mm²), the square's
+   NCC against the printed-face reference, and the p5/p95 spread inside the square.
+   The pass condition is the *piece* metric, not how the image looks.
+4. **Sweep with the metric.** Exposure (manual), gain, brightness and contrast, one
+   at a time, with everything else pinned. Manual exposure and fixed gain are
+   mandatory — auto-exposure is the thing that destroys dark-on-dark contrast.
+5. **Lock and persist.** Save the winning set with **Save as startup** so it survives
+   the camera closing and re-opening; re-read the device to confirm it took.
+6. **Gate the result:** 5 consecutive frames, piece area within ±10 %, `status =
+   target` on all five, and marker PnP RMS < 2 px. Record the winning values and the
+   five frames in a receipt.
+7. **Re-run the sweep** whenever the lens, the lighting, the board or the exposure
+   mode changes — and always after a board rotation.
+
+## Board orientation — the arm always plays black
+
+The arm plays **black**. The board was found rotated so that black was not on the
+arm's side, which invalidates both the square naming and the target coordinates for
+the current fit.
+
+- Before any picking run, confirm the black side faces the arm.
+- **Any physical board rotation invalidates `live/board.json`.** Its `x_mm`,
+  `y_mm` and `yaw_deg` were fitted to one orientation; after a rotation every
+  reported square is wrong by that rotation. Re-fit the board pose, then verify
+  with a known piece: state its square, and the detector must name the same one.
+- Treat a mismatch between a stated square and the detected one as a **pose
+  problem first**, not a detector problem — today it read `c6/d5` at
+  (−26.8, 25.3) mm for a queen Brian states is on `e5`, a 42 mm disagreement that
+  is consistent with a stale board frame.
