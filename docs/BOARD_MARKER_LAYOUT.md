@@ -3,6 +3,14 @@
 Two ways to carry the four 40 mm ArUco markers were built and measured against
 the same simulation gates. Only one keeps the qualified manipulation envelope.
 
+> **Current build (2026-11-21).** The board the sim and the bench run is the
+> printed **244 mm** face: 28 mm squares, **10 mm** border, 224 mm playing
+> field. The arm base frame sits at **−212 mm** from the board centre, giving
+> the 90 mm board-edge-to-base-frame gap. The base mesh front face is 64.635 mm
+> past the base-frame origin, so the print border is **25.365 mm** from the mesh
+> front (the 25.4 mm datum). The 254 mm / 15 mm numbers in Option A below are the
+> earlier measured option, kept for history.
+
 ## Requirement
 
 A `DICT_4X4_50` marker is 6 modules across and needs a quiet zone of at least one

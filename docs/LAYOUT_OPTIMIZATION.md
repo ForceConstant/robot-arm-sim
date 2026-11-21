@@ -88,6 +88,10 @@ The tested candidate is not a deployed controller update.
 
 ## Selected current simulator layout (2026-11-03, superseded 2026-11-14)
 
+> **Board face (2026-11-21):** the printed board is 244 mm with a 10 mm border
+> and a 224 mm playing field; the base frame is at y = −212 mm (90 mm gap).
+> The 254 mm / 15 mm / −217 mm figures in this section are historical.
+
 - **90 mm outer board edge to arm base-frame origin; 30 mm riser/mount-datum height.**
 - Board underside/table at 430 mm; arm datum at 460 mm; playing surface at 433.2 mm.
 - Base frame position: white `(0, -217, 460)` mm; optional two-arm debug fixture mirrored `(0, 217, 460)` mm.

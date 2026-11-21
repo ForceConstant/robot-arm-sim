@@ -3,8 +3,8 @@
   "frozen_at": "2026-11-04",
   "mass_sensitivity_g": 0.1,
   "sources": {
-    "board_and_rook": "Brian, 2026-11-02 IRL: 28 mm square pitch, 3.2 mm slab, 15 mm labelled border",
-    "base_geometry": "hardware/dimensions.json and the rig diagrams: 430 mm table, 60 mm riser, 80 mm board-edge-to-arm gap",
+    "board_and_rook": "Brian, 2026-11-02 IRL: 28 mm square pitch, 3.2 mm slab; border corrected to the printed 10 mm face on 2026-11-20",
+    "base_geometry": "hardware/dimensions.json and the rig diagrams: 430 mm table, 60 mm riser, 90 mm board-edge-to-arm gap",
     "piece_geometry": "private printed Dubrovnik 1960 pack at 50% mesh scale (MakerWorld 406463); geometry is not redistributed by this config",
     "tool": "stock SO-101 pinch gripper supplied with the kit; the NormaCore custom parallel jaw was measured and rejected for this 28 mm board (see tool_selection)",
     "camera": "simulator candidate wrist-camera pose from scene.WRIST_CAMERA_CUSTOM; physical lens, focus and mount are unmeasured",

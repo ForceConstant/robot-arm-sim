@@ -4,11 +4,12 @@
   "version": "1.15.0",
   "board": {
     "square_mm": 28,
-    "border_mm": 15,
+    "border_mm": 10,
+    "playing_field_mm": 224,
     "thickness_mm": 3.2,
     "mat_mm": 0.5,
     "surface_above_table_mm": 3.7,
-    "overall_mm": 254
+    "overall_mm": 244
   },
   "mount": {
     "board_edge_to_base_frame_mm": 90,
@@ -23,14 +24,14 @@
     "table_top_mm": 430,
     "white_arm_base_frame_mm": [
       0,
-      -217,
+      -212,
       462.4
     ],
     "board_edge_to_front_of_base_mesh_mm_approx": 25.365,
     "front_edge_provenance": "CAD mesh bounds: extended base adds 30 mm below the original 2.4 mm lip (32.4 mm below the frame origin); front clearance unchanged; not a physical measurement",
     "black_arm_base_frame_mm_debug_only": [
       0,
-      217,
+      212,
       462.4
     ]
   },
@@ -58,7 +59,8 @@
     "live_layout_passed": 16,
     "live_layout_total": 16,
     "live_layout_worst_error_mm": 2.58,
-    "board_offset_status": "not rerun at the extended-base mount; arm and board are fixed to one base board"
+    "board_offset_status": "not rerun at the extended-base mount; arm and board are fixed to one base board",
+    "board_face_note": "Board face corrected to the printed 244 mm / 10 mm border on 2026-11-21; the selection counts above were measured on the earlier 254 mm face and are not re-qualified by that edit"
   },
   "scope": "Extended 30 mm base mounted directly on the board plane; simulation qualification, not physical or all-piece crowded-board proof",
   "mass_model": "Rook 4.8 g including M6 nut; king and other piece masses remain unmeasured nominal PLA models",

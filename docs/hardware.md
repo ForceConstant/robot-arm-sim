@@ -32,7 +32,7 @@ the dashed lines are what the overhead camera has to take in.
 | item | what it has to be |
 | --- | --- |
 | SO-101 follower arm | the standard build from [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) - BOM and print files there; its meshes are vendored here under `chess_sim/assets/so101/` |
-| overhead camera | ≥ 21.2° vertical field of view at 678 mm, so the whole 254 mm board fits; the sim renders 24° |
+| overhead camera | ≥ 21.2° vertical field of view at 678 mm, so the whole 244 mm printed board fits; the sim renders 24° |
 | wrist camera | wide angle, ~75°, small enough to sit beside the wrist-roll motor |
 | table | flat, 430 mm to the top (or set your own `BoardConfig.table_top` and re-generate) |
 | chess set | 28 mm squares, king no taller than 46 mm - a travel set, or print the board below |
@@ -61,12 +61,13 @@ generated; edit `hardware/generate.py`, not the outputs.
 | --- | --- |
 | square | 28.0 |
 | playing field | 224.0 |
-| border | 15.0 per side |
-| board overall | 254.0 × 254.0 |
-| board thickness | 12.0 |
+| border | 10.0 per side |
+| board overall (printed face) | 244.0 × 244.0 |
+| board substrate | 254.0 × 254.0 (5 mm margin per side) |
+| board thickness | 12.0 substrate; the sim's playing slab is 3.2 |
 
 `hardware/board_244mm.png` is the 244 mm board artwork at 300 dpi - print at 100%
-scale (254 mm across, borders included) and mount it on the substrate.
+scale (244 mm across, borders included) and mount it on the 254 mm substrate.
 
 | piece | per side | height | widest ⌀ | grasp ⌀ | grasp height |
 | --- | --- | --- | --- | --- | --- |

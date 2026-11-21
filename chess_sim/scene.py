@@ -98,10 +98,25 @@ if CAMERA_SOURCE not in ("reference", "4c"):
 # the render orientation that matches the sensor (mounted 90 deg to the model).
 WRIST_REFERENCE_FOVY_DEG = float(os.environ.get("ROBOT_WRIST_FOVY", "47.0"))
 
-print(f"wrist camera: {CAMERA_SOURCE}"
-      + (f" (B5 reference 37e7232, fovy {WRIST_REFERENCE_FOVY_DEG:.4f} deg,"
-         f" measured vs IRL 95.8 px)"
-         if CAMERA_SOURCE == "reference" else " (block4c calibration)"))
+def wrist_camera_fovy() -> float:
+    """The fovy the built model will actually carry for the wrist camera.
+
+    The banner used to print the reference value unconditionally, which was
+    wrong for a stock tool (36 deg) and for the 4c mount.  This mirrors the
+    branch selection in ``_add_wrist_camera`` so the printed number and the
+    compiled camera cannot disagree.
+    """
+    if gripper.CUSTOM and CAMERA_SOURCE == "reference":
+        return WRIST_REFERENCE_FOVY_DEG
+    if gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
+        return WRIST_CAMERA_MEASURED.fovy
+    return (WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA).fovy
+
+
+print(f"wrist camera: {CAMERA_SOURCE}, tool {gripper.KIND}, "
+      f"resolved fovy {wrist_camera_fovy():.4f} deg"
+      + (" (B5 reference 37e7232, measured vs IRL 95.8 px)"
+         if gripper.CUSTOM and CAMERA_SOURCE == "reference" else ""))
 
 ARM_REST = JointPose(shoulder_pan=0.0, shoulder_lift=-1.0, elbow_flex=1.3,
                      wrist_flex=0.4, wrist_roll=0.0, gripper=0.6)
@@ -489,21 +504,19 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         # that fy = 833 px implies for the landscape reference aspect: rendered
         # portrait 480x640 at the same joints, 42.0283 deg put the marker side at
         # 108.5 px where the IRL C270 measures 95.8 px.  Env override above.
-        fovy = WRIST_REFERENCE_FOVY_DEG
     elif gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
         # Calibrated bench camera: already expressed in the gripper body frame,
         # which is the frame `camera_in_tool` uses.  No site transform applies.
         pos = np.asarray(WRIST_CAMERA_MEASURED.pos, dtype=float)
         xyaxes = np.asarray(WRIST_CAMERA_MEASURED.xyaxes, dtype=float)
         x_axis, y_axis = xyaxes[:3], xyaxes[3:]
-        fovy = WRIST_CAMERA_MEASURED.fovy
     else:
         cam = WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA
         pos = np.asarray(site.pos, dtype=float) + rot @ np.asarray(cam.pos, dtype=float)
         axes = lookat_xyaxes(cam.pos, cam.target, cam.up)
         x_axis, y_axis = rot @ axes[:3], rot @ axes[3:]
         xyaxes = np.concatenate([x_axis, y_axis])
-        fovy = cam.fovy
+    fovy = wrist_camera_fovy()
     tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=fovy)
     # Orient the housing body with the camera, not the gripper body. A MuJoCo
     # camera looks down its own -z, so the box sits at +z from the lens and its
