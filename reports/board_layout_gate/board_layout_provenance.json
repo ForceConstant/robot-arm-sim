@@ -1,0 +1,82 @@
+{
+  "generated_utc": "2026-11-21T15:45:34+00:00",
+  "git_head": "2aa8a0c",
+  "git_modified_files": [
+    "chess_sim/tool_frames.py",
+    "docs/TOOL_FRAME.md",
+    "docs/media/rig_elevation.svg",
+    "docs/media/rig_overview.png",
+    "docs/media/rig_plan.svg",
+    "docs/media/rig_top.png",
+    "live/pi_bridge/protocol.py",
+    "live/tool_tip.json",
+    "reports/b1_orientation_receipt.json",
+    "tests/test_tool_orientation.py",
+    "tools/b1_chain.py",
+    "tools/b1_mutate_check.py",
+    "tools/b1_occ.py",
+    "tools/b1_render.py",
+    "tools/b1_sheet.py",
+    "tools/b1_sweep.py"
+  ],
+  "git_untracked_count": 168,
+  "board": {
+    "face": "charuco",
+    "square_mm": 28.0,
+    "border_mm": 10.0,
+    "field_mm": 224.0,
+    "overall_mm": 244.0,
+    "half_mm": 122.0,
+    "thickness_mm": 3.2,
+    "top_z_mm": 433.2
+  },
+  "mount": {
+    "arm_base_frame_mm": [
+      0.0,
+      -212.0,
+      462.4
+    ],
+    "board_edge_to_base_frame_mm": 90.0,
+    "base_mesh_front_past_origin_mm": 64.635,
+    "board_edge_y_mm": -122.0,
+    "base_mesh_front_y_mm": -147.365,
+    "mesh_front_to_board_edge_mm": 25.365
+  },
+  "tool": {
+    "kind": "cad_parallel",
+    "asset_root": "/home/brian/robot-arm-sim/.private/gripper-assets-5x",
+    "profile_name": "NormaCore \u00b7 custom PLA",
+    "source_microversion": "4dca0986f24304c301118aa4"
+  },
+  "tip_constant": {
+    "stamp_pack": "cad_parallel",
+    "stamp_asset_root": "/home/brian/robot-arm-sim/.private/gripper-assets-5y",
+    "stamp_tip_mm": 110.45,
+    "stamp_git_head": "31483e2",
+    "stamp_asset_root_exists": true
+  },
+  "camera": {
+    "source": "reference",
+    "name": "wrist",
+    "fovy_deg_actual": 47.0,
+    "world_pos_mm": [
+      -60.073,
+      -24.968,
+      576.223
+    ],
+    "quat": [
+      0.966744,
+      -0.255747,
+      0.0,
+      -0.0
+    ],
+    "import_banner": "resolved fovy 47.0000 deg (banner and model share one function)"
+  },
+  "pose": "reset, empty board 8/8/8/8/8/8/8/8 (no controller run)",
+  "approval": {
+    "approved_by": "Brian",
+    "approved_at": "2026-11-21T10:50:00-05:00",
+    "basis": "named checks, all passed: A border about a third of a square; B base front about one square clear of the board edge; C base flush on the 430 mm plane with no riser; D wrist camera sees the board with both jaws clear",
+    "note": "Verbal approval ('those look ok') after the four checks were listed. Appended after review; re-running tools/board_layout_gate.py regenerates the measured fields and drops this block."
+  }
+}
