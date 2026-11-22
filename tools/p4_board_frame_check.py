@@ -101,7 +101,7 @@ def main() -> int:
             continue
         pnp = np.asarray(solution["camera_in_board_mm"], dtype=float)
         delta = pnp - from_joints
-        flipped = delta + 2 * from_joints[:2]
+        flipped = delta[:2] + 2 * from_joints[:2]
         print(f"frame {index}: ids {solution['ids']} rms {solution['rms_px']:.2f} px  "
               f"PnP camera in board mm {np.round(pnp, 1)}  "
               f"delta {np.round(delta, 1)} mm ({np.linalg.norm(delta):.1f})  "

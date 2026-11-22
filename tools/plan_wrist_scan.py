@@ -34,7 +34,7 @@ SCHEMA = "robot-arm-wrist-scan-plan/1"
 
 
 def solve_pose(env, target, seed: int, direction=None,
-               bounds=None) -> tuple[np.ndarray, float, float]:
+               bounds=None, roll_deg=None) -> tuple[np.ndarray, float, float]:
     """Wrist camera with the lens at ``target`` looking along ``direction``.
 
     The wrist camera looks along the gripper's approach axis, so a board-facing
@@ -49,6 +49,7 @@ def solve_pose(env, target, seed: int, direction=None,
     target = np.asarray(target, dtype=float)
     look = np.array([0.0, 0.0, -1.0]) if direction is None else np.asarray(direction, dtype=float)
     look = look / np.linalg.norm(look)
+    roll_target = None if roll_deg is None else math.radians(float(roll_deg))
     data, model = env.data, env.model
     cid = model.camera(str(Camera.WRIST)).id
     limits = np.asarray(model.actuator_ctrlrange[env._actuators][:5], dtype=float)
@@ -57,8 +58,13 @@ def solve_pose(env, target, seed: int, direction=None,
         data.qpos[env._joint_qpos[:5]] = q
         mujoco.mj_forward(model, data)
         direction = -data.cam_xmat[cid].reshape(3, 3)[:, 2]
-        return (100.0 * float(np.sum((data.cam_xpos[cid] - target) ** 2))
-                + 3.0 * float(np.sum((direction - look) ** 2)))
+        value = (100.0 * float(np.sum((data.cam_xpos[cid] - target) ** 2))
+                 + 3.0 * float(np.sum((direction - look) ** 2)))
+        if roll_target is not None:
+            # Soft pull only: 0.5 rad of roll error costs about as much as a
+            # 10 mm position error, so reach still wins when the two conflict.
+            value += 0.04 * float((q[4] - roll_target) ** 2)
+        return value
 
     box = bounds or [(float(lo), float(hi)) for lo, hi in limits]
     result = differential_evolution(cost, box, seed=seed, popsize=10,

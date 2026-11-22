@@ -1,0 +1,97 @@
+{
+  "schema": "handeye-capture/1",
+  "started": "2026-11-21T20:33:30-0500",
+  "roll_offset": 46.3,
+  "poses": [
+    {
+      "pose": "marker14",
+      "reached": true,
+      "error_deg": 0.83,
+      "roll": 67.6,
+      "markers": [
+        17,
+        9
+      ],
+      "capture": "20261121T203342528_marker14"
+    },
+    {
+      "pose": "marker26",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 68.04,
+      "markers": [],
+      "capture": "20261121T203503013_marker26"
+    },
+    {
+      "pose": "marker9",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 68.04,
+      "markers": [
+        18,
+        13,
+        17
+      ],
+      "capture": "20261121T203520088_marker9"
+    },
+    {
+      "pose": "marker22",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 67.96,
+      "markers": [
+        9
+      ],
+      "capture": "20261121T203640571_marker22"
+    },
+    {
+      "pose": "marker16",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 67.96,
+      "markers": [
+        11,
+        14
+      ],
+      "capture": "20261121T203800961_marker16"
+    },
+    {
+      "pose": "marker8",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 67.96,
+      "markers": [
+        19,
+        11,
+        22
+      ],
+      "capture": "20261121T203811993_marker8"
+    },
+    {
+      "pose": "marker21",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 67.96,
+      "markers": [
+        6,
+        10
+      ],
+      "capture": "20261121T203932403_marker21"
+    },
+    {
+      "pose": "marker13",
+      "reached": true,
+      "error_deg": 1.05,
+      "roll": 67.96,
+      "markers": [
+        18,
+        14,
+        9,
+        6,
+        5
+      ],
+      "capture": "20261121T203943433_marker13"
+    }
+  ],
+  "finished": "2026-11-21T20:39:43-0500"
+}

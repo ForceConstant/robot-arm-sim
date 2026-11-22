@@ -150,6 +150,14 @@ def limit_margins(joints_rad, limits: dict) -> dict:
 def _candidates(board, layout, marker_ids, args) -> list[dict]:
     items: list[dict] = []
     heights = [float(v) for v in args.heights.split(",")]
+    rolls = [float(v) for v in (getattr(args, "rolls", "") or "").split(",") if v.strip()]
+    roll_list = rolls or [None]
+    # Aim compensation for a known camera-mount error: the physical lens sits at
+    # ``mount + offset``, so the simulated lens must be placed at ``target - offset``
+    # for the real view to land on the target.  Defaults to no shift.
+    offset = np.array([float(v) for v in
+                       (getattr(args, "target_offset_mm", "") or "0,0,0").split(",")])
+    offset = offset / 1000.0
     offsets = [(0.0, 0.0)]
     for step in (float(v) for v in args.offsets.split(",") if v):
         offsets += [(step, 0.0), (-step, 0.0), (0.0, step), (0.0, -step)]
@@ -170,22 +178,26 @@ def _candidates(board, layout, marker_ids, args) -> list[dict]:
                 fan.append((sx * pad, 0.0))
                 fan.append((0.0, sy * pad))
             for dx, dy in fan:
-                items.append({
-                    "kind": "marker", "marker_id": marker_id,
-                    "position": np.array([centre[0] + dx, centre[1] + dy,
-                                          board.top + height]),
-                    "direction": np.array([0.0, 0.0, -1.0]),
-                })
+                for roll in roll_list:
+                    items.append({
+                        "kind": "marker", "marker_id": marker_id,
+                        "position": np.array([centre[0] + dx, centre[1] + dy,
+                                              board.top + height]) + offset,
+                        "direction": np.array([0.0, 0.0, -1.0]),
+                        "roll": roll,
+                    })
         if abs(height - heights[len(heights) // 2]) > 1e-9:
             continue
         extent = args.extent + args.tolerance_mm / 1000.0
         for gx in np.linspace(-extent, extent, args.grid):
             for gy in np.linspace(-extent, extent, args.grid):
-                items.append({
-                    "kind": "grid",
-                    "position": np.array([gx, gy, board.top + height]),
-                    "direction": np.array([0.0, 0.0, -1.0]),
-                })
+                for roll in roll_list:
+                    items.append({
+                        "kind": "grid",
+                        "position": np.array([gx, gy, board.top + height]) + offset,
+                        "direction": np.array([0.0, 0.0, -1.0]),
+                        "roll": roll,
+                    })
     if args.oblique:
         aim = np.array([board.origin[0], board.origin[1], board.top])
         for elevation in (float(v) for v in args.elevations.split(",")):
@@ -222,6 +234,13 @@ def main() -> int:
     parser.add_argument("--tolerance-yaw-deg", type=float, default=0.0)
     parser.add_argument("--min-markers", type=int, default=3,
                         help="distinct markers required for every sampled placement")
+    parser.add_argument("--rolls", default="",
+                        help="comma-separated wrist-roll targets in degrees; each "
+                             "candidate is solved with that joint pinned, which is "
+                             "what gives the hand-eye solve more than one branch")
+    parser.add_argument("--target-offset-mm", default="0,0,0",
+                        help="board-frame shift applied to every camera target, to "
+                             "compensate a measured mount error (x,y,z millimetres)")
     parser.add_argument("--scores", default=".private/phase11d/marker_scores.json",
                         help="cache of solved candidates; reused when it exists")
     parser.add_argument("--heights", default="0.20,0.26,0.32")
@@ -341,9 +360,11 @@ def main() -> int:
             if "joints" in candidate:
                 joints, clearance, gap = candidate["joints"], 0.0, 0.0
             else:
+                roll_target = candidate.get("roll")
                 joints, clearance, gap = solve_pose(
                     env, candidate["position"], seed=2000 + index,
-                    direction=candidate["direction"], bounds=bounds)
+                    direction=candidate["direction"], bounds=bounds,
+                    roll_deg=roll_target)
                 # solve_pose hardcodes the stock jaw angle; the installed tool
                 # has its own travelled range, and the occlusion model refuses
                 # an out-of-limit measurement.
@@ -354,7 +375,12 @@ def main() -> int:
                     continue
             env.data.qpos[env._joint_qpos] = joints
             mujoco.mj_forward(env.model, env.data)
-            camera = calibration.camera(joints)
+            try:
+                camera = calibration.camera(joints)
+            except ValueError as exc:
+                print(f"{index}/{len(candidates)} "
+                      f"{candidate.get('name') or index} discard: {exc}", flush=True)
+                continue
             mask = self_model.exclusion_mask(joints)
             found = observe_markers(
                 camera, joints, layout, board_origin=board.origin, board_yaw=board.yaw,
@@ -378,6 +404,8 @@ def main() -> int:
                       f"{args.max_incidence_deg:.0f}", flush=True)
                 continue
             name = candidate.get("name") or f"{candidate['kind']}{index}"
+            if candidate.get("roll") is not None:
+                name = f"{name}_r{int(round(float(candidate['roll'])))}"
             entries.append((name, tuple(float(v) for v in joints), found))
             positions[name] = tuple(float(v) for v in camera.camera_position)
             meta.append({"name": name, "kind": candidate["kind"],

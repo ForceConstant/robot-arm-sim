@@ -1,0 +1,149 @@
+{
+  "schema": "handeye-capture/1",
+  "started": "2026-11-21T20:22:03-0500",
+  "tone": {
+    "exposure": 705,
+    "gain": 64,
+    "brightness": 160,
+    "contrast": 32
+  },
+  "poses": [
+    {
+      "pose": "marker14",
+      "reached": true,
+      "error_deg": 0.83,
+      "roll": 21.71,
+      "markers": [
+        17,
+        13
+      ],
+      "capture": "20261121T202216473_marker14"
+    },
+    {
+      "pose": "marker26",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        9
+      ],
+      "capture": "20261121T202335119_marker26"
+    },
+    {
+      "pose": "marker25",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        10,
+        9
+      ],
+      "capture": "20261121T202456750_marker25"
+    },
+    {
+      "pose": "marker9",
+      "reached": true,
+      "error_deg": 0.79,
+      "roll": 21.71,
+      "markers": [
+        18,
+        22,
+        21,
+        25
+      ],
+      "capture": "20261121T202508832_marker9"
+    },
+    {
+      "pose": "marker22",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        5,
+        13,
+        9
+      ],
+      "capture": "20261121T202628161_marker22"
+    },
+    {
+      "pose": "marker10",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        29
+      ],
+      "capture": "20261121T202638240_marker10"
+    },
+    {
+      "pose": "marker16",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        19,
+        11,
+        6
+      ],
+      "capture": "20261121T202757862_marker16"
+    },
+    {
+      "pose": "marker8",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        23,
+        27,
+        19
+      ],
+      "capture": "20261121T202805923_marker8"
+    },
+    {
+      "pose": "marker24",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [],
+      "capture": "20261121T202924558_marker24"
+    },
+    {
+      "pose": "marker15",
+      "reached": true,
+      "error_deg": 1.19,
+      "roll": 21.71,
+      "markers": [],
+      "capture": "20261121T202932617_marker15"
+    },
+    {
+      "pose": "marker23",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [],
+      "capture": "20261121T203052071_marker23"
+    },
+    {
+      "pose": "marker21",
+      "reached": true,
+      "error_deg": 0.76,
+      "roll": 21.71,
+      "markers": [
+        6,
+        14
+      ],
+      "capture": "20261121T203213452_marker21"
+    },
+    {
+      "pose": "marker13",
+      "reached": true,
+      "error_deg": 1.05,
+      "roll": 21.71,
+      "markers": [
+        14
+      ],
+      "capture": "20261121T203222487_marker13"
+    }
+  ],
+  "finished": "2026-11-21T20:32:22-0500"
+}

@@ -1,0 +1,230 @@
+{
+  "schema": "handeye-capture/1",
+  "started": "2026-11-21T17:31:49-0500",
+  "start_joints": {
+    "shoulder_pan": -18.99,
+    "shoulder_lift": -15.16,
+    "elbow_flex": 33.1,
+    "wrist_flex": 75.3,
+    "wrist_roll": 68.13,
+    "gripper": 17.97
+  },
+  "gripper_held": 17.97,
+  "poses": [
+    {
+      "pose": "marker14",
+      "reached": true,
+      "error_deg": 0.92,
+      "actual_roll": 21.98,
+      "markers": [
+        17
+      ],
+      "capture": "20261121T173205506_marker14"
+    },
+    {
+      "pose": "marker26",
+      "reached": true,
+      "error_deg": 0.33,
+      "actual_roll": 21.63,
+      "markers": [],
+      "capture": "20261121T173324138_marker26"
+    },
+    {
+      "pose": "marker25",
+      "reached": true,
+      "error_deg": 0.65,
+      "actual_roll": 21.63,
+      "markers": [],
+      "capture": "20261121T173444768_marker25"
+    },
+    {
+      "pose": "marker9",
+      "reached": true,
+      "error_deg": 0.4,
+      "actual_roll": 21.71,
+      "markers": [
+        18,
+        22
+      ],
+      "capture": "20261121T173455859_marker9"
+    },
+    {
+      "pose": "marker22",
+      "reached": true,
+      "error_deg": 0.3,
+      "actual_roll": 21.71,
+      "markers": [
+        5,
+        9
+      ],
+      "capture": "20261121T173615497_marker22"
+    },
+    {
+      "pose": "marker10",
+      "reached": true,
+      "error_deg": 0.61,
+      "actual_roll": 21.71,
+      "markers": [
+        29
+      ],
+      "capture": "20261121T173625574_marker10"
+    },
+    {
+      "pose": "marker16",
+      "reached": true,
+      "error_deg": 0.11,
+      "actual_roll": 21.71,
+      "markers": [
+        11,
+        6
+      ],
+      "capture": "20261121T173744209_marker16"
+    },
+    {
+      "pose": "marker8",
+      "reached": true,
+      "error_deg": 0.45,
+      "actual_roll": 21.71,
+      "markers": [
+        23,
+        19
+      ],
+      "capture": "20261121T173752269_marker8"
+    },
+    {
+      "pose": "marker24",
+      "reached": true,
+      "error_deg": 0.26,
+      "actual_roll": 21.71,
+      "markers": [],
+      "capture": "20261121T173912899_marker24"
+    },
+    {
+      "pose": "marker15",
+      "reached": true,
+      "error_deg": 1.19,
+      "actual_roll": 21.71,
+      "markers": [],
+      "capture": "20261121T173920959_marker15"
+    },
+    {
+      "pose": "marker23",
+      "reached": true,
+      "error_deg": 0.19,
+      "actual_roll": 21.71,
+      "markers": [],
+      "capture": "20261121T174039594_marker23"
+    },
+    {
+      "pose": "marker21",
+      "reached": true,
+      "error_deg": 0.2,
+      "actual_roll": 21.71,
+      "markers": [
+        6
+      ],
+      "capture": "20261121T174158226_marker21"
+    },
+    {
+      "pose": "marker13",
+      "reached": true,
+      "error_deg": 1.05,
+      "actual_roll": 21.71,
+      "markers": [
+        14
+      ],
+      "capture": "20261121T174205279_marker13"
+    }
+  ],
+  "settle": [
+    {
+      "exposure": 1000,
+      "gain": 64,
+      "mean": 108.0,
+      "median": 101.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 16.7,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    },
+    {
+      "exposure": 1500,
+      "gain": 64,
+      "mean": 115.5,
+      "median": 105.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 23.3,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    },
+    {
+      "exposure": 2000,
+      "gain": 64,
+      "mean": 121.9,
+      "median": 110.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 29.2,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    },
+    {
+      "exposure": 2600,
+      "gain": 64,
+      "mean": 129.2,
+      "median": 115.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 35.3,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    },
+    {
+      "exposure": 3400,
+      "gain": 64,
+      "mean": 137.7,
+      "median": 122.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 42.0,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    },
+    {
+      "exposure": 2600,
+      "gain": 96,
+      "mean": 141.9,
+      "median": 125.0,
+      "clip": 0.0,
+      "dark": 0.0,
+      "std": 45.3,
+      "markers": 1,
+      "ids": [
+        17
+      ]
+    }
+  ],
+  "settled": {
+    "exposure": 2600,
+    "gain": 96,
+    "metrics": {
+      "mean": 141.9,
+      "clip": 0.0,
+      "dark": 0.0,
+      "markers": 1
+    }
+  },
+  "finished": "2026-11-21T17:42:05-0500"
+}
