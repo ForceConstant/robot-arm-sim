@@ -259,6 +259,9 @@ def main():
                          '(all 64 squares are reachable - the model\'s six-square '
                          'table is only its training set); model = type-known '
                          'base-XY model; measured = detector centroid')
+    ap.add_argument('--servo-z', type=float, default=95.0,
+                    help='height to servo the jaw over the square; high enough that '
+                         'PnP still solves, unlike the grasp height')
     ap.add_argument('--z-obs', type=float, default=40.0,
                     help='height for the centring measurement (markers still visible)')
     ap.add_argument('--correct', action='store_true',
@@ -320,10 +323,10 @@ def main():
     # 1) servo the tip over the predicted base at safe height
     # Establish an observation height first: a previous abort can leave the tip
     # low, where only one marker is visible and the servo starts blind.
-    if float(tip()[2]) < a.z_safe - 5.0:
-        print(f'LIFT to observation height {a.z_safe}', flush=True)
+    if float(tip()[2]) < a.servo_z - 5.0:
+        print(f'LIFT to servo height {a.servo_z}', flush=True)
         if not move_big({'mode': 'xyz', 'x_mm': target[0], 'y_mm': target[1],
-                         'z_mm': a.z_safe}, guard, 'observe', limit=30.0):
+                         'z_mm': a.servo_z}, guard, 'observe', limit=30.0):
             print('ABORT: could not reach the observation height', flush=True)
             n = rec.stop_rec(); post('/mode', {'mode': 'HOLD'})
             print(f'VIDEO {a.video} frames={n}; bridge HOLD', flush=True)
@@ -343,7 +346,7 @@ def main():
     # A fixed inverse measured at one pose oscillated at another (2026-11-23),
     # so command the residual directly and let the image feedback iterate.
     J_INV = np.array([[1.0, 0.0], [0.0, 1.0]], float)
-    sag = a.z_safe - float(tip()[2])      # one measurement, reused as the
+    sag = a.servo_z - float(tip()[2])      # one measurement, reused as the
                                           # standoff compensation
     last_sep = None
     last_move = None
@@ -372,7 +375,7 @@ def main():
                 oy = round(float(cur0[1] + dy0 / n * 8.0), 1)
                 print(f'  backlash take-up {takeups}: overshoot to ({ox},{oy})', flush=True)
                 if not move_big({'mode': 'xyz', 'x_mm': ox, 'y_mm': oy,
-                                 'z_mm': round(float(a.z_safe + sag), 1)},
+                                 'z_mm': round(float(a.servo_z + sag), 1)},
                                 guard, f'takeup {takeups}', limit=30.0):
                     break
                 last_move = None
@@ -391,7 +394,7 @@ def main():
         # hold the STANDOFF, not the readback: holding readback let the tip
         # ratchet down 60.8 -> 45.7 mm over four steps and the pose lost markers
         cmd = (round(float(cur[0] + dx), 1), round(float(cur[1] + dy), 1),
-               round(float(a.z_safe + sag), 1))
+               round(float(a.servo_z + sag), 1))
         if not move_big({'mode': 'xyz', 'x_mm': cmd[0], 'y_mm': cmd[1],
                          'z_mm': cmd[2]}, guard, f'servo {step}', limit=30.0):
             print('servo aborted', flush=True)
@@ -433,7 +436,11 @@ def main():
                 obs2 = measure_centring(detector, target, a.z_obs)
                 print('CENTRING @obs after correction', json.dumps(obs2), flush=True)
 
-    # 2) descend to grasp height in 5 mm steps
+    # 2) descend on the CONVERGED xy: the servo's correction is what puts the
+    # jaws over the piece, so carry that, not the nominal square centre
+    aim = tip()
+    aim_xy = [round(float(aim[0]), 1), round(float(aim[1]), 1)]
+    print(f'DESCEND on corrected xy {aim_xy} from z {aim[2]:.1f}', flush=True)
     for k in range(16):
         cur = tip()
         if cur[2] <= a.z_grasp + 1:
@@ -441,7 +448,7 @@ def main():
         z = max(a.z_grasp, float(cur[2]) - 5.0)
         # absolute xyz: a rel dz is in the TOOL frame, which walked the tip
         # ~50 mm sideways at this wrist pitch on 2026-11-23
-        if not move_leg({'mode': 'xyz', 'x_mm': target[0], 'y_mm': target[1],
+        if not move_leg({'mode': 'xyz', 'x_mm': aim_xy[0], 'y_mm': aim_xy[1],
                          'z_mm': round(z, 1)}, guard, f'descend {k}', dry_limit=30.0):
             print('descend stopped', flush=True)
             break
