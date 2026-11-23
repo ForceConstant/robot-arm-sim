@@ -211,6 +211,8 @@ def main():
     ap.add_argument('--z-safe', type=float, default=70.0)
     ap.add_argument('--z-grasp', type=float, default=15.0)
     ap.add_argument('--lift-z', type=float, default=60.0)
+    ap.add_argument('--place-square', default=None,
+                    help='after the pick, carry to this square, lower, release and retreat')
     ap.add_argument('--video', default='/tmp/grasp_capture.mp4')
     ap.add_argument('--aim', choices=('square', 'model', 'measured'), default='square',
                     help='square = nominal square centre via cartesian control '
@@ -370,6 +372,44 @@ def main():
                          'z_mm': round(z, 1)}, guard, 'lift', dry_limit=30.0):
             break
         time.sleep(0.3)
+
+    # 6) place, if a destination was given
+    if a.place_square:
+        col = ord(a.place_square[0].lower()) - 97
+        rank = int(a.place_square[1])
+        px = round((col + 0.5) * 28.0 - 112.0, 1)
+        py = round((rank - 0.5) * 28.0 - 112.0, 1)
+        print(f'PLACE -> {a.place_square} ({px},{py})', flush=True)
+        post('/aim', {'x_mm': px, 'y_mm': py, 'z_mm': a.z_grasp,
+                      'label': f'place {a.place_square}'})
+        # carry across at safe height, splitting large moves
+        if move_big({'mode': 'xyz', 'x_mm': px, 'y_mm': py, 'z_mm': a.z_safe},
+                    guard, 'carry', limit=30.0):
+            # descend in 5 mm steps
+            for k in range(16):
+                cur = tip()
+                if cur[2] <= a.z_grasp + 1:
+                    break
+                z = max(a.z_grasp, float(cur[2]) - 5.0)
+                if not move_leg({'mode': 'xyz', 'x_mm': px, 'y_mm': py,
+                                 'z_mm': round(z, 1)}, guard, f'place descend {k}',
+                                dry_limit=30.0):
+                    print('place descend stopped', flush=True)
+                    break
+            # open slowly so the release is visible
+            for jaw in (18, 25, 35, 50, 70):
+                post('/move', {'mode': 'joint', 'jaw': float(jaw)}, t=40)
+                time.sleep(0.35)
+            time.sleep(0.5)
+            # retreat
+            for z in (30.0, 45.0, a.lift_z):
+                if float(tip()[2]) >= z - 1:
+                    continue
+                if not move_leg({'mode': 'xyz', 'x_mm': px, 'y_mm': py,
+                                 'z_mm': round(z, 1)}, guard, 'place lift',
+                                dry_limit=30.0):
+                    break
+                time.sleep(0.3)
 
     fin = state()
     print(f'FINAL tip {tip().round(1)} jaw {fin["joints"]["gripper"]:.1f} '
