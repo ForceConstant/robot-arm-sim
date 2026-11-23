@@ -1334,28 +1334,42 @@ class Live:
 
     def _stream_to(self, target: list[float], start: list[float],
                    tolerance: float = 0.7) -> dict:
-        """Interpolate at the bridge's speed cap and stop when close."""
+        """Drive to the target and stop when the MEASURED joints are close.
+
+        The previous loop compared its own interpolated command against the
+        target and stopped there, so a move ended wherever the command happened
+        to be: with ~2 deg of gravity sag on the shoulder that left every move
+        about 5 mm short while reporting error_deg 0.3 (measured 2026-11-23).
+        Command ahead of the measured position by the residual instead, and use
+        the encoder readback for the stop test.
+        """
         names = ("shoulder_pan", "shoulder_lift", "elbow_flex",
                  "wrist_flex", "wrist_roll", "gripper")
         step = 10.5 * 0.066   # degrees per tick at the conservative 10.5 deg/s
         current = list(start)
-        deadline = time.time() + 20.0
+        measured = list(start)
+        deadline = time.time() + 30.0
         while time.time() < deadline:
-            error = max(abs(a - b) for a, b in zip(current, target))
-            if error <= max(0.05, tolerance):
+            error = max(abs(a - b) for a, b in zip(measured, target))
+            if error <= max(0.15, tolerance):
                 break
-            # The bridge rejects any command whose sequence is not newer than
-            # the last one it accepted, so the counter must survive across calls.
+            # Command measured + residual, so a static sag is taken out instead
+            # of ending the move early. The bridge rejects a sequence that is
+            # not newer than the last accepted one, so the counter persists.
             self.command_seq += 1
-            current = [c + max(-step, min(step, t - c)) for c, t in zip(current, target)]
+            current = [m + max(-step, min(step, t - m))
+                       for m, t in zip(measured, target)]
             self.bridge.command(current, seq=self.command_seq, ttl_ms=200,
                                 speed_scale=self.config.get("speed_scale", 0.3))
             time.sleep(0.066)
             state = self.bridge.state()
             if state.get("mode") != "REMOTE" or not state.get("armed"):
                 raise BridgeError("bridge left REMOTE during motion")
+            joints = state.get("joints") or {}
+            if len(joints) == 6:
+                measured = [float(joints[n]) for n in names]
         return {"joints": dict(zip(names, current)),
-                "error_deg": round(max(abs(a - b) for a, b in zip(current, target)), 2)}
+                "error_deg": round(max(abs(a - b) for a, b in zip(measured, target)), 2)}
 
     # ---------------------------------------------------------------- stream
     def _orient(self, image: np.ndarray) -> np.ndarray:

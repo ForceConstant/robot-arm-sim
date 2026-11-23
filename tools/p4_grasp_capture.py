@@ -248,6 +248,9 @@ def main():
     ap.add_argument('--z-safe', type=float, default=70.0)
     ap.add_argument('--z-grasp', type=float, default=15.0)
     ap.add_argument('--lift-z', type=float, default=60.0)
+    ap.add_argument('--jaw-close', type=float, default=13.0,
+                    help='jaw value the close stops at; 13 is ~5 mm gap, too narrow '
+                         'when a piece sits a few mm off centre')
     ap.add_argument('--place-square', default=None,
                     help='after the pick, carry to this square, lower, release and retreat')
     ap.add_argument('--video', default='/tmp/grasp_capture.mp4')
@@ -315,15 +318,39 @@ def main():
     rec = Recorder(a.video); rec.start(); time.sleep(0.8)
 
     # 1) servo the tip over the predicted base at safe height
+    # Establish an observation height first: a previous abort can leave the tip
+    # low, where only one marker is visible and the servo starts blind.
+    if float(tip()[2]) < a.z_safe - 5.0:
+        print(f'LIFT to observation height {a.z_safe}', flush=True)
+        if not move_big({'mode': 'xyz', 'x_mm': target[0], 'y_mm': target[1],
+                         'z_mm': a.z_safe}, guard, 'observe', limit=30.0):
+            print('ABORT: could not reach the observation height', flush=True)
+            n = rec.stop_rec(); post('/mode', {'mode': 'HOLD'})
+            print(f'VIDEO {a.video} frames={n}; bridge HOLD', flush=True)
+            return
+
     # SERVO ON THE IMAGE, not on FK. FK and the camera disagreed by 26 mm at the
     # parked pose (2026-11-23) - driving FK onto the target put the jaws a square
     # away and the run closed on air. Each step measures where the jaws really
     # are (stored tip pixel unprojected at the tip height), adds that error to
     # the current FK position, and moves.
-    sag = 0.0
+    # Measured 2026-11-23: the arm ignores commands under ~2-3 mm and achieves
+    # only 0.6-0.75 of what it is asked, so a proportional servo creeps and
+    # stalls. Compensate the gain and stop when movement itself stops.
+    # Measured 2026-11-23 at (10,10,70): commanding +8 mm in x achieves only
+    # +2.7 mm in x, and the axes cross-talk. Command through the inverse of that
+    # matrix (damped) instead of a scalar gain.
+    # A fixed inverse measured at one pose oscillated at another (2026-11-23),
+    # so command the residual directly and let the image feedback iterate.
+    J_INV = np.array([[1.0, 0.0], [0.0, 1.0]], float)
+    sag = a.z_safe - float(tip()[2])      # one measurement, reused as the
+                                          # standoff compensation
+    last_sep = None
+    last_move = None
+    takeups = 0
     reached = False
-    for step in range(8):
-        ok_img, info = image_gate(target, tol_mm=2.0)
+    for step in range(12):
+        ok_img, info = image_gate(target, tol_mm=3.0)
         print(f"  image servo {step}: {json.dumps(info)}", flush=True)
         if ok_img:
             reached = True
@@ -331,17 +358,48 @@ def main():
         if 'delta_mm' not in info:
             print('servo aborted: no image measurement', flush=True)
             break
+        if last_move is not None and last_move < 1.0:
+            # The mechanism ignores small steps (measured: 2 mm -> 0 mm, and only
+            # 0.6-0.75 of anything larger). Take up the slack by deliberately
+            # overshooting along the error, then approach the target from that
+            # side so the backlash is pre-loaded the same way every time.
+            if takeups < 2:
+                takeups += 1
+                dx0, dy0 = info['delta_mm']
+                n = float(np.hypot(dx0, dy0)) or 1.0
+                cur0 = tip()
+                ox = round(float(cur0[0] + dx0 / n * 8.0), 1)
+                oy = round(float(cur0[1] + dy0 / n * 8.0), 1)
+                print(f'  backlash take-up {takeups}: overshoot to ({ox},{oy})', flush=True)
+                if not move_big({'mode': 'xyz', 'x_mm': ox, 'y_mm': oy,
+                                 'z_mm': round(float(a.z_safe + sag), 1)},
+                                guard, f'takeup {takeups}', limit=30.0):
+                    break
+                last_move = None
+                continue
+            print(f'  deadband persists after {takeups} take-ups '
+                  f'({last_move:.2f}mm on the last leg)', flush=True)
+            break
+        last_sep = info['sep_mm']
         dx, dy = info['delta_mm']
         cur = tip()
+        before = cur.copy()
+        dvec = J_INV @ np.array([dx, dy], float)
+        dx, dy = float(dvec[0]), float(dvec[1])
+        # hold the current z: asking for z_safe + sag made the arm fight its own
+        # gravity each step and the whole command stalled (2026-11-23)
+        # hold the STANDOFF, not the readback: holding readback let the tip
+        # ratchet down 60.8 -> 45.7 mm over four steps and the pose lost markers
         cmd = (round(float(cur[0] + dx), 1), round(float(cur[1] + dy), 1),
-               round(float(np.clip(a.z_safe + sag, 2.0, 200.0)), 1))
+               round(float(a.z_safe + sag), 1))
         if not move_big({'mode': 'xyz', 'x_mm': cmd[0], 'y_mm': cmd[1],
                          'z_mm': cmd[2]}, guard, f'servo {step}', limit=30.0):
             print('servo aborted', flush=True)
             break
+        last_move = float(np.hypot(*(tip()[:2] - before[:2])))
         sag = a.z_safe - float(tip()[2])
     if not reached:
-        ok_img, info = image_gate(target, tol_mm=3.0)
+        ok_img, info = image_gate(target, tol_mm=4.5)
         print('FINAL IMAGE CHECK', json.dumps(info), flush=True)
         if not ok_img:
             print('ABORT: the jaws are not over the target square in the image; '
@@ -394,7 +452,7 @@ def main():
 
     # 4) slow close: many frames of the grasp moment
     print('SLOW CLOSE', flush=True)
-    for jaw in (70, 55, 45, 38, 32, 27, 23, 19, 16, 14, 13):
+    for jaw in np.linspace(70.0, a.jaw_close, 11):
         r = post('/move', {'mode': 'joint', 'jaw': float(jaw)}, t=40)
         if r.get('http_error'):
             print('  jaw step refused', r.get('detail'), flush=True)
