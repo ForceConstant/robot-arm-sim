@@ -204,6 +204,43 @@ def measure_centring(detector, xy, z_grasp):
     return out
 
 
+def image_gate(target_xy, tol_mm=6.0):
+    """Are the jaws actually over the target square, in the image?
+
+    FK says the tip is on target; the camera says where the jaws are. Unproject
+    the stored tip-centre pixel at the tip's current height and compare that
+    board point with the target square centre. This is the check that was
+    missing when a run descended and closed on air with FK reporting 0.5 mm
+    (2026-11-23).
+    """
+    try:
+        from chess_sim.board_target import Board
+        import base64
+        board = Board(json.loads(CALIBRATION.read_text()))
+        d = get(B + '/capture', 15)
+        arr = np.frombuffer(base64.b64decode(d['jpeg_b64']), np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        sol, dets = board.solve(board.rectify(img))
+        if sol is None:
+            return False, {'error': f'no PnP ({len(dets)} markers)'}
+        tip_px = (get(C + '/tip-center') or {}).get('pixel')
+        if not tip_px:
+            return False, {'error': 'no stored tip centre'}
+        tip_z = float(get(C + '/keep-in')['tip_mm'][2])
+        tip_xy = board.unproject(sol, tip_px, tip_z)
+        dx = float(target_xy[0] - tip_xy[0])
+        dy = float(target_xy[1] - tip_xy[1])
+        sep = float(np.hypot(dx, dy))
+        info = {'tip_px': tip_px, 'tip_z_mm': round(tip_z, 1),
+                'tip_board_mm': [round(float(tip_xy[0]), 1), round(float(tip_xy[1]), 1)],
+                'target_mm': [float(target_xy[0]), float(target_xy[1])],
+                'delta_mm': [round(dx, 2), round(dy, 2)], 'sep_mm': round(sep, 2),
+                'markers': len(dets), 'rms_px': round(float(sol['rms_px']), 2)}
+        return sep <= tol_mm, info
+    except Exception as exc:
+        return False, {'error': f'{type(exc).__name__}: {exc}'}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--piece', required=True)
@@ -278,32 +315,37 @@ def main():
     rec = Recorder(a.video); rec.start(); time.sleep(0.8)
 
     # 1) servo the tip over the predicted base at safe height
-    pending = [target[0], target[1], a.z_safe]
+    # SERVO ON THE IMAGE, not on FK. FK and the camera disagreed by 26 mm at the
+    # parked pose (2026-11-23) - driving FK onto the target put the jaws a square
+    # away and the run closed on air. Each step measures where the jaws really
+    # are (stored tip pixel unprojected at the tip height), adds that error to
+    # the current FK position, and moves.
+    sag = 0.0
     reached = False
-    for step in range(9):
-        cur = tip(); err = float(np.linalg.norm(np.array(pending) - cur))
-        lateral = float(np.hypot(pending[0] - cur[0], pending[1] - cur[1]))
-        print(f'  servo step {step}: at {cur.round(1)} lateral {lateral:.1f}mm '
-              f'z {cur[2] - pending[2]:+.1f}mm', flush=True)
-        # the tip sags ~8 mm below the commanded z at this pose, and chasing
-        # that forever never converged (2026-11-23); only the x,y aim matters
-        if lateral <= 2.0:
+    for step in range(8):
+        ok_img, info = image_gate(target, tol_mm=2.0)
+        print(f"  image servo {step}: {json.dumps(info)}", flush=True)
+        if ok_img:
             reached = True
             break
-        if not move_big({'mode': 'xyz', 'x_mm': round(pending[0], 1),
-                         'y_mm': round(pending[1], 1), 'z_mm': round(pending[2], 1)},
-                        guard, f'servo {step}', limit=30.0):
+        if 'delta_mm' not in info:
+            print('servo aborted: no image measurement', flush=True)
+            break
+        dx, dy = info['delta_mm']
+        cur = tip()
+        cmd = (round(float(cur[0] + dx), 1), round(float(cur[1] + dy), 1),
+               round(float(np.clip(a.z_safe + sag, 2.0, 200.0)), 1))
+        if not move_big({'mode': 'xyz', 'x_mm': cmd[0], 'y_mm': cmd[1],
+                         'z_mm': cmd[2]}, guard, f'servo {step}', limit=30.0):
             print('servo aborted', flush=True)
             break
-        pending[0] += target[0] - tip()[0]
-        pending[1] += target[1] - tip()[1]
-        pending[2] += a.z_safe - tip()[2]
-        pending[2] = float(np.clip(pending[2], 2.0, 200.0))
+        sag = a.z_safe - float(tip()[2])
     if not reached:
-        cur = tip()
-        lateral = float(np.hypot(target[0] - cur[0], target[1] - cur[1]))
-        if lateral > 3.0:
-            print('ABORT: the tip never got over the target; nothing was closed', flush=True)
+        ok_img, info = image_gate(target, tol_mm=3.0)
+        print('FINAL IMAGE CHECK', json.dumps(info), flush=True)
+        if not ok_img:
+            print('ABORT: the jaws are not over the target square in the image; '
+                  'nothing closed', flush=True)
             n = rec.stop_rec()
             post('/mode', {'mode': 'HOLD'})
             print(f'VIDEO {a.video} frames={n}; bridge HOLD', flush=True)
