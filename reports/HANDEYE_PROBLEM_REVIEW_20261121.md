@@ -353,6 +353,102 @@ kept): `p4_board_clear_check.py`, `p4_square_stats.py`, `p4_rectified_view.py`,
    base-frame metric (27 mm) for the same views. Do not quote the board-frame
    variant.
 
+## 15. Tip-centre marker (2026-11-22) — POSE-SPECIFIC, NOT a fixed hand-eye transform
+
+A **Tip set** dashboard tab lets the user jog the arm and click the camera image
+at the midpoint between the finger tips. The pixel is stored in
+`live/tip_center.json` and served at `GET/POST /tip-center` (+ `/clear`).
+The detection overlay reads that pixel and draws the cyan "tip centre" cross
+there, replacing the old FK-tip-through-PnP projection (invalid: it mixed the
+FK tool frame with the uncalibrated camera PnP frame). This is a **display
+marker only** — it does not command motion.
+
+Saved by eye 2026-11-22: **pixel (320, 152)** in the raw 640x480 frame, chosen
+at wrist roll ≈ −16.4° and the camera height/standoff of that pose.
+
+**Brian's explicit caveat (must not be forgotten):** the chosen tip pixel is
+valid only at the specific camera **height, angle and distance from the board**
+at which it was set. A fixed image pixel locates the tips *in the image*, but a
+jaw tip stands above the board plane; converting that pixel to a board-space
+jaw target depends on camera height/angle/standoff because of parallax between
+the tip depth and the board plane. Therefore:
+
+- Do **not** claim the pixel "holds at any pose" or treat it as a solved
+  camera-to-jaw (hand-eye) transform. It is a per-pose annotation.
+- Before using a tip pixel to aim a grasp, re-set it at (or transform it to)
+  the actual grasp pose's camera height/angle/standoff, or solve the real
+  camera-to-jaw rigid transform (the still-unsolved hand-eye problem).
+- This is exactly why the three grasp attempts missed: the camera crosshair
+  and the jaw tip differ by tens of mm at the grasp pose (e.g. cyan jaw at board
+  (6.4, 49.1) vs piece at (7.6, 6.9)), and that offset changes with pose.
+
+### 15a. Measured structure of the pixel (2026-11-23) — u fixed, v tracks tilt
+
+Brian's reading, confirmed by measurement: **the horizontal pixel is a property
+of the mount and does not move with wrist pitch; only the along-view coordinate
+follows the camera's tilt to the board.**
+
+Jaw-difference test at fixed roll (67.7 deg), three wrist pitches:
+
+| wrist_flex | midpoint u | midpoint v |
+|---|---|---|
+| 73.5 deg | 503.0 | 313.8 |
+| 84.5 deg | 502.8 | 397.9 |
+| 62.7 deg | 501.1 | 387.1 |
+
+u varies by 2 px over 22 deg of pitch; v varies by ~80 px. (That test's blob
+pairing was later found to pick non-tip components, so treat its absolute values
+as suspect — the **u-invariance** is the part that held up, and it is the part
+that matters.)
+
+Ground-truth clicks by Brian agree: **u = 320.0 at roll -16.4 deg** (2026-11-22)
+and **u = 323.7 at roll +67.7 deg, wrist_flex 72.5 deg** (2026-11-23), with v
+moving 152.0 -> 240.6 between those poses.
+
+Consequences:
+
+- One click per mount fixes **u** permanently; only **v** needs relating to the
+  camera's tilt, so the marker is no longer "wrong at every other pose".
+- Automatic blob-difference measurement is **not** trustworthy for this: the two
+  largest moving components are not reliably left-finger + right-finger, and
+  produced a 180 px u error when tried.
+- `POST /tip-center` now stores `joints_deg` with the pixel, so a stored pixel
+  carries the pose it is valid at instead of looking pose-free.
+
+### 15b. Sim verdict (2026-11-23): the tip pixel is a MOUNT CONSTANT in both axes
+
+Brian's suggestion was to settle this in sim by casting from the tips and
+projecting through the model camera. Done with the CAD gripper and its camera
+mount (`ROBOT_GRIPPER=cad_parallel`), projecting the `so101:gripperframe` site
+(which sits on the fingertip plane):
+
+| wrist_flex | projected uv | jaw axis off vertical | ray hit vs tip y |
+|---|---|---|---|
+| 45° | (317.8, 290.2) | 30.0° | 303.5 vs 14.9 mm |
+| 60° | (317.8, 290.2) | 15.0° | 102.9 vs −26.5 mm |
+| 75° | (317.8, 290.2) | 0.0° | −70.9 vs −70.9 mm |
+| 90° | (317.8, 290.2) | 15.0° | −244.7 vs −115.3 mm |
+| 105° | (317.8, 290.2) | 30.0° | −445.3 vs −156.7 mm |
+
+Roll sweep at fixed pitch: identical pixel at −45°, 0°, +45°.
+
+**Both u and v are invariant (0.0 px) across 60° of pitch and 90° of roll.** The
+camera and the fingertip plane ride the same rigid body, so the pixel is a
+property of the mount, not of the pose. The earlier "u fixed, v tracks tilt"
+reading was an artefact of comparing clicks made at different times — v cannot
+move kinematically.
+
+Side benefit, and it is Brian's ray idea working: at wrist_flex 75° the jaw axis
+is exactly vertical and the ray from the tips lands on the tip XY to 0.1 mm,
+while at 15° off vertical it misses by ~130 mm. That is a cheap check that a
+grasp pose is square to the board.
+
+**Adopted (Brian, 2026-11-23): tip centre = (320, 250).** x is pinned to the
+frame centre, y from the latest click. The jaws are 2–3× the piece size, so the
+few-pixel residue does not matter for pickup. The overlay now draws this
+constant and no longer projects the FK tip: a projection inherits the 6.6° FK
+error and moves the marker exactly when the pose is weakest.
+
 ## 14. Rig state at pause
 
 - Bridge: **HOLD**, armed, no fault.

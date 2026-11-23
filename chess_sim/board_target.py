@@ -343,7 +343,14 @@ class TargetDetector:
                                         interpolation=cv2.INTER_AREA)
         return self._expected
 
-    def detect(self, image_bgr: np.ndarray) -> dict:
+    def detect(self, image_bgr: np.ndarray, aim_xy=None) -> dict:
+        """One pass over a landscape frame.
+
+        ``aim_xy`` is an optional (x_mm, y_mm[, z_mm[, label]]) the caller is
+        aiming at. It is projected with the same solution the rest of the
+        overlay uses, so the commanded target and the detected piece sit on one
+        geometry. Display only: nothing here commands the arm.
+        """
         started = time.perf_counter()
         result = {
             "schema": "p2-target/1",
@@ -378,11 +385,29 @@ class TargetDetector:
             "camera_in_board_mm": [round(float(v), 1)
                                    for v in solution["camera_in_board_mm"]],
             "n_in_view": len(detections),
+            # raw pose, so a caller can re-project from it or propagate it with
+            # the arm's own motion when the markers drop out at close range
+            "rvec": [round(float(v), 6) for v in solution["rvec"]],
+            "tvec": [round(float(v), 6) for v in solution["tvec"]],
         }
 
         # The grid goes out on every posed frame, target or not: the dashboard
         # has to show where a1..h8 are before it can show what is on one.
         result["grid"] = self.board.grid(solution)
+
+        result["aim"] = None
+        if aim_xy is not None:
+            try:
+                ax, ay = float(aim_xy[0]), float(aim_xy[1])
+                az = float(aim_xy[2]) if len(aim_xy) > 2 else 0.0
+                uv = self.board.project(solution, (ax, ay), az)
+                result["aim"] = {
+                    "x_mm": round(ax, 1), "y_mm": round(ay, 1), "z_mm": round(az, 1),
+                    "uv": [round(float(uv[0]), 2), round(float(uv[1]), 2)],
+                    "label": str(aim_xy[3]) if len(aim_xy) > 3 else "aim",
+                }
+            except Exception:                      # display only, never fatal
+                result["aim"] = None
 
         t_squares = time.perf_counter()
         grey = cv2.cvtColor(rect_frame, cv2.COLOR_BGR2GRAY)

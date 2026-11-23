@@ -1,0 +1,38 @@
+{
+  "schema": "piece-placements/1",
+  "note": "Full real multi-view dataset placements. Brian places these on the board before the capture run. Base-centre is the square centre unless overridden.",
+  "round": "full1",
+  "placements": [
+    {
+      "piece": "pawn",
+      "square": "e5"
+    },
+    {
+      "piece": "rook",
+      "square": "d4"
+    },
+    {
+      "piece": "knight",
+      "square": "f6"
+    },
+    {
+      "piece": "bishop",
+      "square": "c3"
+    },
+    {
+      "piece": "queen",
+      "square": "c5"
+    },
+    {
+      "piece": "king",
+      "square": "e3"
+    }
+  ],
+  "guidance": {
+    "spread": "Six different squares across the centre/left/right of the board; avoid a8/h8 far corners (near the reach limit).",
+    "centering": "Place each piece roughly at the square centre; small offsets are fine and useful (the model learns in-square position).",
+    "orientation": "For the knight, note its facing direction if easy to see; other pieces are symmetric.",
+    "one_piece_per_square": "Keep the six chosen squares free of other pieces so the base-centre label is unambiguous.",
+    "arm_clearance": "Leave e5 and the camera's approach area clear of your hands when the capture runs."
+  }
+}

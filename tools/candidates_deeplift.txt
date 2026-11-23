@@ -1,0 +1,5 @@
+('lift_m12',  {'shoulder_lift':-12}),
+('lift_m16',  {'shoulder_lift':-16}),
+('lift_m8',   {'shoulder_lift':-8}),
+('lift_m8_pan_m4', {'shoulder_lift':-8,'shoulder_pan':-4}),
+('lift_m8_pan_p4', {'shoulder_lift':-8,'shoulder_pan':4}),

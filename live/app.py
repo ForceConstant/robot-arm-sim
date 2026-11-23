@@ -204,6 +204,10 @@ class Live:
         self.command_seq = int(time.time() * 1000)
         self.motion = threading.Lock()
         self.board_path = Path(self.config.get("board_file", "live/board.json"))
+        self.tip_center_path = Path(self.config.get(
+            "tip_center_file", "live/tip_center.json"))
+        self.aim_path = Path(self.config.get("aim_file", "live/aim.json"))
+        self._aim: dict | None = None
         self.wrist_path = Path(self.config.get(
             "wrist_file", "live/wrist_calibration.json"))
         self.frame_offset.offset_deg = float(
@@ -244,6 +248,82 @@ class Live:
     def board(self) -> dict:
         return self.kinematics.board_mm()
 
+    # ------------------------------------------------- overlay pose propagation
+    def tool_pose_board(self):
+        """T_board_tool from the measured joints, for overlay propagation.
+
+        The detector's own pose needs markers; this one needs only the encoders,
+        so the overlay can keep projecting while the markers are occluded.
+        """
+        try:
+            state = self.bridge.state()
+            joints = state.get("joints") or {}
+            if len(joints) != 6:
+                return None
+            values = [float(joints[name]) for name in JOINTS]
+            return np.linalg.inv(self._board_frame()) @ self.kinematics.fk(values)
+        except Exception:
+            return None
+
+    def tool_and_tip(self):
+        """(T_board_tool, tip_mm) from one joint read.
+
+        The tip marker is the projection of this tip point through the solved
+        pose, not a stored pixel: the cartesian move puts the jaw square to the
+        board over the target square, so at that pose the tip projects onto the
+        middle of that square and follows pitch on its own.
+        """
+        try:
+            state = self.bridge.state()
+            joints = state.get("joints") or {}
+            if len(joints) != 6:
+                return None, None
+            values = [float(joints[name]) for name in JOINTS]
+            board_frame = self._board_frame()
+            flange = self.kinematics.fk(values)
+            tip = (flange @ self.jaw_frame())[:3, 3]
+            tip_mm = self.kinematics.to_board(tip) * 1000.0
+            return np.linalg.inv(board_frame) @ flange, [float(v) for v in tip_mm]
+        except Exception:
+            return None, None
+
+    def _propagate_snapshot(self, snap: dict, tool_now) -> dict:
+        """Swap in a projected grid/aim when the live solve has gone away."""
+        # OFF by default: validated 2026-11-23 against a real second solve, the
+        # FK propagation disagreed by 6.6 deg / 18 mm, putting a projected point
+        # 91-144 px from where the board actually was. A marker that wrong is
+        # worse than an absent one. Enable only after the camera-to-tool (or the
+        # FK orientation) is trustworthy.
+        if not self.config.get("propagate_pose", False):
+            return snap
+        if tool_now is None:
+            return snap
+        result = snap.get("result") or {}
+        age = snap.get("age_s") or 0.0
+        if result.get("board") and age < 1.2:
+            return snap
+        solution = self.overlay.propagated(tool_now) if self.overlay else None
+        if solution is None:
+            return snap
+        board = self.overlay.detector.board
+        res = dict(result)
+        try:
+            res["grid"] = board.grid(solution)
+            aim = self.aim()
+            if aim.get("set"):
+                uv = board.project(solution, (aim["x_mm"], aim["y_mm"]),
+                                   aim.get("z_mm", 0.0))
+                res["aim"] = {"x_mm": aim["x_mm"], "y_mm": aim["y_mm"],
+                              "z_mm": aim.get("z_mm", 0.0),
+                              "uv": [round(float(uv[0]), 2), round(float(uv[1]), 2)],
+                              "label": aim.get("label", "aim")}
+        except Exception:
+            return snap
+        out = dict(snap)
+        out["result"] = res
+        out["propagated"] = True
+        return out
+
     def set_board(self, body: dict) -> dict:
         current = self.kinematics.board_mm()
         spec = {key: float(body.get(key, current[key]))
@@ -282,6 +362,95 @@ class Live:
         z_mm = float(camera[2, 3]) * 1000.0 - float(height)
         return self.set_board({"x_mm": x_mm, "y_mm": y_mm,
                                "z_mm": z_mm, "yaw_deg": yaw_deg})
+
+    # -------------------------------------------------------- tip centre (manual)
+    def tip_center(self) -> dict:
+        """User-set finger-tip midpoint pixel in the raw 640x480 wrist frame.
+
+        The jaws are rigid to the wrist camera, so this is a fixed pixel.  The
+        detection overlay reads it to place the true tool-centre marker without
+        relying on the (unsolved) camera-to-jaw hand-eye transform.
+        """
+        data: dict = {}
+        if self.tip_center_path.exists():
+            try:
+                data = json.loads(self.tip_center_path.read_text())
+            except (OSError, ValueError):
+                data = {}
+        px = data.get("pixel")
+        if not (isinstance(px, list) and len(px) == 2):
+            px = None
+        return {"set": px is not None,
+                "pixel": px,
+                "updated": data.get("updated"),
+                "set_by": data.get("set_by"),
+                "joints_deg": data.get("joints_deg")}
+
+    def set_tip_center(self, u: float, v: float) -> dict:
+        if not (0 <= u <= 640 and 0 <= v <= 480):
+            raise ValueError("tip centre pixel must be inside 640x480")
+        # Record the pose the click was made at. Measured 2026-11-23: u holds
+        # under wrist pitch to +-2 px, while v tracks the camera's tilt to the
+        # board, so a pixel without its pose is only half a fact.
+        pose: dict = {}
+        try:
+            state = self.bridge.state()
+            pose = {k: round(float(x), 2)
+                    for k, x in (state.get("joints") or {}).items()}
+        except Exception:                      # display metadata, never fatal
+            pose = {}
+        data = {"pixel": [round(float(u), 1), round(float(v), 1)],
+                "updated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                "set_by": "user",
+                "joints_deg": pose}
+        self.tip_center_path.parent.mkdir(parents=True, exist_ok=True)
+        self.tip_center_path.write_text(json.dumps(data, indent=2) + "\n")
+        return self.tip_center()
+
+    # ------------------------------------------------------- aim point (display)
+    def aim(self) -> dict:
+        """Board-mm point the grasp run is aiming at, drawn on the stream.
+
+        Display only: the tool that moves the arm posts here so the recorded
+        frames carry the commanded target beside the tip pixel. Nothing in the
+        console acts on it.
+        """
+        if self._aim is None:
+            data: dict = {}
+            if self.aim_path.exists():
+                try:
+                    data = json.loads(self.aim_path.read_text())
+                except (OSError, ValueError):
+                    data = {}
+            self._aim = data if data.get("set") else {"set": False}
+        return dict(self._aim)
+
+    def set_aim(self, x_mm: float, y_mm: float, z_mm: float,
+                label: str = "aim") -> dict:
+        data = {"set": True,
+                "x_mm": round(float(x_mm), 2), "y_mm": round(float(y_mm), 2),
+                "z_mm": round(float(z_mm), 2), "label": str(label)[:40],
+                "updated": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+        self.aim_path.parent.mkdir(parents=True, exist_ok=True)
+        self.aim_path.write_text(json.dumps(data, indent=2) + "\n")
+        self._aim = data
+        return dict(data)
+
+    def clear_aim(self) -> dict:
+        self._aim = {"set": False}
+        try:
+            if self.aim_path.exists():
+                self.aim_path.unlink()
+        except OSError:
+            pass
+        return dict(self._aim)
+
+    def aim_tuple(self):
+        data = self.aim()
+        if not data.get("set"):
+            return None
+        return (data["x_mm"], data["y_mm"], data.get("z_mm", 0.0),
+                data.get("label", "aim"))
 
     # -------------------------------------------------------- wrist calibration
     def wrist_cal(self) -> dict:
@@ -1228,13 +1397,24 @@ class Live:
         raw = cv2.cvtColor(frame.image, cv2.COLOR_RGB2BGR)
         snap = {"result": None}
         if self.overlay is not None:
-            self.overlay.submit(raw.copy(), time.time())
+            tool_now, tip_board = self.tool_and_tip()
+            self.overlay.submit(raw.copy(), time.time(), tool_now)
+            self.overlay.set_aim(self.aim_tuple())
             # Draw on the undistorted frame: the detector solves pose there, so
             # corners and centroid only line up on the same geometry.
             image = self._orient(self.overlay.rectify(raw))
             snap = self.overlay.snapshot()
+            snap = self._propagate_snapshot(snap, tool_now)
+            # The tip pixel is a MOUNT CONSTANT, not a projection: in sim the
+            # camera and the fingertip plane sit on one rigid body, so the pixel
+            # is identical across a 60 deg pitch sweep and a 90 deg roll sweep
+            # (0.0 px, 2026-11-23). Projecting the FK tip instead inherits the
+            # 6.6 deg FK/pose error and moves the marker where the hand-eye is
+            # wrong, which is exactly what we do not want.
+            tip_px = self.tip_center().get("pixel")
             draw_target(image, snap, layout_hw=raw.shape[:2],
-                        stream_fps=self.stream_fps())
+                        stream_fps=self.stream_fps(),
+                        tip_center=tip_px)
         else:
             image = self._orient(raw)
         ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 75])
@@ -1670,6 +1850,56 @@ def _mjpeg():
         live.detach()
 
 
+@app.get("/tip-center")
+def tip_center_get():
+    return live.tip_center()
+
+
+@app.get("/aim")
+def aim_get():
+    return live.aim()
+
+
+@app.post("/aim")
+async def aim_set(request: Request):
+    _authorised(request)
+    body = await request.json()
+    try:
+        return live.set_aim(body["x_mm"], body["y_mm"], body.get("z_mm", 0.0),
+                            body.get("label", "aim"))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/aim/clear")
+async def aim_clear(request: Request):
+    _authorised(request)
+    return live.clear_aim()
+
+
+@app.post("/tip-center")
+async def tip_center_set(request: Request):
+    _authorised(request)
+    body = await request.json()
+    try:
+        u = float(body["u_mm"]) if "u_mm" in body else float(body["u"])
+        v = float(body["v_mm"]) if "v_mm" in body else float(body["v"])
+        return live.set_tip_center(u, v)
+    except (KeyError, ValueError, TypeError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/tip-center/clear")
+async def tip_center_clear(request: Request):
+    _authorised(request)
+    try:
+        if live.tip_center_path.exists():
+            live.tip_center_path.unlink()
+    except OSError:
+        pass
+    return live.tip_center()
+
+
 @app.get("/stream")
 def stream():
     return StreamingResponse(_mjpeg(),
@@ -1731,6 +1961,11 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
 .cross line { stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
 .cross line.minor { opacity:.32; }
 .cross circle { fill:none; stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
+.tipmark { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; pointer-events:none; display:none; }
+.tipmark::before, .tipmark::after { content:""; position:absolute; background:#ffd23f; }
+.tipmark::before { left:10px; top:0; width:2px; height:22px; }
+.tipmark::after { top:10px; left:0; height:2px; width:22px; }
+.camframe.tipset { cursor:crosshair; }
 </style></head><body>
 <header><h1>Robot arm</h1>
 <span id="mode" class="badge">—</span><span id="link" class="badge">—</span>
@@ -1741,10 +1976,12 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
   <button class="tab on" id="vtab-live">Live</button>
   <button class="tab" id="vtab-wrist">Wrist calibration</button>
   <button class="tab" id="vtab-camera">Camera</button>
+  <button class="tab" id="vtab-tip">Tip set</button>
 </nav></header>
 <main>
   <div>
-    <div class="cam"><div class="camframe"><img id="cam" src="/stream" alt="wrist camera">
+    <div class="cam"><div class="camframe" id="camframe"><img id="cam" src="/stream" alt="wrist camera">
+      <div id="tipmark" class="tipmark" title="set tip centre"></div>
       <div id="cross" class="cross" style="display:none">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="alignment crosshatch">
           <line x1="50" y1="0" x2="50" y2="100"></line>
@@ -1988,6 +2225,36 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
       <div class="hint" style="margin-top:6px">A change applies as soon as you make it — no Apply needed; Apply just forces one now. Every write is read back from the device. Save as startup is the only thing that stores the profile the bridge re-applies whenever it reopens the camera.</div>
     </div>
    </div>
+
+   <div id="pane-tip" style="display:none">
+    <div class="panel"><h2>Set jaw-tip centre</h2>
+      <div class="hint">Jog the arm until both finger tips are clearly visible, then click the camera image at the midpoint between the tips. The jaws are rigid to the camera, so that pixel is fixed for every frame and becomes the true tool-centre marker (no hand-eye needed).</div>
+      <div class="grid" style="margin-top:8px">
+        <button onclick="jog('shoulder_pan',2)">pan +</button>
+        <button onclick="jog('shoulder_lift',2)">lift +</button>
+        <button onclick="jog('elbow_flex',2)">elbow +</button>
+        <button onclick="jog('wrist_flex',2)">flex +</button>
+        <button onclick="jog('wrist_roll',5)">roll +</button>
+        <button onclick="jog('gripper',5)">jaw +</button>
+        <button onclick="jog('shoulder_pan',-2)">pan −</button>
+        <button onclick="jog('shoulder_lift',-2)">lift −</button>
+        <button onclick="jog('elbow_flex',-2)">elbow −</button>
+        <button onclick="jog('wrist_flex',-2)">flex −</button>
+        <button onclick="jog('wrist_roll',-5)">roll −</button>
+        <button onclick="jog('gripper',-5)">jaw −</button>
+      </div>
+      <div class="row mono" style="margin-top:8px"><span>stored pixel (raw 640×480)</span><span id="tipPixel">—</span></div>
+      <div class="row mono hint"><span>updated</span><span id="tipUpdated">—</span></div>
+      <div class="grid2" style="margin-top:8px">
+        <button id="tipClear" class="danger">Clear</button>
+        <button id="tipReload">Reload</button>
+      </div>
+      <div id="tipStatus" class="mono hint" style="margin-top:8px">click the image to set</div>
+    </div>
+    <div class="panel"><h2>How it is used</h2>
+      <div class="hint">The saved pixel is the reference for the cyan jaw-centre cross drawn by the live detection overlay. It replaces the old FK-tip-through-PnP projection, which was invalid because the camera-to-jaw transform was never calibrated. It does not command motion and does not touch the arm.</div>
+    </div>
+   </div>
   </div>
 </main>
 <script>
@@ -2036,15 +2303,52 @@ function view(mode){
   el('vtab-live').classList.toggle('on', mode === 'live');
   el('vtab-wrist').classList.toggle('on', mode === 'wrist');
   el('vtab-camera').classList.toggle('on', mode === 'camera');
+  el('vtab-tip').classList.toggle('on', mode === 'tip');
   el('pane-live').style.display = mode === 'live' ? 'block' : 'none';
   el('pane-wrist').style.display = mode === 'wrist' ? 'block' : 'none';
   el('pane-camera').style.display = mode === 'camera' ? 'block' : 'none';
+  el('pane-tip').style.display = mode === 'tip' ? 'block' : 'none';
+  el('camframe').classList.toggle('tipset', mode === 'tip');
   if (mode === 'camera' && !camState) camLoad();
+  if (mode === 'tip') tipLoad();
   showCross(crossOn);
 }
 el('vtab-live').onclick = () => view('live');
 el('vtab-wrist').onclick = () => view('wrist');
 el('vtab-camera').onclick = () => view('camera');
+el('vtab-tip').onclick = () => view('tip');
+
+// ---------------------------------------------------------- tip centre (manual)
+let tipPixel = null;
+function tipRender(d){
+  tipPixel = d.set ? d.pixel : null;
+  el('tipPixel').textContent = d.set ? d.pixel.join(', ') : '—';
+  el('tipUpdated').textContent = d.updated || '—';
+  const mark = el('tipmark');
+  if (d.set) {
+    mark.style.display = 'block';
+    mark.style.left = (d.pixel[0]/640*100) + '%';
+    mark.style.top  = (d.pixel[1]/480*100) + '%';
+  } else {
+    mark.style.display = 'none';
+  }
+}
+async function tipLoad(){
+  const r = await fetch('/tip-center');
+  if (r.ok) tipRender(await r.json());
+}
+el('camframe').onclick = async (e) => {
+  if (el('pane-tip').style.display === 'none') return;
+  const box = el('cam').getBoundingClientRect();
+  const u = (e.clientX - box.left) / box.width  * 640;
+  const v = (e.clientY - box.top)  / box.height * 480;
+  if (u < 0 || u > 640 || v < 0 || v > 480) return;
+  const r = await post('/tip-center', {u: u, v: v});
+  if (r.ok) { tipRender(await r.json()); el('tipStatus').textContent = 'set at '+u.toFixed(0)+', '+v.toFixed(0); }
+};
+el('tipClear').onclick = async () => { await post('/tip-center/clear',{}); tipLoad(); };
+el('tipReload').onclick = () => tipLoad();
+tipLoad();
 el('wcCross').onclick = () => { crossOn = !crossOn; showCross(crossOn); };
 function renderWrist(w){
   if (!w) return;
@@ -2644,6 +2948,15 @@ NO_CACHE = {"Cache-Control": "no-store, max-age=0"}
 @app.get("/")
 def index():
     return HTMLResponse(PAGE, headers=NO_CACHE)
+
+
+# Click-to-label UI for the real-piece dataset, served on the same reachable
+# port as the console (:8080) because :8123 is filtered off-box.
+try:
+    import label_routes
+    label_routes.install(app)
+except Exception as _exc:  # never let the labeler break the console
+    print(f'label_routes not installed: {_exc}', file=sys.stderr)
 
 
 @app.get("/focus")

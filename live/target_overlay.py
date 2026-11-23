@@ -31,6 +31,12 @@ RED = (60, 60, 255)
 AMBER = (40, 200, 255)
 WHITE = (250, 250, 250)
 GREY = (175, 175, 175)
+# The commanded aim point and the stored jaw-tip pixel: two markers Brian asked
+# to see together on the grasp frames (2026-11-23). Magenta and cyan, so they
+# stay apart from the green markers, the blue grid and the red detection target
+# even after JPEG chroma subsampling.
+MAGENTA = (255, 60, 235)
+CYAN = (240, 220, 40)
 # The board's own grid. Blue, because the markers are green and the target is
 # red: three colours, three meanings, still separable after JPEG q75 chroma.
 GRID = (255, 120, 60)
@@ -53,6 +59,8 @@ class TargetOverlay:
         self.lock = threading.Lock()
         self._frame = None
         self._frame_ts = 0.0
+        self._tool_pose = None
+        self._tool_pose_solved = None
         self.result: dict | None = None
         self.result_ts = 0.0
         self.state: dict | None = None
@@ -64,6 +72,7 @@ class TargetOverlay:
         self.last_error = ""
         self._stop = False
         self.enabled = True
+        self.aim = None          # (x_mm, y_mm, z_mm, label) set per grasp run
         self.thread = threading.Thread(target=self._loop, name="target-detect",
                                        daemon=True)
         self.thread.start()
@@ -73,14 +82,51 @@ class TargetOverlay:
         """Undistorted landscape frame — what the overlay geometry is measured in."""
         return self.detector.board.rectify(image_bgr)
 
-    def submit(self, image_bgr: np.ndarray, capture_ts: float) -> None:
-        """Hand the newest frame over; never blocks on detection."""
+    def submit(self, image_bgr: np.ndarray, capture_ts: float,
+               tool_pose: np.ndarray | None = None) -> None:
+        """Hand the newest frame over, with the arm's tool pose for that frame."""
         if not self.enabled:
             return
         with self.lock:
             self._frame = image_bgr
             self._frame_ts = capture_ts
+            self._tool_pose = tool_pose
             self.submitted += 1
+
+    def propagated(self, tool_now: np.ndarray | None) -> dict | None:
+        """Project the board->camera pose forward from the last solve plus FK.
+
+        The markers drop out as the jaws approach the board, and the grid and
+        aim point vanish with them (2026-11-23). Both are rigid to the board and
+        the camera is rigid to the tool, so the last solved pose can be carried
+        forward: T_cam_board(now) = T_cam_tool @ T_tool_board(now), with
+        T_cam_tool derived once from that solve and the tool pose at the time.
+        """
+        if tool_now is None:
+            return None
+        with self.lock:
+            result = self.result
+            tool_then = self._tool_pose_solved
+        board = (result or {}).get("board") or {}
+        if tool_then is None or "rvec" not in board:
+            return None
+        try:
+            cam_board_then = np.eye(4)
+            cam_board_then[:3, :3] = cv2.Rodrigues(
+                np.asarray(board["rvec"], float).reshape(3, 1))[0]
+            cam_board_then[:3, 3] = np.asarray(board["tvec"], float).ravel()
+            cam_tool = cam_board_then @ np.linalg.inv(np.asarray(tool_then, float))
+            cam_board_now = cam_tool @ np.asarray(tool_now, float)
+            rvec_now, _ = cv2.Rodrigues(cam_board_now[:3, :3])
+            return {"rvec": rvec_now.ravel(), "tvec": cam_board_now[:3, 3],
+                    "propagated": True}
+        except Exception:
+            return None
+
+    def set_aim(self, aim) -> None:
+        """Board-mm point the arm is aiming at, drawn from the same pose."""
+        with self.lock:
+            self.aim = tuple(aim) if aim else None
 
     # ----------------------------------------------------------------- worker
     def _loop(self) -> None:
@@ -89,14 +135,19 @@ class TargetOverlay:
             with self.lock:
                 frame = self._frame
                 ts = self._frame_ts
+                tool = self._tool_pose
                 self._frame = None
             if frame is not None and self.enabled:
                 try:
-                    result = self.detector.detect(frame)
+                    result = self.detector.detect(frame, aim_xy=self.aim)
                     result["frame_ts"] = ts
                     with self.lock:
                         self.result = result
                         self.result_ts = time.time()
+                        # pair the solved pose with the tool pose it was solved
+                        # at; keep the last good pair when this frame has none
+                        if result.get("board"):
+                            self._tool_pose_solved = tool
                         self.runs += 1
                         self.costs.append(result["timing_ms"]["total"])
                 except Exception as exc:          # keep the stream alive
@@ -192,11 +243,17 @@ def _draw_grid(canvas: np.ndarray, grid: dict, to_portrait, stats) -> None:
 
 
 def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
-         stream_fps: float | None = None, stats: dict | None = None) -> np.ndarray:
+         stream_fps: float | None = None, stats: dict | None = None,
+         tip_center=None) -> np.ndarray:
     """Draw the overlay onto a portrait canvas.
 
     ``layout_hw`` is the landscape (height, width) of the frame the detection
     ran on; rotating 90 deg clockwise maps (u, v) -> (H - 1 - v, u).
+
+    ``tip_center`` is the stored jaw-tip midpoint pixel in that same landscape
+    frame. It is rigid to the camera, so it is drawn every frame; the commanded
+    aim point (``result["aim"]``) is drawn beside it so the two can be compared
+    on the very frames where the jaws close.
     """
     height, width = layout_hw
 
@@ -207,12 +264,13 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
     age = snap.get("age_s")
     age = 99.0 if age is None else age
     fresh = age < max(1.5, 3.0)
-    colour = GREEN if fresh else AMBER
+    propagated = bool(snap.get("propagated"))
+    colour = AMBER if propagated else (GREEN if fresh else AMBER)
     # Detection only runs while someone is watching, so the first frame after a
     # reconnect carries the previous session's result.  Corner geometry from an
     # older frame drawn on a new one is exactly the wrong thing to show: drop the
     # geometry and say the detection is idle instead.
-    stale = result is not None and age > 2.0
+    stale = result is not None and age > 2.0 and not propagated
 
     if result and not stale:
         for marker in result.get("markers", []):
@@ -239,9 +297,37 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
             cv2.putText(canvas, label, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX,
                         0.55, RED, 2, cv2.LINE_AA)
 
+        # ---- commanded aim point (the arm's own target), magenta
+        aim = result.get("aim") or {}
+        if aim.get("uv"):
+            u, v = to_portrait(aim["uv"])
+            for dx0, dy0, dx1, dy1 in ((-26, 0, -9, 0), (9, 0, 26, 0),
+                                       (0, -26, 0, -9), (0, 9, 0, 26)):
+                cv2.line(canvas, (u + dx0, v + dy0), (u + dx1, v + dy1),
+                         MAGENTA, 2, cv2.LINE_AA)
+            cv2.circle(canvas, (u, v), 20, MAGENTA, 1, cv2.LINE_AA)
+            text = f"aim {aim.get('x_mm', 0):.1f},{aim.get('y_mm', 0):.1f}"
+            tx = min(max(u + 12, 4), max(4, canvas.shape[1] - 210))
+            ty = min(max(v + 34, 16), canvas.shape[0] - 8)
+            cv2.putText(canvas, text, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, MAGENTA, 2, cv2.LINE_AA)
+
+    # ---- jaw-tip centre: a fixed pixel, so it is drawn even with no detect
+    tip_uv = None
+    if tip_center is not None:
+        tip_uv = to_portrait(tip_center)
+        u, v = tip_uv
+        cv2.line(canvas, (u - 18, v), (u + 18, v), CYAN, 2, cv2.LINE_AA)
+        cv2.line(canvas, (u, v - 18), (u, v + 18), CYAN, 2, cv2.LINE_AA)
+        cv2.putText(canvas, "tip", (u + 10, v - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, CYAN, 1, cv2.LINE_AA)
+
     # ---- status block: the headline is the target or its absence
     lines = []
-    if stale:
+    if propagated:
+        head, head_colour = (f"aim carried by FK - last solve {age:.1f} s ago "
+                             f"(markers lost)"), AMBER
+    elif stale:
         head, head_colour = f"no target - detection idle {age:.0f} s", AMBER
     elif result is None:
         head, head_colour = "no target - starting", AMBER
@@ -262,6 +348,15 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
             lines.append("pnp - no board pose")
         lines.append(f"detect {age:4.1f} s ago  {len(result.get('markers', []))} markers"
                      f"  {result.get('squares_in_view', 0)} squares")
+        piece = result.get("piece") or {}
+        if tip_uv is not None and not stale and piece.get("uv"):
+            puv = to_portrait(piece["uv"])
+            cv2.line(canvas, tip_uv, puv, WHITE, 1, cv2.LINE_AA)
+            cv2.circle(canvas, puv, 5, WHITE, 1, cv2.LINE_AA)
+            gap_px = float(np.hypot(puv[0] - tip_uv[0], puv[1] - tip_uv[1]))
+            lines.append(f"tip->piece {gap_px:.0f} px"
+                         + (f"  {piece['x_mm']:.1f},{piece['y_mm']:.1f} mm"
+                            if piece.get("x_mm") is not None else ""))
     if snap.get("mean_cost_ms") is not None:
         lines.append(f"cost {snap['mean_cost_ms']:.1f} ms  runs {snap['runs']}"
                      + (f"  fps {stream_fps:.1f}" if stream_fps else ""))
