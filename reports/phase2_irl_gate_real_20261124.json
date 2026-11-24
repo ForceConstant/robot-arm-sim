@@ -1,0 +1,528 @@
+{
+ "mode": "irl",
+ "dry_run": false,
+ "console": "http://127.0.0.1:8081",
+ "bridge": "http://192.168.1.167:8100",
+ "stall_above": null,
+ "stale_readback": false,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": true,
+ "cases": [
+  {
+   "case": "park_at_start",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 65.0,
+    "y_mm": 70.0,
+    "z_mm": 110.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.012,
+    "waited_s": 0.02
+   },
+   "ok": true,
+   "before_deg": [
+    -13.36,
+    -8.84,
+    8.57,
+    93.58,
+    0.44,
+    43.88
+   ],
+   "tip_before_mm": [
+    3.2,
+    -1.4,
+    97.8
+   ],
+   "before_settled": true,
+   "before_age_s": 0.038,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.25,
+    "max_deg": 1.06,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -47.74,
+     "shoulder_lift": -33.71,
+     "elbow_flex": 26.95,
+     "wrist_flex": 94.55,
+     "wrist_roll": 87.56,
+     "gripper": 43.88
+    },
+    "error_deg": 1.6,
+    "commands": 136,
+    "travel_deg": 87.21,
+    "needed_deg": 87.63,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -48.022,
+      "shoulder_lift": -35.308,
+      "elbow_flex": 26.779,
+      "wrist_flex": 95.0,
+      "wrist_roll": 87.98,
+      "gripper": 43.88
+     },
+     "position_error_mm": 0.39,
+     "approach_error_deg": 3.529,
+     "cost": 0.0003948362780227842,
+     "starts": 4,
+     "solver": "mink"
+    },
+    "pose": {
+     "tool_mm": [
+      61.4,
+      72.5,
+      216.8
+     ],
+     "camera_mm": [
+      114.9,
+      114.1,
+      206.3
+     ],
+     "camera_height_mm": 206.3,
+     "view_pitch_deg": 149.8,
+     "jaw_azimuth_deg": 130.6,
+     "tip_mm": [
+      64.4,
+      69.6,
+      106.5
+     ],
+     "joints_deg": {
+      "shoulder_pan": -47.74,
+      "shoulder_lift": -33.71,
+      "elbow_flex": 26.95,
+      "wrist_flex": 94.55,
+      "wrist_roll": 87.56,
+      "gripper": 43.88
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 12.29,
+   "after_deg": [
+    -47.74,
+    -33.71,
+    26.95,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_after_mm": [
+    64.4,
+    69.6,
+    106.5
+   ],
+   "after_settled": true,
+   "settle_s": 0.91,
+   "movement": {
+    "per_joint_deg": [
+     -34.38,
+     -24.87,
+     18.38,
+     0.97,
+     87.21,
+     0.0
+    ],
+    "max_abs_deg": 87.21,
+    "travel_deg": 165.81,
+    "joints_ge_25": 2
+   },
+   "refused": false,
+   "reported_error_deg": 1.6,
+   "tip_travel_mm": 94.14
+  },
+  {
+   "case": "large_relocation_large",
+   "command": {
+    "mode": "xyz",
+    "x_mm": -90.0,
+    "y_mm": 20.0,
+    "z_mm": 110.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.024,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    -47.74,
+    -33.71,
+    26.95,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_before_mm": [
+    64.4,
+    69.6,
+    106.5
+   ],
+   "before_settled": true,
+   "before_age_s": 0.028,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.39,
+    "max_deg": 1.5,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": 20.75,
+     "shoulder_lift": -20.26,
+     "elbow_flex": 16.66,
+     "wrist_flex": 94.55,
+     "wrist_roll": 87.56,
+     "gripper": 43.88
+    },
+    "error_deg": 1.99,
+    "commands": 110,
+    "travel_deg": 68.49,
+    "needed_deg": 68.91,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": 21.169,
+      "shoulder_lift": -20.381,
+      "elbow_flex": 14.674,
+      "wrist_flex": 94.974,
+      "wrist_roll": 87.56,
+      "gripper": 43.88
+     },
+     "position_error_mm": 0.2,
+     "approach_error_deg": 0.734,
+     "cost": 0.00019811565281999615,
+     "starts": 1,
+     "solver": "mink"
+    },
+    "pose": {
+     "tool_mm": [
+      -87.9,
+      21.9,
+      215.5
+     ],
+     "camera_mm": [
+      -29.4,
+      -12.2,
+      204.5
+     ],
+     "camera_height_mm": 204.5,
+     "view_pitch_deg": 148.6,
+     "jaw_azimuth_deg": 62.1,
+     "tip_mm": [
+      -87.2,
+      23.6,
+      105.1
+     ],
+     "joints_deg": {
+      "shoulder_pan": 20.75,
+      "shoulder_lift": -20.26,
+      "elbow_flex": 16.66,
+      "wrist_flex": 94.55,
+      "wrist_roll": 87.56,
+      "gripper": 43.88
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 9.83,
+   "after_deg": [
+    20.75,
+    -20.26,
+    16.66,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_after_mm": [
+    -87.2,
+    23.6,
+    105.1
+   ],
+   "after_settled": true,
+   "settle_s": 0.91,
+   "movement": {
+    "per_joint_deg": [
+     68.49,
+     13.45,
+     -10.29,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 68.49,
+    "travel_deg": 92.23,
+    "joints_ge_25": 1
+   },
+   "refused": false,
+   "reported_error_deg": 1.99,
+   "tip_travel_mm": 158.43,
+   "relocation": {
+    "min_tip_mm": 100.0,
+    "min_moving_joints": 2,
+    "min_joint_travel_deg": 60.0,
+    "tip_mm": 158.43,
+    "moving_joints": 3,
+    "joint_travel_deg": 92.23,
+    "satisfied": true
+   }
+  },
+  {
+   "case": "small_step_pan",
+   "command": {
+    "mode": "jog",
+    "joint": "shoulder_pan",
+    "delta": 6.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.079,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    20.75,
+    -20.26,
+    16.66,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_before_mm": [
+    -87.2,
+    23.6,
+    105.1
+   ],
+   "before_settled": true,
+   "before_age_s": 0.07,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.33,
+    "max_deg": 1.32,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": 26.11,
+     "shoulder_lift": -20.0,
+     "elbow_flex": 17.01,
+     "wrist_flex": 94.55,
+     "wrist_roll": 87.56,
+     "gripper": 43.88
+    },
+    "error_deg": 0.64,
+    "commands": 9,
+    "travel_deg": 5.36,
+    "needed_deg": 6.0
+   },
+   "reply_wall_s": 0.82,
+   "after_deg": [
+    26.37,
+    -20.0,
+    17.01,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_after_mm": [
+    -99.8,
+    30.9,
+    103.8
+   ],
+   "after_settled": true,
+   "settle_s": 1.01,
+   "movement": {
+    "per_joint_deg": [
+     5.62,
+     0.26,
+     0.35,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 5.62,
+    "travel_deg": 6.23,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.64,
+   "tip_travel_mm": 14.62
+  },
+  {
+   "case": "small_step_pan_back",
+   "command": {
+    "mode": "jog",
+    "joint": "shoulder_pan",
+    "delta": -6.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.045,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    26.37,
+    -20.0,
+    17.01,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_before_mm": [
+    -99.8,
+    30.9,
+    103.8
+   ],
+   "before_settled": true,
+   "before_age_s": 0.05,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.4,
+    "max_deg": 1.75,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": 20.92,
+     "shoulder_lift": -19.74,
+     "elbow_flex": 17.36,
+     "wrist_flex": 94.55,
+     "wrist_roll": 87.56,
+     "gripper": 43.88
+    },
+    "error_deg": 0.55,
+    "commands": 9,
+    "travel_deg": 5.45,
+    "needed_deg": 6.0
+   },
+   "reply_wall_s": 0.85,
+   "after_deg": [
+    20.66,
+    -19.74,
+    17.36,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_after_mm": [
+    -86.1,
+    25.6,
+    102.4
+   ],
+   "after_settled": true,
+   "settle_s": 1.02,
+   "movement": {
+    "per_joint_deg": [
+     -5.71,
+     0.26,
+     0.35,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 5.71,
+    "travel_deg": 6.32,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.55,
+   "tip_travel_mm": 14.76
+  },
+  {
+   "case": "small_step_wrist",
+   "command": {
+    "mode": "jog",
+    "joint": "wrist_flex",
+    "delta": -5.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.055,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    20.66,
+    -19.74,
+    17.36,
+    94.55,
+    87.65,
+    43.88
+   ],
+   "tip_before_mm": [
+    -86.1,
+    25.6,
+    102.4
+   ],
+   "before_settled": true,
+   "before_age_s": 0.061,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.33,
+    "max_deg": 1.5,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": 20.66,
+     "shoulder_lift": -19.56,
+     "elbow_flex": 17.54,
+     "wrist_flex": 90.15,
+     "wrist_roll": 87.56,
+     "gripper": 43.88
+    },
+    "error_deg": 0.6,
+    "commands": 9,
+    "travel_deg": 4.4,
+    "needed_deg": 5.0
+   },
+   "reply_wall_s": 0.81,
+   "after_deg": [
+    20.66,
+    -19.56,
+    17.54,
+    89.98,
+    87.65,
+    43.88
+   ],
+   "tip_after_mm": [
+    -91.1,
+    13.6,
+    101.6
+   ],
+   "after_settled": true,
+   "settle_s": 1.03,
+   "movement": {
+    "per_joint_deg": [
+     0.0,
+     0.18,
+     0.18,
+     -4.57,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 4.57,
+    "travel_deg": 4.93,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.6,
+   "tip_travel_mm": 13.02
+  }
+ ],
+ "when": "2026-11-24T14:43:19-0500"
+}

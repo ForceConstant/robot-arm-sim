@@ -93,7 +93,10 @@ SMALL = [
     # catch. (Found the hard way on the first sim run.)
     {"name": "small_step_pan", "mode": "jog", "joint": "shoulder_pan", "delta": 6.0},
     {"name": "small_step_pan_back", "mode": "jog", "joint": "shoulder_pan", "delta": -6.0},
-    {"name": "small_step_wrist", "mode": "jog", "joint": "wrist_flex", "delta": 5.0},
+    # -5, not +5: the parked pose leaves wrist_flex at ~97.5 deg against a
+    # 98.79 deg stop, so a positive step is refused (correctly) as out of limits.
+    # Step away from the stop so the case exercises actuation, not clamping.
+    {"name": "small_step_wrist", "mode": "jog", "joint": "wrist_flex", "delta": -5.0},
 ]
 
 

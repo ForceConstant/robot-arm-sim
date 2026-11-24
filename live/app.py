@@ -102,20 +102,16 @@ DEFAULTS = {
     # residual, not physical landing: the ~19 mm model bias lives outside FK and
     # this gate cannot see it (Phase 1 gate decomposition).
     #
-    # PHASE 2 POSITION: 3.0 mm together with ``ik_solver: mink`` is the verified
-    # pair on sim evidence (64/64 @ 3.0 mm, zero regressions; sim relocation
-    # 123 mm green; frozen-readback control still red).  The bundle is NOT
-    # applied here because its last gate — one IRL move — is blocked: on
-    # 2026-11-24 the arm stopped responding to joint commands mid-move (see
-    # reports/phase2_flip_20261124.md).  Apply 3.0 + mink TOGETHER once an IRL
-    # move passes; 3.0 mm on the LS path alone refuses 52/64 valid moves.
-    "move_tolerance_mm": 20.0,
-    # Phase 2: mink is the verified solver on sim evidence and is the intended
-    # default, but the flip is held OFF because its IRL gate did not pass on
-    # 2026-11-24 (mechanism stopped responding mid-move).  "least_squares" keeps
-    # the incumbent path exactly as it was.  Flip to "mink" only together with
-    # move_tolerance_mm 3.0.
-    "ik_solver": "least_squares",
+    # PHASE 2 FLIPPED 2026-11-24, mink + 3.0 mm as a pair.  The IRL gate passed
+    # all five cases on exactly this configuration (park 94 mm, relocation
+    # 158 mm, three small steps; residuals 0.6-2.0 deg) once the servo-deadband
+    # loop fix landed.  3.0 mm on the least_squares path alone would refuse
+    # 52/64 valid squares, which is why the two always change together.
+    "move_tolerance_mm": 3.0,
+    # Phase 2: mink solves /move.  ``least_squares`` stays supported in
+    # live/solver.py for bisecting a solver problem on the arm, but it is no
+    # longer the default.
+    "ik_solver": "mink",
     # Cartesian targets mean the jaw tip.  The one chain->tip transform lives
     # in ``tip_frame.TIP_IN_CHAIN`` (MJCF-derived, see that module); it is not
     # a config value because three competing offsets in the tree is exactly
@@ -1082,6 +1078,18 @@ class Live:
                     note = (f"wrist roll clamped to {clamped:.1f}° "
                             f"(window {lo:.1f}..{hi:.1f}°)")
                     target[4] = clamped + offset
+            # Refuse a jog that runs past a joint stop instead of clamping it and
+            # letting the servo sit still.  Clamping silently is what made a
+            # +5 deg wrist_flex jog at 97.5 deg (limit 98.79) look like a dead
+            # joint: the goal was clamped to the stop, nothing actuated, and only
+            # the stall guard's message revealed why (measured 2026-11-24).
+            limits = self.kinematics.limits.get(joint)
+            if limits:
+                asked = target[names.index(joint)]
+                if asked < limits[0] - 0.5 or asked > limits[1] + 0.5:
+                    raise BridgeError(
+                        f"{joint} jog to {asked:.2f}° is outside its limits "
+                        f"{limits[0]:.2f}..{limits[1]:.2f}°")
             self._keep_in_check(target)
             result = self._stream_to(target, start)
             if note:
@@ -1446,6 +1454,18 @@ class Live:
         names = ("shoulder_pan", "shoulder_lift", "elbow_flex",
                  "wrist_flex", "wrist_roll", "gripper")
         step = 10.5 * 0.066   # degrees per tick at the conservative 10.5 deg/s
+        # The servos have a measured 2-4.4 deg directional deadband: a goal less
+        # than that ahead of the present position is ignored outright.  The old
+        # loop commanded ``measured + clamp(step)``, i.e. a 0.693 deg lead, which
+        # no servo ever acted on -- so ``measured`` never changed, the lead never
+        # grew, and every move sat still until the deadline (measured
+        # 2026-11-24: 0.00 deg on all six joints with --sim --deadband 2.5,
+        # while identical absolute targets moved shoulder_lift 25.36 -> -13.02).
+        # The lead must therefore ACCUMULATE from the last command until it is
+        # wide enough to cross the deadband.  The bridge still bounds it to
+        # MAX_LAG_DEG ahead of the measured pose, so it cannot wind up a backlog.
+        settle_allow = float(self.config.get("move_settle_deadband_deg", 3.5))
+        stall_ticks = int(self.config.get("move_stall_ticks", 20))
 
         def read_measured() -> list[float]:
             """One encoder read. Short or empty state is a hard failure."""
@@ -1465,25 +1485,38 @@ class Live:
         # Rule 1: measure before deciding anything. `start` is only a seed.
         measured = read_measured()
         origin = list(measured)
-        current = list(start)
+        # The commanded pose accumulates toward the target (see the deadband note
+        # above); it starts at the measured pose, never at the caller's seed, so
+        # a stale `start` cannot inject an unvalidated jump.
+        current = list(measured)
         needed = max(abs(a - b) for a, b in zip(target[:5], origin[:5]))
         started = time.time()
         deadline = started + 30.0
         sent = 0
         last_error = max(abs(a - b) for a, b in zip(measured, target))
+        unchanged = 0
         while True:
             error = max(abs(a - b) for a, b in zip(measured, target))
             last_error = error
             if error <= max(0.15, tolerance):
                 break
+            # A residual inside the servo deadband will never shrink: stop
+            # cleanly instead of grinding to the deadline.  It is a settle, not
+            # a failure, and the honest residual is what gets reported.
+            if error <= settle_allow and unchanged >= 8:
+                break
             if time.time() >= deadline:
                 break
-            # Command measured + residual, so a static sag is taken out instead
-            # of ending the move early. The bridge rejects a sequence that is
-            # not newer than the last accepted one, so the counter persists.
+            # Advance the COMMAND (not the measurement) so the lead grows; a
+            # static sag is still taken out because `current` is re-seeded from
+            # the measurement whenever the arm has actually caught up.
+            for index, (sent_value, target_value, measured_value) in enumerate(
+                    zip(current, target, measured)):
+                if abs(sent_value - measured_value) < 1e-9:
+                    sent_value = measured_value
+                current[index] = sent_value + max(
+                    -step, min(step, target_value - sent_value))
             self.command_seq += 1
-            current = [m + max(-step, min(step, t - m))
-                       for m, t in zip(measured, target)]
             self.bridge.command(current, seq=self.command_seq, ttl_ms=200,
                                 speed_scale=self.config.get("speed_scale", 0.3))
             sent += 1
@@ -1492,7 +1525,19 @@ class Live:
                               "sent": [round(v, 3) for v in current],
                               "measured": [round(v, 3) for v in measured]})
             time.sleep(0.066)
+            previous = measured
             measured = read_measured()
+            moved = max(abs(a - b) for a, b in zip(measured, previous))
+            unchanged = unchanged + 1 if moved < 0.05 else 0
+            # If the arm has not budged while the command is well ahead of it,
+            # the joint is not actuating (torque off, jammed, or physically
+            # blocked).  Say so now rather than at the deadline.
+            lead = max(abs(a - b) for a, b in zip(current, measured))
+            if unchanged >= stall_ticks and lead > settle_allow:
+                raise StuckError(
+                    f"joint not actuating: commanded {lead:.2f} deg ahead of "
+                    f"measured for {unchanged} ticks with no motion "
+                    f"(residual {error:.2f} deg of {needed:.2f} needed)")
 
         travel = max(abs(a - b) for a, b in zip(measured[:5], origin[:5]))
         # Rule 2: a move that needed travel but actuated nothing did not happen.

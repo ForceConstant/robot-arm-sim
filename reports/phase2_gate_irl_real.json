@@ -1,0 +1,298 @@
+{
+ "mode": "irl",
+ "dry_run": false,
+ "console": "http://192.168.1.171:8081",
+ "bridge": "http://192.168.1.167:8100",
+ "stall_above": null,
+ "stale_readback": false,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": false,
+ "cases": [
+  {
+   "case": "park_at_start",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 65.0,
+    "y_mm": 70.0,
+    "z_mm": 110.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.045,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    -12.84,
+    -9.89,
+    7.34,
+    97.71,
+    -0.26,
+    43.88
+   ],
+   "tip_before_mm": [
+    0.2,
+    6.2,
+    103.7
+   ],
+   "before_settled": true,
+   "before_age_s": 0.045,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.38,
+    "max_deg": 1.23,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -47.56,
+     "shoulder_lift": -9.89,
+     "elbow_flex": 26.77,
+     "wrist_flex": 95.08,
+     "wrist_roll": -0.35,
+     "gripper": 43.88
+    },
+    "error_deg": 25.5,
+    "commands": 333,
+    "travel_deg": 34.72,
+    "needed_deg": 35.19,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -48.032,
+      "shoulder_lift": -35.387,
+      "elbow_flex": 26.804,
+      "wrist_flex": 95.0,
+      "wrist_roll": -0.35,
+      "gripper": 43.88
+     },
+     "position_error_mm": 0.31,
+     "approach_error_deg": 3.582,
+     "cost": 0.0003146829466509345,
+     "starts": 4,
+     "solver": "mink"
+    },
+    "pose": {
+     "tool_mm": [
+      75.0,
+      58.6,
+      172.5
+     ],
+     "camera_mm": [
+      112.2,
+      13.0,
+      137.2
+     ],
+     "camera_height_mm": 137.2,
+     "view_pitch_deg": 128.0,
+     "jaw_azimuth_deg": 42.7,
+     "tip_mm": [
+      45.5,
+      87.5,
+      70.1
+     ],
+     "joints_deg": {
+      "shoulder_pan": -47.56,
+      "shoulder_lift": -9.89,
+      "elbow_flex": 26.77,
+      "wrist_flex": 95.08,
+      "wrist_roll": -0.35,
+      "gripper": 43.88
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 30.07,
+   "after_deg": [
+    -47.56,
+    -9.89,
+    26.77,
+    95.08,
+    -0.26,
+    43.88
+   ],
+   "tip_after_mm": [
+    45.5,
+    87.5,
+    70.1
+   ],
+   "after_settled": true,
+   "settle_s": 0.9,
+   "movement": {
+    "per_joint_deg": [
+     -34.72,
+     0.0,
+     19.43,
+     -2.63,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 34.72,
+    "travel_deg": 56.78,
+    "joints_ge_25": 1
+   },
+   "refused": false,
+   "reported_error_deg": 25.5,
+   "tip_travel_mm": 98.95
+  },
+  {
+   "case": "large_relocation_large",
+   "command": {
+    "mode": "xyz",
+    "x_mm": -90.0,
+    "y_mm": 20.0,
+    "z_mm": 110.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.027,
+    "waited_s": 0.01
+   },
+   "ok": false,
+   "before_deg": [
+    -47.56,
+    -9.89,
+    26.77,
+    95.08,
+    -0.26,
+    43.88
+   ],
+   "tip_before_mm": [
+    45.5,
+    87.5,
+    70.1
+   ],
+   "before_settled": true,
+   "before_age_s": 0.013,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 30.8,
+    "max_deg": 1.31,
+    "before_return": true
+   },
+   "reply": {
+    "http_error": 409,
+    "detail": "{\"detail\":\"move did not execute: residual 69.72 deg after 331 commands (30.0 s); the arm moved 18.37 of 88.09 deg\"}"
+   },
+   "reply_wall_s": 60.12,
+   "after_deg": [
+    -47.21,
+    -9.89,
+    26.77,
+    95.08,
+    18.11,
+    43.88
+   ],
+   "tip_after_mm": [
+    45.0,
+    87.1,
+    70.1
+   ],
+   "after_settled": true,
+   "settle_s": 0.85,
+   "movement": {
+    "per_joint_deg": [
+     0.35,
+     0.0,
+     0.0,
+     0.0,
+     18.37,
+     0.0
+    ],
+    "max_abs_deg": 18.37,
+    "travel_deg": 18.72,
+    "joints_ge_25": 0
+   },
+   "refused": true,
+   "reported_error_deg": null,
+   "tip_travel_mm": 0.64,
+   "relocation": {
+    "min_tip_mm": 100.0,
+    "min_moving_joints": 2,
+    "min_joint_travel_deg": 60.0,
+    "tip_mm": 0.64,
+    "moving_joints": 1,
+    "joint_travel_deg": 18.72,
+    "satisfied": false
+   }
+  },
+  {
+   "case": "edge_h1_approach",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 98.0,
+    "y_mm": -98.0,
+    "z_mm": 60.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.086,
+    "waited_s": 0.01
+   },
+   "ok": false,
+   "before_deg": [
+    -47.21,
+    -9.89,
+    26.77,
+    95.08,
+    18.11,
+    43.88
+   ],
+   "tip_before_mm": [
+    45.0,
+    87.1,
+    70.1
+   ],
+   "before_settled": true,
+   "before_age_s": 0.034,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.7,
+    "max_deg": 1.23,
+    "before_return": true
+   },
+   "reply": {
+    "http_error": 409,
+    "detail": "{\"detail\":\"move did not execute: residual 38.38 deg after 320 commands (30.0 s); the arm moved 9.32 of 38.29 deg\"}"
+   },
+   "reply_wall_s": 90.52,
+   "after_deg": [
+    -33.67,
+    25.36,
+    24.75,
+    95.43,
+    71.12,
+    43.88
+   ],
+   "tip_after_mm": [
+    -1.8,
+    116.0,
+    40.1
+   ],
+   "after_settled": true,
+   "settle_s": 0.9,
+   "movement": {
+    "per_joint_deg": [
+     13.54,
+     35.25,
+     -2.02,
+     0.35,
+     53.01,
+     0.0
+    ],
+    "max_abs_deg": 53.01,
+    "travel_deg": 104.17,
+    "joints_ge_25": 2
+   },
+   "refused": true,
+   "reported_error_deg": null,
+   "tip_travel_mm": 62.65
+  }
+ ],
+ "when": "2026-11-24T14:17:13-0500"
+}
