@@ -1,0 +1,25 @@
+{
+  "tool": "tools/phase1_model_diff.py",
+  "samples": 1764,
+  "step_deg": 20.0,
+  "chain_vs_live_model_worst_mm": 0.0,
+  "chain_vs_sim_model_worst_mm": 5.0,
+  "chain_vs_sim_model_median_mm": 5.0,
+  "chain_vs_sim_model_p95_mm": 5.0,
+  "sim_mount_m": [
+    0.0,
+    -0.212,
+    0.4624
+  ],
+  "chain_mount_m": [
+    0.0,
+    -0.217,
+    0.4624
+  ],
+  "mount_offset_mm": [
+    0.0,
+    5.0,
+    0.0
+  ],
+  "note": "The sim arm is mounted at BoardConfig.arm_base (a scene constant) while the chain carries the measured mount; the difference is the mount, not a kinematic disagreement."
+}

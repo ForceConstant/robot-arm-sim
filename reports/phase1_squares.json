@@ -1,0 +1,2643 @@
+{
+  "tool": "tools/phase1_squares.py",
+  "backend": "sim",
+  "hover_mm": 60.0,
+  "gate": [
+    20.0,
+    8.0
+  ],
+  "summary": {
+    "ls_median_ms": 1866.55,
+    "mink_median_ms": 2.7,
+    "ls_median_mm": 4.4,
+    "mink_median_mm": 0.34,
+    "ls_max_mm": 16.0,
+    "mink_max_mm": 1.49
+  },
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 14.4,
+        "deg": 2.52,
+        "ms": 2466.6,
+        "starts": 85,
+        "achieved_mm": 14.43,
+        "joints": {
+          "shoulder_pan": 12.74,
+          "shoulder_lift": 31.15,
+          "elbow_flex": -27.03,
+          "wrist_flex": 83.35,
+          "wrist_roll": 0.0,
+          "gripper": -1.6
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.19,
+        "deg": 2.069,
+        "ms": 3.3,
+        "starts": 1,
+        "achieved_mm": 0.18,
+        "joints": {
+          "shoulder_pan": 12.84,
+          "shoulder_lift": 43.67,
+          "elbow_flex": -50.69,
+          "wrist_flex": 94.95,
+          "wrist_roll": 107.55,
+          "gripper": -1.6
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 12.7,
+        "deg": 2.25,
+        "ms": 2306.4,
+        "starts": 85,
+        "achieved_mm": 12.73,
+        "joints": {
+          "shoulder_pan": 6.86,
+          "shoulder_lift": 29.0,
+          "elbow_flex": -23.79,
+          "wrist_flex": 82.54,
+          "wrist_roll": 0.0,
+          "gripper": -0.03
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.22,
+        "deg": 0.709,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.22,
+        "joints": {
+          "shoulder_pan": 6.92,
+          "shoulder_lift": 41.7,
+          "elbow_flex": -47.31,
+          "wrist_flex": 94.91,
+          "wrist_roll": 101.62,
+          "gripper": -0.03
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 12.0,
+        "deg": 2.12,
+        "ms": 2248.8,
+        "starts": 85,
+        "achieved_mm": 11.96,
+        "joints": {
+          "shoulder_pan": 0.79,
+          "shoulder_lift": 27.91,
+          "elbow_flex": -22.16,
+          "wrist_flex": 82.13,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.34,
+        "deg": 0.036,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.34,
+        "joints": {
+          "shoulder_pan": 0.79,
+          "shoulder_lift": 40.7,
+          "elbow_flex": -45.58,
+          "wrist_flex": 94.85,
+          "wrist_roll": 95.5,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 12.0,
+        "deg": 2.13,
+        "ms": 2255.8,
+        "starts": 85,
+        "achieved_mm": 12.01,
+        "joints": {
+          "shoulder_pan": -5.35,
+          "shoulder_lift": 27.98,
+          "elbow_flex": -22.26,
+          "wrist_flex": 82.15,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.33,
+        "deg": 0.075,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.34,
+        "joints": {
+          "shoulder_pan": -5.39,
+          "shoulder_lift": 40.75,
+          "elbow_flex": -45.68,
+          "wrist_flex": 94.85,
+          "wrist_roll": 89.32,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 12.9,
+        "deg": 2.27,
+        "ms": 2325.5,
+        "starts": 85,
+        "achieved_mm": 12.87,
+        "joints": {
+          "shoulder_pan": -11.41,
+          "shoulder_lift": 29.19,
+          "elbow_flex": -24.07,
+          "wrist_flex": 82.61,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.2,
+        "deg": 0.825,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.2,
+        "joints": {
+          "shoulder_pan": -11.5,
+          "shoulder_lift": 41.87,
+          "elbow_flex": -47.61,
+          "wrist_flex": 94.92,
+          "wrist_roll": 83.21,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 14.7,
+        "deg": 2.57,
+        "ms": 2461.3,
+        "starts": 85,
+        "achieved_mm": 14.68,
+        "joints": {
+          "shoulder_pan": -17.26,
+          "shoulder_lift": 31.45,
+          "elbow_flex": -27.48,
+          "wrist_flex": 83.46,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.18,
+        "deg": 2.263,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.18,
+        "joints": {
+          "shoulder_pan": -17.39,
+          "shoulder_lift": 43.95,
+          "elbow_flex": -51.17,
+          "wrist_flex": 94.96,
+          "wrist_roll": 77.31,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 10.1,
+        "deg": 2.03,
+        "ms": 127805.5,
+        "starts": 85,
+        "achieved_mm": 10.11,
+        "joints": {
+          "shoulder_pan": -22.81,
+          "shoulder_lift": 45.42,
+          "elbow_flex": -50.85,
+          "wrist_flex": 93.4,
+          "wrist_roll": 160.79,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.26,
+        "deg": 4.416,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.26,
+        "joints": {
+          "shoulder_pan": -22.97,
+          "shoulder_lift": 47.04,
+          "elbow_flex": -56.41,
+          "wrist_flex": 94.96,
+          "wrist_roll": 71.71,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 16.0,
+        "deg": 3.08,
+        "ms": 169503.7,
+        "starts": 85,
+        "achieved_mm": 16.0,
+        "joints": {
+          "shoulder_pan": -27.98,
+          "shoulder_lift": 48.04,
+          "elbow_flex": -54.51,
+          "wrist_flex": 93.4,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.45,
+        "deg": 7.346,
+        "ms": 4.3,
+        "starts": 1,
+        "achieved_mm": 0.45,
+        "joints": {
+          "shoulder_pan": -28.16,
+          "shoulder_lift": 51.27,
+          "elbow_flex": -63.56,
+          "wrist_flex": 94.95,
+          "wrist_roll": 66.44,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 8.0,
+        "deg": 1.44,
+        "ms": 1993.6,
+        "starts": 85,
+        "achieved_mm": 7.98,
+        "joints": {
+          "shoulder_pan": 14.4,
+          "shoulder_lift": 20.68,
+          "elbow_flex": -11.52,
+          "wrist_flex": 79.4,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.29,
+        "deg": 0.031,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.28,
+        "joints": {
+          "shoulder_pan": 14.54,
+          "shoulder_lift": 25.94,
+          "elbow_flex": -21.43,
+          "wrist_flex": 85.45,
+          "wrist_roll": 109.31,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 6.9,
+        "deg": 1.25,
+        "ms": 1900.4,
+        "starts": 85,
+        "achieved_mm": 6.91,
+        "joints": {
+          "shoulder_pan": 7.89,
+          "shoulder_lift": 18.11,
+          "elbow_flex": -7.84,
+          "wrist_flex": 78.49,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.85,
+        "deg": 0.02,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.84,
+        "joints": {
+          "shoulder_pan": 7.97,
+          "shoulder_lift": 22.35,
+          "elbow_flex": -15.99,
+          "wrist_flex": 83.62,
+          "wrist_roll": 102.71,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 6.4,
+        "deg": 1.16,
+        "ms": 1891.3,
+        "starts": 85,
+        "achieved_mm": 6.43,
+        "joints": {
+          "shoulder_pan": 1.11,
+          "shoulder_lift": 16.82,
+          "elbow_flex": -6.03,
+          "wrist_flex": 78.05,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.68,
+        "deg": 0.016,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.68,
+        "joints": {
+          "shoulder_pan": 1.12,
+          "shoulder_lift": 20.62,
+          "elbow_flex": -13.42,
+          "wrist_flex": 82.78,
+          "wrist_roll": 95.84,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 6.5,
+        "deg": 1.16,
+        "ms": 1884.3,
+        "starts": 85,
+        "achieved_mm": 6.46,
+        "joints": {
+          "shoulder_pan": -5.75,
+          "shoulder_lift": 16.9,
+          "elbow_flex": -6.14,
+          "wrist_flex": 78.07,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.71,
+        "deg": 0.017,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.7,
+        "joints": {
+          "shoulder_pan": -5.81,
+          "shoulder_lift": 20.71,
+          "elbow_flex": -13.55,
+          "wrist_flex": 82.83,
+          "wrist_roll": 88.87,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 7.0,
+        "deg": 1.26,
+        "ms": 1905.4,
+        "starts": 85,
+        "achieved_mm": 7.0,
+        "joints": {
+          "shoulder_pan": -12.51,
+          "shoulder_lift": 18.33,
+          "elbow_flex": -8.15,
+          "wrist_flex": 78.56,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.92,
+        "deg": 0.022,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.92,
+        "joints": {
+          "shoulder_pan": -12.63,
+          "shoulder_lift": 22.63,
+          "elbow_flex": -16.4,
+          "wrist_flex": 83.75,
+          "wrist_roll": 82.03,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 8.2,
+        "deg": 1.47,
+        "ms": 2005.7,
+        "starts": 85,
+        "achieved_mm": 8.15,
+        "joints": {
+          "shoulder_pan": -18.99,
+          "shoulder_lift": 21.04,
+          "elbow_flex": -12.04,
+          "wrist_flex": 79.53,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.46,
+        "deg": 0.038,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.46,
+        "joints": {
+          "shoulder_pan": -19.16,
+          "shoulder_lift": 26.38,
+          "elbow_flex": -22.09,
+          "wrist_flex": 85.67,
+          "wrist_roll": 75.46,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 10.1,
+        "deg": 1.8,
+        "ms": 2131.6,
+        "starts": 85,
+        "achieved_mm": 10.1,
+        "joints": {
+          "shoulder_pan": -25.39,
+          "shoulder_lift": 24.89,
+          "elbow_flex": -17.67,
+          "wrist_flex": 80.97,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.11,
+        "deg": 0.021,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.11,
+        "joints": {
+          "shoulder_pan": -25.26,
+          "shoulder_lift": 34.04,
+          "elbow_flex": -34.49,
+          "wrist_flex": 90.42,
+          "wrist_roll": 69.45,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 13.2,
+        "deg": 2.33,
+        "ms": 2400.6,
+        "starts": 85,
+        "achieved_mm": 13.22,
+        "joints": {
+          "shoulder_pan": -30.92,
+          "shoulder_lift": 29.65,
+          "elbow_flex": -24.76,
+          "wrist_flex": 82.79,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.23,
+        "deg": 1.103,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.23,
+        "joints": {
+          "shoulder_pan": -30.85,
+          "shoulder_lift": 42.27,
+          "elbow_flex": -48.3,
+          "wrist_flex": 94.92,
+          "wrist_roll": 63.86,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.6,
+        "deg": 0.75,
+        "ms": 1843.3,
+        "starts": 85,
+        "achieved_mm": 4.55,
+        "joints": {
+          "shoulder_pan": 16.47,
+          "shoulder_lift": 9.91,
+          "elbow_flex": 3.43,
+          "wrist_flex": 75.91,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.68,
+        "deg": 0.019,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.68,
+        "joints": {
+          "shoulder_pan": 16.66,
+          "shoulder_lift": 11.46,
+          "elbow_flex": -0.39,
+          "wrist_flex": 78.91,
+          "wrist_roll": 111.51,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.0,
+        "deg": 0.61,
+        "ms": 1840.4,
+        "starts": 85,
+        "achieved_mm": 4.0,
+        "joints": {
+          "shoulder_pan": 9.18,
+          "shoulder_lift": 6.98,
+          "elbow_flex": 7.27,
+          "wrist_flex": 75.14,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.57,
+        "deg": 0.016,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.57,
+        "joints": {
+          "shoulder_pan": 9.3,
+          "shoulder_lift": 7.89,
+          "elbow_flex": 4.41,
+          "wrist_flex": 77.68,
+          "wrist_roll": 104.08,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.8,
+        "deg": 0.54,
+        "ms": 1782.8,
+        "starts": 85,
+        "achieved_mm": 3.78,
+        "joints": {
+          "shoulder_pan": 1.52,
+          "shoulder_lift": 5.51,
+          "elbow_flex": 9.15,
+          "wrist_flex": 74.8,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.53,
+        "deg": 0.016,
+        "ms": 2.8,
+        "starts": 1,
+        "achieved_mm": 0.53,
+        "joints": {
+          "shoulder_pan": 1.54,
+          "shoulder_lift": 6.12,
+          "elbow_flex": 6.72,
+          "wrist_flex": 77.14,
+          "wrist_roll": 96.27,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.8,
+        "deg": 0.54,
+        "ms": 1794.7,
+        "starts": 85,
+        "achieved_mm": 3.8,
+        "joints": {
+          "shoulder_pan": -6.26,
+          "shoulder_lift": 5.6,
+          "elbow_flex": 9.04,
+          "wrist_flex": 74.82,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.56,
+        "deg": 0.017,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.56,
+        "joints": {
+          "shoulder_pan": -6.34,
+          "shoulder_lift": 6.21,
+          "elbow_flex": 6.6,
+          "wrist_flex": 77.17,
+          "wrist_roll": 88.3,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.1,
+        "deg": 0.62,
+        "ms": 1789.9,
+        "starts": 85,
+        "achieved_mm": 4.06,
+        "joints": {
+          "shoulder_pan": -13.9,
+          "shoulder_lift": 7.23,
+          "elbow_flex": 6.95,
+          "wrist_flex": 75.21,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.64,
+        "deg": 0.02,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.64,
+        "joints": {
+          "shoulder_pan": -14.07,
+          "shoulder_lift": 8.16,
+          "elbow_flex": 4.05,
+          "wrist_flex": 77.77,
+          "wrist_roll": 80.52,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.6,
+        "deg": 0.77,
+        "ms": 1820.0,
+        "starts": 85,
+        "achieved_mm": 4.65,
+        "joints": {
+          "shoulder_pan": -21.58,
+          "shoulder_lift": 10.31,
+          "elbow_flex": 2.89,
+          "wrist_flex": 76.02,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.81,
+        "deg": 0.025,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.81,
+        "joints": {
+          "shoulder_pan": -21.37,
+          "shoulder_lift": 11.9,
+          "elbow_flex": -1.0,
+          "wrist_flex": 79.07,
+          "wrist_roll": 73.16,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 5.8,
+        "deg": 1.02,
+        "ms": 1883.6,
+        "starts": 85,
+        "achieved_mm": 5.75,
+        "joints": {
+          "shoulder_pan": -28.2,
+          "shoulder_lift": 14.7,
+          "elbow_flex": -3.07,
+          "wrist_flex": 77.35,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.12,
+        "deg": 0.033,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.12,
+        "joints": {
+          "shoulder_pan": -28.07,
+          "shoulder_lift": 17.43,
+          "elbow_flex": -8.77,
+          "wrist_flex": 81.31,
+          "wrist_roll": 66.42,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 7.8,
+        "deg": 1.4,
+        "ms": 1999.9,
+        "starts": 85,
+        "achieved_mm": 7.75,
+        "joints": {
+          "shoulder_pan": -34.14,
+          "shoulder_lift": 20.2,
+          "elbow_flex": -10.83,
+          "wrist_flex": 79.23,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.03,
+        "deg": 0.015,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.03,
+        "joints": {
+          "shoulder_pan": -34.09,
+          "shoulder_lift": 25.97,
+          "elbow_flex": -21.61,
+          "wrist_flex": 85.63,
+          "wrist_roll": 60.62,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.4,
+        "deg": 0.68,
+        "ms": 1737.1,
+        "starts": 85,
+        "achieved_mm": 3.41,
+        "joints": {
+          "shoulder_pan": 19.09,
+          "shoulder_lift": -2.76,
+          "elbow_flex": 18.89,
+          "wrist_flex": 73.18,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.84,
+        "deg": 0.056,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.84,
+        "joints": {
+          "shoulder_pan": 19.38,
+          "shoulder_lift": -1.59,
+          "elbow_flex": 16.23,
+          "wrist_flex": 75.31,
+          "wrist_roll": 114.44,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.8,
+        "deg": 0.56,
+        "ms": 1734.4,
+        "starts": 85,
+        "achieved_mm": 2.83,
+        "joints": {
+          "shoulder_pan": 10.86,
+          "shoulder_lift": -6.2,
+          "elbow_flex": 22.79,
+          "wrist_flex": 72.85,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.68,
+        "deg": 0.046,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.68,
+        "joints": {
+          "shoulder_pan": 11.04,
+          "shoulder_lift": -5.49,
+          "elbow_flex": 20.74,
+          "wrist_flex": 74.7,
+          "wrist_roll": 105.93,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.6,
+        "deg": 0.49,
+        "ms": 1712.6,
+        "starts": 85,
+        "achieved_mm": 2.59,
+        "joints": {
+          "shoulder_pan": 2.06,
+          "shoulder_lift": -7.95,
+          "elbow_flex": 24.71,
+          "wrist_flex": 72.75,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.64,
+        "deg": 0.043,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.64,
+        "joints": {
+          "shoulder_pan": 2.09,
+          "shoulder_lift": -7.47,
+          "elbow_flex": 22.94,
+          "wrist_flex": 74.49,
+          "wrist_roll": 96.86,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.6,
+        "deg": 0.5,
+        "ms": 1718.3,
+        "starts": 85,
+        "achieved_mm": 2.63,
+        "joints": {
+          "shoulder_pan": -6.93,
+          "shoulder_lift": -7.84,
+          "elbow_flex": 24.59,
+          "wrist_flex": 72.75,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.66,
+        "deg": 0.047,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.66,
+        "joints": {
+          "shoulder_pan": -7.05,
+          "shoulder_lift": -7.37,
+          "elbow_flex": 22.82,
+          "wrist_flex": 74.5,
+          "wrist_roll": 87.52,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.9,
+        "deg": 0.57,
+        "ms": 1723.2,
+        "starts": 85,
+        "achieved_mm": 2.93,
+        "joints": {
+          "shoulder_pan": -15.68,
+          "shoulder_lift": -5.9,
+          "elbow_flex": 22.46,
+          "wrist_flex": 72.87,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.75,
+        "deg": 0.057,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.75,
+        "joints": {
+          "shoulder_pan": -15.94,
+          "shoulder_lift": -5.2,
+          "elbow_flex": 20.4,
+          "wrist_flex": 74.74,
+          "wrist_roll": 78.48,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.4,
+        "deg": 0.7,
+        "ms": 1747.7,
+        "starts": 85,
+        "achieved_mm": 3.45,
+        "joints": {
+          "shoulder_pan": -24.43,
+          "shoulder_lift": -2.28,
+          "elbow_flex": 18.35,
+          "wrist_flex": 73.24,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.97,
+        "deg": 0.075,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.97,
+        "joints": {
+          "shoulder_pan": -24.2,
+          "shoulder_lift": -1.14,
+          "elbow_flex": 15.67,
+          "wrist_flex": 75.39,
+          "wrist_roll": 70.06,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.7,
+        "deg": 0.5,
+        "ms": 1790.0,
+        "starts": 85,
+        "achieved_mm": 3.71,
+        "joints": {
+          "shoulder_pan": -31.69,
+          "shoulder_lift": 4.67,
+          "elbow_flex": 10.22,
+          "wrist_flex": 74.61,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.35,
+        "deg": 0.098,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.35,
+        "joints": {
+          "shoulder_pan": -31.58,
+          "shoulder_lift": 4.58,
+          "elbow_flex": 8.6,
+          "wrist_flex": 76.72,
+          "wrist_roll": 62.53,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.7,
+        "deg": 0.8,
+        "ms": 1862.7,
+        "starts": 85,
+        "achieved_mm": 4.7,
+        "joints": {
+          "shoulder_pan": -38.06,
+          "shoulder_lift": 10.84,
+          "elbow_flex": 2.19,
+          "wrist_flex": 76.17,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.02,
+        "deg": 0.009,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.02,
+        "joints": {
+          "shoulder_pan": -38.03,
+          "shoulder_lift": 13.01,
+          "elbow_flex": -2.49,
+          "wrist_flex": 79.48,
+          "wrist_roll": 56.68,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.5,
+        "deg": 0.31,
+        "ms": 1718.9,
+        "starts": 85,
+        "achieved_mm": 2.54,
+        "joints": {
+          "shoulder_pan": 23.3,
+          "shoulder_lift": -13.61,
+          "elbow_flex": 30.6,
+          "wrist_flex": 72.7,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.27,
+        "deg": 0.012,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.27,
+        "joints": {
+          "shoulder_pan": 22.97,
+          "shoulder_lift": -13.74,
+          "elbow_flex": 29.62,
+          "wrist_flex": 74.11,
+          "wrist_roll": 117.78,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.7,
+        "deg": 0.18,
+        "ms": 1733.7,
+        "starts": 85,
+        "achieved_mm": 2.67,
+        "joints": {
+          "shoulder_pan": 13.1,
+          "shoulder_lift": -17.84,
+          "elbow_flex": 34.69,
+          "wrist_flex": 72.97,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.07,
+        "deg": 0.003,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.07,
+        "joints": {
+          "shoulder_pan": 13.39,
+          "shoulder_lift": -18.47,
+          "elbow_flex": 34.25,
+          "wrist_flex": 74.21,
+          "wrist_roll": 107.96,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.0,
+        "deg": 0.46,
+        "ms": 1734.2,
+        "starts": 85,
+        "achieved_mm": 4.0,
+        "joints": {
+          "shoulder_pan": 2.79,
+          "shoulder_lift": -21.48,
+          "elbow_flex": 38.74,
+          "wrist_flex": 72.28,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.03,
+        "deg": 0.003,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.03,
+        "joints": {
+          "shoulder_pan": 2.85,
+          "shoulder_lift": -20.95,
+          "elbow_flex": 36.53,
+          "wrist_flex": 74.42,
+          "wrist_roll": 97.51,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.0,
+        "deg": 0.47,
+        "ms": 1730.1,
+        "starts": 85,
+        "achieved_mm": 4.03,
+        "joints": {
+          "shoulder_pan": -7.83,
+          "shoulder_lift": -21.36,
+          "elbow_flex": 38.62,
+          "wrist_flex": 72.26,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.03,
+        "deg": 0.003,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.03,
+        "joints": {
+          "shoulder_pan": -8.02,
+          "shoulder_lift": -20.81,
+          "elbow_flex": 36.4,
+          "wrist_flex": 74.41,
+          "wrist_roll": 86.85,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.7,
+        "deg": 0.19,
+        "ms": 1736.4,
+        "starts": 85,
+        "achieved_mm": 2.75,
+        "joints": {
+          "shoulder_pan": -18.07,
+          "shoulder_lift": -17.47,
+          "elbow_flex": 34.34,
+          "wrist_flex": 72.94,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.08,
+        "deg": 0.003,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.08,
+        "joints": {
+          "shoulder_pan": -18.47,
+          "shoulder_lift": -18.05,
+          "elbow_flex": 33.86,
+          "wrist_flex": 74.19,
+          "wrist_roll": 76.42,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.4,
+        "deg": 0.33,
+        "ms": 1728.0,
+        "starts": 85,
+        "achieved_mm": 2.45,
+        "joints": {
+          "shoulder_pan": -28.15,
+          "shoulder_lift": -13.04,
+          "elbow_flex": 30.03,
+          "wrist_flex": 72.69,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.31,
+        "deg": 0.021,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.31,
+        "joints": {
+          "shoulder_pan": -27.92,
+          "shoulder_lift": -13.12,
+          "elbow_flex": 28.99,
+          "wrist_flex": 74.11,
+          "wrist_roll": 66.59,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.7,
+        "deg": 0.52,
+        "ms": 1745.9,
+        "starts": 85,
+        "achieved_mm": 2.69,
+        "joints": {
+          "shoulder_pan": -36.12,
+          "shoulder_lift": -7.08,
+          "elbow_flex": 23.76,
+          "wrist_flex": 72.79,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.05,
+        "deg": 0.198,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.05,
+        "joints": {
+          "shoulder_pan": -36.06,
+          "shoulder_lift": -6.92,
+          "elbow_flex": 22.32,
+          "wrist_flex": 74.41,
+          "wrist_roll": 57.59,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.5,
+        "deg": 0.38,
+        "ms": 1824.0,
+        "starts": 85,
+        "achieved_mm": 3.51,
+        "joints": {
+          "shoulder_pan": -42.86,
+          "shoulder_lift": 1.93,
+          "elbow_flex": 13.63,
+          "wrist_flex": 74.06,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.04,
+        "deg": 0.006,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.04,
+        "joints": {
+          "shoulder_pan": -42.9,
+          "shoulder_lift": 2.11,
+          "elbow_flex": 11.9,
+          "wrist_flex": 75.99,
+          "wrist_roll": 51.82,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.1,
+        "deg": 0.31,
+        "ms": 1812.9,
+        "starts": 85,
+        "achieved_mm": 4.07,
+        "joints": {
+          "shoulder_pan": 28.22,
+          "shoulder_lift": -26.1,
+          "elbow_flex": 42.67,
+          "wrist_flex": 73.12,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.0,
+        "deg": 0.002,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.0,
+        "joints": {
+          "shoulder_pan": 27.89,
+          "shoulder_lift": -26.3,
+          "elbow_flex": 41.09,
+          "wrist_flex": 75.2,
+          "wrist_roll": 122.6,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.5,
+        "deg": 0.13,
+        "ms": 1826.4,
+        "starts": 85,
+        "achieved_mm": 4.47,
+        "joints": {
+          "shoulder_pan": 16.23,
+          "shoulder_lift": -31.48,
+          "elbow_flex": 46.86,
+          "wrist_flex": 74.49,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.33,
+        "deg": 0.001,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.33,
+        "joints": {
+          "shoulder_pan": 16.78,
+          "shoulder_lift": -32.77,
+          "elbow_flex": 46.09,
+          "wrist_flex": 76.68,
+          "wrist_roll": 110.2,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.6,
+        "deg": 0.03,
+        "ms": 1856.4,
+        "starts": 85,
+        "achieved_mm": 4.63,
+        "joints": {
+          "shoulder_pan": 3.83,
+          "shoulder_lift": -34.35,
+          "elbow_flex": 48.92,
+          "wrist_flex": 75.4,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.39,
+        "deg": 0.001,
+        "ms": 2.8,
+        "starts": 1,
+        "achieved_mm": 0.38,
+        "joints": {
+          "shoulder_pan": 3.97,
+          "shoulder_lift": -36.23,
+          "elbow_flex": 48.48,
+          "wrist_flex": 77.75,
+          "wrist_roll": 98.33,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.7,
+        "deg": 0.04,
+        "ms": 1860.5,
+        "starts": 85,
+        "achieved_mm": 4.65,
+        "joints": {
+          "shoulder_pan": -9.11,
+          "shoulder_lift": -34.18,
+          "elbow_flex": 48.8,
+          "wrist_flex": 75.34,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.4,
+        "deg": 0.001,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.4,
+        "joints": {
+          "shoulder_pan": -9.46,
+          "shoulder_lift": -36.03,
+          "elbow_flex": 48.35,
+          "wrist_flex": 77.68,
+          "wrist_roll": 86.18,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.5,
+        "deg": 0.15,
+        "ms": 1828.7,
+        "starts": 85,
+        "achieved_mm": 4.45,
+        "joints": {
+          "shoulder_pan": -22.64,
+          "shoulder_lift": -31.0,
+          "elbow_flex": 46.5,
+          "wrist_flex": 74.35,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.36,
+        "deg": 0.001,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.36,
+        "joints": {
+          "shoulder_pan": -22.11,
+          "shoulder_lift": -32.21,
+          "elbow_flex": 45.69,
+          "wrist_flex": 76.51,
+          "wrist_roll": 74.3,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.0,
+        "deg": 0.33,
+        "ms": 1798.1,
+        "starts": 85,
+        "achieved_mm": 4.0,
+        "joints": {
+          "shoulder_pan": -33.17,
+          "shoulder_lift": -25.39,
+          "elbow_flex": 42.08,
+          "wrist_flex": 72.97,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.19,
+        "deg": 0.002,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.19,
+        "joints": {
+          "shoulder_pan": -33.01,
+          "shoulder_lift": -25.52,
+          "elbow_flex": 40.52,
+          "wrist_flex": 75.0,
+          "wrist_roll": 63.2,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.5,
+        "deg": 0.22,
+        "ms": 1776.6,
+        "starts": 85,
+        "achieved_mm": 2.48,
+        "joints": {
+          "shoulder_pan": -41.83,
+          "shoulder_lift": -16.67,
+          "elbow_flex": 33.59,
+          "wrist_flex": 72.87,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.04,
+        "deg": 0.004,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 0.04,
+        "joints": {
+          "shoulder_pan": -41.87,
+          "shoulder_lift": -17.12,
+          "elbow_flex": 33.02,
+          "wrist_flex": 74.1,
+          "wrist_roll": 53.3,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.6,
+        "deg": 0.48,
+        "ms": 1780.1,
+        "starts": 85,
+        "achieved_mm": 2.59,
+        "joints": {
+          "shoulder_pan": -48.78,
+          "shoulder_lift": -8.39,
+          "elbow_flex": 25.18,
+          "wrist_flex": 72.73,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.0,
+        "deg": 0.004,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.0,
+        "joints": {
+          "shoulder_pan": -48.93,
+          "shoulder_lift": -7.63,
+          "elbow_flex": 23.29,
+          "wrist_flex": 74.34,
+          "wrist_roll": 45.81,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 5.0,
+        "deg": 0.06,
+        "ms": 1905.1,
+        "starts": 85,
+        "achieved_mm": 5.01,
+        "joints": {
+          "shoulder_pan": 35.11,
+          "shoulder_lift": -37.16,
+          "elbow_flex": 50.83,
+          "wrist_flex": 76.4,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.01,
+        "deg": 0.0,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.01,
+        "joints": {
+          "shoulder_pan": 34.91,
+          "shoulder_lift": -39.4,
+          "elbow_flex": 50.5,
+          "wrist_flex": 78.9,
+          "wrist_roll": 129.76,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.1,
+        "deg": 0.22,
+        "ms": 1955.0,
+        "starts": 85,
+        "achieved_mm": 4.05,
+        "joints": {
+          "shoulder_pan": 22.82,
+          "shoulder_lift": -47.51,
+          "elbow_flex": 56.65,
+          "wrist_flex": 80.64,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.01,
+        "deg": 0.004,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.01,
+        "joints": {
+          "shoulder_pan": 22.12,
+          "shoulder_lift": -48.5,
+          "elbow_flex": 55.97,
+          "wrist_flex": 82.52,
+          "wrist_roll": 112.77,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.2,
+        "deg": 0.09,
+        "ms": 2013.0,
+        "starts": 85,
+        "achieved_mm": 4.24,
+        "joints": {
+          "shoulder_pan": 5.43,
+          "shoulder_lift": -51.67,
+          "elbow_flex": 58.73,
+          "wrist_flex": 82.85,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.46,
+        "deg": 0.04,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.46,
+        "joints": {
+          "shoulder_pan": 5.78,
+          "shoulder_lift": -52.75,
+          "elbow_flex": 58.28,
+          "wrist_flex": 84.43,
+          "wrist_roll": 99.37,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.3,
+        "deg": 0.1,
+        "ms": 2017.8,
+        "starts": 85,
+        "achieved_mm": 4.31,
+        "joints": {
+          "shoulder_pan": -11.04,
+          "shoulder_lift": -51.41,
+          "elbow_flex": 58.61,
+          "wrist_flex": 82.71,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.49,
+        "deg": 0.04,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.49,
+        "joints": {
+          "shoulder_pan": -11.76,
+          "shoulder_lift": -52.49,
+          "elbow_flex": 58.19,
+          "wrist_flex": 84.26,
+          "wrist_roll": 85.48,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 3.8,
+        "deg": 0.25,
+        "ms": 1967.4,
+        "starts": 85,
+        "achieved_mm": 3.83,
+        "joints": {
+          "shoulder_pan": -28.16,
+          "shoulder_lift": -46.83,
+          "elbow_flex": 56.29,
+          "wrist_flex": 80.29,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 1.28,
+        "deg": 0.004,
+        "ms": 2.7,
+        "starts": 1,
+        "achieved_mm": 1.28,
+        "joints": {
+          "shoulder_pan": -27.87,
+          "shoulder_lift": -47.8,
+          "elbow_flex": 55.65,
+          "wrist_flex": 82.14,
+          "wrist_roll": 72.03,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.9,
+        "deg": 0.03,
+        "ms": 1921.8,
+        "starts": 85,
+        "achieved_mm": 4.86,
+        "joints": {
+          "shoulder_pan": -40.14,
+          "shoulder_lift": -36.25,
+          "elbow_flex": 50.22,
+          "wrist_flex": 76.06,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.01,
+        "deg": 0.0,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.01,
+        "joints": {
+          "shoulder_pan": -40.14,
+          "shoulder_lift": -38.29,
+          "elbow_flex": 49.8,
+          "wrist_flex": 78.5,
+          "wrist_roll": 54.21,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.1,
+        "deg": 0.27,
+        "ms": 1844.5,
+        "starts": 85,
+        "achieved_mm": 4.08,
+        "joints": {
+          "shoulder_pan": -49.26,
+          "shoulder_lift": -27.21,
+          "elbow_flex": 43.57,
+          "wrist_flex": 73.37,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.0,
+        "deg": 0.002,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.0,
+        "joints": {
+          "shoulder_pan": -49.52,
+          "shoulder_lift": -27.6,
+          "elbow_flex": 42.14,
+          "wrist_flex": 75.46,
+          "wrist_roll": 45.07,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 2.6,
+        "deg": 0.24,
+        "ms": 1811.3,
+        "starts": 85,
+        "achieved_mm": 2.61,
+        "joints": {
+          "shoulder_pan": -56.1,
+          "shoulder_lift": -16.01,
+          "elbow_flex": 32.95,
+          "wrist_flex": 72.82,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.0,
+        "deg": 0.003,
+        "ms": 3.0,
+        "starts": 1,
+        "achieved_mm": 0.0,
+        "joints": {
+          "shoulder_pan": -56.44,
+          "shoulder_lift": -16.35,
+          "elbow_flex": 32.27,
+          "wrist_flex": 74.08,
+          "wrist_roll": 38.51,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.2,
+        "deg": 0.11,
+        "ms": 2034.6,
+        "starts": 85,
+        "achieved_mm": 4.16,
+        "joints": {
+          "shoulder_pan": 45.0,
+          "shoulder_lift": -51.04,
+          "elbow_flex": 58.43,
+          "wrist_flex": 82.5,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.18,
+        "deg": 0.002,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.18,
+        "joints": {
+          "shoulder_pan": 45.31,
+          "shoulder_lift": -52.51,
+          "elbow_flex": 57.63,
+          "wrist_flex": 84.88,
+          "wrist_roll": 140.41,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 5.9,
+        "deg": 0.25,
+        "ms": 2212.4,
+        "starts": 85,
+        "achieved_mm": 5.89,
+        "joints": {
+          "shoulder_pan": 31.37,
+          "shoulder_lift": -61.09,
+          "elbow_flex": 62.64,
+          "wrist_flex": 88.69,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.02,
+        "deg": 0.003,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.02,
+        "joints": {
+          "shoulder_pan": 30.59,
+          "shoulder_lift": -64.85,
+          "elbow_flex": 62.51,
+          "wrist_flex": 92.35,
+          "wrist_roll": 124.24,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 7.2,
+        "deg": 0.47,
+        "ms": 2395.1,
+        "starts": 85,
+        "achieved_mm": 7.15,
+        "joints": {
+          "shoulder_pan": 8.16,
+          "shoulder_lift": -67.13,
+          "elbow_flex": 64.56,
+          "wrist_flex": 93.04,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.51,
+        "deg": 4.551,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.51,
+        "joints": {
+          "shoulder_pan": 9.06,
+          "shoulder_lift": -62.5,
+          "elbow_flex": 62.07,
+          "wrist_flex": 94.98,
+          "wrist_roll": 103.14,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 7.2,
+        "deg": 0.46,
+        "ms": 2367.9,
+        "starts": 85,
+        "achieved_mm": 7.23,
+        "joints": {
+          "shoulder_pan": -14.27,
+          "shoulder_lift": -66.75,
+          "elbow_flex": 64.46,
+          "wrist_flex": 92.75,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.44,
+        "deg": 3.983,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.44,
+        "joints": {
+          "shoulder_pan": -15.86,
+          "shoulder_lift": -63.26,
+          "elbow_flex": 62.27,
+          "wrist_flex": 94.98,
+          "wrist_roll": 80.01,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 5.6,
+        "deg": 0.21,
+        "ms": 2194.8,
+        "starts": 85,
+        "achieved_mm": 5.62,
+        "joints": {
+          "shoulder_pan": -36.91,
+          "shoulder_lift": -60.12,
+          "elbow_flex": 62.29,
+          "wrist_flex": 88.05,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.02,
+        "deg": 0.003,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.03,
+        "joints": {
+          "shoulder_pan": -36.64,
+          "shoulder_lift": -63.65,
+          "elbow_flex": 62.1,
+          "wrist_flex": 91.55,
+          "wrist_roll": 59.16,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.1,
+        "deg": 0.15,
+        "ms": 2044.8,
+        "starts": 85,
+        "achieved_mm": 4.09,
+        "joints": {
+          "shoulder_pan": -50.04,
+          "shoulder_lift": -49.81,
+          "elbow_flex": 57.83,
+          "wrist_flex": 81.83,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.27,
+        "deg": 0.001,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.27,
+        "joints": {
+          "shoulder_pan": -50.63,
+          "shoulder_lift": -51.08,
+          "elbow_flex": 56.96,
+          "wrist_flex": 84.12,
+          "wrist_roll": 43.46,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 5.0,
+        "deg": 0.0,
+        "ms": 1960.7,
+        "starts": 85,
+        "achieved_mm": 4.95,
+        "joints": {
+          "shoulder_pan": -58.93,
+          "shoulder_lift": -35.27,
+          "elbow_flex": 49.56,
+          "wrist_flex": 75.71,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.05,
+        "deg": 0.0,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.05,
+        "joints": {
+          "shoulder_pan": -59.61,
+          "shoulder_lift": -37.13,
+          "elbow_flex": 49.05,
+          "wrist_flex": 78.08,
+          "wrist_roll": 33.86,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "least_squares": {
+        "verdict": "PASS",
+        "mm": 4.3,
+        "deg": 0.38,
+        "ms": 1870.4,
+        "starts": 85,
+        "achieved_mm": 4.27,
+        "joints": {
+          "shoulder_pan": -65.01,
+          "shoulder_lift": -23.87,
+          "elbow_flex": 40.81,
+          "wrist_flex": 72.68,
+          "wrist_roll": 0.0,
+          "gripper": -0.0
+        }
+      },
+      "mink": {
+        "verdict": "PASS",
+        "mm": 0.01,
+        "deg": 0.002,
+        "ms": 3.2,
+        "starts": 1,
+        "achieved_mm": 0.01,
+        "joints": {
+          "shoulder_pan": -65.66,
+          "shoulder_lift": -23.72,
+          "elbow_flex": 38.95,
+          "wrist_flex": 74.77,
+          "wrist_roll": 28.68,
+          "gripper": -0.0
+        }
+      },
+      "delta": "same"
+    }
+  ]
+}

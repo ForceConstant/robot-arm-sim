@@ -31,6 +31,7 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
 
 from bridge_client import BridgeError, HttpBridge, HttpFrames
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
+from solver import MoveSolver
 from scan_controller import ScanController, plan_in_degrees
 from target_overlay import TargetOverlay, draw as draw_target
 from tip_frame import TIP_IN_CHAIN, describe as describe_tip_frame
@@ -85,6 +86,13 @@ DEFAULTS = {
     # Acceptance gate for a solved Cartesian target. Tight it to prove the
     # model; loosen it deliberately when measuring the model's bias.
     "move_tolerance_mm": 20.0,
+    # Phase 1 solver unification, default OFF. False keeps the incumbent
+    # scipy least_squares path exactly as it is; True routes the SOLVE through
+    # the mink QP stack on a model built from this same calibration chain
+    # (live/mink_arm.py), leaving every guard, frame and stream behaviour
+    # unchanged. A flag that cannot be turned on accidentally and cannot
+    # silently fall back: an unavailable mink model is a startup error.
+    "ik_solver": "least_squares",
     # Cartesian targets mean the jaw tip.  The one chain->tip transform lives
     # in ``tip_frame.TIP_IN_CHAIN`` (MJCF-derived, see that module); it is not
     # a config value because three competing offsets in the tree is exactly
@@ -213,6 +221,20 @@ class Live:
         self.frame_offset.offset_deg = float(
             self.wrist_cal().get("model_offset_deg", 0.0))
         self.kinematics = ArmKinematics(self.calibration, {}, self._board_frame())
+        # Phase 1: the solver behind /move. Default ``least_squares`` keeps the
+        # incumbent path; ``mink`` swaps only the numerical solve. Board-frame
+        # bookkeeping, mode expansion, span/roll-lock, keep-in and every guard
+        # stay in ArmKinematics/Live, so the flag cannot change motion safety.
+        self.solver = MoveSolver(
+            self.kinematics, calibration=self.calibration,
+            tip_in_chain=TIP_IN_CHAIN,
+            use_mink=str(self.config.get("ik_solver", "least_squares")).lower()
+            in ("mink", "qp", "so101ik"))
+        if self.solver.use_mink:
+            # The live console refreshes limits from the bridge at every move;
+            # the mink model must follow, or it plans past the servo's range.
+            self.solver.sync_limits({name: list(value) for name, value
+                                     in self.kinematics.limits.items()})
         self.frame_times: deque[float] = deque(maxlen=40)
         self.frame_cost_ms: deque[float] = deque(maxlen=40)
         # Target overlay: one detector, its own thread.  It never runs on the
@@ -749,7 +771,7 @@ class Live:
                     goal = self.kinematics.fk(start).copy()
                     goal[:3, 3] = self.kinematics.board_point(
                         float(target[0]), float(target[1]), float(target[2]))
-                    solved = self.kinematics.solve(goal, start)
+                    solved = self.solver.solve(goal, start)
                     if (solved["position_error_mm"] > 2.0
                             or solved["approach_error_deg"] > 2.0):
                         break
@@ -1050,7 +1072,7 @@ class Live:
         for name, x_mm, y_mm in targets:
             state = self.bridge.state()
             start = [float(state["joints"][n]) for n in JOINTS]
-            solved, _goal = self.kinematics.solve_tip(
+            solved, _goal = self.solver.solve_tip(
                 self.kinematics.board_point(x_mm, y_mm, z_mm), start,
                 self.jaw_frame())
             row = {"target": name, "x_mm": round(x_mm, 1), "y_mm": round(y_mm, 1),
@@ -1172,6 +1194,9 @@ class Live:
         if limits:
             self.kinematics.limits = {name: (float(v[0]), float(v[1]))
                                       for name, v in limits.items()}
+            # Keep the mink model on the same measured ranges as the chain, so
+            # a flag-on move plans inside the servo's actual travel.
+            self.solver.sync_limits(limits)
 
     def move(self, body: dict) -> dict:
         """One motion request: ``xyz``, ``look_at`` or ``joint``.
@@ -1218,7 +1243,7 @@ class Live:
                         "z", float(body["roll_deg"]), degrees=True).as_matrix()
                 goal = self.kinematics.tool_from_camera(
                     np.block([[rotation, camera[:3, 3:4]], [np.zeros(3), 1.0]]))
-                solved = self.kinematics.solve_multi(goal, start)
+                solved = self.solver.solve_multi(goal, start)
                 if (solved["position_error_mm"] > 8.0
                         or solved["approach_error_deg"] > 6.0):
                     raise BridgeError(
@@ -1242,7 +1267,7 @@ class Live:
                     [float(state["joints"][n]) for n in JOINTS])
                 goal = current.copy()
                 goal[:3, 3] = current[:3, 3] + self.kinematics.board[:3, :3] @ delta
-                solved = self.kinematics.solve_multi(
+                solved = self.solver.solve_multi(
                     goal, start, freeze_roll=bool(body.get("roll_lock", True)))
                 # A small nudge near the edge of reach lands a few millimetres
                 # short; tolerate that rather than refusing the whole move.
@@ -1267,7 +1292,7 @@ class Live:
                     # one chain->tip transform, so the app cannot drift from
                     # the regression test.
                     point = self.kinematics.board_point(x_mm, y_mm, z_mm)
-                    solved, goal = self.kinematics.solve_tip(
+                    solved, goal = self.solver.solve_tip(
                         point, start, self.jaw_frame(), float(span_arg or 0.0))
                 else:
                     distance = float(body.get("distance_mm", 220.0))
@@ -1282,7 +1307,7 @@ class Live:
                     # xyz already carries its own searched solution; re-solving
                     # here would silently discard it and drop back to the seed
                     # basin, which is exactly how good corner solutions vanished.
-                    solved = self.kinematics.solve_multi(
+                    solved = self.solver.solve_multi(
                         goal, start, span_deg=span_arg,
                         freeze_roll=bool(body.get("roll_lock", False)))
                 # Tolerance is measured at the tip now (solve() takes the jaw

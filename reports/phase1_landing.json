@@ -1,0 +1,720 @@
+{
+  "tool": "tools/phase1_gate.py",
+  "squares": 64,
+  "current_gate_mm": 20.0,
+  "solver_residual_mm": {
+    "least_squares": {
+      "p50": 4.4,
+      "p90": 12.0,
+      "p95": 13.15,
+      "max": 16.0
+    },
+    "mink": {
+      "p50": 0.34,
+      "p90": 1.1,
+      "p95": 1.34,
+      "p99": 1.47,
+      "max": 1.49
+    }
+  },
+  "model_bias_mm": 18.74,
+  "hardware_residual_mm": {
+    "servo_quantisation_sigma_deg": 0.0879,
+    "servo_quantisation_p95_median_mm": 1.02,
+    "settle_sigma_deg": 0.7,
+    "settle_p95_median_mm": 8.17
+  },
+  "honest_landing_mm": {
+    "p50": 18.7,
+    "p95": 20.5
+  },
+  "gate_admission": [
+    {
+      "gate_mm": 2.0,
+      "mink_pass": 64,
+      "least_squares_pass": 0
+    },
+    {
+      "gate_mm": 2.5,
+      "mink_pass": 64,
+      "least_squares_pass": 3
+    },
+    {
+      "gate_mm": 3.0,
+      "mink_pass": 64,
+      "least_squares_pass": 12
+    },
+    {
+      "gate_mm": 4.0,
+      "mink_pass": 64,
+      "least_squares_pass": 23
+    },
+    {
+      "gate_mm": 5.0,
+      "mink_pass": 64,
+      "least_squares_pass": 42
+    },
+    {
+      "gate_mm": 8.0,
+      "mink_pass": 64,
+      "least_squares_pass": 53
+    },
+    {
+      "gate_mm": 12.0,
+      "mink_pass": 64,
+      "least_squares_pass": 58
+    },
+    {
+      "gate_mm": 20.0,
+      "mink_pass": 64,
+      "least_squares_pass": 64
+    }
+  ],
+  "proposed_gate_mm": 3.0,
+  "proposed_percentile": 99,
+  "derivation": "max(solver p99, solver max) x 2 headroom, rounded up to 0.5 mm. Bounds the SOLVER only: the model bias and hardware scatter are invisible to an FK-vs-FK gate.",
+  "blocked_on": "a physical landing check (marker read-back) for the 18.7 mm model bias; and, for the gate to be *usable*, the mink solver must be the one running (least_squares cannot meet 3.0 mm: 12/64 at 3.0 mm)",
+  "warning": "Any gate below 19 mm refuses EVERY move until the bias is fixed, if it is ever compared against physical landing rather than solver residual.",
+  "samples_detail": [
+    {
+      "label": "a1/least_squares",
+      "mm": 14.4,
+      "deg": 2.52
+    },
+    {
+      "label": "a1/mink",
+      "mm": 0.19,
+      "deg": 2.069
+    },
+    {
+      "label": "b1/least_squares",
+      "mm": 12.7,
+      "deg": 2.25
+    },
+    {
+      "label": "b1/mink",
+      "mm": 0.22,
+      "deg": 0.709
+    },
+    {
+      "label": "c1/least_squares",
+      "mm": 12.0,
+      "deg": 2.12
+    },
+    {
+      "label": "c1/mink",
+      "mm": 0.34,
+      "deg": 0.036
+    },
+    {
+      "label": "d1/least_squares",
+      "mm": 12.0,
+      "deg": 2.13
+    },
+    {
+      "label": "d1/mink",
+      "mm": 0.33,
+      "deg": 0.075
+    },
+    {
+      "label": "e1/least_squares",
+      "mm": 12.9,
+      "deg": 2.27
+    },
+    {
+      "label": "e1/mink",
+      "mm": 0.2,
+      "deg": 0.825
+    },
+    {
+      "label": "f1/least_squares",
+      "mm": 14.7,
+      "deg": 2.57
+    },
+    {
+      "label": "f1/mink",
+      "mm": 0.18,
+      "deg": 2.263
+    },
+    {
+      "label": "g1/least_squares",
+      "mm": 10.1,
+      "deg": 2.03
+    },
+    {
+      "label": "g1/mink",
+      "mm": 0.26,
+      "deg": 4.416
+    },
+    {
+      "label": "h1/least_squares",
+      "mm": 16.0,
+      "deg": 3.08
+    },
+    {
+      "label": "h1/mink",
+      "mm": 0.45,
+      "deg": 7.346
+    },
+    {
+      "label": "a2/least_squares",
+      "mm": 8.0,
+      "deg": 1.44
+    },
+    {
+      "label": "a2/mink",
+      "mm": 1.29,
+      "deg": 0.031
+    },
+    {
+      "label": "b2/least_squares",
+      "mm": 6.9,
+      "deg": 1.25
+    },
+    {
+      "label": "b2/mink",
+      "mm": 0.85,
+      "deg": 0.02
+    },
+    {
+      "label": "c2/least_squares",
+      "mm": 6.4,
+      "deg": 1.16
+    },
+    {
+      "label": "c2/mink",
+      "mm": 0.68,
+      "deg": 0.016
+    },
+    {
+      "label": "d2/least_squares",
+      "mm": 6.5,
+      "deg": 1.16
+    },
+    {
+      "label": "d2/mink",
+      "mm": 0.71,
+      "deg": 0.017
+    },
+    {
+      "label": "e2/least_squares",
+      "mm": 7.0,
+      "deg": 1.26
+    },
+    {
+      "label": "e2/mink",
+      "mm": 0.92,
+      "deg": 0.022
+    },
+    {
+      "label": "f2/least_squares",
+      "mm": 8.2,
+      "deg": 1.47
+    },
+    {
+      "label": "f2/mink",
+      "mm": 1.46,
+      "deg": 0.038
+    },
+    {
+      "label": "g2/least_squares",
+      "mm": 10.1,
+      "deg": 1.8
+    },
+    {
+      "label": "g2/mink",
+      "mm": 0.11,
+      "deg": 0.021
+    },
+    {
+      "label": "h2/least_squares",
+      "mm": 13.2,
+      "deg": 2.33
+    },
+    {
+      "label": "h2/mink",
+      "mm": 0.23,
+      "deg": 1.103
+    },
+    {
+      "label": "a3/least_squares",
+      "mm": 4.6,
+      "deg": 0.75
+    },
+    {
+      "label": "a3/mink",
+      "mm": 0.68,
+      "deg": 0.019
+    },
+    {
+      "label": "b3/least_squares",
+      "mm": 4.0,
+      "deg": 0.61
+    },
+    {
+      "label": "b3/mink",
+      "mm": 0.57,
+      "deg": 0.016
+    },
+    {
+      "label": "c3/least_squares",
+      "mm": 3.8,
+      "deg": 0.54
+    },
+    {
+      "label": "c3/mink",
+      "mm": 0.53,
+      "deg": 0.016
+    },
+    {
+      "label": "d3/least_squares",
+      "mm": 3.8,
+      "deg": 0.54
+    },
+    {
+      "label": "d3/mink",
+      "mm": 0.56,
+      "deg": 0.017
+    },
+    {
+      "label": "e3/least_squares",
+      "mm": 4.1,
+      "deg": 0.62
+    },
+    {
+      "label": "e3/mink",
+      "mm": 0.64,
+      "deg": 0.02
+    },
+    {
+      "label": "f3/least_squares",
+      "mm": 4.6,
+      "deg": 0.77
+    },
+    {
+      "label": "f3/mink",
+      "mm": 0.81,
+      "deg": 0.025
+    },
+    {
+      "label": "g3/least_squares",
+      "mm": 5.8,
+      "deg": 1.02
+    },
+    {
+      "label": "g3/mink",
+      "mm": 1.12,
+      "deg": 0.033
+    },
+    {
+      "label": "h3/least_squares",
+      "mm": 7.8,
+      "deg": 1.4
+    },
+    {
+      "label": "h3/mink",
+      "mm": 0.03,
+      "deg": 0.015
+    },
+    {
+      "label": "a4/least_squares",
+      "mm": 3.4,
+      "deg": 0.68
+    },
+    {
+      "label": "a4/mink",
+      "mm": 0.84,
+      "deg": 0.056
+    },
+    {
+      "label": "b4/least_squares",
+      "mm": 2.8,
+      "deg": 0.56
+    },
+    {
+      "label": "b4/mink",
+      "mm": 0.68,
+      "deg": 0.046
+    },
+    {
+      "label": "c4/least_squares",
+      "mm": 2.6,
+      "deg": 0.49
+    },
+    {
+      "label": "c4/mink",
+      "mm": 0.64,
+      "deg": 0.043
+    },
+    {
+      "label": "d4/least_squares",
+      "mm": 2.6,
+      "deg": 0.5
+    },
+    {
+      "label": "d4/mink",
+      "mm": 0.66,
+      "deg": 0.047
+    },
+    {
+      "label": "e4/least_squares",
+      "mm": 2.9,
+      "deg": 0.57
+    },
+    {
+      "label": "e4/mink",
+      "mm": 0.75,
+      "deg": 0.057
+    },
+    {
+      "label": "f4/least_squares",
+      "mm": 3.4,
+      "deg": 0.7
+    },
+    {
+      "label": "f4/mink",
+      "mm": 0.97,
+      "deg": 0.075
+    },
+    {
+      "label": "g4/least_squares",
+      "mm": 3.7,
+      "deg": 0.5
+    },
+    {
+      "label": "g4/mink",
+      "mm": 1.35,
+      "deg": 0.098
+    },
+    {
+      "label": "h4/least_squares",
+      "mm": 4.7,
+      "deg": 0.8
+    },
+    {
+      "label": "h4/mink",
+      "mm": 0.02,
+      "deg": 0.009
+    },
+    {
+      "label": "a5/least_squares",
+      "mm": 2.5,
+      "deg": 0.31
+    },
+    {
+      "label": "a5/mink",
+      "mm": 0.27,
+      "deg": 0.012
+    },
+    {
+      "label": "b5/least_squares",
+      "mm": 2.7,
+      "deg": 0.18
+    },
+    {
+      "label": "b5/mink",
+      "mm": 0.07,
+      "deg": 0.003
+    },
+    {
+      "label": "c5/least_squares",
+      "mm": 4.0,
+      "deg": 0.46
+    },
+    {
+      "label": "c5/mink",
+      "mm": 0.03,
+      "deg": 0.003
+    },
+    {
+      "label": "d5/least_squares",
+      "mm": 4.0,
+      "deg": 0.47
+    },
+    {
+      "label": "d5/mink",
+      "mm": 0.03,
+      "deg": 0.003
+    },
+    {
+      "label": "e5/least_squares",
+      "mm": 2.7,
+      "deg": 0.19
+    },
+    {
+      "label": "e5/mink",
+      "mm": 0.08,
+      "deg": 0.003
+    },
+    {
+      "label": "f5/least_squares",
+      "mm": 2.4,
+      "deg": 0.33
+    },
+    {
+      "label": "f5/mink",
+      "mm": 0.31,
+      "deg": 0.021
+    },
+    {
+      "label": "g5/least_squares",
+      "mm": 2.7,
+      "deg": 0.52
+    },
+    {
+      "label": "g5/mink",
+      "mm": 1.05,
+      "deg": 0.198
+    },
+    {
+      "label": "h5/least_squares",
+      "mm": 3.5,
+      "deg": 0.38
+    },
+    {
+      "label": "h5/mink",
+      "mm": 0.04,
+      "deg": 0.006
+    },
+    {
+      "label": "a6/least_squares",
+      "mm": 4.1,
+      "deg": 0.31
+    },
+    {
+      "label": "a6/mink",
+      "mm": 0.0,
+      "deg": 0.002
+    },
+    {
+      "label": "b6/least_squares",
+      "mm": 4.5,
+      "deg": 0.13
+    },
+    {
+      "label": "b6/mink",
+      "mm": 0.33,
+      "deg": 0.001
+    },
+    {
+      "label": "c6/least_squares",
+      "mm": 4.6,
+      "deg": 0.03
+    },
+    {
+      "label": "c6/mink",
+      "mm": 0.39,
+      "deg": 0.001
+    },
+    {
+      "label": "d6/least_squares",
+      "mm": 4.7,
+      "deg": 0.04
+    },
+    {
+      "label": "d6/mink",
+      "mm": 0.4,
+      "deg": 0.001
+    },
+    {
+      "label": "e6/least_squares",
+      "mm": 4.5,
+      "deg": 0.15
+    },
+    {
+      "label": "e6/mink",
+      "mm": 0.36,
+      "deg": 0.001
+    },
+    {
+      "label": "f6/least_squares",
+      "mm": 4.0,
+      "deg": 0.33
+    },
+    {
+      "label": "f6/mink",
+      "mm": 0.19,
+      "deg": 0.002
+    },
+    {
+      "label": "g6/least_squares",
+      "mm": 2.5,
+      "deg": 0.22
+    },
+    {
+      "label": "g6/mink",
+      "mm": 0.04,
+      "deg": 0.004
+    },
+    {
+      "label": "h6/least_squares",
+      "mm": 2.6,
+      "deg": 0.48
+    },
+    {
+      "label": "h6/mink",
+      "mm": 0.0,
+      "deg": 0.004
+    },
+    {
+      "label": "a7/least_squares",
+      "mm": 5.0,
+      "deg": 0.06
+    },
+    {
+      "label": "a7/mink",
+      "mm": 0.01,
+      "deg": 0.0
+    },
+    {
+      "label": "b7/least_squares",
+      "mm": 4.1,
+      "deg": 0.22
+    },
+    {
+      "label": "b7/mink",
+      "mm": 1.01,
+      "deg": 0.004
+    },
+    {
+      "label": "c7/least_squares",
+      "mm": 4.2,
+      "deg": 0.09
+    },
+    {
+      "label": "c7/mink",
+      "mm": 1.46,
+      "deg": 0.04
+    },
+    {
+      "label": "d7/least_squares",
+      "mm": 4.3,
+      "deg": 0.1
+    },
+    {
+      "label": "d7/mink",
+      "mm": 1.49,
+      "deg": 0.04
+    },
+    {
+      "label": "e7/least_squares",
+      "mm": 3.8,
+      "deg": 0.25
+    },
+    {
+      "label": "e7/mink",
+      "mm": 1.28,
+      "deg": 0.004
+    },
+    {
+      "label": "f7/least_squares",
+      "mm": 4.9,
+      "deg": 0.03
+    },
+    {
+      "label": "f7/mink",
+      "mm": 0.01,
+      "deg": 0.0
+    },
+    {
+      "label": "g7/least_squares",
+      "mm": 4.1,
+      "deg": 0.27
+    },
+    {
+      "label": "g7/mink",
+      "mm": 0.0,
+      "deg": 0.002
+    },
+    {
+      "label": "h7/least_squares",
+      "mm": 2.6,
+      "deg": 0.24
+    },
+    {
+      "label": "h7/mink",
+      "mm": 0.0,
+      "deg": 0.003
+    },
+    {
+      "label": "a8/least_squares",
+      "mm": 4.2,
+      "deg": 0.11
+    },
+    {
+      "label": "a8/mink",
+      "mm": 0.18,
+      "deg": 0.002
+    },
+    {
+      "label": "b8/least_squares",
+      "mm": 5.9,
+      "deg": 0.25
+    },
+    {
+      "label": "b8/mink",
+      "mm": 0.02,
+      "deg": 0.003
+    },
+    {
+      "label": "c8/least_squares",
+      "mm": 7.2,
+      "deg": 0.47
+    },
+    {
+      "label": "c8/mink",
+      "mm": 0.51,
+      "deg": 4.551
+    },
+    {
+      "label": "d8/least_squares",
+      "mm": 7.2,
+      "deg": 0.46
+    },
+    {
+      "label": "d8/mink",
+      "mm": 0.44,
+      "deg": 3.983
+    },
+    {
+      "label": "e8/least_squares",
+      "mm": 5.6,
+      "deg": 0.21
+    },
+    {
+      "label": "e8/mink",
+      "mm": 0.02,
+      "deg": 0.003
+    },
+    {
+      "label": "f8/least_squares",
+      "mm": 4.1,
+      "deg": 0.15
+    },
+    {
+      "label": "f8/mink",
+      "mm": 0.27,
+      "deg": 0.001
+    },
+    {
+      "label": "g8/least_squares",
+      "mm": 5.0,
+      "deg": 0.0
+    },
+    {
+      "label": "g8/mink",
+      "mm": 0.05,
+      "deg": 0.0
+    },
+    {
+      "label": "h8/least_squares",
+      "mm": 4.3,
+      "deg": 0.38
+    },
+    {
+      "label": "h8/mink",
+      "mm": 0.01,
+      "deg": 0.002
+    }
+  ]
+}
