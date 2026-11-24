@@ -147,7 +147,7 @@ DEFAULTS = {
     # The gripper value is the one to keep, never to actuate.
     "recovery_joints": {"shoulder_pan": -12.37, "shoulder_lift": -13.02,
                         "elbow_flex": 4.8, "wrist_flex": 98.34,
-                        "wrist_roll": 87.74, "gripper": 43.88},
+                        "wrist_roll": 0.0, "gripper": 43.88},
     # How many times one operation may drive home before it gives up, and how
     # many times the original move is retried after a recovery.  Both bounded on
     # purpose: a stuck robot must never loop.
