@@ -1,0 +1,141 @@
+{
+ "mode": "sim",
+ "dry_run": false,
+ "console": "http://127.0.0.1:51785",
+ "bridge": "http://127.0.0.1:48129",
+ "stall_above": null,
+ "stale_readback": true,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": false,
+ "cases": [
+  {
+   "case": "park_at_start",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 0.0,
+    "y_mm": 0.0,
+    "z_mm": 70.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": false,
+   "before_deg": [
+    -13.0,
+    -11.0,
+    25.0,
+    78.0,
+    67.0,
+    44.0
+   ],
+   "tip_before_mm": [
+    1.5,
+    1.5,
+    64.5
+   ],
+   "before_settled": true,
+   "before_age_s": 2.2,
+   "motion": {
+    "moved": false,
+    "elapsed_s": 1.48,
+    "max_deg": 0.0,
+    "after_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -12.383,
+     "shoulder_lift": -13.686,
+     "elbow_flex": 25.334,
+     "wrist_flex": 78.387,
+     "wrist_roll": 63.44500000000001,
+     "gripper": 44.0
+    },
+    "error_deg": 0.54,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -12.383,
+      "shoulder_lift": -13.686,
+      "elbow_flex": 25.334,
+      "wrist_flex": 78.387,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 0.2,
+     "approach_error_deg": 0.03,
+     "cost": 0.0011574169646045463,
+     "starts": 1
+    },
+    "pose": {
+     "tool_mm": [
+      2.3,
+      -2.2,
+      174.8
+     ],
+     "camera_mm": [
+      66.9,
+      -21.9,
+      162.8
+     ],
+     "camera_height_mm": 162.8,
+     "view_pitch_deg": 147.5,
+     "jaw_azimuth_deg": 75.2,
+     "tip_mm": [
+      1.5,
+      1.5,
+      64.5
+     ],
+     "joints_deg": {
+      "shoulder_pan": -13.0,
+      "shoulder_lift": -11.0,
+      "elbow_flex": 25.0,
+      "wrist_flex": 78.0,
+      "wrist_roll": 66.91,
+      "gripper": 44.0
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 1.49,
+   "after_deg": [
+    -13.0,
+    -11.0,
+    25.0,
+    78.0,
+    67.0,
+    44.0
+   ],
+   "tip_after_mm": [
+    1.5,
+    1.5,
+    64.5
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 0.0,
+    "travel_deg": 0.0,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.54,
+   "tip_travel_mm": 0.0
+  }
+ ],
+ "when": "2026-11-24T08:05:02-0500"
+}
