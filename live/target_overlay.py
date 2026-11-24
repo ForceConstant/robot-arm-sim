@@ -418,12 +418,18 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
         lines.append(f"detect {age:4.1f} s ago  {len(result.get('markers', []))} markers"
                      f"  {result.get('squares_in_view', 0)} squares")
         piece = result.get("piece") or {}
-        if tip_uv is not None and not stale and piece.get("uv"):
+        # Target -> AIM, not target -> tip.  The arm is steered by the aim ray;
+        # the tip pixel is a mount constant that is never commanded anywhere, so
+        # drawing the link to it implied the tip was what we drive to the piece
+        # (Brian, 2026-11-24).  Fall back to the tip only when there is no aim.
+        link_uv = aim_uv if aim_uv is not None else tip_uv
+        link_name = "aim" if aim_uv is not None else "tip"
+        if link_uv is not None and not stale and piece.get("uv"):
             puv = to_portrait(piece["uv"])
-            cv2.line(canvas, tip_uv, puv, WHITE, 1, cv2.LINE_AA)
+            cv2.line(canvas, link_uv, puv, WHITE, 1, cv2.LINE_AA)
             cv2.circle(canvas, puv, 5, WHITE, 1, cv2.LINE_AA)
-            gap_px = float(np.hypot(puv[0] - tip_uv[0], puv[1] - tip_uv[1]))
-            lines.append(f"tip->piece {gap_px:.0f} px"
+            gap_px = float(np.hypot(puv[0] - link_uv[0], puv[1] - link_uv[1]))
+            lines.append(f"{link_name}->piece {gap_px:.0f} px"
                          + (f"  {piece['x_mm']:.1f},{piece['y_mm']:.1f} mm"
                             if piece.get("x_mm") is not None else ""))
     if aim_point is not None:
