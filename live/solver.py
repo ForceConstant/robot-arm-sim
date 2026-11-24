@@ -87,7 +87,18 @@ class MoveSolver:
     # -- the two entry points /move uses -----------------------------------
     def solve(self, target_tool, seed_deg, span_deg=None, span_weight=0.12,
               max_nfev=400, freeze_roll=False, tool_frame=None):
-        if not self.use_mink:
+        if not self.use_mink or freeze_roll:
+            # FREEZE_ROLL GOES TO THE CHAIN ON PURPOSE.  With the wrist roll
+            # pinned the 5-joint arm has 4 unknowns for 5 constraints, so the
+            # solve is over-determined and the solver must trade position
+            # against approach direction.  The mink QP makes that trade badly:
+            # a 10 mm board-frame ``rel`` nudge at wrist_flex ~97 deg came back
+            # as pos_err 1.28 mm / approach 36.6 deg and was refused by the 8 deg
+            # gate (measured 2026-11-24), breaking ``rel`` mode outright.  The
+            # chain solve weights the rotation error against a 250 mm lever
+            # (ROT_SCALE_M) and returns 0.30 mm / 0.12 deg for the same ask, so
+            # it is the correct tool for a frozen-roll target.  Mink keeps every
+            # free-roll solve, which is what the IRL gate qualified.
             return self.kinematics.solve(
                 target_tool, seed_deg, span_deg=span_deg, span_weight=span_weight,
                 max_nfev=max_nfev, freeze_roll=freeze_roll, tool_frame=tool_frame)
@@ -97,7 +108,9 @@ class MoveSolver:
 
     def solve_multi(self, target_tool, seed_deg, span_deg=None,
                     freeze_roll=False, tool_frame=None):
-        if not self.use_mink:
+        # See solve(): a frozen roll is a different, over-determined problem and
+        # belongs to the chain solver.
+        if not self.use_mink or freeze_roll:
             return self.kinematics.solve_multi(
                 target_tool, seed_deg, span_deg=span_deg, freeze_roll=freeze_roll,
                 tool_frame=tool_frame)

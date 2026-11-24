@@ -37,6 +37,11 @@ GREY = (175, 175, 175)
 # even after JPEG chroma subsampling.
 MAGENTA = (255, 60, 235)
 CYAN = (240, 220, 40)
+# The aim ray — where the tool axis meets the real board plane.  Yellow, and a
+# different *shape* (open reticle, dashed link) from the magenta commanded
+# point and the cyan fixed tip pixel, because all three can be on screen at
+# once and two of them are called "aim" in conversation.
+AIM_RAY = (0, 235, 255)
 # The board's own grid. Blue, because the markers are green and the target is
 # red: three colours, three meanings, still separable after JPEG q75 chroma.
 GRID = (255, 120, 60)
@@ -182,6 +187,14 @@ class TargetOverlay:
                 "submitted": self.submitted,
                 "errors": self.errors,
                 "last_error": self.last_error,
+                # The tool pose that produced the current board solve, in board
+                # coordinates, plus a key that identifies the solve.  The aim
+                # plane needs the pose at the instant of the solve, not the
+                # current pose: the arm moves in between.
+                "tool_at_solve": (None if self._tool_pose_solved is None
+                                  else self._tool_pose_solved.copy()),
+                "solve_key": (None if self.result_ts is None
+                              else round(float(self.result_ts), 3)),
             }
 
 
@@ -244,7 +257,7 @@ def _draw_grid(canvas: np.ndarray, grid: dict, to_portrait, stats) -> None:
 
 def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
          stream_fps: float | None = None, stats: dict | None = None,
-         tip_center=None) -> np.ndarray:
+         tip_center=None, aim_point: dict | None = None) -> np.ndarray:
     """Draw the overlay onto a portrait canvas.
 
     ``layout_hw`` is the landscape (height, width) of the frame the detection
@@ -254,6 +267,12 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
     frame. It is rigid to the camera, so it is drawn every frame; the commanded
     aim point (``result["aim"]``) is drawn beside it so the two can be compared
     on the very frames where the jaws close.
+
+    ``aim_point`` is the output of ``live/aim.py``: the ray jaw origin -> tip
+    centre -> board, projected.  Its pixel is what the arm actually points at,
+    so it is drawn as an open reticle in ``AIM_RAY`` with a dashed link to the
+    tip marker and the live ``aim->tip`` distance.  Drawn even when the board
+    plane is older than the freshness limit — the panel says how old.
     """
     height, width = layout_hw
 
@@ -306,21 +325,71 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
                 cv2.line(canvas, (u + dx0, v + dy0), (u + dx1, v + dy1),
                          MAGENTA, 2, cv2.LINE_AA)
             cv2.circle(canvas, (u, v), 20, MAGENTA, 1, cv2.LINE_AA)
-            text = f"aim {aim.get('x_mm', 0):.1f},{aim.get('y_mm', 0):.1f}"
+            text = f"cmd {aim.get('x_mm', 0):.1f},{aim.get('y_mm', 0):.1f}"
             tx = min(max(u + 12, 4), max(4, canvas.shape[1] - 210))
             ty = min(max(v + 34, 16), canvas.shape[0] - 8)
             cv2.putText(canvas, text, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, MAGENTA, 2, cv2.LINE_AA)
 
-    # ---- jaw-tip centre: a fixed pixel, so it is drawn even with no detect
+    # ---- jaw-tip centre.  Two facts, deliberately both on screen:
+    #   cyan cross  = the calibrated TIP_PIXEL (rigid identity of the mount)
+    #   cyan square = the pixel Brian clicked, when it is materially elsewhere
+    # They differ by ~12 px today, which is a mount-projection residual and
+    # must not be hidden behind one marker pretending to be both.
     tip_uv = None
-    if tip_center is not None:
-        tip_uv = to_portrait(tip_center)
+    calib_tip = None
+    if aim_point is not None and aim_point.get("tip_pixel"):
+        calib_tip = (float(aim_point["tip_pixel"][0]), float(aim_point["tip_pixel"][1]))
+    if calib_tip is not None or tip_center is not None:
+        source = calib_tip or (float(tip_center[0]), float(tip_center[1]))
+        tip_uv = to_portrait(source)
         u, v = tip_uv
         cv2.line(canvas, (u - 18, v), (u + 18, v), CYAN, 2, cv2.LINE_AA)
         cv2.line(canvas, (u, v - 18), (u, v + 18), CYAN, 2, cv2.LINE_AA)
         cv2.putText(canvas, "tip", (u + 10, v - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, CYAN, 1, cv2.LINE_AA)
+        if calib_tip is not None and tip_center is not None:
+            gap = float(np.hypot(calib_tip[0] - float(tip_center[0]),
+                                 calib_tip[1] - float(tip_center[1])))
+            if gap > 4.0:
+                su, sv = to_portrait((float(tip_center[0]), float(tip_center[1])))
+                cv2.rectangle(canvas, (su - 6, sv - 6), (su + 6, sv + 6),
+                              CYAN, 1, cv2.LINE_AA)
+                cv2.putText(canvas, "set", (su + 8, sv + 4),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, CYAN, 1, cv2.LINE_AA)
+
+    # ---- the live aim ray: an open reticle plus a dashed link to the tip
+    aim_uv = None
+    if aim_point is not None:
+        colour = AIM_RAY if aim_point.get("ok") else AMBER
+        if aim_point.get("aim_pixel"):
+            aim_uv = to_portrait(aim_point["aim_pixel"])
+            u, v = aim_uv
+            if tip_uv is not None:
+                # dashed because it is a derived quantity, not a drawn target:
+                # a solid line would read as a commanded path.
+                steps = max(2, int(np.hypot(u - tip_uv[0], v - tip_uv[1]) / 8))
+                for index in range(0, steps, 2):
+                    a = (np.array(tip_uv, float) + (np.array([u, v], float)
+                                                    - np.array(tip_uv, float))
+                         * index / steps)
+                    b = (np.array(tip_uv, float) + (np.array([u, v], float)
+                                                    - np.array(tip_uv, float))
+                         * min(steps, index + 1) / steps)
+                    cv2.line(canvas, tuple(np.int32(a)), tuple(np.int32(b)),
+                             colour, 1, cv2.LINE_AA)
+            for dx0, dy0, dx1, dy1 in ((-24, 0, -8, 0), (8, 0, 24, 0),
+                                       (0, -24, 0, -8), (0, 8, 0, 24)):
+                cv2.line(canvas, (u + dx0, v + dy0), (u + dx1, v + dy1),
+                         colour, 2, cv2.LINE_AA)
+            cv2.circle(canvas, (u, v), 10, colour, 1, cv2.LINE_AA)
+            cv2.circle(canvas, (u, v), 2, colour, -1, cv2.LINE_AA)
+            if aim_point.get("offset_px") is not None:
+                text = f"aim->tip {aim_point['offset_px']:.0f} px"
+                tx = min(max(u - 70, 4), max(4, canvas.shape[1] - 190))
+                ty = min(max(v - 30, 16), canvas.shape[0] - 8)
+                cv2.putText(canvas, text, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX,
+                            0.46, colour, 2, cv2.LINE_AA)
 
     # ---- status block: the headline is the target or its absence
     lines = []
@@ -357,6 +426,27 @@ def draw(canvas: np.ndarray, snap: dict, *, layout_hw: tuple[int, int],
             lines.append(f"tip->piece {gap_px:.0f} px"
                          + (f"  {piece['x_mm']:.1f},{piece['y_mm']:.1f} mm"
                             if piece.get("x_mm") is not None else ""))
+    if aim_point is not None:
+        if aim_point.get("ok") and aim_point.get("offset_px") is not None:
+            board = aim_point.get("aim_board_mm") or [float("nan")] * 3
+            lines.append(f"aim->tip {aim_point['offset_px']:.0f} px  "
+                         f"aim {board[0]:.0f},{board[1]:.0f} mm "
+                         f"{aim_point.get('square') or 'off board'}")
+        else:
+            lines.append("aim - " + str(aim_point.get("reason") or "unavailable")[:56])
+        plane = aim_point.get("plane") or {}
+        if plane:
+            lines.append(f"aim plane {plane.get('samples', 0)} solves  "
+                         f"spread {plane.get('spread_mm', 0):.1f} mm  "
+                         f"age {plane.get('age_s', 0):.1f} s")
+        if aim_point.get("tip_pixel") and tip_center is not None:
+            calib = aim_point["tip_pixel"]
+            gap = float(np.hypot(float(calib[0]) - float(tip_center[0]),
+                                 float(calib[1]) - float(tip_center[1])))
+            if gap > 4.0:
+                lines.append(f"tip calib {calib[0]:.0f},{calib[1]:.0f}  "
+                             f"set {float(tip_center[0]):.0f},{float(tip_center[1]):.0f}"
+                             f"  ({gap:.0f} px)")
     if snap.get("mean_cost_ms") is not None:
         lines.append(f"cost {snap['mean_cost_ms']:.1f} ms  runs {snap['runs']}"
                      + (f"  fps {stream_fps:.1f}" if stream_fps else ""))

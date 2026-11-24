@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="560" viewBox="0 0 640 560">
+<rect width="640" height="560" fill="#ffffff"/>
+<text x="20" y="28" font-family="monospace" font-size="15" font-weight="bold">Tip-center check — X-Z plane (Y=0), origin O = wrist mount, +Z down</text>
+<text x="20" y="48" font-family="monospace" font-size="12" fill="#444">Cam C (59.33, 29.733) · Tip T (0, 110.6) · axis 60° off +Z · portrait v FOV 42.08° (half 21.04°)</text>
+
+<g stroke="#ddd" stroke-width="1">
+<!-- grid every 20mm: X -20..80, Z -10..130 -->
+<!-- verticals -->
+<line x1="60" y1="60" x2="60" y2="540"/>
+<line x1="140" y1="60" x2="140" y2="540"/>
+<line x1="220" y1="60" x2="220" y2="540"/>
+<line x1="300" y1="60" x2="300" y2="540"/>
+<line x1="380" y1="60" x2="380" y2="540"/>
+<line x1="460" y1="60" x2="460" y2="540"/>
+<!-- horizontals every 20mm -->
+<line x1="20" y1="100" x2="520" y2="100"/>
+<line x1="20" y1="180" x2="520" y2="180"/>
+<line x1="20" y1="260" x2="520" y2="260"/>
+<line x1="20" y1="340" x2="520" y2="340"/>
+<line x1="20" y1="420" x2="520" y2="420"/>
+<line x1="20" y1="500" x2="520" y2="500"/>
+</g>
+<text x="20" y="70" font-family="monospace" font-size="10" fill="#888">X=-20</text>
+<text x="140" y="70" font-family="monospace" font-size="10" fill="#888">X=0</text>
+<text x="300" y="70" font-family="monospace" font-size="10" fill="#888">X≈40</text>
+<text x="380" y="70" font-family="monospace" font-size="10" fill="#888">X≈60 (cam)</text>
+
+<!-- FOV wedge shaded: apex C(417.3? recompute) -->
+<!-- mapping: sx = 140 + X*4, sy = 100 + Z*4  (so O(0,0) at 140,100; Z=110.6 -> 542 — clip, use scale 3.4) -->
+<!-- Use scale 3.2: sx=140+X*3.2, sy=90+Z*3.2 -->
+<!-- C: 140+59.33*3.2=329.9, 90+29.733*3.2=185.1 -->
+<!-- T: 140+0=140, 90+110.6*3.2=443.9 -->
+<!-- axis dir (-sin60, cos60), L=110mm -->
+<!-- axis end: 329.9-0.866*110*3.2=25.1, 185.1+0.5*110*3.2=361.1 -->
+<!-- edge1 38.96°: dir (-sin38.96, cos38.96)=(-0.628,0.778), L=130: end 329.9-0.628*130*3.2=68.6, 185.1+0.778*130*3.2=508.8 -->
+<!-- edge2 81.04°: dir (-sin81.04, cos81.04)=(-0.988,0.156), L=130: end 329.9-0.988*130*3.2=-81.1, 185.1+0.156*130*3.2=250.0 (off canvas left, clip to x=5) -->
+<polygon points="329.9,185.1 68.6,508.8 25.1,361.1" fill="#dbeafe" opacity="0.7"/>
+<polygon points="329.9,185.1 25.1,361.1 5,335" fill="#dbeafe" opacity="0.7"/>
+
+<!-- axes through origin -->
+<line x1="40" y1="90" x2="480" y2="90" stroke="#333" stroke-width="1.5"/>
+<polygon points="480,90 470,85 470,95" fill="#333"/>
+<line x1="140" y1="70" x2="140" y2="520" stroke="#333" stroke-width="1.5"/>
+<polygon points="140,520 135,510 145,510" fill="#333"/>
+<text x="485" y="93" font-family="monospace" font-size="12">+X</text>
+<text x="148" y="515" font-family="monospace" font-size="12">+Z down</text>
+
+<!-- origin -->
+<circle cx="140" cy="90" r="5" fill="none" stroke="#000" stroke-width="2"/>
+<text x="105" y="80" font-family="monospace" font-size="12" font-weight="bold">O (0,0)</text>
+
+<!-- camera -->
+<rect x="322.9" y="178.1" width="14" height="14" fill="#2563eb"/>
+<text x="345" y="180" font-family="monospace" font-size="12" font-weight="bold" fill="#2563eb">C (59.33, 29.73)</text>
+
+<!-- tip -->
+<circle cx="140" cy="443.9" r="7" fill="#dc2626"/>
+<text x="155" y="448" font-family="monospace" font-size="12" font-weight="bold" fill="#dc2626">T (0, 110.6)</text>
+
+<!-- C to T dashed -->
+<line x1="329.9" y1="185.1" x2="140" y2="443.9" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="7,4"/>
+<text x="195" y="300" font-family="monospace" font-size="11" fill="#dc2626">C→T: dX −59.33, dZ +80.87</text>
+<text x="195" y="316" font-family="monospace" font-size="11" fill="#dc2626">tip dir 36.3° off +Z</text>
+
+<!-- optical axis -->
+<line x1="329.9" y1="185.1" x2="25.1" y2="361.1" stroke="#111" stroke-width="2"/>
+<text x="180" y="355" font-family="monospace" font-size="11" font-weight="bold">axis 60° off +Z</text>
+
+<!-- FOV edges -->
+<line x1="329.9" y1="185.1" x2="68.6" y2="508.8" stroke="#2563eb" stroke-width="1.5"/>
+<line x1="329.9" y1="185.1" x2="5" y2="335" stroke="#2563eb" stroke-width="1.5"/>
+<text x="60" y="490" font-family="monospace" font-size="11" fill="#2563eb">FOV edge 39.0°</text>
+<text x="60" y="330" font-family="monospace" font-size="11" fill="#2563eb">FOV edge 81.0°</text>
+
+<!-- off-axis annotation -->
+<text x="330" y="420" font-family="monospace" font-size="12" font-weight="bold" fill="#000">tip 23.7° off axis · half-FOV 21.04° → OUTSIDE by 2.7°</text>
+<text x="330" y="440" font-family="monospace" font-size="12" fill="#000">portrait v = 685.8 (frame 0–639) ≈ 46px below edge</text>
+<text x="330" y="460" font-family="monospace" font-size="12" fill="#000">centered would need cam Z 76.35 or axis ≈36°</text>
+<text x="330" y="480" font-family="monospace" font-size="12" fill="#000">top-row (v=0) would need cam Z ≈ 101.3</text>
+</svg>

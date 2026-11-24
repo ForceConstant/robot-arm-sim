@@ -33,6 +33,8 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
 from starlette.concurrency import run_in_threadpool
 
 from bridge_client import BridgeError, HttpBridge, HttpFrames
+from aim import (CameraMount, PlaneTracker, aim_translation,
+                 evaluate as aim_evaluate, plane_from_solution)
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
 from solver import MoveSolver
 from scan_controller import ScanController, plan_in_degrees
@@ -270,6 +272,16 @@ class Live:
         self.frame_offset.offset_deg = float(
             self.wrist_cal().get("model_offset_deg", 0.0))
         self.kinematics = ArmKinematics(self.calibration, {}, self._board_frame())
+        # The aim ray: one mount, one plane estimate, shared by /state, the
+        # overlay and the aim_point move mode.  The mount is the calibrated
+        # camera-in-tool of the *installed* tool — the B5 reference mount in
+        # chess_sim/tool_reference.py is a 90 deg reconstruction and is not it
+        # (tools/aim_validate.py: plane tilt 4.5 vs 62 deg).
+        self.mount = CameraMount.from_calibration(self.calibration)
+        self.plane_tracker = PlaneTracker(
+            window=int(self.config.get("aim_plane_window", 9)))
+        self.aim_lock = threading.Lock()
+        self.aim_square_mm = float(self.config.get("square_m", 0.028)) * 1000.0
         # Phase 1: the solver behind /move. Default ``least_squares`` keeps the
         # incumbent path; ``mink`` swaps only the numerical solve. Board-frame
         # bookkeeping, mode expansion, span/roll-lock, keep-in and every guard
@@ -337,7 +349,7 @@ class Live:
             return None
 
     def tool_and_tip(self):
-        """(T_board_tool, tip_mm) from one joint read.
+        """(T_board_tool, tip_mm, T_base_tool) from one joint read.
 
         The tip marker is the projection of this tip point through the solved
         pose, not a stored pixel: the cartesian move puts the jaw square to the
@@ -348,15 +360,16 @@ class Live:
             state = self.bridge.state()
             joints = state.get("joints") or {}
             if len(joints) != 6:
-                return None, None
+                return None, None, None
             values = [float(joints[name]) for name in JOINTS]
-            board_frame = self._board_frame()
+            board_frame = self.kinematics.board
             flange = self.kinematics.fk(values)
             tip = (flange @ self.jaw_frame())[:3, 3]
             tip_mm = self.kinematics.to_board(tip) * 1000.0
-            return np.linalg.inv(board_frame) @ flange, [float(v) for v in tip_mm]
+            return (np.linalg.inv(board_frame) @ flange,
+                    [float(v) for v in tip_mm], flange)
         except Exception:
-            return None, None
+            return None, None, None
 
     def _propagate_snapshot(self, snap: dict, tool_now) -> dict:
         """Swap in a projected grid/aim when the live solve has gone away."""
@@ -1321,6 +1334,11 @@ class Live:
                     f"{solved['approach_error_deg']} deg")
             target = [float(solved["joints_deg"][name]) for name in JOINTS]
             detail = dict(solved, aim_distance_mm=round(distance * 1000.0, 1))
+        elif mode == "aim_point":
+            # Aim the RAY, not the tip: drive until the tool axis meets the
+            # board on the requested square.  The grasp path above is
+            # untouched; this is the mode that says "put the aim there".
+            return self._aim_point_locked(body, state, start)
         elif mode == "rel":
             # Nudge the tool along the board axes while keeping the current
             # orientation.  Needs the board's axes, not its origin, so it
@@ -1397,6 +1415,20 @@ class Live:
             raise BridgeError(f"unknown move mode {mode!r}")
         if body.get("jaw") is not None:
             target[5] = float(body["jaw"])
+        return self._execute_target(target, start, body, detail)
+
+    def _execute_target(self, target: list[float], start: list[float],
+                        body: dict, detail: dict) -> dict:
+        """Guard, then stream to a joint target — the tail of every move.
+
+        Split out of ``_move_locked`` so the closed-loop aim controller
+        (``mode: aim_point``) drives through exactly the same limits, wrist
+        window, keep-in check and workspace stream as a Cartesian move.  One
+        code path, one set of guards.
+        """
+        if body.get("jaw") is not None and len(target) > 5:
+            target = list(target)
+            target[5] = float(body["jaw"])
         window = self._wrist_window()
         if window and abs(target[4] - start[4]) > 1e-9:
             lo, hi = window
@@ -1425,6 +1457,220 @@ class Live:
         result = self._stream_to(target, start, tolerance=settle)
         result.update(requested=detail, pose=self.pose_now())
         return result
+
+    # ------------------------------------------------------- the aim ray
+    def feed_aim_plane(self, snap: dict) -> bool:
+        """Add one marker board solve to the running plane estimate.
+
+        The plane must be carried into the base frame with the tool pose that
+        was current *when the frame was solved* — the arm moves between solves,
+        so pairing a fresh pose with an old board solve would tilt the plane.
+        """
+        board = ((snap.get("result") or {}).get("board")) or {}
+        pose = snap.get("tool_at_solve")
+        key = snap.get("solve_key")
+        if not board or pose is None or key is None:
+            return False
+        normal, point, _info = plane_from_solution(board, pose, self.mount,
+                                                   self.kinematics.board)
+        if normal is None:
+            return False
+        with self.aim_lock:
+            return self.plane_tracker.add(normal, point, key=key,
+                                          rms_px=board.get("rms_px"),
+                                          ids=len(board.get("ids") or []))
+
+    def aim_readout(self, pose=None, joints_deg=None, *,
+                    plane_max_age_s: float | None = None) -> dict:
+        """`AIM_WORLD`, `AIM_PIXEL`, `TIP_PIXEL` and a validity flag.
+
+        The board plane comes from the markers (averaged over recent solves),
+        never from the configured board placement: the placement is a seed for
+        planning, not a measurement of where the board is.
+        """
+        if pose is None:
+            if joints_deg is None:
+                state = self.bridge.state()
+                joints_deg = [float(state["joints"][name]) for name in JOINTS]
+            pose = self.kinematics.fk(joints_deg)
+        with self.aim_lock:
+            plane = self.plane_tracker.plane()
+        readout = aim_evaluate(
+            pose, self.mount, plane,
+            board_frame=self.kinematics.board,
+            board_half_mm=float(self.config.get("board_half_mm", 122.0)),
+            square_mm=self.aim_square_mm,
+            plane_max_age_s=float(self.config.get("aim_plane_max_age_s", 30.0)
+                                  if plane_max_age_s is None else plane_max_age_s))
+        if joints_deg is not None:
+            readout["joints_deg"] = {name: round(float(joints_deg[i]), 2)
+                                     for i, name in enumerate(JOINTS)}
+        return readout
+
+    def aim_point_move(self, body: dict) -> dict:
+        """Dry-run an aim-point correction without touching the arm."""
+        return self.move(dict(body, mode="aim_point", dry_run=True))
+
+    def _aim_solve(self, goal, seed, freeze_roll: bool) -> dict:
+        """Solve a small aim correction with the continuity-regularised IK.
+
+        Deliberately **not** the ``MoveSolver``/mink path: measured on 2026-11-24
+        at a 97 deg wrist_flex pose, a 12 mm translation returned ``pos_err 1.20
+        mm, approach 43.4 deg`` from the mink path (and a target that FK puts
+        88 mm from the goal) while the least-squares path returned ``0.30 mm,
+        0.12 deg`` with a 4 deg joint change.  The mink state is reused between
+        calls and at this pose it lands in the wrong basin; the grasp path
+        (``solve_tip``) is a different method and is unaffected and untouched.
+        The error is measured at the jaw tip, so the number the gate checks is
+        the number that matters.
+        """
+        return self._solved(self.kinematics.solve_multi, goal, seed,
+                            freeze_roll=freeze_roll, tool_frame=self.jaw_frame())
+
+    def _aim_point_locked(self, body: dict, state: dict, start: list[float]) -> dict:
+        """Closed loop: translate the tool until the aim ray lands on target.
+
+        One step is exact in principle — a rigid translation of the tool moves
+        the plane intersection by the in-plane part of that translation — so the
+        only residual is IK error and the servo settle, and two or three steps
+        take it out.  Each step goes through `_execute_target`, so limits, the
+        wrist window, keep-in and the workspace stream are the same ones every
+        other move uses.  Orientation is held (`freeze_roll`), so this never
+        silently re-aims the arm while it is centring.
+        """
+        target_xy = (float(body.get("x_mm", 0.0)), float(body.get("y_mm", 0.0)))
+        if target_xy == (0.0, 0.0) and "x_mm" not in body:
+            raise BridgeError("aim_point needs x_mm and y_mm")
+        tolerance = float(body.get("tolerance_mm", 5.0))
+        iterations = max(1, min(6, int(body.get("iterations", 4))))
+        step_cap = float(body.get("max_step_mm", 45.0))
+        dry = bool(body.get("dry_run"))
+        # Wrist roll does not move the aim — the jaw origin and the tip both sit
+        # on the rolled axis (tip-center.md §1) — so holding roll is a preference.
+        # If the held-roll solve cannot keep the approach, retry with roll free
+        # rather than refusing a correction the arm could plainly make.
+        roll_lock = bool(body.get("roll_lock", True))
+        roll_freed = False
+        max_age = float(body.get("plane_max_age_s",
+                                self.config.get("aim_plane_max_age_s", 15.0)))
+        measured = [float(v) for v in start]
+        steps: list[dict] = []
+        first = None
+        last = None
+        base_pose = self.kinematics.fk(measured)
+        base_z = float(base_pose[2, 3])
+        previous_error = None
+        stalled = False
+        for index in range(iterations):
+            pose = self.kinematics.fk(measured)
+            readout = self.aim_readout(pose, measured, plane_max_age_s=max_age)
+            if readout.get("aim_board_mm") is None:
+                raise BridgeError("aim_point: " + (readout.get("reason")
+                                                   or "no usable board plane"))
+            if readout["plane"]["age_s"] > max_age:
+                raise BridgeError(
+                    "aim_point needs a fresh marker board solve: last one is "
+                    f"{readout['plane']['age_s']:.0f} s old (limit {max_age:.0f} s)")
+            if first is None:
+                first = readout
+            last = readout
+            aim_mm = readout["aim_board_mm"]
+            error = float(np.hypot(target_xy[0] - aim_mm[0], target_xy[1] - aim_mm[1]))
+            step = {"iteration": index,
+                    "aim_board_mm": aim_mm,
+                    "error_mm": round(error, 2),
+                    "aim_pixel": readout.get("aim_pixel"),
+                    "axis_board": [round(float(v), 4) for v in
+                                   (self.kinematics.board[:3, :3].T
+                                    @ (-pose[:3, 2]))]}
+            steps.append(step)
+            if error <= tolerance:
+                step["done"] = True
+                break
+            if previous_error is not None and error > previous_error * 0.9:
+                # Two steps without a 10% gain means the servo settle is moving
+                # the tool more than the correction: stop and report the number
+                # rather than grinding the arm sideways for nothing.
+                step["stalled"] = True
+                stalled = True
+                break
+            previous_error = error
+            with self.aim_lock:
+                plane = self.plane_tracker.plane()
+            delta = aim_translation(pose, plane, target_xy, self.kinematics.board)
+            length = float(np.linalg.norm(delta)) * 1000.0
+            if length > step_cap:
+                delta = delta * (step_cap / length)
+                length = step_cap
+            # Solve from the pose the FIRST step started at, with the height and
+            # orientation pinned: the stream settles 2-3 deg short, so a goal that
+            # chases the current pose ratchets the sag into a slow descent and
+            # ratchets the tilt into aim drift (measured 2026-11-24: z 110 -> 81 mm
+            # and the axis 1.8 -> 8.4 deg over four steps when it did).
+            goal = base_pose.copy()
+            goal[:3, 3] = pose[:3, 3] + delta
+            goal[2, 3] = base_z
+            solved = self._aim_solve(goal, measured, roll_lock)
+            if solved["position_error_mm"] > 8.0:
+                raise StuckError(
+                    "aim_point: no reachable pose for a "
+                    f"{length:.0f} mm aim correction (off by "
+                    f"{solved['position_error_mm']} mm)")
+            # Hold the approach too.  A solve that reaches the position by
+            # flipping the tool over would move the aim somewhere else entirely
+            # (the axis, not the point, is what aims), so it is refused rather
+            # than executed.
+            if solved["approach_error_deg"] > 6.0 and roll_lock and not roll_freed:
+                retry = self._aim_solve(goal, measured, False)
+                if retry["approach_error_deg"] <= 6.0:
+                    solved, roll_lock, roll_freed = retry, False, True
+            if solved["approach_error_deg"] > 6.0:
+                raise StuckError(
+                    "aim_point: the correcting pose would tilt the tool "
+                    f"{solved['approach_error_deg']:.0f} deg; refusing to move")
+            target = [float(solved["joints_deg"][name]) for name in JOINTS]
+            if body.get("jaw") is not None:
+                target[5] = float(body["jaw"])
+            detail = dict(solved, mode="aim_point", step_mm=round(length, 1))
+            step.update(step_mm=round(length, 1),
+                        solve_position_mm=solved.get("position_error_mm"),
+                        solve_approach_deg=solved.get("approach_error_deg"),
+                        solve_starts=solved.get("starts"),
+                        exact=solved.get("joints_deg") is None)
+            if dry:
+                step["target_joints"] = dict(
+                    zip(JOINTS, [round(v, 2) for v in target]))
+                step["step_mm"] = round(length, 1)
+                step["dry_run"] = True
+                break
+            executed = self._execute_target(target, measured, body, detail)
+            measured = [float(executed["joints"][name]) for name in JOINTS]
+            step["executed"] = {"error_deg": executed.get("error_deg"),
+                                "commands": executed.get("commands")}
+        if not dry:
+            final = self.aim_readout(self.kinematics.fk(measured), measured,
+                                     plane_max_age_s=max_age)
+            last = final
+        final_mm = (last or {}).get("aim_board_mm") or [float("nan"), float("nan")]
+        return {"mode": "aim_point",
+                "dry_run": dry,
+                "target_mm": [round(target_xy[0], 1), round(target_xy[1], 1)],
+                "tolerance_mm": tolerance,
+                "start_aim_mm": (first or {}).get("aim_board_mm"),
+                "final_aim_mm": final_mm,
+                "final_error_mm": round(float(np.hypot(
+                    target_xy[0] - final_mm[0], target_xy[1] - final_mm[1])), 2)
+                if np.isfinite(final_mm[0]) else None,
+                "square": (last or {}).get("square"),
+                "aim_pixel": (last or {}).get("aim_pixel"),
+                "offset_px": (last or {}).get("offset_px"),
+                "plane": (last or {}).get("plane"),
+                "iterations": len([s for s in steps if not s.get("dry_run")]),
+                "stalled": stalled,
+                "steps": steps,
+                "joints_deg": {name: round(measured[i], 2)
+                               for i, name in enumerate(JOINTS)},
+                "pose": self.pose_now()}
 
     def _stream_to(self, target: list[float], start: list[float],
                    tolerance: float = 0.7, trace: list | None = None) -> dict:
@@ -1753,7 +1999,7 @@ class Live:
         raw = cv2.cvtColor(frame.image, cv2.COLOR_RGB2BGR)
         snap = {"result": None}
         if self.overlay is not None:
-            tool_now, tip_board = self.tool_and_tip()
+            tool_now, tip_board, flange = self.tool_and_tip()
             self.overlay.submit(raw.copy(), time.time(), tool_now)
             self.overlay.set_aim(self.aim_tuple())
             # Draw on the undistorted frame: the detector solves pose there, so
@@ -1761,6 +2007,11 @@ class Live:
             image = self._orient(self.overlay.rectify(raw))
             snap = self.overlay.snapshot()
             snap = self._propagate_snapshot(snap, tool_now)
+            # Board plane for the aim ray: one marker solve per fresh pose, so
+            # the aim does not use the configured board placement at all.
+            self.feed_aim_plane(snap)
+            aim_point = (None if flange is None
+                         else self.aim_readout(flange))
             # The tip pixel is a MOUNT CONSTANT, not a projection: in sim the
             # camera and the fingertip plane sit on one rigid body, so the pixel
             # is identical across a 60 deg pitch sweep and a 90 deg roll sweep
@@ -1770,7 +2021,7 @@ class Live:
             tip_px = self.tip_center().get("pixel")
             draw_target(image, snap, layout_hw=raw.shape[:2],
                         stream_fps=self.stream_fps(),
-                        tip_center=tip_px)
+                        tip_center=tip_px, aim_point=aim_point)
         else:
             image = self._orient(raw)
         ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 75])
@@ -1843,6 +2094,25 @@ def _target_summary() -> dict | None:
             "last_error": snap["last_error"]}
 
 
+def _aim_summary(bridge_state: dict) -> dict | None:
+    """The aim ray for ``/state``, from the joints in the state we already have.
+
+    Kept out of ``live.lock`` for the same lock-ordering reason as the target
+    summary: it reads the overlay snapshot.  A missing bridge state is not
+    fatal — the aim then reports why it cannot be computed.
+    """
+    try:
+        joints = bridge_state.get("joints") or {}
+        if len(joints) != len(JOINTS):
+            return {"ok": False, "reason": "no joint state for the aim ray",
+                    "schema": "aim/1"}
+        values = [float(joints[name]) for name in JOINTS]
+        return live.aim_readout(joints_deg=values)
+    except Exception as exc:            # display state must never 500 the console
+        return {"ok": False, "reason": f"aim unavailable: {type(exc).__name__}: {exc}",
+                "schema": "aim/1"}
+
+
 @app.get("/state")
 def state():
     try:
@@ -1852,10 +2122,12 @@ def state():
     # Taken before ``live.lock``: the stream thread holds the overlay lock while
     # it asks for the frame rate, so the opposite order here would deadlock.
     target = _target_summary()
+    aim_state = _aim_summary(bridge_state)
     with live.lock:
         return {"bridge": bridge_state,
                 "wrist": live.wrist_state(bridge_state),
                 "tool_tip": describe_tip_frame(),
+                "aim_point": aim_state,
                 "scan": live.last_scan,
                 "scan_running": live.scan_running,
                 "error": live.last_error,
@@ -2250,6 +2522,18 @@ def tip_center_get():
 @app.get("/aim")
 def aim_get():
     return live.aim()
+
+
+@app.get("/aim-point")
+def aim_point_get():
+    """The aim ray in one call, so no client re-derives the geometry.
+
+    Returns ``AIM_WORLD`` (arm-base mm), ``AIM_PIXEL``, the constant
+    ``TIP_PIXEL``, the aim-minus-tip offset, the board-plane intersection in
+    board mm, and ``ok`` with ``reason`` when there is no usable plane.
+    Read-only: no motion state is touched.
+    """
+    return live.aim_readout()
 
 
 @app.post("/aim")

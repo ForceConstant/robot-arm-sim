@@ -1,0 +1,2022 @@
+{
+  "captures": "live/captures_phase3",
+  "views": 21,
+  "mounts": {
+    "live": {
+      "views": 21,
+      "plane_tilt_deg": {
+        "mean": 4.45,
+        "p50": 3.94,
+        "max": 13.81,
+        "n": 21,
+        "rejected": 0
+      },
+      "plane_z_mm": {
+        "mean": 434.3,
+        "spread": 40.3
+      },
+      "tip_pixel": {
+        "mean": [
+          311.97,
+          261.83
+        ],
+        "spread_px": [
+          0.0,
+          0.0
+        ]
+      },
+      "aim_pixel": {
+        "count": 21,
+        "line": {
+          "direction": [
+            0.9998,
+            -0.0198
+          ],
+          "angle_deg": -1.13,
+          "perp_rms_px": 0.003,
+          "perp_max_px": 0.005,
+          "along_span_px": 54.07
+        },
+        "u_span": 54.1,
+        "v_span": 1.07
+      },
+      "offset_uv": {
+        "u_mean": -136.4,
+        "u_span": 54.0,
+        "v_span": 1.07
+      },
+      "round_trip_px": {
+        "mean": 8.78,
+        "max": 31.16
+      },
+      "in_square": 20,
+      "matches_plan": 3,
+      "plan_views": 20,
+      "aim_vs_target_mm": null,
+      "rows": [
+        {
+          "name": "sanity_marker13_r68",
+          "plan_square": null,
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 67.7,
+          "ids": 2,
+          "rms_px": 0.71,
+          "plane_tilt_deg": 3.01,
+          "plane_z_mm": 423.8,
+          "aim_pixel": [
+            157.25,
+            264.89
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 154.74,
+          "offset_uv": [
+            -154.71,
+            3.06
+          ],
+          "aim_board_mm": [
+            -6.4,
+            -38.4,
+            -0.0
+          ],
+          "aim_board_placed_mm": [
+            -11.5,
+            -23.4,
+            -9.6
+          ],
+          "square": "d3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            182.4,
+            243.1
+          ],
+          "round_trip_px": 0.19,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r-40_f2",
+          "plan_square": "f2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -39.8,
+          "ids": 2,
+          "rms_px": 0.91,
+          "plane_tilt_deg": 6.61,
+          "plane_z_mm": 442.8,
+          "aim_pixel": [
+            193.74,
+            264.17
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 118.25,
+          "offset_uv": [
+            -118.23,
+            2.34
+          ],
+          "aim_board_mm": [
+            60.0,
+            -68.1,
+            -6.4
+          ],
+          "aim_board_placed_mm": [
+            44.7,
+            -46.6,
+            -4.1
+          ],
+          "square": "g2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            199.9,
+            327.2
+          ],
+          "round_trip_px": 8.6,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r-40_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -39.8,
+          "ids": 3,
+          "rms_px": 5.62,
+          "plane_tilt_deg": 12.14,
+          "plane_z_mm": 421.3,
+          "aim_pixel": [
+            181.76,
+            264.41
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 130.23,
+          "offset_uv": [
+            -130.21,
+            2.58
+          ],
+          "aim_board_mm": [
+            10.7,
+            4.9,
+            5.2
+          ],
+          "aim_board_placed_mm": [
+            -5.6,
+            23.3,
+            -2.6
+          ],
+          "square": "e5",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            231.6,
+            260.3
+          ],
+          "round_trip_px": 1.08,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_a2",
+          "plan_square": "a2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 2.65,
+          "plane_tilt_deg": 13.81,
+          "plane_z_mm": 457.2,
+          "aim_pixel": [
+            177.35,
+            264.49
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 134.64,
+          "offset_uv": [
+            -134.61,
+            2.66
+          ],
+          "aim_board_mm": [
+            -109.5,
+            -75.0,
+            -5.7
+          ],
+          "aim_board_placed_mm": [
+            -105.1,
+            -65.9,
+            -11.1
+          ],
+          "square": "a2",
+          "in_square": true,
+          "matches_plan": true,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            213.3,
+            314.1
+          ],
+          "round_trip_px": 9.19,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 1.23,
+          "plane_tilt_deg": 2.77,
+          "plane_z_mm": 432.9,
+          "aim_pixel": [
+            198.39,
+            264.08
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 113.6,
+          "offset_uv": [
+            -113.58,
+            2.25
+          ],
+          "aim_board_mm": [
+            -47.4,
+            -77.5,
+            -2.5
+          ],
+          "aim_board_placed_mm": [
+            -49.7,
+            -63.6,
+            -3.1
+          ],
+          "square": "c2",
+          "in_square": true,
+          "matches_plan": true,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            242.4,
+            292.5
+          ],
+          "round_trip_px": 1.19,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_d3",
+          "plan_square": "d3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 1.31,
+          "plane_tilt_deg": 2.3,
+          "plane_z_mm": 429.8,
+          "aim_pixel": [
+            204.45,
+            263.96
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 107.54,
+          "offset_uv": [
+            -107.52,
+            2.13
+          ],
+          "aim_board_mm": [
+            -15.0,
+            -52.3,
+            1.4
+          ],
+          "aim_board_placed_mm": [
+            -22.4,
+            -35.6,
+            -0.8
+          ],
+          "square": "d3",
+          "in_square": true,
+          "matches_plan": true,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            261.1,
+            275.2
+          ],
+          "round_trip_px": 0.7,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_g6",
+          "plan_square": "g6",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 2.61,
+          "plane_tilt_deg": 1.03,
+          "plane_z_mm": 416.9,
+          "aim_pixel": [
+            176.38,
+            264.51
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 135.62,
+          "offset_uv": [
+            -135.59,
+            2.68
+          ],
+          "aim_board_mm": [
+            79.9,
+            -7.3,
+            18.7
+          ],
+          "aim_board_placed_mm": [
+            58.9,
+            9.7,
+            3.1
+          ],
+          "square": "g4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            202.4,
+            252.1
+          ],
+          "round_trip_px": 31.16,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 1.45,
+          "plane_tilt_deg": 2.28,
+          "plane_z_mm": 431.7,
+          "aim_pixel": [
+            181.98,
+            264.4
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 130.01,
+          "offset_uv": [
+            -129.98,
+            2.57
+          ],
+          "aim_board_mm": [
+            -3.3,
+            -70.8,
+            0.1
+          ],
+          "aim_board_placed_mm": [
+            -8.1,
+            -54.5,
+            -2.2
+          ],
+          "square": "d2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            223.4,
+            231.7
+          ],
+          "round_trip_px": 0.25,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 3,
+          "rms_px": 1.39,
+          "plane_tilt_deg": 3.7,
+          "plane_z_mm": 432.8,
+          "aim_pixel": [
+            162.48,
+            264.79
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 149.51,
+          "offset_uv": [
+            -149.48,
+            2.96
+          ],
+          "aim_board_mm": [
+            -71.5,
+            -42.0,
+            0.1
+          ],
+          "aim_board_placed_mm": [
+            -70.2,
+            -33.1,
+            -3.7
+          ],
+          "square": "b3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            157.6,
+            274.2
+          ],
+          "round_trip_px": 0.46,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_f4",
+          "plan_square": "f4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 1.26,
+          "plane_tilt_deg": 2.68,
+          "plane_z_mm": 429.7,
+          "aim_pixel": [
+            177.31,
+            264.5
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 134.68,
+          "offset_uv": [
+            -134.66,
+            2.66
+          ],
+          "aim_board_mm": [
+            31.7,
+            -57.7,
+            4.6
+          ],
+          "aim_board_placed_mm": [
+            21.8,
+            -39.1,
+            -0.1
+          ],
+          "square": "f2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            90.9,
+            259.5
+          ],
+          "round_trip_px": 8.85,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 4,
+          "rms_px": 1.19,
+          "plane_tilt_deg": 4.53,
+          "plane_z_mm": 427.5,
+          "aim_pixel": [
+            164.07,
+            264.76
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 147.93,
+          "offset_uv": [
+            -147.9,
+            2.93
+          ],
+          "aim_board_mm": [
+            -35.6,
+            -18.0,
+            4.3
+          ],
+          "aim_board_placed_mm": [
+            -39.1,
+            -8.9,
+            -2.2
+          ],
+          "square": "c4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            198.2,
+            262.4
+          ],
+          "round_trip_px": 9.5,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 1.09,
+          "plane_tilt_deg": 4.73,
+          "plane_z_mm": 444.5,
+          "aim_pixel": [
+            170.23,
+            264.64
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 141.76,
+          "offset_uv": [
+            -141.74,
+            2.8
+          ],
+          "aim_board_mm": [
+            -78.7,
+            -85.2,
+            -9.3
+          ],
+          "aim_board_placed_mm": [
+            -73.1,
+            -78.3,
+            -5.6
+          ],
+          "square": "b1",
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            101.9,
+            210.8
+          ],
+          "round_trip_px": 26.2,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 0.59,
+          "plane_tilt_deg": 4.23,
+          "plane_z_mm": 437.8,
+          "aim_pixel": [
+            150.39,
+            265.03
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 161.61,
+          "offset_uv": [
+            -161.57,
+            3.2
+          ],
+          "aim_board_mm": [
+            -11.4,
+            -92.2,
+            -3.2
+          ],
+          "aim_board_placed_mm": [
+            -11.7,
+            -77.0,
+            -3.4
+          ],
+          "square": "d1",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            152.1,
+            231.4
+          ],
+          "round_trip_px": 8.46,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 2.65,
+          "plane_tilt_deg": 5.83,
+          "plane_z_mm": 432.5,
+          "aim_pixel": [
+            159.64,
+            264.85
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 152.36,
+          "offset_uv": [
+            -152.33,
+            3.01
+          ],
+          "aim_board_mm": [
+            -42.4,
+            -20.9,
+            0.3
+          ],
+          "aim_board_placed_mm": [
+            -43.0,
+            -11.7,
+            -2.5
+          ],
+          "square": "c4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            173.8,
+            298.3
+          ],
+          "round_trip_px": 1.08,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_f2",
+          "plan_square": "f2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 0.87,
+          "plane_tilt_deg": 3.35,
+          "plane_z_mm": 438.3,
+          "aim_pixel": [
+            172.52,
+            264.59
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 139.48,
+          "offset_uv": [
+            -139.45,
+            2.76
+          ],
+          "aim_board_mm": [
+            19.4,
+            -104.9,
+            -5.5
+          ],
+          "aim_board_placed_mm": [
+            15.7,
+            -88.8,
+            -4.6
+          ],
+          "square": "e1",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            216.6,
+            284.9
+          ],
+          "round_trip_px": 14.55,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 1.01,
+          "plane_tilt_deg": 2.62,
+          "plane_z_mm": 433.1,
+          "aim_pixel": [
+            166.26,
+            264.71
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 145.73,
+          "offset_uv": [
+            -145.7,
+            2.88
+          ],
+          "aim_board_mm": [
+            -76.7,
+            -38.5,
+            0.1
+          ],
+          "aim_board_placed_mm": [
+            -73.7,
+            -32.2,
+            -2.0
+          ],
+          "square": "b3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            125.0,
+            271.3
+          ],
+          "round_trip_px": 0.32,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 0.85,
+          "plane_tilt_deg": 4.25,
+          "plane_z_mm": 445.3,
+          "aim_pixel": [
+            153.1,
+            264.97
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 158.9,
+          "offset_uv": [
+            -158.87,
+            3.14
+          ],
+          "aim_board_mm": [
+            -81.9,
+            -100.9,
+            -10.1
+          ],
+          "aim_board_placed_mm": [
+            -73.3,
+            -95.0,
+            -5.7
+          ],
+          "square": "b1",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            119.3,
+            275.5
+          ],
+          "round_trip_px": 28.42,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_g6",
+          "plan_square": "g6",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 0.76,
+          "plane_tilt_deg": 3.94,
+          "plane_z_mm": 432.1,
+          "aim_pixel": [
+            190.67,
+            264.23
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 121.32,
+          "offset_uv": [
+            -121.3,
+            2.4
+          ],
+          "aim_board_mm": [
+            71.5,
+            -4.3,
+            6.3
+          ],
+          "aim_board_placed_mm": [
+            54.5,
+            14.2,
+            5.3
+          ],
+          "square": "g4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            197.0,
+            235.6
+          ],
+          "round_trip_px": 17.36,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 1.3,
+          "plane_tilt_deg": 4.15,
+          "plane_z_mm": 440.9,
+          "aim_pixel": [
+            186.16,
+            264.32
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 125.83,
+          "offset_uv": [
+            -125.81,
+            2.49
+          ],
+          "aim_board_mm": [
+            -9.0,
+            -69.4,
+            -3.1
+          ],
+          "aim_board_placed_mm": [
+            -9.6,
+            -56.7,
+            2.1
+          ],
+          "square": "d2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            215.0,
+            260.7
+          ],
+          "round_trip_px": 9.17,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 3,
+          "rms_px": 2.61,
+          "plane_tilt_deg": 4.15,
+          "plane_z_mm": 437.1,
+          "aim_pixel": [
+            182.48,
+            264.39
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 129.51,
+          "offset_uv": [
+            -129.48,
+            2.56
+          ],
+          "aim_board_mm": [
+            -40.9,
+            -15.8,
+            1.3
+          ],
+          "aim_board_placed_mm": [
+            -40.4,
+            -5.7,
+            4.0
+          ],
+          "square": "c4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            183.0,
+            277.0
+          ],
+          "round_trip_px": 3.71,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 1.56,
+          "plane_tilt_deg": 1.27,
+          "plane_z_mm": 432.1,
+          "aim_pixel": [
+            181.07,
+            264.42
+          ],
+          "tip_pixel": [
+            311.97,
+            261.83
+          ],
+          "offset_px": 130.92,
+          "offset_uv": [
+            -130.9,
+            2.59
+          ],
+          "aim_board_mm": [
+            -71.6,
+            -30.5,
+            1.4
+          ],
+          "aim_board_placed_mm": [
+            -69.8,
+            -25.4,
+            0.5
+          ],
+          "square": "b3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            147.5,
+            210.1
+          ],
+          "round_trip_px": 3.84,
+          "ok": true,
+          "reason": ""
+        }
+      ]
+    },
+    "b5": {
+      "views": 21,
+      "plane_tilt_deg": {
+        "mean": 61.95,
+        "p50": 68.1,
+        "max": 86.96,
+        "n": 21,
+        "rejected": 0
+      },
+      "plane_z_mm": {
+        "mean": 479.5,
+        "spread": 157.4
+      },
+      "tip_pixel": {
+        "mean": [
+          316.73,
+          315.11
+        ],
+        "spread_px": [
+          0.0,
+          0.0
+        ]
+      },
+      "aim_pixel": {
+        "count": 21,
+        "line": {
+          "direction": [
+            -0.006,
+            1.0
+          ],
+          "angle_deg": 90.34,
+          "perp_rms_px": 0.003,
+          "perp_max_px": 0.007,
+          "along_span_px": 297.42
+        },
+        "u_span": 1.8,
+        "v_span": 297.41
+      },
+      "offset_uv": {
+        "u_mean": 1.3,
+        "u_span": 1.8,
+        "v_span": 297.42
+      },
+      "round_trip_px": {
+        "mean": 41.76,
+        "max": 156.92
+      },
+      "in_square": 9,
+      "matches_plan": 0,
+      "plan_views": 20,
+      "aim_vs_target_mm": null,
+      "rows": [
+        {
+          "name": "sanity_marker13_r68",
+          "plan_square": null,
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 67.7,
+          "ids": 2,
+          "rms_px": 0.71,
+          "plane_tilt_deg": 86.96,
+          "plane_z_mm": 466.8,
+          "aim_pixel": [
+            318.43,
+            28.67
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 286.45,
+          "offset_uv": [
+            1.71,
+            -286.45
+          ],
+          "aim_board_mm": [
+            -77.8,
+            -92.7,
+            0.0
+          ],
+          "aim_board_placed_mm": [
+            -7.8,
+            -60.6,
+            -77.6
+          ],
+          "square": "b1",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            283.9,
+            17.8
+          ],
+          "round_trip_px": 0.1,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r-40_f2",
+          "plan_square": "f2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -39.8,
+          "ids": 2,
+          "rms_px": 0.91,
+          "plane_tilt_deg": 14.44,
+          "plane_z_mm": 403.0,
+          "aim_pixel": [
+            317.64,
+            162.32
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 152.79,
+          "offset_uv": [
+            0.91,
+            -152.79
+          ],
+          "aim_board_mm": [
+            46.7,
+            -43.7,
+            -0.0
+          ],
+          "aim_board_placed_mm": [
+            45.3,
+            -48.4,
+            -12.4
+          ],
+          "square": "f3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            319.1,
+            132.7
+          ],
+          "round_trip_px": 0.11,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r-40_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -39.8,
+          "ids": 3,
+          "rms_px": 5.62,
+          "plane_tilt_deg": 17.91,
+          "plane_z_mm": 412.6,
+          "aim_pixel": [
+            317.66,
+            159.06
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 156.06,
+          "offset_uv": [
+            0.93,
+            -156.06
+          ],
+          "aim_board_mm": [
+            2.4,
+            33.9,
+            14.7
+          ],
+          "aim_board_placed_mm": [
+            -5.3,
+            22.1,
+            -7.3
+          ],
+          "square": "e6",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            363.0,
+            204.3
+          ],
+          "round_trip_px": 14.87,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_a2",
+          "plan_square": "a2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 2.65,
+          "plane_tilt_deg": 48.75,
+          "plane_z_mm": 510.5,
+          "aim_pixel": [
+            317.72,
+            148.78
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 166.34,
+          "offset_uv": [
+            0.99,
+            -166.33
+          ],
+          "aim_board_mm": [
+            -121.4,
+            -44.1,
+            0.0
+          ],
+          "aim_board_placed_mm": [
+            -106.1,
+            -69.0,
+            -17.8
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 0.15,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 1.23,
+          "plane_tilt_deg": 38.14,
+          "plane_z_mm": 467.0,
+          "aim_pixel": [
+            317.7,
+            151.52
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 163.6,
+          "offset_uv": [
+            0.98,
+            -163.6
+          ],
+          "aim_board_mm": [
+            -66.4,
+            -55.3,
+            -0.0
+          ],
+          "aim_board_placed_mm": [
+            -50.3,
+            -70.2,
+            -16.7
+          ],
+          "square": "b3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            387.2,
+            131.0
+          ],
+          "round_trip_px": 0.18,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+00_d3",
+          "plan_square": "d3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": -0.3,
+          "ids": 2,
+          "rms_px": 1.31,
+          "plane_tilt_deg": 37.8,
+          "plane_z_mm": 443.8,
+          "aim_pixel": [
+            317.88,
+            121.09
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 194.03,
+          "offset_uv": [
+            1.16,
+            -194.02
+          ],
+          "aim_board_mm": [
+            -45.6,
+            -32.4,
+            -10.1
+          ],
+          "aim_board_placed_mm": [
+            -21.9,
+            -49.8,
+            -29.8
+          ],
+          "square": "c3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            271.2,
+            121.6
+          ],
+          "round_trip_px": 16.34,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_g6",
+          "plan_square": "g6",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 2.61,
+          "plane_tilt_deg": 67.56,
+          "plane_z_mm": 421.3,
+          "aim_pixel": [
+            318.29,
+            53.47
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 261.65,
+          "offset_uv": [
+            1.56,
+            -261.64
+          ],
+          "aim_board_mm": [
+            23.9,
+            -50.2,
+            0.0
+          ],
+          "aim_board_placed_mm": [
+            74.7,
+            -17.4,
+            -53.4
+          ],
+          "square": "e3",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            368.1,
+            70.4
+          ],
+          "round_trip_px": 0.18,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 1.45,
+          "plane_tilt_deg": 66.57,
+          "plane_z_mm": 481.8,
+          "aim_pixel": [
+            317.41,
+            199.6
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 115.51,
+          "offset_uv": [
+            0.69,
+            -115.51
+          ],
+          "aim_board_mm": [
+            -18.2,
+            -57.3,
+            26.6
+          ],
+          "aim_board_placed_mm": [
+            -8.6,
+            -49.6,
+            7.5
+          ],
+          "square": "d2",
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            223.4,
+            231.7
+          ],
+          "round_trip_px": 65.51,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+40_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 3,
+          "rms_px": 1.39,
+          "plane_tilt_deg": 71.42,
+          "plane_z_mm": 502.1,
+          "aim_pixel": [
+            318.17,
+            73.61
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 241.5,
+          "offset_uv": [
+            1.44,
+            -241.5
+          ],
+          "aim_board_mm": [
+            -129.5,
+            -31.3,
+            -0.0
+          ],
+          "aim_board_placed_mm": [
+            -74.4,
+            -53.4,
+            -41.5
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 0.22,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+40_f4",
+          "plan_square": "f4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 2,
+          "rms_px": 1.26,
+          "plane_tilt_deg": 68.71,
+          "plane_z_mm": 463.9,
+          "aim_pixel": [
+            318.71,
+            -17.33
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 332.45,
+          "offset_uv": [
+            1.98,
+            -332.45
+          ],
+          "aim_board_mm": [
+            -80.5,
+            -124.5,
+            -58.1
+          ],
+          "aim_board_placed_mm": [
+            38.3,
+            -103.3,
+            -124.4
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 156.92,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+40_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 40.0,
+          "ids": 4,
+          "rms_px": 1.19,
+          "plane_tilt_deg": 72.59,
+          "plane_z_mm": 459.9,
+          "aim_pixel": [
+            318.31,
+            50.22
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 264.9,
+          "offset_uv": [
+            1.58,
+            -264.89
+          ],
+          "aim_board_mm": [
+            -108.4,
+            -22.5,
+            -6.6
+          ],
+          "aim_board_placed_mm": [
+            -40.7,
+            -38.7,
+            -56.1
+          ],
+          "square": "a4",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            332.2,
+            79.4
+          ],
+          "round_trip_px": 18.76,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 1.09,
+          "plane_tilt_deg": 73.34,
+          "plane_z_mm": 543.1,
+          "aim_pixel": [
+            316.93,
+            280.08
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 35.03,
+          "offset_uv": [
+            0.21,
+            -35.03
+          ],
+          "aim_board_mm": [
+            -69.0,
+            -64.6,
+            38.0
+          ],
+          "aim_board_placed_mm": [
+            -70.7,
+            -65.3,
+            32.3
+          ],
+          "square": "b2",
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            198.0,
+            339.7
+          ],
+          "round_trip_px": 132.01,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+68_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 0.59,
+          "plane_tilt_deg": 78.43,
+          "plane_z_mm": 522.5,
+          "aim_pixel": [
+            318.49,
+            19.82
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 295.29,
+          "offset_uv": [
+            1.76,
+            -295.29
+          ],
+          "aim_board_mm": [
+            -88.9,
+            -149.7,
+            -7.9
+          ],
+          "aim_board_placed_mm": [
+            -9.3,
+            -109.0,
+            -80.0
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 23.46,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+68_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 2.65,
+          "plane_tilt_deg": 78.49,
+          "plane_z_mm": 474.5,
+          "aim_pixel": [
+            318.63,
+            -3.65
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 318.77,
+          "offset_uv": [
+            1.9,
+            -318.77
+          ],
+          "aim_board_mm": [
+            -146.5,
+            -84.1,
+            -18.7
+          ],
+          "aim_board_placed_mm": [
+            -46.2,
+            -53.9,
+            -108.7
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 53.93,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+68_f2",
+          "plan_square": "f2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 0.87,
+          "plane_tilt_deg": 71.91,
+          "plane_z_mm": 517.7,
+          "aim_pixel": [
+            318.54,
+            11.48
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 303.64,
+          "offset_uv": [
+            1.81,
+            -303.64
+          ],
+          "aim_board_mm": [
+            -55.8,
+            -179.9,
+            -29.9
+          ],
+          "aim_board_placed_mm": [
+            21.7,
+            -122.0,
+            -101.5
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 89.32,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+68_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 68.0,
+          "ids": 2,
+          "rms_px": 1.01,
+          "plane_tilt_deg": 74.01,
+          "plane_z_mm": 511.8,
+          "aim_pixel": [
+            318.14,
+            78.39
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 236.73,
+          "offset_uv": [
+            1.41,
+            -236.73
+          ],
+          "aim_board_mm": [
+            -130.9,
+            -52.0,
+            8.8
+          ],
+          "aim_board_placed_mm": [
+            -77.0,
+            -46.8,
+            -40.9
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 27.67,
+          "ok": false,
+          "reason": "aim is off the board"
+        },
+        {
+          "name": "r+87_c2",
+          "plan_square": "c2",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 0.85,
+          "plane_tilt_deg": 71.14,
+          "plane_z_mm": 560.4,
+          "aim_pixel": [
+            317.8,
+            135.62
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 179.49,
+          "offset_uv": [
+            1.07,
+            -179.49
+          ],
+          "aim_board_mm": [
+            -105.0,
+            -112.2,
+            22.2
+          ],
+          "aim_board_placed_mm": [
+            -73.4,
+            -95.5,
+            -7.8
+          ],
+          "square": null,
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": null,
+          "round_trip_px": 76.62,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_g6",
+          "plan_square": "g6",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 0.76,
+          "plane_tilt_deg": 65.84,
+          "plane_z_mm": 442.2,
+          "aim_pixel": [
+            318.19,
+            69.93
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 245.19,
+          "offset_uv": [
+            1.46,
+            -245.19
+          ],
+          "aim_board_mm": [
+            58.7,
+            -66.3,
+            0.0
+          ],
+          "aim_board_placed_mm": [
+            60.1,
+            4.4,
+            -51.9
+          ],
+          "square": "g2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            281.1,
+            30.5
+          ],
+          "round_trip_px": 0.08,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_e3",
+          "plan_square": "e3",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 1.3,
+          "plane_tilt_deg": 65.9,
+          "plane_z_mm": 498.2,
+          "aim_pixel": [
+            317.31,
+            216.77
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 98.35,
+          "offset_uv": [
+            0.59,
+            -98.35
+          ],
+          "aim_board_mm": [
+            -14.0,
+            -68.6,
+            30.5
+          ],
+          "aim_board_placed_mm": [
+            -9.8,
+            -53.8,
+            16.8
+          ],
+          "square": "d2",
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            215.0,
+            260.7
+          ],
+          "round_trip_px": 110.22,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_d5",
+          "plan_square": "d5",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 3,
+          "rms_px": 2.61,
+          "plane_tilt_deg": 68.1,
+          "plane_z_mm": 470.4,
+          "aim_pixel": [
+            318.33,
+            46.28
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 268.83,
+          "offset_uv": [
+            1.6,
+            -268.83
+          ],
+          "aim_board_mm": [
+            -97.0,
+            -70.8,
+            -9.2
+          ],
+          "aim_board_placed_mm": [
+            -41.5,
+            -21.6,
+            -67.6
+          ],
+          "square": "a2",
+          "in_square": true,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            343.0,
+            32.2
+          ],
+          "round_trip_px": 28.83,
+          "ok": true,
+          "reason": ""
+        },
+        {
+          "name": "r+87_c4",
+          "plan_square": "c4",
+          "target_mm": null,
+          "tip_reported_mm": null,
+          "roll": 87.0,
+          "ids": 2,
+          "rms_px": 1.56,
+          "plane_tilt_deg": 63.01,
+          "plane_z_mm": 496.9,
+          "aim_pixel": [
+            317.79,
+            137.42
+          ],
+          "tip_pixel": [
+            316.73,
+            315.11
+          ],
+          "offset_px": 177.69,
+          "offset_uv": [
+            1.06,
+            -177.69
+          ],
+          "aim_board_mm": [
+            -97.5,
+            -45.2,
+            19.1
+          ],
+          "aim_board_placed_mm": [
+            -70.4,
+            -28.2,
+            -13.7
+          ],
+          "square": "a3",
+          "in_square": false,
+          "matches_plan": false,
+          "aim_vs_target_mm": null,
+          "tip_vs_target_mm": null,
+          "square_uv": [
+            268.8,
+            183.4
+          ],
+          "round_trip_px": 61.42,
+          "ok": true,
+          "reason": ""
+        }
+      ]
+    }
+  }
+}
