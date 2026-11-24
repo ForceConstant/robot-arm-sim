@@ -423,6 +423,20 @@ class Bridge:
             robot.bus.connect()
             robot.bus.write_calibration(robot.calibration)
             robot.configure()
+            # Torque is a RAM register and LeRobot's disconnect() turns it OFF.
+            # Every mode cycle, service restart or bus reopen therefore used to
+            # leave the follower limp while /command kept answering
+            # "accepted": the arm reported positions, accepted goals, and never
+            # moved (measured 2026-11-24: elbow achieved 0.18 deg of 3-4 deg;
+            # all six servos read Torque_Enable=0 with a healthy 12.2 V supply).
+            # Enabling it here -- after configure(), which is what resets the
+            # bus -- is what makes a reopened follower actually actuate.
+            try:
+                robot.bus.enable_torque()
+            except Exception as exc:  # noqa: BLE001 - never fail the open for this
+                _log(f"torque enable failed: {exc!r}")
+            else:
+                _log("follower torque enabled")
         except Exception:
             try:
                 robot.disconnect()
