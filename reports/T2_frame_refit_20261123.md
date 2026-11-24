@@ -103,3 +103,70 @@ entirely on (320, 250) being the true tip pixel, so it is a lead, not a verdict.
   above).
 
 Read-only: no sockets, no motion, no writes outside `.private/`.
+
+---
+
+# Sim task 1 — IK / Jacobian sweep (same night)
+
+Question: the measured `[[0.337,-0.138],[0.100,0.712]]` (yaw +16.5°, det 0.254)
+has to come from somewhere. Tested three candidates with the project's own
+kinematics, CPU only, no rig. `tools/sim_jacobian_sweep.py`.
+
+## A. Is the solver coupled?
+
+3x3 grid at z=70, solve tip to (x,y) then +8 mm per axis, FK the solution:
+
+```
+z   poses   det    yaw      singular     median solver residual
+70      9   0.921  +0.94    0.997/0.923         4.65 mm
+```
+
+The solver is **not coupled** (yaw under 1 deg) and its own gain is 0.997 / 0.923.
+So the 16.5 deg rotation is not the solver's. The 7.7% y shortfall and the
+4.65 mm residual are separate, smaller problems.
+
+## B. Does a truncated joint-space path explain it?
+
+The real probe read FK 1.6 s after each command. Interpolate in joint space and
+sample at a fraction f of the way:
+
+```
+f=0.55  J = [+0.537 +0.009 / +0.000 +0.515]   yaw +0.01 deg   gap 0.200
+f=1.00  J = [+0.978 +0.011 / +0.011 +0.934]   yaw +0.67 deg
+```
+
+Truncation shrinks **both** axes together and never rotates them. The measured
+matrix is rotated 16.5 deg and asymmetric (x 0.337 vs y 0.712). No f reproduces
+it: best gap 0.200, yaw stays within 0.7 deg.
+
+## C. Does differential joint lag explain it?
+
+First-order lag per joint, sampled at 1.6 s, grid over tau per joint:
+
+```
+best tau (pan/lift/elbow) 2.5/0.6/1.2 s
+J = [+0.473 -0.034 / -0.042 +0.599]   max|J-Jmeasured| 0.142
+measured [+0.337 -0.138 / +0.100 +0.712]   yaw +16.5 deg
+```
+
+Closer than truncation, but the cross terms are an order of magnitude too small
+and carry the **wrong sign**: the model gives -0.034/+(-0.042), the measurement
+-0.138/+0.100.
+
+## Verdict
+
+None of the model-side explanations produces the measured matrix. The measured
+Jacobian is therefore **not safe to design a correction against** — which is
+consistent with the fixed-inverse attempt oscillating, and justifies having
+reverted it rather than tuning it.
+
+The most likely remaining explanation is the measurement itself: the probe
+compared two poses each read a fixed 1.6 s after a command, at speed_scale 0.3
+(about 3.15 deg/s). **Both endpoints can still be in flight**, so the matrix is a
+snapshot of two different points on two different curved paths. That fits every
+symptom: shrunken determinant, asymmetric gains, and a rotation that no model
+reproduces.
+
+Fix for the next daylight session: sample until the joints stop changing
+(settle detection) instead of sleeping 1.6 s, and re-measure the Jacobian before
+any correction is designed. Do not trust the old matrix.
