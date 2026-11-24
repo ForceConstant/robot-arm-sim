@@ -17,7 +17,9 @@ from __future__ import annotations
 import json
 import math
 import os
+import sys
 from dataclasses import replace
+from functools import partial
 from pathlib import Path
 import threading
 import time
@@ -28,6 +30,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
                                Response, StreamingResponse)
+from starlette.concurrency import run_in_threadpool
 
 from bridge_client import BridgeError, HttpBridge, HttpFrames
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
@@ -40,6 +43,18 @@ from chess_sim.marker_scan import (MarkerLayout, board_offset, load_plan,
                                    marker_corners_world)
 from chess_sim.product import current_layout
 from chess_sim.wrist_calibration import WristCalibration
+
+
+class StuckError(BridgeError):
+    """A move that cannot continue without the arm being reset.
+
+    Only the conditions the recovery primitive exists for are raised as this
+    subclass: keep-in refusal, an unreachable/solver failure, the stream loop's
+    stall or non-execution raise, and a move that lands outside keep-in.  A bad
+    request (unknown mode, missing field) stays a plain ``BridgeError`` — it is
+    not something driving the arm home would fix.
+    """
+
 
 CONFIG_PATH = Path(os.environ.get("LIVE_CONFIG", "live/live_config.json"))
 DEFAULTS = {
@@ -109,6 +124,36 @@ DEFAULTS = {
     # homing never depends on IK finding a solution from a bad posture.
     "home_joints": {"shoulder_pan": 0.0, "shoulder_lift": -55.0, "elbow_flex": 55.0,
                     "wrist_flex": 0.0, "wrist_roll": 0.0, "gripper": 40.0},
+    # Recovery pose (owner, 2026-11-24): "if the robot gets stuck, it should
+    # always just reset to home position high above middle square and start
+    # again".  This is a STORED joint pose, not an IK target, because the thing
+    # that is stuck is often the solver — a recovery that needs a solve is not a
+    # recovery.  Derived once, offline, with tools/recovery_pose.py:
+    #   board tip (0.17, -0.91, 116.53) mm, 1.07 mm from (0, 0, 116),
+    #   approach 0.12 deg from straight down, wrist_roll 87.74 (play branch),
+    #   all six values inside the measured servo limits.
+    # z is 116 rather than 130..140 because a jaws-down hover above the centre
+    # needs wrist_flex ~102.5 at z=130, past the calibrated 98.79 limit; this is
+    # the highest centre hover that is actually reachable with the jaws down.
+    # One-time leader capture, 2026-11-24 13:58 EST (tools/leader_pose.py: a
+    # read-only Present_Position read on a free leader bus, no register writes,
+    # wrist_flex forced to 0): {pan 29.8, lift -102.68, elbow 96.44, flex 0,
+    # roll -29.85}.  FK puts its tip at board (-144.6, -24.7, 188.7) mm with the
+    # jaws 96 deg off vertical and elbow_flex 96.44 past its 94.75 limit, i.e.
+    # the leader is parked away from the middle square.  REJECTED, so the stored
+    # pose below is the offline-solved fallback.  Receipt with every reason:
+    # reports/recovery_leader_candidate.json.  The leader is NOT polled at
+    # runtime; recovery never reads it.
+    # The gripper value is the one to keep, never to actuate.
+    "recovery_joints": {"shoulder_pan": -12.37, "shoulder_lift": -13.02,
+                        "elbow_flex": 4.8, "wrist_flex": 98.34,
+                        "wrist_roll": 87.74, "gripper": 43.88},
+    # How many times one operation may drive home before it gives up, and how
+    # many times the original move is retried after a recovery.  Both bounded on
+    # purpose: a stuck robot must never loop.
+    "recovery_max_attempts": 3,
+    "move_retries_after_recovery": 1,
+    "recovery_log": "live/recovery_log.jsonl",
 }
 
 
@@ -1166,25 +1211,12 @@ class Live:
         Cartesian target that is inside the box but needs the jaws to swing out
         to reach it is still caught.
         """
-        zone = self.keep_in()
-        if not zone["enforce"]:
-            return
-        tool = self.kinematics.to_board(self.kinematics.fk(joints_deg)[:3, 3]) * 1000.0
         # The envelope is expressed at the JAW TIP, but the chain frame rides
         # above it, so compare the tip height or every valid pick looks like a
         # ceiling violation (a 240 mm tip read as 325 mm and was refused).
-        tip = (self.kinematics.fk(joints_deg) @ self.jaw_frame())[:3, 3]
-        tool = self.kinematics.to_board(tip) * 1000.0
-        problems = []
-        if abs(float(tool[0])) > zone["x_mm"]:
-            problems.append(f"x {tool[0]:.0f} outside ±{zone['x_mm']:.0f}")
-        if abs(float(tool[1])) > zone["y_mm"]:
-            problems.append(f"y {tool[1]:.0f} outside ±{zone['y_mm']:.0f}")
-        if not zone["z_min_mm"] <= float(tool[2]) <= zone["z_max_mm"]:
-            problems.append(f"z {tool[2]:.0f} outside "
-                            f"{zone['z_min_mm']:.0f}..{zone['z_max_mm']:.0f}")
-        if problems:
-            raise BridgeError("keep-in zone: " + "; ".join(problems))
+        problem = self._keep_in_problem(joints_deg)
+        if problem:
+            raise StuckError(problem)
 
     def _excess(self, joints) -> float:
         """Total degrees outside the measured joint limits."""
@@ -1216,154 +1248,175 @@ class Live:
         if not self.motion.acquire(timeout=5):
             raise BridgeError("another motion is running")
         try:
-            state = self._require_remote()
-            self._refresh_limits(state)
-            start = [float(state["joints"][name]) for name in JOINTS]
-            span = body.get("span_deg")
-            span_arg = None if span is None else float(span)
-            detail: dict = {"mode": mode}
-            if mode == "joint":
-                wanted = body.get("joints") or {}
-                target = [float(wanted.get(name, start[i]))
-                          for i, name in enumerate(JOINTS)]
-                detail = {"mode": "joint"}
-            elif mode == "aim":
-                # Keep the camera where it is and only rotate it onto the point.
-                # "look_at" pins the camera to a sphere around the target, which
-                # this arm cannot always reach; aiming from the current position
-                # is a far smaller ask and is what framing actually needs.
-                point = self.kinematics.board_point(
-                    float(body.get("x_mm", 0.0)), float(body.get("y_mm", 0.0)),
-                    float(body.get("z_mm", 0.0)))
-                camera = self.kinematics.camera_pose(start)
-                span = point - camera[:3, 3]
-                distance = float(np.linalg.norm(span))
-                if distance < 0.02:            # metres, not millimetres
-                    raise BridgeError("aim point is too close to the camera")
-                view = span / distance
-                up = body.get("up") or "y"
-                from kinematics import _orthonormal
-                hint = self.kinematics.board_axis(str(up))
-                rotation = _orthonormal(view, hint)
-                if body.get("roll_deg"):
-                    from scipy.spatial.transform import Rotation as _R
-                    rotation = rotation @ _R.from_euler(
-                        "z", float(body["roll_deg"]), degrees=True).as_matrix()
-                goal = self.kinematics.tool_from_camera(
-                    np.block([[rotation, camera[:3, 3:4]], [np.zeros(3), 1.0]]))
-                solved = self.solver.solve_multi(goal, start)
-                if (solved["position_error_mm"] > 8.0
-                        or solved["approach_error_deg"] > 6.0):
-                    raise BridgeError(
-                        "cannot aim there: off by "
-                        f"{solved['position_error_mm']} mm / "
-                        f"{solved['approach_error_deg']} deg")
-                target = [float(solved["joints_deg"][name]) for name in JOINTS]
-                detail = dict(solved, aim_distance_mm=round(distance * 1000.0, 1))
-            elif mode == "rel":
-                # Nudge the tool along the board axes while keeping the current
-                # orientation.  Needs the board's axes, not its origin, so it
-                # works before the board pose has been derived.
-                delta = np.array([float(body.get("dx_mm", 0.0)),
-                                  float(body.get("dy_mm", 0.0)),
-                                  float(body.get("dz_mm", 0.0))]) / 1000.0
-                if float(np.linalg.norm(delta)) <= 1e-9:
-                    raise BridgeError("a relative move needs dx_mm, dy_mm or dz_mm")
-                if float(np.linalg.norm(delta)) > 0.12:
-                    raise BridgeError("a relative move is limited to 120 mm")
-                current = self.kinematics.fk(
-                    [float(state["joints"][n]) for n in JOINTS])
-                goal = current.copy()
-                goal[:3, 3] = current[:3, 3] + self.kinematics.board[:3, :3] @ delta
-                solved = self.solver.solve_multi(
-                    goal, start, freeze_roll=bool(body.get("roll_lock", True)))
-                # A small nudge near the edge of reach lands a few millimetres
-                # short; tolerate that rather than refusing the whole move.
-                allowed = max(5.0, 0.6 * float(np.linalg.norm(delta)) * 1000.0)
-                if (solved["position_error_mm"] > allowed
-                        or solved["approach_error_deg"] > 3.0):
-                    raise BridgeError(
-                        "no reachable pose: off by "
-                        f"{solved['position_error_mm']} mm / "
-                        f"{solved['approach_error_deg']} deg")
-                target = [float(solved["joints_deg"][name]) for name in JOINTS]
-                detail = solved
-            elif mode in ("xyz", "look_at"):
-                x_mm = float(body.get("x_mm", 0.0))
-                y_mm = float(body.get("y_mm", 0.0))
-                z_mm = float(body.get("z_mm", 0.0))
-                if mode == "xyz":
-                    if not -40.0 <= z_mm <= 260.0:
-                        raise BridgeError("tool height must be within -40..260 mm")
-                    # z is the jaw-tip height.  solve_tip owns the whole
-                    # search (fast path, pan seeds, quarter-turn spans) and the
-                    # one chain->tip transform, so the app cannot drift from
-                    # the regression test.
-                    point = self.kinematics.board_point(x_mm, y_mm, z_mm)
-                    solved, goal = self.solver.solve_tip(
-                        point, start, self.jaw_frame(), float(span_arg or 0.0))
-                else:
-                    distance = float(body.get("distance_mm", 220.0))
-                    if not 120.0 <= distance <= 650.0:
-                        raise BridgeError("standoff distance must be 120..650 mm")
-                    goal = self.kinematics.look_at_target(
-                        x_mm, y_mm, z_mm, distance,
-                        float(body.get("pitch_deg", 0.0)),
-                        float(body.get("azimuth_deg", 0.0)),
-                        float(body.get("roll_deg", 0.0)))
-                if mode != "xyz":
-                    # xyz already carries its own searched solution; re-solving
-                    # here would silently discard it and drop back to the seed
-                    # basin, which is exactly how good corner solutions vanished.
-                    solved = self.solver.solve_multi(
-                        goal, start, span_deg=span_arg,
-                        freeze_roll=bool(body.get("roll_lock", False)))
-                # Tolerance is measured at the tip now (solve() takes the jaw
-                # frame).  Refusing a 6.5 mm landing would waste a reachable
-                # square, while the reported error still tells the truth.
-                gate = float(self.config.get("move_tolerance_mm", 20.0))
-                if (solved["position_error_mm"] > gate
-                        or solved["approach_error_deg"] > 8.0):
-                    raise BridgeError(
-                        "no reachable pose: off by "
-                        f"{solved['position_error_mm']} mm / "
-                        f"{solved['approach_error_deg']} deg")
-                target = [float(solved["joints_deg"][name]) for name in JOINTS]
-                detail = solved
-            else:
-                raise BridgeError(f"unknown move mode {mode!r}")
-            if body.get("jaw") is not None:
-                target[5] = float(body["jaw"])
-            window = self._wrist_window()
-            if window and abs(target[4] - start[4]) > 1e-9:
-                lo, hi = window
-                servo_target = target[4] - self.frame_offset.offset_deg
-                if not lo <= servo_target <= hi:
-                    raise BridgeError(
-                        f"wrist roll {servo_target:.1f}° outside calibrated window "
-                        f"{lo:.1f}..{hi:.1f}°")
-            bad = self.kinematics.violations(target)
-            if bad and self._excess(target) > self._excess(start) + 0.05:
-                # A joint sitting a hair outside its limit (post-jam resets do
-                # this) must not lock the arm out of every move: refuse only
-                # when the target makes the violation worse than it already is.
-                raise BridgeError("target outside joint limits: " + ", ".join(
-                    f"{name} {value} not in {lo}..{hi}"
-                    for name, value, (lo, hi) in bad))
-            delta = max(abs(a - b) for a, b in zip(target[:5], start[:5]))
-            if body.get("dry_run"):
-                # Solve without moving: lets a large reorientation be inspected
-                # before the arm swings through anything.
-                return {"dry_run": True, "requested": detail,
-                        "target_joints": dict(zip(JOINTS, [round(v, 2) for v in target])),
-                        "max_joint_delta_deg": round(delta, 1)}
-            self._keep_in_check(target)
-            settle = float(body.get("settle_deg", 0.7))
-            result = self._stream_to(target, start, tolerance=settle)
-            result.update(requested=detail, pose=self.pose_now())
-            return result
+            return self._move_locked(body, mode)
         finally:
             self.motion.release()
+
+    def _solved(self, call, *args, **kwargs):
+        """Run one solve; a solver exception is a stuck condition, not a 500.
+
+        A crashed solver is exactly the case the recovery primitive exists for,
+        so it is reported as ``StuckError`` (which the move path may recover
+        from) rather than escaping as an unhandled error.
+        """
+        try:
+            return call(*args, **kwargs)
+        except StuckError:
+            raise
+        except Exception as exc:                     # noqa: BLE001
+            raise StuckError(
+                f"solver failed: {type(exc).__name__}: {exc}") from exc
+
+    def _move_locked(self, body: dict, mode: str) -> dict:
+        """Guards, solve and stream, with the motion lock held by ``move``."""
+        state = self._require_remote()
+        self._refresh_limits(state)
+        start = [float(state["joints"][name]) for name in JOINTS]
+        span = body.get("span_deg")
+        span_arg = None if span is None else float(span)
+        detail: dict = {"mode": mode}
+        if mode == "joint":
+            wanted = body.get("joints") or {}
+            target = [float(wanted.get(name, start[i]))
+                      for i, name in enumerate(JOINTS)]
+            detail = {"mode": "joint"}
+        elif mode == "aim":
+            # Keep the camera where it is and only rotate it onto the point.
+            # "look_at" pins the camera to a sphere around the target, which
+            # this arm cannot always reach; aiming from the current position
+            # is a far smaller ask and is what framing actually needs.
+            point = self.kinematics.board_point(
+                float(body.get("x_mm", 0.0)), float(body.get("y_mm", 0.0)),
+                float(body.get("z_mm", 0.0)))
+            camera = self.kinematics.camera_pose(start)
+            span = point - camera[:3, 3]
+            distance = float(np.linalg.norm(span))
+            if distance < 0.02:            # metres, not millimetres
+                raise BridgeError("aim point is too close to the camera")
+            view = span / distance
+            up = body.get("up") or "y"
+            from kinematics import _orthonormal
+            hint = self.kinematics.board_axis(str(up))
+            rotation = _orthonormal(view, hint)
+            if body.get("roll_deg"):
+                from scipy.spatial.transform import Rotation as _R
+                rotation = rotation @ _R.from_euler(
+                    "z", float(body["roll_deg"]), degrees=True).as_matrix()
+            goal = self.kinematics.tool_from_camera(
+                np.block([[rotation, camera[:3, 3:4]], [np.zeros(3), 1.0]]))
+            solved = self._solved(self.solver.solve_multi, goal, start)
+            if (solved["position_error_mm"] > 8.0
+                    or solved["approach_error_deg"] > 6.0):
+                raise StuckError(
+                    "cannot aim there: off by "
+                    f"{solved['position_error_mm']} mm / "
+                    f"{solved['approach_error_deg']} deg")
+            target = [float(solved["joints_deg"][name]) for name in JOINTS]
+            detail = dict(solved, aim_distance_mm=round(distance * 1000.0, 1))
+        elif mode == "rel":
+            # Nudge the tool along the board axes while keeping the current
+            # orientation.  Needs the board's axes, not its origin, so it
+            # works before the board pose has been derived.
+            delta = np.array([float(body.get("dx_mm", 0.0)),
+                              float(body.get("dy_mm", 0.0)),
+                              float(body.get("dz_mm", 0.0))]) / 1000.0
+            if float(np.linalg.norm(delta)) <= 1e-9:
+                raise BridgeError("a relative move needs dx_mm, dy_mm or dz_mm")
+            if float(np.linalg.norm(delta)) > 0.12:
+                raise BridgeError("a relative move is limited to 120 mm")
+            current = self.kinematics.fk(
+                [float(state["joints"][n]) for n in JOINTS])
+            goal = current.copy()
+            goal[:3, 3] = current[:3, 3] + self.kinematics.board[:3, :3] @ delta
+            solved = self.solver.solve_multi(
+                goal, start, freeze_roll=bool(body.get("roll_lock", True)))
+            # A small nudge near the edge of reach lands a few millimetres
+            # short; tolerate that rather than refusing the whole move.
+            allowed = max(5.0, 0.6 * float(np.linalg.norm(delta)) * 1000.0)
+            if (solved["position_error_mm"] > allowed
+                    or solved["approach_error_deg"] > 3.0):
+                raise BridgeError(
+                    "no reachable pose: off by "
+                    f"{solved['position_error_mm']} mm / "
+                    f"{solved['approach_error_deg']} deg")
+            target = [float(solved["joints_deg"][name]) for name in JOINTS]
+            detail = solved
+        elif mode in ("xyz", "look_at"):
+            x_mm = float(body.get("x_mm", 0.0))
+            y_mm = float(body.get("y_mm", 0.0))
+            z_mm = float(body.get("z_mm", 0.0))
+            if mode == "xyz":
+                if not -40.0 <= z_mm <= 260.0:
+                    raise BridgeError("tool height must be within -40..260 mm")
+                # z is the jaw-tip height.  solve_tip owns the whole
+                # search (fast path, pan seeds, quarter-turn spans) and the
+                # one chain->tip transform, so the app cannot drift from
+                # the regression test.
+                point = self.kinematics.board_point(x_mm, y_mm, z_mm)
+                solved, goal = self._solved(
+                    self.solver.solve_tip, point, start, self.jaw_frame(),
+                    float(span_arg or 0.0))
+            else:
+                distance = float(body.get("distance_mm", 220.0))
+                if not 120.0 <= distance <= 650.0:
+                    raise BridgeError("standoff distance must be 120..650 mm")
+                goal = self.kinematics.look_at_target(
+                    x_mm, y_mm, z_mm, distance,
+                    float(body.get("pitch_deg", 0.0)),
+                    float(body.get("azimuth_deg", 0.0)),
+                    float(body.get("roll_deg", 0.0)))
+            if mode != "xyz":
+                # xyz already carries its own searched solution; re-solving
+                # here would silently discard it and drop back to the seed
+                # basin, which is exactly how good corner solutions vanished.
+                solved = self._solved(
+                    partial(self.solver.solve_multi, goal, start,
+                            span_deg=span_arg,
+                            freeze_roll=bool(body.get("roll_lock", False))))
+            # Tolerance is measured at the tip now (solve() takes the jaw
+            # frame).  Refusing a 6.5 mm landing would waste a reachable
+            # square, while the reported error still tells the truth.
+            gate = float(self.config.get("move_tolerance_mm", 20.0))
+            if (solved["position_error_mm"] > gate
+                    or solved["approach_error_deg"] > 8.0):
+                raise StuckError(
+                    "no reachable pose: off by "
+                    f"{solved['position_error_mm']} mm / "
+                    f"{solved['approach_error_deg']} deg")
+            target = [float(solved["joints_deg"][name]) for name in JOINTS]
+            detail = solved
+        else:
+            raise BridgeError(f"unknown move mode {mode!r}")
+        if body.get("jaw") is not None:
+            target[5] = float(body["jaw"])
+        window = self._wrist_window()
+        if window and abs(target[4] - start[4]) > 1e-9:
+            lo, hi = window
+            servo_target = target[4] - self.frame_offset.offset_deg
+            if not lo <= servo_target <= hi:
+                raise BridgeError(
+                    f"wrist roll {servo_target:.1f}° outside calibrated window "
+                    f"{lo:.1f}..{hi:.1f}°")
+        bad = self.kinematics.violations(target)
+        if bad and self._excess(target) > self._excess(start) + 0.05:
+            # A joint sitting a hair outside its limit (post-jam resets do
+            # this) must not lock the arm out of every move: refuse only
+            # when the target makes the violation worse than it already is.
+            raise BridgeError("target outside joint limits: " + ", ".join(
+                f"{name} {value} not in {lo}..{hi}"
+                for name, value, (lo, hi) in bad))
+        delta = max(abs(a - b) for a, b in zip(target[:5], start[:5]))
+        if body.get("dry_run"):
+            # Solve without moving: lets a large reorientation be inspected
+            # before the arm swings through anything.
+            return {"dry_run": True, "requested": detail,
+                    "target_joints": dict(zip(JOINTS, [round(v, 2) for v in target])),
+                    "max_joint_delta_deg": round(delta, 1)}
+        self._keep_in_check(target)
+        settle = float(body.get("settle_deg", 0.7))
+        result = self._stream_to(target, start, tolerance=settle)
+        result.update(requested=detail, pose=self.pose_now())
+        return result
 
     def _stream_to(self, target: list[float], start: list[float],
                    tolerance: float = 0.7, trace: list | None = None) -> dict:
@@ -1444,7 +1497,7 @@ class Live:
         travel = max(abs(a - b) for a, b in zip(measured[:5], origin[:5]))
         # Rule 2: a move that needed travel but actuated nothing did not happen.
         if needed > max(0.15, tolerance) and sent == 0:
-            raise BridgeError(
+            raise StuckError(
                 "move accepted no command: measured pose was already within "
                 f"{max(0.15, tolerance):.2f} deg of the target, so nothing moved "
                 f"(needed {needed:.2f} deg)")
@@ -1453,7 +1506,7 @@ class Live:
         # that sits 2 deg out from sag has still executed, while one that covered
         # half the distance in 30 s did not.
         if travel < needed * 0.5 and last_error > max(5.0 * tolerance, 3.0):
-            raise BridgeError(
+            raise StuckError(
                 f"move did not execute: residual {last_error:.2f} deg after "
                 f"{sent} commands ({time.time() - started:.1f} s); "
                 f"the arm moved {travel:.2f} of {needed:.2f} deg")
@@ -1462,6 +1515,158 @@ class Live:
                 "commands": sent,
                 "travel_deg": round(travel, 2),
                 "needed_deg": round(needed, 2)}
+
+    # -------------------------------------------------------------- recovery
+    def recovery_pose(self) -> list[float]:
+        """The stored joint pose recovery drives to. Never solved at runtime."""
+        pose = self.config.get("recovery_joints") or {}
+        missing = [name for name in JOINTS if name not in pose]
+        if missing:
+            raise BridgeError("recovery_joints is missing " + ", ".join(missing))
+        return [float(pose[name]) for name in JOINTS]
+
+    def _keep_in_problem(self, joints_deg) -> str | None:
+        """Why this joint pose is outside the keep-in box, or None."""
+        zone = self.keep_in()
+        if not zone["enforce"]:
+            return None
+        tip = (self.kinematics.fk(list(joints_deg)) @ self.jaw_frame())[:3, 3]
+        tool = self.kinematics.to_board(tip) * 1000.0
+        problems = []
+        if abs(float(tool[0])) > zone["x_mm"]:
+            problems.append(f"x {tool[0]:.0f} outside ±{zone['x_mm']:.0f}")
+        if abs(float(tool[1])) > zone["y_mm"]:
+            problems.append(f"y {tool[1]:.0f} outside ±{zone['y_mm']:.0f}")
+        if not zone["z_min_mm"] <= float(tool[2]) <= zone["z_max_mm"]:
+            problems.append(f"z {tool[2]:.0f} outside "
+                            f"{zone['z_min_mm']:.0f}..{zone['z_max_mm']:.0f}")
+        if not problems:
+            return None
+        return "keep-in zone: " + "; ".join(problems)
+
+    def _clamp_to_limits(self, target: list[float],
+                         start: list[float]) -> tuple[list[float], list[str]]:
+        """Clamp a stored pose into the measured joint envelope.
+
+        Recovery may skip the keep-in target check (the pose is inside by
+        construction) but it may NOT skip joint-limit clamping: a stored pose is
+        still only a request.  The gripper is never part of a recovery move, so
+        it is held at its measured value.
+        """
+        clamped = list(target)
+        notes = []
+        for index, name in enumerate(JOINTS[:5]):
+            limits = self.kinematics.limits.get(name)
+            if not limits:
+                continue
+            lo, hi = float(limits[0]), float(limits[1])
+            if not lo <= clamped[index] <= hi:
+                value = min(max(clamped[index], lo), hi)
+                notes.append(f"{name} {clamped[index]:.2f} -> {value:.2f}")
+                clamped[index] = value
+        clamped[5] = float(start[5])
+        return clamped, notes
+
+    def recover_to_home(self, reason: str = "manual") -> dict:
+        """Drive to the stored home pose above the board centre.
+
+        Deliberately dumb, and deliberately not an IK target: the things that
+        get stuck include the solver, so a recovery that needs a solve is not a
+        recovery.  The pose comes from ``recovery_joints`` in config (derived
+        once by ``tools/recovery_pose.py``).
+
+        Two legs when the pan has to move: raise the shoulder/elbow/wrist with
+        pan held, then pan at height.  A single interpolated move from a folded
+        pose can sweep the jaws sideways at low z, through the pieces.
+        """
+        target = self.recovery_pose()
+        if not self.motion.acquire(timeout=10):
+            raise BridgeError("another motion is running; cannot recover")
+        started = time.time()
+        record: dict = {"at": time.strftime("%Y-%m-%dT%H:%M:%S"), "reason": reason,
+                        "stored_joints": dict(zip(JOINTS, [round(v, 2) for v in target]))}
+        try:
+            state = self._require_remote()
+            self._refresh_limits(state)
+            start = [float(state["joints"][name]) for name in JOINTS]
+            target, notes = self._clamp_to_limits(target, start)
+            record.update(from_joints=dict(zip(JOINTS, [round(v, 2) for v in start])),
+                          target_joints=dict(zip(JOINTS, [round(v, 2) for v in target])),
+                          clamped=notes)
+            legs = []
+            if abs(target[0] - start[0]) > 0.5:
+                legs.append(("raise", [start[0], target[1], target[2],
+                                       target[3], target[4], start[5]]))
+            legs.append(("home", target))
+            current = start
+            for name, leg in legs:
+                moved = self._stream_to(leg, current)
+                current = [float(moved["joints"][joint]) for joint in JOINTS]
+                legs_record = record.setdefault("legs", [])
+                legs_record.append({"leg": name, "error_deg": moved["error_deg"],
+                                    "travel_deg": moved["travel_deg"],
+                                    "needed_deg": moved["needed_deg"]})
+            problem = self._keep_in_problem(current)
+            record.update(ok=problem is None, landed=problem,
+                          seconds=round(time.time() - started, 2))
+            if problem:
+                raise StuckError(f"recovery landed outside keep-in: {problem}")
+            return record
+        except BridgeError as exc:
+            record.update(ok=False, error=str(exc),
+                          seconds=round(time.time() - started, 2))
+            raise
+        finally:
+            self.motion.release()
+            self._log_recovery(record)
+
+    def move_with_recovery(self, body: dict) -> dict:
+        """One move, with the stored home pose as the recovery path.
+
+        A stuck condition (see ``StuckError``) or a move that ends outside
+        keep-in drives the arm home once and retries the original request once.
+        The retry budget and the recovery cap both come from config, and both
+        are hard bounds: a stuck robot must never loop.
+        """
+        dry = bool(body.get("dry_run"))
+        budget = max(1, int(self.config.get("recovery_max_attempts", 3)))
+        retries = max(0, int(self.config.get("move_retries_after_recovery", 1)))
+        used = 0
+        if body.get("recover_first") and not dry:
+            used += 1
+            self.recover_to_home(reason="recover_first (explicit)")
+        while True:
+            try:
+                result = self.move(body)
+            except StuckError as exc:
+                if dry or used >= budget or retries <= 0:
+                    raise
+                used += 1
+                retries -= 1
+                self.recover_to_home(reason=f"move failed: {exc}")
+                continue
+            if dry:
+                return result
+            state = self.bridge.state()
+            measured = [float(state["joints"][name]) for name in JOINTS]
+            problem = self._keep_in_problem(measured)
+            if problem is None:
+                return result
+            if used >= budget or retries <= 0:
+                raise StuckError(f"move ended {problem}; recovery budget spent")
+            used += 1
+            retries -= 1
+            self.recover_to_home(reason=f"move ended {problem}")
+
+    def _log_recovery(self, record: dict) -> None:
+        """Append one recovery event to the receipt path (never raises)."""
+        path = Path(self.config.get("recovery_log", "live/recovery_log.jsonl"))
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record) + "\n")
+        except OSError as exc:
+            print(f"recovery log unwritable: {exc}", file=sys.stderr)
 
     # ---------------------------------------------------------------- stream
     def _orient(self, image: np.ndarray) -> np.ndarray:
@@ -1620,7 +1825,7 @@ def state():
 @app.post("/scan")
 async def scan(request: Request):
     _authorised(request)
-    return live.start_scan()
+    return await run_in_threadpool(live.start_scan)
 
 
 @app.get("/camera/controls")
@@ -1719,7 +1924,8 @@ async def capture_view(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.capture_view(str(body.get("label", ""))[:24])
+        return await run_in_threadpool(live.capture_view,
+                                       str(body.get("label", ""))[:24])
     except BridgeError as exc:
         raise HTTPException(502, str(exc)) from exc
 
@@ -1778,21 +1984,50 @@ async def pose_run(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.run_pose(str(body.get("name", "")))
+        return await run_in_threadpool(live.run_pose, str(body.get("name", "")))
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
 
+# Every endpoint that can spend real time (a cold solve, a streamed move, a
+# scan cycle) dispatches to a worker thread.  This one used to be a bare
+# ``async def`` around a blocking ``live.move``: while a cold h1 solve ran
+# (~169 s on least_squares, 2026-11-24) the whole event loop was parked inside
+# it, so even ``GET /state`` hung and the console looked dead.  The motion lock
+# inside ``Live`` is still the single-writer guard; this only stops one slow
+# request from freezing every other route.  FastAPI already runs the plain
+# ``def`` routes in a threadpool, so this makes the two styles behave alike.
 @app.post("/move")
 async def move(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.move(body)
+        # Recovery is part of the move path, not a separate operator step: the
+        # owner's rule is that a stuck robot resets itself and starts again.
+        return await run_in_threadpool(live.move_with_recovery, body)
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
     except (TypeError, ValueError) as exc:
         raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/recover")
+async def recover(request: Request):
+    """Drive to the stored home pose above the board centre.
+
+    No IK, no gripper, one or two joint-space legs.  Also the automatic path a
+    stuck move takes; useful on its own after a jam or a refused move.
+    """
+    _authorised(request)
+    try:
+        body = await request.json()
+    except Exception:                                # noqa: BLE001
+        body = {}
+    reason = str((body or {}).get("reason") or "manual (/recover)")
+    try:
+        return await run_in_threadpool(live.recover_to_home, reason)
+    except BridgeError as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @app.post("/sanity")
@@ -1800,9 +2035,10 @@ async def sanity(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.sanity_check(execute=bool(body.get("execute", True)),
-                                 z_mm=float(body.get("z_mm", 120.0)),
-                                 tolerance_mm=float(body.get("tolerance_mm", 6.0)))
+        return await run_in_threadpool(
+            partial(live.sanity_check, execute=bool(body.get("execute", True)),
+                    z_mm=float(body.get("z_mm", 120.0)),
+                    tolerance_mm=float(body.get("tolerance_mm", 6.0))))
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -1812,7 +2048,8 @@ async def home(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.home(execute=bool(body.get("execute", True)))
+        return await run_in_threadpool(
+            partial(live.home, execute=bool(body.get("execute", True))))
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -1875,7 +2112,8 @@ async def board_derive(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.derive_board(save=bool(body.get("save", True)))
+        return await run_in_threadpool(
+            partial(live.derive_board, save=bool(body.get("save", True))))
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -1893,7 +2131,8 @@ async def jog(request: Request):
     _authorised(request)
     body = await request.json()
     try:
-        return live.jog(str(body.get("joint", "")), float(body.get("delta", 0.0)))
+        return await run_in_threadpool(live.jog, str(body.get("joint", "")),
+                                       float(body.get("delta", 0.0)))
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
     except ValueError as exc:
@@ -1914,7 +2153,8 @@ async def wrist_zero(request: Request):
     body = await request.json()
     try:
         zero = body.get("zero_deg")
-        return live.set_wrist_zero(None if zero is None else float(zero))
+        return await run_in_threadpool(
+            live.set_wrist_zero, None if zero is None else float(zero))
     except (BridgeError, ValueError) as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -1924,8 +2164,9 @@ async def wrist_pan_zero(request: Request):
     _authorised(request)
     try:
         pan = float(live.wrist_cal().get("pan_zero_deg", 0.0))
-        return live.move({"mode": "joint", "joints": {"shoulder_pan": pan},
-                          "settle_deg": 0.1})
+        return await run_in_threadpool(
+            live.move, {"mode": "joint", "joints": {"shoulder_pan": pan},
+                        "settle_deg": 0.1})
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -1934,7 +2175,7 @@ async def wrist_pan_zero(request: Request):
 async def wrist_auto_align(request: Request):
     _authorised(request)
     try:
-        return live.auto_align_wrist()
+        return await run_in_threadpool(live.auto_align_wrist)
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
