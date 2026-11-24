@@ -1,0 +1,145 @@
+{
+ "mode": "irl",
+ "dry_run": false,
+ "console": "http://127.0.0.1:8081",
+ "bridge": "http://192.168.1.167:8100",
+ "stall_above": null,
+ "stale_readback": false,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": true,
+ "cases": [
+  {
+   "case": "edge_h1_approach",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 98.0,
+    "y_mm": -98.0,
+    "z_mm": 60.0
+   },
+   "freshness": {
+    "fresh": true,
+    "age_s": 0.06,
+    "waited_s": 0.01
+   },
+   "ok": true,
+   "before_deg": [
+    21.1,
+    -19.91,
+    18.95,
+    93.49,
+    87.65,
+    43.88
+   ],
+   "tip_before_mm": [
+    -86.6,
+    27.2,
+    99.1
+   ],
+   "before_settled": true,
+   "before_age_s": 0.075,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.66,
+    "max_deg": 1.23,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -17.05,
+     "shoulder_lift": 51.12,
+     "elbow_flex": 16.13,
+     "wrist_flex": 94.99,
+     "wrist_roll": 87.64999999999999,
+     "gripper": 43.88
+    },
+    "error_deg": 79.82,
+    "commands": 301,
+    "travel_deg": 71.03,
+    "needed_deg": 82.64,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -28.162,
+      "shoulder_lift": 51.337,
+      "elbow_flex": -63.689,
+      "wrist_flex": 94.967,
+      "wrist_roll": 87.98,
+      "gripper": 43.88
+     },
+     "position_error_mm": 0.31,
+     "approach_error_deg": 7.385,
+     "cost": 0.000307038204503818,
+     "starts": 4,
+     "solver": "mink"
+    },
+    "pose": {
+     "tool_mm": [
+      5.4,
+      31.3,
+      55.5
+     ],
+     "camera_mm": [
+      68.2,
+      56.2,
+      43.6
+     ],
+     "camera_height_mm": 43.6,
+     "view_pitch_deg": 93.5,
+     "jaw_azimuth_deg": 88.7,
+     "tip_mm": [
+      -22.1,
+      132.9,
+      21.8
+     ],
+     "joints_deg": {
+      "shoulder_pan": -17.05,
+      "shoulder_lift": 51.12,
+      "elbow_flex": 16.13,
+      "wrist_flex": 94.99,
+      "wrist_roll": 87.65,
+      "gripper": 43.88
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 30.36,
+   "after_deg": [
+    -17.05,
+    51.12,
+    16.13,
+    94.99,
+    87.74,
+    43.88
+   ],
+   "tip_after_mm": [
+    -22.1,
+    132.9,
+    21.8
+   ],
+   "after_settled": true,
+   "settle_s": 0.9,
+   "movement": {
+    "per_joint_deg": [
+     -38.15,
+     71.03,
+     -2.82,
+     1.5,
+     0.09,
+     0.0
+    ],
+    "max_abs_deg": 71.03,
+    "travel_deg": 113.59,
+    "joints_ge_25": 2
+   },
+   "refused": false,
+   "reported_error_deg": 79.82,
+   "tip_travel_mm": 145.97
+  }
+ ],
+ "when": "2026-11-24T11:06:47-0500"
+}

@@ -1,0 +1,102 @@
+{
+ "tool": "tools/phase2_solver_seed_probe.py",
+ "when": "2026-11-24T10:37:27-0500",
+ "start_board_mm": [
+  0.0,
+  0.0,
+  70.0
+ ],
+ "target_board_mm": [
+  -85.0,
+  85.0,
+  120.0
+ ],
+ "seed_tip_mm": [
+  -0.7,
+  -0.2,
+  67.2
+ ],
+ "want_tip_mm": [
+  -85.0,
+  85.0,
+  120.0
+ ],
+ "rows": [
+  {
+   "solver": "least_squares",
+   "ms": 127083.8,
+   "reported_position_error_mm": 32.3,
+   "reported_approach_error_deg": 0.86,
+   "seed_joints": [
+    -12.13,
+    -14.13,
+    26.96,
+    76.79,
+    0.0
+   ],
+   "solved_joints": [
+    31.88,
+    -42.34,
+    38.08,
+    93.4,
+    160.79
+   ],
+   "max_joint_jump_deg": 160.79,
+   "seed_tip_mm": [
+    -0.7,
+    -0.2,
+    67.2
+   ],
+   "achieved_tip_mm": [
+    -92.0,
+    68.1,
+    93.4
+   ],
+   "wanted_tip_mm": [
+    -85.0,
+    85.0,
+    120.0
+   ],
+   "returned_seed": false,
+   "achieved_vs_seed_mm": 117.04
+  },
+  {
+   "solver": "mink",
+   "ms": 2210.8,
+   "reported_position_error_mm": 25.05,
+   "reported_approach_error_deg": 9.008,
+   "seed_joints": [
+    -12.13,
+    -14.13,
+    26.96,
+    76.79,
+    0.0
+   ],
+   "solved_joints": [
+    34.06,
+    -51.62,
+    37.61,
+    95.0,
+    154.19
+   ],
+   "max_joint_jump_deg": 154.19,
+   "seed_tip_mm": [
+    -0.7,
+    -0.2,
+    67.2
+   ],
+   "achieved_tip_mm": [
+    -97.9,
+    67.3,
+    107.8
+   ],
+   "wanted_tip_mm": [
+    -85.0,
+    85.0,
+    120.0
+   ],
+   "returned_seed": false,
+   "achieved_vs_seed_mm": 125.12
+  }
+ ]
+}

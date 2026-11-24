@@ -1,0 +1,465 @@
+{
+ "joint": "shoulder_lift",
+ "requested_deg": -6.0,
+ "executed": true,
+ "anchored": false,
+ "start": [
+  -15.91,
+  51.3,
+  15.69,
+  95.08,
+  87.65,
+  43.88
+ ],
+ "final": [
+  -15.91,
+  51.3,
+  15.69,
+  95.08,
+  87.65,
+  43.88
+ ],
+ "travel_deg": 0.0,
+ "ticks": [
+  {
+   "tick": 0,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804583,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 1,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804584,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 2,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804585,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 3,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804586,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 4,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804587,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 5,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804588,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 6,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804589,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 7,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804590,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 8,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804591,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 9,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804592,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 10,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804593,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 11,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804594,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 12,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804595,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 13,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804596,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 14,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804597,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 15,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804598,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 16,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804599,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 17,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804600,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 18,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804601,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 19,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804602,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 20,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804603,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 21,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804604,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 22,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804605,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 23,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804606,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 24,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804607,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 25,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804608,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 26,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804609,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 27,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804610,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 28,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804611,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 29,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804612,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 30,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804613,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 31,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804614,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 32,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804615,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 33,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804616,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 34,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804617,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 35,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804618,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 36,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804619,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 37,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804620,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 38,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804621,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 39,
+   "sent": 50.6,
+   "measured": 51.3,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536804622,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  }
+ ]
+}

@@ -1,0 +1,187 @@
+{
+ "tool": "tools/phase2_reach_scan.py",
+ "park_mm": "0,0,70",
+ "park_tip_mm": [
+  -40.6,
+  -203.0,
+  260.3
+ ],
+ "rows": [
+  {
+   "target_mm": [
+    -85.0,
+    85.0,
+    120.0
+   ],
+   "nominal_travel_mm": 323.5,
+   "least_squares": {
+    "mm": 31.6,
+    "deg": 1.41,
+    "ms": 124936.8,
+    "pass3": false,
+    "pass20": false
+   },
+   "mink": {
+    "mm": 25.05,
+    "deg": 9.008,
+    "ms": 2210.1,
+    "pass3": false,
+    "pass20": false
+   }
+  },
+  {
+   "target_mm": [
+    65.0,
+    70.0,
+    110.0
+   ],
+   "nominal_travel_mm": 329.1,
+   "least_squares": {
+    "mm": 8.6,
+    "deg": 0.52,
+    "ms": 2196.3,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 0.27,
+    "deg": 3.655,
+    "ms": 6.3,
+    "pass3": true,
+    "pass20": true
+   }
+  },
+  {
+   "target_mm": [
+    -90.0,
+    20.0,
+    110.0
+   ],
+   "nominal_travel_mm": 273.5,
+   "least_squares": {
+    "mm": 4.7,
+    "deg": 0.5,
+    "ms": 2081.5,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 0.07,
+    "deg": 0.761,
+    "ms": 1.6,
+    "pass3": true,
+    "pass20": true
+   }
+  },
+  {
+   "target_mm": [
+    -95.0,
+    60.0,
+    110.0
+   ],
+   "nominal_travel_mm": 307.8,
+   "least_squares": {
+    "mm": 12.1,
+    "deg": 0.55,
+    "ms": 2192.3,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 1.0,
+    "deg": 7.268,
+    "ms": 222.8,
+    "pass3": true,
+    "pass20": true
+   }
+  },
+  {
+   "target_mm": [
+    -80.0,
+    70.0,
+    110.0
+   ],
+   "nominal_travel_mm": 314.2,
+   "least_squares": {
+    "mm": 18.4,
+    "deg": 1.07,
+    "ms": 102930.2,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 12.59,
+    "deg": 4.782,
+    "ms": 2205.4,
+    "pass3": false,
+    "pass20": true
+   }
+  },
+  {
+   "target_mm": [
+    -70.0,
+    60.0,
+    110.0
+   ],
+   "nominal_travel_mm": 304.4,
+   "least_squares": {
+    "mm": 16.7,
+    "deg": 0.53,
+    "ms": 97394.9,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 3.18,
+    "deg": 14.863,
+    "ms": 1220.2,
+    "pass3": false,
+    "pass20": false
+   }
+  },
+  {
+   "target_mm": [
+    95.0,
+    70.0,
+    110.0
+   ],
+   "nominal_travel_mm": 339.9,
+   "least_squares": {
+    "mm": 4.7,
+    "deg": 0.52,
+    "ms": 2059.3,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 0.24,
+    "deg": 0.829,
+    "ms": 1.6,
+    "pass3": true,
+    "pass20": true
+   }
+  },
+  {
+   "target_mm": [
+    -95.0,
+    -20.0,
+    110.0
+   ],
+   "nominal_travel_mm": 243.0,
+   "least_squares": {
+    "mm": 7.3,
+    "deg": 1.17,
+    "ms": 2015.5,
+    "pass3": false,
+    "pass20": true
+   },
+   "mink": {
+    "mm": 0.07,
+    "deg": 1.505,
+    "ms": 1.6,
+    "pass3": true,
+    "pass20": true
+   }
+  }
+ ]
+}

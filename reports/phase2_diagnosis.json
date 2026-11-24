@@ -1,0 +1,760 @@
+{
+ "tool": "tools/phase2_diagnose_stream.py",
+ "when": "2026-11-24T10:11:10-0500",
+ "start_deg": [
+  20.57,
+  -19.03,
+  19.12,
+  93.58,
+  87.65,
+  43.88
+ ],
+ "target_deg": [
+  -47.12,
+  -28.0,
+  24.13,
+  94.9,
+  87.65,
+  43.88
+ ],
+ "cases": [
+  {
+   "case": "budget_ok",
+   "mode": "normal",
+   "elapsed_s": 6.85,
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 67.221,
+   "achieved_fraction": 0.993,
+   "commands_sent": 97,
+   "reported_error_deg": 0.47,
+   "converged": true,
+   "starved": false
+  },
+  {
+   "case": "C1_empty_joint_dict",
+   "mode": "empty_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.693,
+   "achieved_fraction": 0.01,
+   "elapsed_s": 30.01,
+   "commands_sent": 427,
+   "commands_accepted": 427,
+   "commands_rejected": 0,
+   "reported_error_deg": 67.69,
+   "exception": null,
+   "true_final_joints": [
+    19.877,
+    -19.723,
+    19.813,
+    94.273,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": true,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532932665
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532932666
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532932667
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532932668
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532933062
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532933063
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532933064
+     }
+    }
+   ]
+  },
+  {
+   "case": "C1b_partial_joint_dict",
+   "mode": "partial_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.693,
+   "achieved_fraction": 0.01,
+   "elapsed_s": 30.05,
+   "commands_sent": 427,
+   "commands_accepted": 427,
+   "commands_rejected": 0,
+   "reported_error_deg": 67.69,
+   "exception": null,
+   "true_final_joints": [
+    19.877,
+    -19.723,
+    19.813,
+    94.273,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": true,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963178
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963179
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963180
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963181
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963575
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963576
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532963577
+     }
+    }
+   ]
+  },
+  {
+   "case": "C1c_all_zero_joint_dict",
+   "mode": "zeros_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 92.887,
+   "achieved_fraction": 1.372,
+   "elapsed_s": 30.0,
+   "commands_sent": 423,
+   "commands_accepted": 423,
+   "commands_rejected": 0,
+   "reported_error_deg": 94.9,
+   "exception": null,
+   "true_final_joints": [
+    -0.693,
+    -0.693,
+    0.693,
+    0.693,
+    0.693,
+    0.693
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532993731
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532993732
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532993733
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532993734
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532994128
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532994129
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795532994130
+     }
+    }
+   ]
+  },
+  {
+   "case": "C2_stale_readback",
+   "mode": "stale",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 1.386,
+   "achieved_fraction": 0.02,
+   "elapsed_s": 30.01,
+   "commands_sent": 423,
+   "commands_accepted": 423,
+   "commands_rejected": 0,
+   "reported_error_deg": 67.0,
+   "exception": null,
+   "true_final_joints": [
+    19.184,
+    -20.416,
+    20.506,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": true,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024236
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024237
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024238
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024239
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024633
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024634
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533024635
+     }
+    }
+   ]
+  },
+  {
+   "case": "C3_state_echoes_command",
+   "mode": "echo",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 67.221,
+   "achieved_fraction": 0.993,
+   "elapsed_s": 6.91,
+   "commands_sent": 97,
+   "commands_accepted": 97,
+   "commands_rejected": 0,
+   "reported_error_deg": 0.47,
+   "exception": null,
+   "true_final_joints": [
+    -46.651,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": true,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054750
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054751
+     }
+    },
+    {
+     "sent": [
+      18.491,
+      -21.109,
+      21.199,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054752
+     }
+    },
+    {
+     "sent": [
+      17.798,
+      -21.802,
+      21.892,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054753
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      -45.265,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054844
+     }
+    },
+    {
+     "sent": [
+      -45.958,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054845
+     }
+    },
+    {
+     "sent": [
+      -46.651,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795533054846
+     }
+    }
+   ]
+  },
+  {
+   "case": "seq_reject_half",
+   "mode": "reject_every_other",
+   "elapsed_s": 0.07,
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.693,
+   "achieved_fraction": 0.01,
+   "commands_sent": 1,
+   "commands_accepted": 2,
+   "commands_rejected": 1,
+   "reported_error_deg": null,
+   "exception": "BridgeError: /command -> 409: {\"detail\": \"rejected (control)\"}",
+   "converged": false
+  },
+  {
+   "case": "C6_target_equals_start",
+   "mode": "normal",
+   "elapsed_s": 0.0,
+   "required_joint_delta_deg": 0.0,
+   "real_max_travel_deg": 0.0,
+   "achieved_fraction": 1.0,
+   "commands_sent": 0,
+   "reported_error_deg": 0.0,
+   "silent_non_execution": true,
+   "converged": true
+  },
+  {
+   "case": "C7_console_start_is_stale",
+   "mode": "normal",
+   "elapsed_s": 6.69,
+   "required_joint_delta_deg": 34.12,
+   "real_max_travel_deg": 67.452,
+   "commands_sent": 95,
+   "reported_error_deg": 0.24,
+   "true_final_joints": [
+    -46.882,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": true,
+   "silent_non_execution": false
+  }
+ ],
+ "verdicts": {
+  "budget_ok": "converged",
+  "C1_empty_joint_dict": "stalled",
+  "C1b_partial_joint_dict": "stalled",
+  "C1c_all_zero_joint_dict": "converged",
+  "C2_stale_readback": "stalled",
+  "C3_state_echoes_command": "converged",
+  "seq_reject_half": "stalled",
+  "C6_target_equals_start": "SILENT NON-EXECUTION",
+  "C7_console_start_is_stale": "converged"
+ }
+}

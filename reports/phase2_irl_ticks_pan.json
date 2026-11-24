@@ -1,0 +1,245 @@
+{
+ "joint": "shoulder_pan",
+ "requested_deg": 3.0,
+ "executed": true,
+ "anchored": false,
+ "start": [
+  -16.0,
+  51.47,
+  15.6,
+  95.08,
+  87.74,
+  43.88
+ ],
+ "final": [
+  -16.0,
+  51.47,
+  15.6,
+  95.08,
+  87.74,
+  43.88
+ ],
+ "travel_deg": 0.0,
+ "ticks": [
+  {
+   "tick": 0,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894359,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 1,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894360,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 2,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894361,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 3,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894362,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 4,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894363,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 5,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894364,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 6,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894365,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 7,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894366,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 8,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894367,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 9,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894368,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 10,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894369,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 11,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894370,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 12,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894371,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 13,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894372,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 14,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894373,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 15,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894374,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 16,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894375,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 17,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894376,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 18,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894377,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  },
+  {
+   "tick": 19,
+   "sent": -15.3,
+   "measured": -16.0,
+   "ack": {
+    "accepted": true,
+    "seq": 1795536894378,
+    "ttl_ms": 200
+   },
+   "clamped": []
+  }
+ ]
+}

@@ -1,0 +1,86 @@
+{
+ "mode": "sim",
+ "dry_run": false,
+ "console": "http://127.0.0.1:57559",
+ "bridge": "http://127.0.0.1:44549",
+ "stall_above": null,
+ "stale_readback": true,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": false,
+ "cases": [
+  {
+   "case": "park_at_start",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 0.0,
+    "y_mm": 0.0,
+    "z_mm": 70.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": false,
+   "before_deg": [
+    -13.0,
+    -11.0,
+    25.0,
+    78.0,
+    67.0,
+    44.0
+   ],
+   "tip_before_mm": [
+    1.5,
+    1.5,
+    64.5
+   ],
+   "before_settled": true,
+   "before_age_s": 2.2,
+   "motion": {
+    "moved": false,
+    "elapsed_s": 31.07,
+    "max_deg": 0.0,
+    "after_return": true
+   },
+   "reply": {
+    "http_error": 409,
+    "detail": "{\"detail\":\"move did not execute: residual 4.00 deg after 409 commands (30.0 s); the arm moved 0.00 of 4.00 deg\"}"
+   },
+   "reply_wall_s": 31.07,
+   "after_deg": [
+    -13.0,
+    -11.0,
+    25.0,
+    78.0,
+    67.0,
+    44.0
+   ],
+   "tip_after_mm": [
+    1.5,
+    1.5,
+    64.5
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 0.0,
+    "travel_deg": 0.0,
+    "joints_ge_25": 0
+   },
+   "refused": true,
+   "reported_error_deg": null,
+   "tip_travel_mm": 0.0
+  }
+ ],
+ "when": "2026-11-24T10:56:05-0500"
+}

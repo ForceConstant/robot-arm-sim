@@ -1,0 +1,161 @@
+{
+ "tool": "tools/phase2_sim_flip.py",
+ "start_mm": [
+  0.0,
+  0.0,
+  70.0
+ ],
+ "large_mm": [
+  -85.0,
+  85.0,
+  120.0
+ ],
+ "results": [
+  {
+   "solver": "least_squares",
+   "gate_mm": 20.0,
+   "park": {
+    "error_deg": 0.53,
+    "http_error": null,
+    "detail": null,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -12.383,
+      "shoulder_lift": -13.686,
+      "elbow_flex": 25.334,
+      "wrist_flex": 78.387,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 0.2,
+     "approach_error_deg": 0.03,
+     "cost": 0.0011574169646045463,
+     "starts": 1
+    }
+   },
+   "large": {
+    "error_deg": 0.37,
+    "http_error": null,
+    "detail": null,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": 31.646,
+      "shoulder_lift": -44.308,
+      "elbow_flex": 30.923,
+      "wrist_flex": 103.4,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 11.5,
+     "approach_error_deg": 0.01,
+     "cost": 0.02639168952758663,
+     "starts": 85
+    },
+    "commands": 87,
+    "travel_deg": 43.66
+   },
+   "large_refused": false,
+   "large_max_joint_travel_deg": 43.66,
+   "large_settled": true,
+   "tip_before_mm": [
+    0.1,
+    -0.2,
+    70.0
+   ],
+   "tip_after_mm": [
+    -85.4,
+    76.0,
+    112.5
+   ]
+  },
+  {
+   "solver": "least_squares",
+   "gate_mm": 3.0,
+   "park": {
+    "error_deg": 0.53,
+    "http_error": null,
+    "detail": null,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -12.383,
+      "shoulder_lift": -13.686,
+      "elbow_flex": 25.334,
+      "wrist_flex": 78.387,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 0.2,
+     "approach_error_deg": 0.03,
+     "cost": 0.0011574169646045463,
+     "starts": 1
+    }
+   },
+   "large": {
+    "error_deg": null,
+    "http_error": 409,
+    "detail": "{\"detail\":\"no reachable pose: off by 11.5 mm / 0.01 deg\"}",
+    "requested": null,
+    "commands": null,
+    "travel_deg": null
+   },
+   "large_refused": true,
+   "large_max_joint_travel_deg": 0.0,
+   "large_settled": true,
+   "tip_before_mm": [
+    0.1,
+    -0.2,
+    70.0
+   ],
+   "tip_after_mm": [
+    0.1,
+    -0.2,
+    70.0
+   ]
+  },
+  {
+   "solver": "mink",
+   "gate_mm": 3.0,
+   "park": {
+    "error_deg": 0.53,
+    "http_error": null,
+    "detail": null,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -12.367,
+      "shoulder_lift": -13.922,
+      "elbow_flex": 25.562,
+      "wrist_flex": 78.357,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 0.13,
+     "approach_error_deg": 0.003,
+     "cost": 0.0001281931121016332,
+     "starts": 1,
+     "solver": "mink"
+    }
+   },
+   "large": {
+    "error_deg": null,
+    "http_error": 409,
+    "detail": "{\"detail\":\"no reachable pose: off by 25.05 mm / 9.008 deg\"}",
+    "requested": null,
+    "commands": null,
+    "travel_deg": null
+   },
+   "large_refused": true,
+   "large_max_joint_travel_deg": 0.0,
+   "large_settled": true,
+   "tip_before_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "tip_after_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ]
+  }
+ ]
+}

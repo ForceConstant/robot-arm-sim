@@ -1,0 +1,560 @@
+{
+ "tool": "tools/phase2_diagnose_stream.py",
+ "when": "2026-11-24T10:57:40-0500",
+ "start_deg": [
+  20.57,
+  -19.03,
+  19.12,
+  93.58,
+  87.65,
+  43.88
+ ],
+ "target_deg": [
+  -47.12,
+  -28.0,
+  24.13,
+  94.9,
+  87.65,
+  43.88
+ ],
+ "cases": [
+  {
+   "case": "budget_ok",
+   "mode": "normal",
+   "elapsed_s": 6.83,
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 67.221,
+   "achieved_fraction": 0.993,
+   "commands_sent": 97,
+   "reported_error_deg": 0.47,
+   "converged": true,
+   "starved": false
+  },
+  {
+   "case": "C1_empty_joint_dict",
+   "mode": "empty_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.0,
+   "achieved_fraction": 0.0,
+   "elapsed_s": 0.0,
+   "commands_sent": 0,
+   "commands_accepted": 0,
+   "commands_rejected": 0,
+   "reported_error_deg": null,
+   "exception": "BridgeError: bridge returned no usable joint readback (got []); cannot close the move loop",
+   "true_final_joints": [
+    20.57,
+    -19.03,
+    19.12,
+    93.58,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [],
+   "last_ticks": []
+  },
+  {
+   "case": "C1b_partial_joint_dict",
+   "mode": "partial_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.0,
+   "achieved_fraction": 0.0,
+   "elapsed_s": 0.0,
+   "commands_sent": 0,
+   "commands_accepted": 0,
+   "commands_rejected": 0,
+   "reported_error_deg": null,
+   "exception": "BridgeError: bridge returned no usable joint readback (got ['elbow_flex', 'shoulder_lift', 'shoulder_pan']); cannot close the move loop",
+   "true_final_joints": [
+    20.57,
+    -19.03,
+    19.12,
+    93.58,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [],
+   "last_ticks": []
+  },
+  {
+   "case": "C1c_all_zero_joint_dict",
+   "mode": "zeros_joints",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 92.887,
+   "achieved_fraction": 1.372,
+   "elapsed_s": 30.04,
+   "commands_sent": 425,
+   "commands_accepted": 425,
+   "commands_rejected": 0,
+   "reported_error_deg": null,
+   "exception": "BridgeError: move did not execute: residual 94.90 deg after 425 commands (30.0 s); the arm moved 0.00 of 94.90 deg",
+   "true_final_joints": [
+    -0.693,
+    -0.693,
+    0.693,
+    0.693,
+    0.693,
+    0.693
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783490
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783491
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783492
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783493
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783887
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783888
+     }
+    },
+    {
+     "sent": [
+      -0.693,
+      -0.693,
+      0.693,
+      0.693,
+      0.693,
+      0.693
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535783889
+     }
+    }
+   ]
+  },
+  {
+   "case": "C2_stale_readback",
+   "mode": "stale",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.693,
+   "achieved_fraction": 0.01,
+   "elapsed_s": 30.06,
+   "commands_sent": 426,
+   "commands_accepted": 426,
+   "commands_rejected": 0,
+   "reported_error_deg": null,
+   "exception": "BridgeError: move did not execute: residual 67.69 deg after 426 commands (30.1 s); the arm moved 0.00 of 67.69 deg",
+   "true_final_joints": [
+    19.877,
+    -19.723,
+    19.813,
+    94.273,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": false,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814039
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814040
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814041
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814042
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814436
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814437
+     }
+    },
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535814438
+     }
+    }
+   ]
+  },
+  {
+   "case": "C3_state_echoes_command",
+   "mode": "echo",
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 67.221,
+   "achieved_fraction": 0.993,
+   "elapsed_s": 6.86,
+   "commands_sent": 97,
+   "commands_accepted": 97,
+   "commands_rejected": 0,
+   "reported_error_deg": 0.47,
+   "exception": null,
+   "true_final_joints": [
+    -46.651,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "target_joints": [
+    -47.12,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": true,
+   "silent_non_execution": false,
+   "stalled_incomplete": false,
+   "first_ticks": [
+    {
+     "sent": [
+      19.877,
+      -19.723,
+      19.813,
+      94.273,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844609
+     }
+    },
+    {
+     "sent": [
+      19.184,
+      -20.416,
+      20.506,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844610
+     }
+    },
+    {
+     "sent": [
+      18.491,
+      -21.109,
+      21.199,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844611
+     }
+    },
+    {
+     "sent": [
+      17.798,
+      -21.802,
+      21.892,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844612
+     }
+    }
+   ],
+   "last_ticks": [
+    {
+     "sent": [
+      -45.265,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844703
+     }
+    },
+    {
+     "sent": [
+      -45.958,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844704
+     }
+    },
+    {
+     "sent": [
+      -46.651,
+      -28.0,
+      24.13,
+      94.9,
+      87.65,
+      43.88
+     ],
+     "ack": {
+      "accepted": true,
+      "seq": 1795535844705
+     }
+    }
+   ]
+  },
+  {
+   "case": "seq_reject_half",
+   "mode": "reject_every_other",
+   "elapsed_s": 0.07,
+   "required_joint_delta_deg": 67.69,
+   "real_max_travel_deg": 0.693,
+   "achieved_fraction": 0.01,
+   "commands_sent": 1,
+   "commands_accepted": 2,
+   "commands_rejected": 1,
+   "reported_error_deg": null,
+   "exception": "BridgeError: /command -> 409: {\"detail\": \"rejected (control)\"}",
+   "converged": false
+  },
+  {
+   "case": "C6_target_equals_start",
+   "mode": "normal",
+   "elapsed_s": 0.003,
+   "required_joint_delta_deg": 0.0,
+   "real_max_travel_deg": 0.0,
+   "achieved_fraction": 1.0,
+   "commands_sent": 0,
+   "reported_error_deg": 0.0,
+   "silent_non_execution": true,
+   "converged": true
+  },
+  {
+   "case": "C7_console_start_is_stale",
+   "mode": "normal",
+   "elapsed_s": 6.85,
+   "required_joint_delta_deg": 34.12,
+   "real_max_travel_deg": 67.221,
+   "commands_sent": 97,
+   "reported_error_deg": 0.47,
+   "true_final_joints": [
+    -46.651,
+    -28.0,
+    24.13,
+    94.9,
+    87.65,
+    43.88
+   ],
+   "converged": true,
+   "silent_non_execution": false
+  }
+ ],
+ "verdicts": {
+  "budget_ok": "converged",
+  "C1_empty_joint_dict": "stalled",
+  "C1b_partial_joint_dict": "stalled",
+  "C1c_all_zero_joint_dict": "converged",
+  "C2_stale_readback": "stalled",
+  "C3_state_echoes_command": "converged",
+  "seq_reject_half": "stalled",
+  "C6_target_equals_start": "SILENT NON-EXECUTION",
+  "C7_console_start_is_stale": "converged"
+ }
+}

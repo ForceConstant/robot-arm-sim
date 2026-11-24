@@ -83,15 +83,23 @@ DEFAULTS = {
     "keep_in_z_min_mm": -5.0,
     "keep_in_z_max_mm": 320.0,
     "keep_in_enforce": True,
-    # Acceptance gate for a solved Cartesian target. Tight it to prove the
-    # model; loosen it deliberately when measuring the model's bias.
+    # Acceptance gate for a solved Cartesian target.  This bounds the SOLVER's
+    # residual, not physical landing: the ~19 mm model bias lives outside FK and
+    # this gate cannot see it (Phase 1 gate decomposition).
+    #
+    # PHASE 2 POSITION: 3.0 mm together with ``ik_solver: mink`` is the verified
+    # pair on sim evidence (64/64 @ 3.0 mm, zero regressions; sim relocation
+    # 123 mm green; frozen-readback control still red).  The bundle is NOT
+    # applied here because its last gate — one IRL move — is blocked: on
+    # 2026-11-24 the arm stopped responding to joint commands mid-move (see
+    # reports/phase2_flip_20261124.md).  Apply 3.0 + mink TOGETHER once an IRL
+    # move passes; 3.0 mm on the LS path alone refuses 52/64 valid moves.
     "move_tolerance_mm": 20.0,
-    # Phase 1 solver unification, default OFF. False keeps the incumbent
-    # scipy least_squares path exactly as it is; True routes the SOLVE through
-    # the mink QP stack on a model built from this same calibration chain
-    # (live/mink_arm.py), leaving every guard, frame and stream behaviour
-    # unchanged. A flag that cannot be turned on accidentally and cannot
-    # silently fall back: an unavailable mink model is a startup error.
+    # Phase 2: mink is the verified solver on sim evidence and is the intended
+    # default, but the flip is held OFF because its IRL gate did not pass on
+    # 2026-11-24 (mechanism stopped responding mid-move).  "least_squares" keeps
+    # the incumbent path exactly as it was.  Flip to "mink" only together with
+    # move_tolerance_mm 3.0.
     "ik_solver": "least_squares",
     # Cartesian targets mean the jaw tip.  The one chain->tip transform lives
     # in ``tip_frame.TIP_IN_CHAIN`` (MJCF-derived, see that module); it is not
@@ -1358,25 +1366,64 @@ class Live:
             self.motion.release()
 
     def _stream_to(self, target: list[float], start: list[float],
-                   tolerance: float = 0.7) -> dict:
+                   tolerance: float = 0.7, trace: list | None = None) -> dict:
         """Drive to the target and stop when the MEASURED joints are close.
 
-        The previous loop compared its own interpolated command against the
+        The original loop compared its own interpolated command against the
         target and stopped there, so a move ended wherever the command happened
         to be: with ~2 deg of gravity sag on the shoulder that left every move
         about 5 mm short while reporting error_deg 0.3 (measured 2026-11-23).
-        Command ahead of the measured position by the residual instead, and use
-        the encoder readback for the stop test.
+        So the stop test uses the encoder readback, and the command is
+        ``measured + residual``.
+
+        Hardened after the 2026-11-23 "accepted and never executed" report
+        (see ``reports/phase2_flip_20261124.md``). Three rules make a silent
+        non-execution impossible:
+
+        1. ``start`` is a *seed*, never a measurement. ``measured`` is only
+           ever read from the bridge, and the first read happens before any
+           stop decision. A missing/short readback is a hard error, not a
+           silent freeze at ``start``.
+        2. Zero commands sent is never reported as success for a move that
+           needed travel. If the required joint delta is beyond tolerance and
+           nothing was actuated, that is an error.
+        3. Ending on the deadline with a large residual raises, rather than
+           returning a number the caller can mistake for "done".
         """
         names = ("shoulder_pan", "shoulder_lift", "elbow_flex",
                  "wrist_flex", "wrist_roll", "gripper")
         step = 10.5 * 0.066   # degrees per tick at the conservative 10.5 deg/s
+
+        def read_measured() -> list[float]:
+            """One encoder read. Short or empty state is a hard failure."""
+            state = self.bridge.state()
+            if state.get("mode") != "REMOTE" or not state.get("armed"):
+                raise BridgeError("bridge left REMOTE during motion")
+            joints = state.get("joints") or {}
+            if len(joints) != len(names) or any(n not in joints for n in names):
+                # 9252a5b did `if len(joints) == 6: measured = ...`, so an empty
+                # dict left `measured` frozen at `start` forever. That is a
+                # code-level frozen readback; refuse it instead.
+                raise BridgeError(
+                    "bridge returned no usable joint readback"
+                    f" (got {sorted(joints)}); cannot close the move loop")
+            return [float(joints[n]) for n in names]
+
+        # Rule 1: measure before deciding anything. `start` is only a seed.
+        measured = read_measured()
+        origin = list(measured)
         current = list(start)
-        measured = list(start)
-        deadline = time.time() + 30.0
-        while time.time() < deadline:
+        needed = max(abs(a - b) for a, b in zip(target[:5], origin[:5]))
+        started = time.time()
+        deadline = started + 30.0
+        sent = 0
+        last_error = max(abs(a - b) for a, b in zip(measured, target))
+        while True:
             error = max(abs(a - b) for a, b in zip(measured, target))
+            last_error = error
             if error <= max(0.15, tolerance):
+                break
+            if time.time() >= deadline:
                 break
             # Command measured + residual, so a static sag is taken out instead
             # of ending the move early. The bridge rejects a sequence that is
@@ -1386,15 +1433,35 @@ class Live:
                        for m, t in zip(measured, target)]
             self.bridge.command(current, seq=self.command_seq, ttl_ms=200,
                                 speed_scale=self.config.get("speed_scale", 0.3))
+            sent += 1
+            if trace is not None:
+                trace.append({"t": round(time.time(), 3),
+                              "sent": [round(v, 3) for v in current],
+                              "measured": [round(v, 3) for v in measured]})
             time.sleep(0.066)
-            state = self.bridge.state()
-            if state.get("mode") != "REMOTE" or not state.get("armed"):
-                raise BridgeError("bridge left REMOTE during motion")
-            joints = state.get("joints") or {}
-            if len(joints) == 6:
-                measured = [float(joints[n]) for n in names]
-        return {"joints": dict(zip(names, current)),
-                "error_deg": round(max(abs(a - b) for a, b in zip(measured, target)), 2)}
+            measured = read_measured()
+
+        travel = max(abs(a - b) for a, b in zip(measured[:5], origin[:5]))
+        # Rule 2: a move that needed travel but actuated nothing did not happen.
+        if needed > max(0.15, tolerance) and sent == 0:
+            raise BridgeError(
+                "move accepted no command: measured pose was already within "
+                f"{max(0.15, tolerance):.2f} deg of the target, so nothing moved "
+                f"(needed {needed:.2f} deg)")
+        # Rule 3: a deadline stop that barely moved the arm is a failure, not a
+        # result. Deliberately loose on residual and strict on travel: a move
+        # that sits 2 deg out from sag has still executed, while one that covered
+        # half the distance in 30 s did not.
+        if travel < needed * 0.5 and last_error > max(5.0 * tolerance, 3.0):
+            raise BridgeError(
+                f"move did not execute: residual {last_error:.2f} deg after "
+                f"{sent} commands ({time.time() - started:.1f} s); "
+                f"the arm moved {travel:.2f} of {needed:.2f} deg")
+        return {"joints": dict(zip(names, measured)),
+                "error_deg": round(last_error, 2),
+                "commands": sent,
+                "travel_deg": round(travel, 2),
+                "needed_deg": round(needed, 2)}
 
     # ---------------------------------------------------------------- stream
     def _orient(self, image: np.ndarray) -> np.ndarray:

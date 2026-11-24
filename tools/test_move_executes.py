@@ -71,10 +71,21 @@ IRL_START = {"mode": "xyz", "x_mm": 65.0, "y_mm": 70.0, "z_mm": 110.0}
 # solves at -2.44 and 67.6, and a roll-branch change is not a move this test is
 # meant to make (AGENTS.md: prefer targets that keep the current branch).
 IRL_LARGE = {"mode": "xyz", "x_mm": -90.0, "y_mm": 20.0, "z_mm": 110.0}
-# The sim reaches further than the real arm (it refused (-85,85,120) at 24.4 mm
-# on 2026-11-24), so the sim case keeps the wider sweep.
+# h1 is the far-edge square the Phase 1 approach trade-off is worst on (mink
+# 7.35 deg of approach error, inside the 8 deg gate by 0.65 deg). It is in the
+# IRL verification set precisely because it sits closest to that edge.
+IRL_EDGE = {"name": "edge_h1_approach",
+            "mode": "xyz", "x_mm": 98.0, "y_mm": -98.0, "z_mm": 60.0}
+# The sim reaches further than the real arm, so the sim case keeps a wider
+# sweep.  NOTE (Phase 2): the original sim endpoint (-85,85,120) is NOT
+# solver-grade — it solves at 11.5 mm on least_squares and 25.05 mm/9.01 deg on
+# mink, i.e. it only ever "passed" because the old 20 mm gate laundered an
+# 11.5 mm miss.  Under the 3.0 mm gate BOTH solvers refuse it
+# (reports/phase2_sim_flip.json), so it is replaced by a far-corner target that
+# is genuinely solver-grade (mink 0.24 mm / 0.83 deg) and still clears the
+# relocation bar (>100 mm tip travel, >=2 moving joints, >=60 deg).
 SIM_START = {"mode": "xyz", "x_mm": 0.0, "y_mm": 0.0, "z_mm": 70.0}
-SIM_LARGE = {"mode": "xyz", "x_mm": -85.0, "y_mm": 85.0, "z_mm": 120.0}
+SIM_LARGE = {"mode": "xyz", "x_mm": 95.0, "y_mm": 70.0, "z_mm": 110.0}
 SMALL = [
     # Body key is ``delta``: the console's /jog reads ``body["delta"]`` and
     # silently defaults a missing field to 0.0, which returns error_deg 0.0 and
@@ -467,6 +478,10 @@ def main() -> int:
         if "small" in selected:
             for small in SMALL:
                 cases.append({"name": small.pop("name"), "command": dict(small)})
+        if "edge" in selected:
+            cases.append({"name": IRL_EDGE["name"],
+                          "command": {k: v for k, v in IRL_EDGE.items()
+                                      if k != "name"}})
 
         for case in cases:
             normalised = _normalise(dict(case))

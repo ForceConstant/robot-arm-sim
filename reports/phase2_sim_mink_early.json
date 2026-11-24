@@ -1,0 +1,469 @@
+{
+ "mode": "sim",
+ "dry_run": false,
+ "console": "http://127.0.0.1:60015",
+ "bridge": "http://127.0.0.1:37987",
+ "stall_above": null,
+ "stale_readback": false,
+ "sag": "",
+ "deadband": 0.0,
+ "passed": false,
+ "cases": [
+  {
+   "case": "park_at_start",
+   "command": {
+    "mode": "xyz",
+    "x_mm": 0.0,
+    "y_mm": 0.0,
+    "z_mm": 70.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": true,
+   "before_deg": [
+    -13.0,
+    -11.0,
+    25.0,
+    78.0,
+    67.0,
+    44.0
+   ],
+   "tip_before_mm": [
+    1.5,
+    1.5,
+    64.5
+   ],
+   "before_settled": true,
+   "before_age_s": 0.0,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.22,
+    "max_deg": 1.386,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -12.367,
+     "shoulder_lift": -13.922,
+     "elbow_flex": 25.562,
+     "wrist_flex": 78.357,
+     "wrist_roll": 63.44499999999999,
+     "gripper": 44.0
+    },
+    "error_deg": 0.53,
+    "commands": 7,
+    "travel_deg": 3.47,
+    "needed_deg": 4.0,
+    "requested": {
+     "joints_deg": {
+      "shoulder_pan": -12.367,
+      "shoulder_lift": -13.922,
+      "elbow_flex": 25.562,
+      "wrist_flex": 78.357,
+      "wrist_roll": 62.91,
+      "gripper": 44.0
+     },
+     "position_error_mm": 0.13,
+     "approach_error_deg": 0.003,
+     "cost": 0.0001281931121016332,
+     "starts": 1,
+     "solver": "mink"
+    },
+    "pose": {
+     "tool_mm": [
+      -0.0,
+      0.1,
+      180.4
+     ],
+     "camera_mm": [
+      63.0,
+      -24.5,
+      169.5
+     ],
+     "camera_height_mm": 169.5,
+     "view_pitch_deg": 149.0,
+     "jaw_azimuth_deg": 71.1,
+     "tip_mm": [
+      -0.0,
+      0.1,
+      70.0
+     ],
+     "joints_deg": {
+      "shoulder_pan": -12.37,
+      "shoulder_lift": -13.92,
+      "elbow_flex": 25.56,
+      "wrist_flex": 78.36,
+      "wrist_roll": 63.44,
+      "gripper": 44.0
+     },
+     "board": {
+      "x_mm": -34.9,
+      "y_mm": -18.1,
+      "z_mm": 431.4,
+      "yaw_deg": -178.08
+     }
+    }
+   },
+   "reply_wall_s": 0.56,
+   "after_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_after_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     0.633,
+     -2.922,
+     0.562,
+     0.357,
+     -3.465,
+     0.0
+    ],
+    "max_abs_deg": 3.465,
+    "travel_deg": 7.939,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.53,
+   "tip_travel_mm": 5.87
+  },
+  {
+   "case": "large_relocation_large",
+   "command": {
+    "mode": "xyz",
+    "x_mm": -85.0,
+    "y_mm": 85.0,
+    "z_mm": 120.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": false,
+   "before_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_before_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "before_settled": true,
+   "before_age_s": 0.0,
+   "motion": {
+    "moved": false,
+    "elapsed_s": 3.29,
+    "max_deg": 0.0,
+    "after_return": true
+   },
+   "reply": {
+    "http_error": 409,
+    "detail": "{\"detail\":\"no reachable pose: off by 25.05 mm / 9.008 deg\"}"
+   },
+   "reply_wall_s": 3.29,
+   "after_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_after_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 0.0,
+    "travel_deg": 0.0,
+    "joints_ge_25": 0
+   },
+   "refused": true,
+   "reported_error_deg": null,
+   "tip_travel_mm": 0.0,
+   "relocation": {
+    "min_tip_mm": 100.0,
+    "min_moving_joints": 2,
+    "min_joint_travel_deg": 60.0,
+    "tip_mm": 0.0,
+    "moving_joints": 0,
+    "joint_travel_deg": 0.0,
+    "satisfied": false
+   }
+  },
+  {
+   "case": "small_step_pan",
+   "command": {
+    "mode": "jog",
+    "joint": "shoulder_pan",
+    "delta": 6.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": true,
+   "before_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_before_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "before_settled": true,
+   "before_age_s": 0.0,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.22,
+    "max_deg": 1.386,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -6.823,
+     "shoulder_lift": -13.922,
+     "elbow_flex": 25.562,
+     "wrist_flex": 78.357,
+     "wrist_roll": 63.44499999999999,
+     "gripper": 44.0
+    },
+    "error_deg": 0.46,
+    "commands": 11,
+    "travel_deg": 5.54,
+    "needed_deg": 6.0
+   },
+   "reply_wall_s": 0.84,
+   "after_deg": [
+    -6.823,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_after_mm": [
+    -15.7,
+    -2.0,
+    70.0
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     5.544,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 5.544,
+    "travel_deg": 5.544,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.46,
+   "tip_travel_mm": 15.84
+  },
+  {
+   "case": "small_step_pan_back",
+   "command": {
+    "mode": "jog",
+    "joint": "shoulder_pan",
+    "delta": -6.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": true,
+   "before_deg": [
+    -6.823,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_before_mm": [
+    -15.7,
+    -2.0,
+    70.0
+   ],
+   "before_settled": true,
+   "before_age_s": 0.0,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.22,
+    "max_deg": 1.386,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -12.367,
+     "shoulder_lift": -13.922,
+     "elbow_flex": 25.562,
+     "wrist_flex": 78.357,
+     "wrist_roll": 63.44499999999999,
+     "gripper": 44.0
+    },
+    "error_deg": 0.46,
+    "commands": 11,
+    "travel_deg": 5.54,
+    "needed_deg": 6.0
+   },
+   "reply_wall_s": 0.84,
+   "after_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_after_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     -5.544,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 5.544,
+    "travel_deg": 5.544,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.46,
+   "tip_travel_mm": 15.84
+  },
+  {
+   "case": "small_step_wrist",
+   "command": {
+    "mode": "jog",
+    "joint": "wrist_flex",
+    "delta": 5.0
+   },
+   "freshness": {
+    "fresh": null,
+    "age_s": null,
+    "skipped": true
+   },
+   "ok": true,
+   "before_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    78.357,
+    63.535,
+    44.0
+   ],
+   "tip_before_mm": [
+    -0.0,
+    0.1,
+    70.0
+   ],
+   "before_settled": true,
+   "before_age_s": 0.0,
+   "motion": {
+    "moved": true,
+    "elapsed_s": 0.23,
+    "max_deg": 1.386,
+    "before_return": true
+   },
+   "reply": {
+    "joints": {
+     "shoulder_pan": -12.367,
+     "shoulder_lift": -13.922,
+     "elbow_flex": 25.562,
+     "wrist_flex": 83.208,
+     "wrist_roll": 63.44499999999999,
+     "gripper": 44.0
+    },
+    "error_deg": 0.15,
+    "commands": 10,
+    "travel_deg": 4.85,
+    "needed_deg": 5.0
+   },
+   "reply_wall_s": 0.77,
+   "after_deg": [
+    -12.367,
+    -13.922,
+    25.562,
+    83.208,
+    63.535,
+    44.0
+   ],
+   "tip_after_mm": [
+    -2.7,
+    14.4,
+    70.6
+   ],
+   "after_settled": true,
+   "settle_s": 0.84,
+   "movement": {
+    "per_joint_deg": [
+     0.0,
+     0.0,
+     0.0,
+     4.851,
+     0.0,
+     0.0
+    ],
+    "max_abs_deg": 4.851,
+    "travel_deg": 4.851,
+    "joints_ge_25": 0
+   },
+   "refused": false,
+   "reported_error_deg": 0.15,
+   "tip_travel_mm": 14.57
+  }
+ ],
+ "when": "2026-11-24T10:34:46-0500"
+}
