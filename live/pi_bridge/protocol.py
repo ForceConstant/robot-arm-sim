@@ -75,13 +75,16 @@ def parse_command(payload: dict) -> Command:
     return Command(seq=seq, ttl_ms=ttl, joints=tuple(joints), speed_scale=speed)
 
 
-def limits_from_calibration(data: dict, *, margin_deg: float = 2.0) -> dict[str, tuple[float, float]]:
+def limits_from_calibration(data: dict, *, margin_deg: float = 2.0,
+                            margin_by_joint: dict[str, float] | None = None
+                            ) -> dict[str, tuple[float, float]]:
     """Per-joint degree limits from a lerobot calibration file.
 
     Counts are 12-bit across a full turn, so ``counts / 4095 * 360 - 180`` is
     the joint angle at that mechanical stop.  The margin keeps a command inside
-    the stop even after a small calibration drift.  The gripper is commanded in
-    lerobot's 0..100 units, so its counts are not converted.
+    the stop even after a small calibration drift; ``margin_by_joint`` overrides
+    it per joint (wrist_roll runs at the full ±90° window).  The gripper is
+    commanded in lerobot's 0..100 units, so its counts are not converted.
     """
     limits: dict[str, tuple[float, float]] = {}
     for name in JOINTS:
@@ -95,7 +98,8 @@ def limits_from_calibration(data: dict, *, margin_deg: float = 2.0) -> dict[str,
         high = float(entry["range_max"]) / COUNTS_PER_DEGREE - 180.0
         if not (math.isfinite(low) and math.isfinite(high)) or high <= low:
             raise ProtocolError(f"invalid calibrated range for {name}")
-        low, high = low + margin_deg, high - margin_deg
+        margin = float((margin_by_joint or {}).get(name, margin_deg))
+        low, high = low + margin, high - margin
         if high <= low:
             raise ProtocolError(f"calibrated range for {name} is too narrow")
         limits[name] = (low, high)

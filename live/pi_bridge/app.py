@@ -1,29 +1,43 @@
 #!/usr/bin/env python3
-"""so101-bridge — one owner of the SO-101 follower, two modes.
+"""so101-bridge — one owner of the SO-101 follower, exactly two modes.
 
 Why this exists: LeLab can *stop* teleoperation and release both serial ports,
 but it has no joint-target endpoint.  Phase 11d needs the BC-250 to command
-joints, so something on the Pi has to own the follower bus.  This service is
-that owner, and it keeps the proven LeLab teleoperation loop in place by
-delegating TELEOP mode to LeLab.
+joints, so something on the Pi has to own the follower bus.
 
-Modes (exactly one owns the bus):
+Modes (exactly one owns the bus, and both are entered on request):
 
-* HOLD     — no ports open, or the follower holds its last goal.
-* TELEOP   — LeLab owns both arms; the bridge only proxies joint state.
-* REMOTE   — the bridge owns the follower and applies bounded joint commands.
-* FAULT    — latched after an e-stop or a bus error; needs /arm to clear.
+* REMOTE — the bridge owns the follower and applies bounded joint commands.
+* TELEOP — the bridge reads the leader and mirrors it onto the follower.
+
+There is deliberately no third state.  HOLD was a room you could walk into and
+have to be let out of, and FAULT was a latch that only a power cycle (or a
+`/arm` that itself needed REMOTE) could clear; both are gone.  Anything that
+used to latch — a bus exception, an e-stop, a leader that is far from the
+follower — is now a *reported status* that still accepts the next command:
+
+* ``error``  the last worker/bus exception, cleared by the next accepted
+  command or successful mode entry.  The worker keeps running and keeps
+  retrying.
+* ``estop``  "estop requested" until a command or mode request clears it; the
+  arm holds its pose meanwhile, and nothing is latched.
+* ``click_in`` per joint, which TELEOP joints are following the leader yet.
 
 Safety properties that are deliberate, not incidental:
 
-* Starts in HOLD.  Nothing moves until ``/arm`` and ``/mode`` are called.
-* Every command is clamped to the calibrated envelope and to a per-cycle step
-  budget, so a bad target is walked in at a bounded speed.
-* Commands expire.  A stale target holds the last accepted pose; it never
-  queues and never replays after a reconnect.
-* TELEOP is refused when the leader is more than ``handover_deg`` from the
-  follower, because LeLab mirrors the leader the instant it connects.
-* Losing the camera is not a motion fault; losing the bus is.
+* Every target — command or leader — is clamped to the calibrated envelope and
+  to a per-cycle step budget, so nothing jumps.
+* Commands expire (``ttl_ms``).  A stale target holds the last accepted pose; it
+  never queues and never replays after a reconnect.  A dead client therefore
+  fails safe to a stop.
+* TELEOP takes control immediately: no armed handshake, no leader/follower
+  alignment gate.  Per-joint click-in does the work instead — every joint that
+  is already close follows at once, and a joint that is far out holds its pose
+  and starts following as soon as the leader is brought near it.
+* Sequence numbers are advisory.  Freshness is arrival time, so a client whose
+  counter restarts (or wrapped) is never wedged out of the bridge.
+* The token still gates every mutating endpoint.
+* Losing the camera is not a motion fault; losing the bus is a report.
 
 Run: ``python app.py`` (systemd unit ``so101-bridge.service``).
 """
@@ -33,7 +47,6 @@ import asyncio
 import base64
 from contextlib import asynccontextmanager
 import json
-import math
 import os
 from pathlib import Path
 import re
@@ -47,13 +60,12 @@ import urllib.request
 import cv2
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, Response, StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from protocol import (JOINTS, PROTOCOL_VERSION, Command, ProtocolError,
                       apply_target, limits_from_calibration, parse_command)
 
 LELAB = os.environ.get("SO101_LELAB_URL", "http://127.0.0.1:8000")
-LELAB_WS = os.environ.get("SO101_LELAB_WS", "ws://127.0.0.1:8000/ws/joint-data")
 PORTS_DIR = Path(os.environ.get("SO101_PORTS_DIR",
                                 str(Path.home() / ".cache/huggingface/lerobot/ports")))
 CAL_DIR = Path(os.environ.get("SO101_CAL_DIR",
@@ -76,15 +88,17 @@ CAM_W, CAM_H, CAM_FPS = 640, 480, 15
 LOOP_HZ = 30.0
 MAX_JOINT_SPEED_DEG_S = float(os.environ.get("SO101_MAX_SPEED", "35"))
 MAX_LAG_DEG = float(os.environ.get("SO101_MAX_LAG", "12"))
-HANDOVER_DEG = float(os.environ.get("SO101_HANDOVER_DEG", "10"))
+# A TELEOP joint starts following the leader once leader and follower are within
+# this many degrees.  Joints further away hold while the rest follow, so one
+# misaligned wrist never refuses the whole handover.
+CLICK_IN_DEG = float(os.environ.get("SO101_CLICK_IN_DEG", "10"))
+TELEOP_SPEED_DEG_S = float(os.environ.get(
+    "SO101_TELEOP_SPEED", str(MAX_JOINT_SPEED_DEG_S)))
 READ_EVERY = 3
 
 MOTOR = {"shoulder_pan": "shoulder_pan", "shoulder_lift": "shoulder_lift",
          "elbow_flex": "elbow_flex", "wrist_flex": "wrist_flex",
          "wrist_roll": "wrist_roll", "gripper": "gripper"}
-LELAB_NAMES = {"Rotation": "shoulder_pan", "Pitch": "shoulder_lift",
-               "Elbow": "elbow_flex", "Wrist_Pitch": "wrist_flex",
-               "Wrist_Roll": "wrist_roll", "Jaw": "gripper"}
 
 
 def _log(message: str) -> None:
@@ -111,21 +125,30 @@ def _read_text(path: Path) -> str:
 class Bridge:
     def __init__(self) -> None:
         self.lock = threading.RLock()
-        self.mode = "HOLD"
+        # Two states only.  REMOTE is the boot state: the bridge owns the
+        # follower and holds its pose until a command arrives, which is what a
+        # dead client should get.  TELEOP is entered on request, immediately.
+        self.mode = "REMOTE"
         self.desired: str | None = None
-        self.armed = False
-        self.fault: str | None = None
+        self._entered = False
         self.joints: dict[str, float] = {}
         self.joints_ts = 0.0
         self.joints_source = "none"
         self.follower = None
+        self.leader = None
         self.hold: dict[str, float] | None = None
         self.command: Command | None = None
         self.command_ts = 0.0
-        self.command_seq = -1
+        self.last_seq = -1
+        self.last_seq_ts = 0.0
         self.commands_applied = 0
         self.commands_rejected = 0
+        self.commands_accepted = 0
+        self.seq_resets = 0
         self.last_clamped: tuple[str, ...] = ()
+        self.teleop_engaged: set[str] = set()
+        self.click_in: tuple[str, ...] = ()
+        self.estop = False
         self.limits: dict[str, tuple[float, float]] = {}
         self.follower_port = ""
         self.leader_port = ""
@@ -133,10 +156,14 @@ class Bridge:
         self.leader_cal = ""
         self.lelab_active = False
         self.error: str | None = None
+        self.error_source: str | None = None
+        self.error_at = 0.0
+        self.transition_error: str | None = None
+        self.reopen_after = 0.0
+        self._ticks = 0
         self.started = time.time()
         self.stop = threading.Event()
         self.thread: threading.Thread | None = None
-        self.proxy_thread: threading.Thread | None = None
         self.calib_request: dict | None = None
         self.calib_result: dict | None = None
         self.calib_event = threading.Event()
@@ -172,128 +199,188 @@ class Bridge:
 
     def _loop(self) -> None:
         period = 1.0 / LOOP_HZ
-        tick = 0
         while not self.stop.is_set():
             started = time.time()
-            try:
-                with self.lock:
-                    desired = self.desired
-                if self.calib_request is not None:
-                    self._process_calib_request()
-                if desired and desired != self.mode:
-                    self._transition(desired)
-                if self.mode == "REMOTE":
-                    self._remote_tick(started)
-                elif self.mode in ("HOLD", "FAULT") and self.follower is not None:
-                    self._hold_tick()
-                tick += 1
-                if self.mode == "REMOTE" and self.follower is not None and tick % READ_EVERY == 0:
-                    self._read_follower()
-            except Exception as exc:  # noqa: BLE001 - the worker must not die
-                _log(f"worker error: {exc!r}")
-                with self.lock:
-                    self.fault = f"{type(exc).__name__}: {exc}"
-                    self.mode = "FAULT"
-                    self.desired = None
-                    self.armed = False
+            self._step(started)
             time.sleep(max(0.0, period - (time.time() - started)))
 
+    def _step(self, now: float) -> None:
+        """One worker cycle.  Separated from ``_loop`` so a test can drive it.
+
+        Nothing here can latch: every exception is recorded as a reported error
+        and the next cycle (or the next request) proceeds from the same state.
+        """
+        try:
+            if not self._entered:
+                # Run the normal entry path once so the follower bus is open and
+                # the hold pose is recorded, exactly as a /mode REMOTE would.
+                self._entered = True
+                self._transition(self.mode)
+            with self.lock:
+                desired = self.desired
+            if self.calib_request is not None:
+                self._process_calib_request()
+            if desired and desired != self.mode:
+                self._transition(desired)
+            # Self-heal a lost bus: a replugged or reset follower is reopened
+            # automatically instead of needing a process restart or a mode
+            # round-trip.
+            if self.follower is None and now >= self.reopen_after:
+                try:
+                    self._open_follower()
+                except Exception as exc:  # noqa: BLE001
+                    self.reopen_after = now + 3.0
+                    self._note_error(f"follower reopen failed: {exc!r}",
+                                     source="follower")
+            if self.mode == "REMOTE":
+                self._remote_tick(now)
+            else:
+                # TELEOP is entered on request, so a leader that was unplugged
+                # mid-session must come back on its own rather than needing a
+                # mode round-trip the operator may not know about.
+                if self.leader is None and now >= self.reopen_after:
+                    try:
+                        self._open_leader()
+                    except Exception as exc:  # noqa: BLE001
+                        self.reopen_after = now + 3.0
+                        self._note_error(f"leader reopen failed: {exc!r}",
+                                         source="leader")
+                self._teleop_tick()
+            self._ticks += 1
+            if self.follower is not None and self._ticks % READ_EVERY == 0:
+                self._read_follower()
+        except Exception as exc:  # noqa: BLE001 - the worker must not die
+            _log(f"worker error: {exc!r}")
+            self._note_error(f"{type(exc).__name__}: {exc}")
+            self.reopen_after = now + 1.0
+
     def _transition(self, target: str) -> None:
+        with self.lock:
+            self.transition_error = None
         try:
             if target == "REMOTE":
                 self._enter_remote()
             elif target == "TELEOP":
                 self._enter_teleop()
-            elif target == "HOLD":
-                self._enter_hold()
-            elif target == "FAULT":
-                self._enter_fault("requested")
             else:
                 raise ValueError(f"unknown mode {target!r}")
             with self.lock:
                 self.error = None
-        except Exception as exc:  # noqa: BLE001
-            _log(f"transition to {target} failed: {exc!r}")
-            with self.lock:
-                self.error = str(exc)
-                self.fault = str(exc)
-                self.mode = "FAULT"
+                self.error_source = None
+                self.error_at = 0.0
                 self.desired = None
-                self.armed = False
+        except Exception as exc:  # noqa: BLE001
+            # Reported, not latched: the current mode and the bus stay as they
+            # are and the next request is tried again.  There is no state a
+            # command cannot leave.
+            _log(f"transition to {target} failed: {exc!r}")
+            self._note_error(str(exc), source="transition")
+            with self.lock:
+                self.transition_error = str(exc)
+                self.desired = None
+
+    def _note_error(self, message: str, *, source: str = "worker") -> None:
+        with self.lock:
+            self.error = message
+            self.error_source = source
+            self.error_at = time.time()
+
+    def _clear_error(self, source: str) -> None:
+        """Clear a report only when the thing that failed now succeeds.
+
+        Otherwise a healthy follower read would erase a dead-leader report and
+        the operator would lose the one clue about what is actually wrong.
+        """
+        with self.lock:
+            if self.error_source == source:
+                self.error = None
+                self.error_source = None
+                self.error_at = 0.0
+
+    def switch_mode(self, target: str, timeout: float = 2.5) -> dict:
+        """Request a mode and wait briefly for the worker to finish.
+
+        The transition must run on the worker thread because that thread owns
+        every serial port; an HTTP thread that opened the bus would race it.  So
+        this posts ``desired`` and waits, which makes the response honest in the
+        two cases that matter:
+
+        * a transition that *failed* returns its error (the caller maps it to
+          409 and the old mode is intact), and
+        * a transition still in progress returns ``pending: true`` rather than a
+          false failure.  Opening a servo bus can take seconds, and the caller
+          (the :8080 console, with a 6 s request timeout) must not be told the
+          handover failed when it is merely still opening ports.
+        """
+        with self.lock:
+            self.estop = False
+            self.error = None
+            self.error_source = None
+            self.error_at = 0.0
+            self.transition_error = None
+            if self.mode == target and self.desired is None:
+                return {"requested": target, "mode": self.mode, "changed": False,
+                        "pending": False}
+            self.desired = target
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            with self.lock:
+                if self.desired is None:
+                    if self.mode == target:
+                        return {"requested": target, "mode": self.mode,
+                                "changed": True, "pending": False}
+                    return {"requested": target, "mode": self.mode,
+                            "pending": False,
+                            "error": self.transition_error
+                            or self.error or f"could not enter {target}"}
+            time.sleep(0.02)
+        with self.lock:
+            # Leave ``desired`` set: the worker keeps working on it and the
+            # caller can poll /state.  No latch either way.
+            return {"requested": target, "mode": self.mode, "changed": False,
+                    "pending": True}
 
     # ------------------------------------------------------------- transitions
     def _enter_remote(self) -> None:
         self._stop_lelab_teleop()
+        self._close_leader()
         self._open_follower()
         with self.lock:
             self.hold = dict(self.joints) if self.joints else None
             self.command = None
+            self.command_ts = 0.0
+            self.teleop_engaged = set()
+            self.click_in = ()
             self.mode = "REMOTE"
         _log("mode REMOTE")
 
     def _enter_teleop(self) -> None:
-        # A bridge restart must not fight a teleoperation session that LeLab is
-        # already running: adopt it instead of trying to start a second one.
-        try:
-            if _get(f"{LELAB}/teleoperation-status").get("teleoperation_active"):
-                with self.lock:
-                    self.mode = "TELEOP"
-                    self.lelab_active = True
-                self._start_joint_proxy()
-                _log("adopted existing LeLab teleoperation")
-                return
-        except urllib.error.URLError:
-            pass
+        """Take control now.  No armed handshake, no alignment gate.
+
+        The bridge mirrors the leader itself (rather than delegating to LeLab)
+        because per-joint click-in is the handover rule: every joint already
+        near the follower follows at once, and a joint that is far out holds its
+        pose and joins in as soon as the leader brings it within
+        ``CLICK_IN_DEG``.  A single misaligned wrist cannot refuse the handover.
+        """
+        self._stop_lelab_teleop()
+        self._open_follower()
+        self._read_follower()
+        leader = self._open_leader()
+        goal = self._read_leader_action(leader)
         with self.lock:
-            last = dict(self.joints)
-            armed = self.armed
-            self.mode = "HOLD"
+            here = dict(self.joints)
+            engaged = {name for name in JOINTS
+                       if name in here and name in goal
+                       and abs(goal[name] - here[name]) <= CLICK_IN_DEG}
+            self.teleop_engaged = engaged
+            self.click_in = tuple(name for name in JOINTS if name not in engaged)
+            self.hold = here or None
             self.command = None
-        if self.follower is not None:
-            self._close_follower()
-        if not armed:
-            raise RuntimeError("not armed; call /arm before handing back to teleop")
-        if not last:
-            raise RuntimeError("no follower pose recorded; cannot check the handover")
-        leader = self._read_leader_once()
-        deltas = {name: round(abs(leader.get(name, 0.0) - last.get(name, 0.0)), 2)
-                  for name in JOINTS}
-        worst = max(deltas.values())
-        if worst > HANDOVER_DEG:
-            raise RuntimeError(
-                f"leader is {worst:.1f} deg from the follower (limit {HANDOVER_DEG}); "
-                f"move the leader to match before starting teleoperation: {deltas}")
-        result = _post(f"{LELAB}/move-arm", {
-            "leader_port": self.leader_port, "follower_port": self.follower_port,
-            "leader_config": self.leader_cal, "follower_config": self.follower_cal})
-        if not result.get("success"):
-            raise RuntimeError(f"LeLab refused teleoperation: {result.get('message')}")
-        with self.lock:
+            self.command_ts = 0.0
             self.mode = "TELEOP"
-        self._start_joint_proxy()
-        _log("mode TELEOP")
-
-    def _enter_hold(self) -> None:
-        if self.mode == "TELEOP":
-            self._stop_lelab_teleop()
-        with self.lock:
-            self.mode = "HOLD"
-            self.command = None
-            if self.follower is not None and self.joints:
-                self.hold = dict(self.joints)
-        _log("mode HOLD")
-
-    def _enter_fault(self, reason: str) -> None:
-        if self.mode == "TELEOP":
-            self._stop_lelab_teleop()
-        with self.lock:
-            self.fault = reason
-            self.armed = False
-            self.mode = "FAULT"
-            self.command = None
-            if self.follower is not None and self.joints:
-                self.hold = dict(self.joints)
-        _log(f"mode FAULT: {reason}")
+        _log(f"mode TELEOP engaged={sorted(engaged)} "
+             f"click-in={list(self.click_in)}")
 
     def _stop_lelab_teleop(self) -> None:
         try:
@@ -328,6 +415,8 @@ class Bridge:
     def _open_follower(self) -> None:
         from lerobot.robots.so_follower import SO101Follower, SO101FollowerConfig
 
+        if self.follower is not None:
+            return
         robot = SO101Follower(SO101FollowerConfig(port=self.follower_port,
                                                   id=self.follower_cal))
         try:
@@ -368,6 +457,8 @@ class Bridge:
             self.joints = values
             self.joints_ts = time.time()
             self.joints_source = "follower"
+        # The bus answered, so a reported bus error is no longer true.
+        self._clear_error("follower")
 
     # ---------------------------------------------------------- calibration
     def request_wrist_zero(self, span_deg: float = 90.0, dry_run: bool = False,
@@ -379,8 +470,8 @@ class Bridge:
         because the arm is still usable and the old calibration is intact.
         """
         with self.lock:
-            if self.mode != "REMOTE" or not self.armed:
-                raise ProtocolError("bridge must be REMOTE and armed")
+            if self.mode != "REMOTE":
+                raise ProtocolError("bridge must be REMOTE to write the servo zero")
             if self.follower is None:
                 raise ProtocolError("follower is not open")
             if self.calib_request is not None:
@@ -417,7 +508,7 @@ class Bridge:
         robot = self.follower
         torque_off = False
         try:
-            if self.mode != "REMOTE" or not self.armed:
+            if self.mode != "REMOTE":
                 raise RuntimeError("bridge left REMOTE before the write")
             if robot is None:
                 raise RuntimeError("follower is not open")
@@ -501,30 +592,61 @@ class Bridge:
                 self.calib_request = None
             self.calib_event.set()
 
-    def _read_leader_once(self) -> dict[str, float]:
+    # --------------------------------------------------------------- leader IO
+    def _open_leader(self):
+        """Open the leader bus.  TELEOP mirrors it here, not through LeLab.
+
+        LeLab's ``/move-arm`` starts a mirror the moment it connects, which is
+        exactly what per-joint click-in must not do.  Owning the leader here also
+        removes a whole remote service from the handover path.
+        """
         from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig
 
+        if self.leader is not None:
+            return self.leader
         leader = SO101Leader(SO101LeaderConfig(port=self.leader_port,
                                                id=self.leader_cal))
         try:
             leader.bus.connect()
             leader.bus.write_calibration(leader.calibration)
             leader.configure()
-            action = None
-            for _ in range(5):
-                action = leader.get_action()
-                if action:
-                    break
-                time.sleep(0.05)
-            if not action:
-                raise RuntimeError("leader returned no action")
-            return {name: float(action[f"{motor}.pos"])
-                    for name, motor in MOTOR.items()}
-        finally:
+        except Exception:
             try:
                 leader.disconnect()
             except Exception:  # noqa: BLE001
                 pass
+            raise
+        with self.lock:
+            self.leader = leader
+        _log(f"leader open at {self.leader_port}")
+        return leader
+
+    def _close_leader(self) -> None:
+        leader = self.leader
+        with self.lock:
+            self.leader = None
+            self.teleop_engaged = set()
+            self.click_in = ()
+        if leader is None:
+            return
+        try:
+            leader.disconnect()
+        except Exception as exc:  # noqa: BLE001
+            _log(f"leader disconnect: {exc!r}")
+        _log("leader closed")
+
+    @staticmethod
+    def _read_leader_action(leader) -> dict[str, float]:
+        action = None
+        for _ in range(5):
+            action = leader.get_action()
+            if action:
+                break
+            time.sleep(0.05)
+        if not action:
+            raise RuntimeError("leader returned no action")
+        return {name: float(action[f"{motor}.pos"])
+                for name, motor in MOTOR.items()}
 
     @staticmethod
     def _action(values: dict[str, float]) -> dict[str, float]:
@@ -535,6 +657,66 @@ class Bridge:
         if self.hold is None or self.follower is None:
             return
         self.follower.send_action(self._action(self.hold))
+
+    def _teleop_tick(self) -> None:
+        """Mirror the leader with per-joint click-in.
+
+        Every joint within ``CLICK_IN_DEG`` of the follower follows immediately;
+        a joint further out holds the follower where it is and joins in on the
+        first cycle the leader brings it close enough.  Nothing refuses the
+        handover and nothing latches.
+        """
+        robot = self.follower
+        leader = self.leader
+        if robot is None or leader is None:
+            return
+        try:
+            goal = self._read_leader_action(leader)
+        except Exception as exc:  # noqa: BLE001 - a bad read holds, never latches
+            self._note_error(f"leader read failed: {exc!r}", source="leader")
+            self._hold_tick()
+            return
+        self._clear_error("leader")
+        with self.lock:
+            current = dict(self.joints)
+            anchor = dict(self.hold) if self.hold else dict(current)
+            engaged = set(self.teleop_engaged)
+            estop = self.estop
+        if not current or estop:
+            self._hold_tick()
+            return
+        for name in JOINTS:
+            if name not in engaged and abs(goal[name] - current[name]) <= CLICK_IN_DEG:
+                engaged.add(name)
+        # Only the engaged joints carry a target; the rest are pinned to the
+        # measured pose so a single misaligned joint cannot drag the arm.
+        targets = tuple(goal[name] if name in engaged else current[name]
+                        for name in JOINTS)
+        acceptance = apply_target(Command(seq=0, ttl_ms=0, joints=targets,
+                                          speed_scale=1.0),
+                                  anchor, self.limits,
+                                  dt_s=1.0 / LOOP_HZ,
+                                  max_joint_speed_deg_s=TELEOP_SPEED_DEG_S)
+        target = dict(acceptance.joints)
+        lagged = []
+        for name, value in target.items():
+            # Same lead guard as REMOTE: the goal may run at most MAX_LAG_DEG
+            # ahead of what the servos actually report, so a fast leader swing
+            # cannot wind up a large unexecuted backlog.
+            measured = current[name]
+            bounded = min(max(value, measured - MAX_LAG_DEG),
+                          measured + MAX_LAG_DEG)
+            if abs(bounded - value) > 0.01:
+                lagged.append(name)
+            target[name] = bounded
+        robot.send_action(self._action(target))
+        with self.lock:
+            self.teleop_engaged = engaged
+            self.click_in = tuple(name for name in JOINTS if name not in engaged)
+            self.hold = target
+            self.last_clamped = tuple(acceptance.clamped) + tuple(
+                name for name in lagged if name not in acceptance.clamped)
+            self.commands_applied += 1
 
     def _remote_tick(self, now: float) -> None:
         robot = self.follower
@@ -572,68 +754,72 @@ class Bridge:
                 name for name in lagged if name not in acceptance.clamped)
             self.commands_applied += 1
 
-    # ------------------------------------------------------------ lelab proxy
-    def _start_joint_proxy(self) -> None:
-        if self.proxy_thread is not None and self.proxy_thread.is_alive():
-            return
-        self.proxy_thread = threading.Thread(target=self._proxy_loop,
-                                             name="joint-proxy", daemon=True)
-        self.proxy_thread.start()
-
-    def _proxy_loop(self) -> None:
-        import websockets
-
-        async def run() -> None:
-            while not self.stop.is_set():
-                try:
-                    async with websockets.connect(LELAB_WS, open_timeout=3) as socket:
-                        _log("joint proxy connected")
-                        while not self.stop.is_set():
-                            message = json.loads(await asyncio.wait_for(socket.recv(), 5))
-                            if message.get("type") != "joint_update":
-                                continue
-                            joints = {LELAB_NAMES[name]: float(value)
-                                      for name, value in message.get("joints", {}).items()
-                                      if name in LELAB_NAMES}
-                            if len(joints) != len(JOINTS):
-                                continue
-                            with self.lock:
-                                self.joints = {name: math.degrees(joints[name])
-                                               for name in JOINTS}
-                                self.joints_ts = time.time()
-                                self.joints_source = "lelab"
-                                self.lelab_active = True
-                except Exception as exc:  # noqa: BLE001
-                    _log(f"joint proxy: {exc!r}")
-                    await asyncio.sleep(1.0)
-
-        asyncio.run(run())
-
     # -------------------------------------------------------------- commands
     def submit(self, command: Command) -> dict:
+        """Accept a joint target.  Freshness is arrival time, not ``seq``.
+
+        ``seq`` used to have to be strictly newer than the last accepted value,
+        which permanently wedged any client whose counter fell behind — a
+        second console, or the same console after a restart, 409'd forever on a
+        gap of millions.  Now any ``seq`` is accepted: a lower value is merely
+        reported as a reset and the command still applies.  Expiry (``ttl_ms``)
+        is what keeps a dead client from holding a stale target, and it is
+        measured from arrival, so no counter can wedge the bridge.
+        """
         with self.lock:
             if self.mode != "REMOTE":
-                raise ProtocolError(f"mode is {self.mode}, not REMOTE")
-            if not self.armed:
-                raise ProtocolError("not armed")
-            if command.seq <= self.command_seq:
-                self.commands_rejected += 1
-                raise ProtocolError(f"seq {command.seq} is not newer than {self.command_seq}")
-            self.command_seq = command.seq
+                raise ProtocolError(
+                    f"mode is {self.mode}, not REMOTE; POST /mode {{mode:REMOTE}}")
+            seq_reset = command.seq < self.last_seq
+            if seq_reset:
+                self.seq_resets += 1
+            self.last_seq = max(self.last_seq, command.seq)
+            self.last_seq_ts = time.time()
             self.command = command
             self.command_ts = time.time()
+            self.commands_accepted += 1
+            # A command is an unambiguous "we are driving this" statement, so it
+            # clears a reported error or a standing e-stop.  Nothing latches.
+            self.error = None
+            self.error_source = None
+            self.error_at = 0.0
+            self.estop = False
         return {"accepted": True, "seq": command.seq,
-                "ttl_ms": command.ttl_ms}
+                "ttl_ms": command.ttl_ms, "seq_reset": seq_reset}
 
     def arm(self) -> dict:
+        """Kept for API compatibility; nothing needs arming any more.
+
+        Both modes are entered on request and both accept commands, so this only
+        confirms the follower pose is known and clears a reported error/e-stop.
+        It never fails for "already armed" or "wrong mode".
+        """
         with self.lock:
             if not self.limits or not self.joints:
                 raise ProtocolError("follower pose unknown; enter REMOTE first")
-            self.armed = True
-            self.fault = None
-            if self.mode == "FAULT":
-                self.desired = "HOLD"
+            self.error = None
+            self.error_source = None
+            self.error_at = 0.0
+            self.estop = False
         return {"armed": True, "mode": self.mode}
+
+    def estop_request(self) -> dict:
+        """Stop driving and hold the pose.  Not a latch: a command resumes.
+
+        The owner secures the arm by powering it off, so a software e-stop that
+        could only be cleared by a power cycle made the arm unusable for no
+        safety gain.  This holds the last pose and reports ``estop: true`` until
+        a command or a mode request clears it.
+        """
+        with self.lock:
+            self.estop = True
+            self.command = None
+            self.command_ts = 0.0
+            if self.follower is not None and self.joints:
+                self.hold = dict(self.joints)
+            mode = self.mode
+        _log("estop: holding the pose (no latch)")
+        return {"mode": mode, "estop": True, "latched": False}
 
     def state(self) -> dict:
         with self.lock:
@@ -641,18 +827,37 @@ class Bridge:
                 "protocol": PROTOCOL_VERSION,
                 "mode": self.mode,
                 "desired": self.desired,
-                "armed": self.armed,
-                "fault": self.fault,
+                # There is no armed/disarmed distinction any more: both modes
+                # accept their next request immediately.  The key stays so the
+                # console and the scan controller keep working unchanged; it
+                # now means "the bridge is in a mode that takes input".
+                "armed": True,
+                # There is also no FAULT latch.  A condition is reported here and
+                # the bridge keeps accepting commands; ``fault`` stays null so a
+                # stale consumer cannot mistake a report for a latch.
+                "fault": None,
                 "error": self.error,
+                "error_age_s": (round(time.time() - self.error_at, 1)
+                                if self.error_at else None),
+                "error_source": self.error_source,
+                "estop": self.estop,
                 "joints": {name: round(self.joints.get(name, 0.0), 2) for name in JOINTS},
                 "joints_age_s": round(time.time() - self.joints_ts, 3) if self.joints_ts else None,
                 "joints_source": self.joints_source,
-                "last_seq": self.command_seq,
+                "last_seq": self.last_seq,
+                "last_seq_age_s": (round(time.time() - self.last_seq_ts, 3)
+                                   if self.last_seq_ts else None),
+                "seq_resets": self.seq_resets,
+                "commands_accepted": self.commands_accepted,
                 "commands_applied": self.commands_applied,
                 "commands_rejected": self.commands_rejected,
                 "last_clamped": list(self.last_clamped),
+                "teleop_engaged": [name for name in JOINTS
+                                   if name in self.teleop_engaged],
+                "click_in": list(self.click_in),
                 "lelab_active": self.lelab_active,
                 "follower_open": self.follower is not None,
+                "leader_open": self.leader is not None,
                 "limits": {name: [round(low, 2), round(high, 2)]
                            for name, (low, high) in self.limits.items()},
                 "uptime_s": round(time.time() - self.started, 1),
@@ -1000,6 +1205,7 @@ async def lifespan(app: FastAPI):
     bridge.stop.set()
     camera.stop.set()
     bridge._close_follower()
+    bridge._close_leader()
 
 
 app = FastAPI(title="SO-101 bridge", version="1.0.0", lifespan=lifespan,
@@ -1013,8 +1219,11 @@ def health():
                         "frame_age_s": round(time.time() - camera.frame_ts, 2)
                         if camera.frame_ts else None,
                         "error": camera.error}
-    return {"ok": bridge.mode != "FAULT" and bool(bridge.limits),
-            "mode": bridge.mode, "armed": bridge.armed, "camera": camera_state}
+    # "ok" used to mean "not latched in FAULT".  There is no such state now, so
+    # it means what it says: the bridge knows the joint envelope and is running.
+    return {"ok": bool(bridge.limits),
+            "mode": bridge.mode, "estop": bridge.estop,
+            "error": bridge.error, "camera": camera_state}
 
 
 @app.get("/state")
@@ -1059,14 +1268,25 @@ async def camera_controls_post(request: Request):
 
 @app.post("/mode")
 async def set_mode(request: Request):
+    """Switch to REMOTE or TELEOP, taking effect before the response.
+
+    There are two states and no queue: the transition runs here, so a caller
+    that gets 200 knows which mode the arm is in and a caller that gets an error
+    knows why.  ``HOLD`` is accepted as an alias for REMOTE — it means "stop
+    following a leader and hold where you are", which is exactly REMOTE with no
+    fresh command, so an old console button can never strand the arm.
+    """
     _authorised(request)
     body = await request.json()
     mode = str(body.get("mode", "")).upper()
-    if mode not in ("HOLD", "TELEOP", "REMOTE"):
-        raise HTTPException(400, "mode must be HOLD, TELEOP or REMOTE")
-    with bridge.lock:
-        bridge.desired = mode
-    return {"requested": mode, "mode": bridge.mode}
+    if mode == "HOLD":
+        mode = "REMOTE"
+    if mode not in ("TELEOP", "REMOTE"):
+        raise HTTPException(400, "mode must be TELEOP or REMOTE")
+    result = await asyncio.to_thread(bridge.switch_mode, mode)
+    if result.get("error"):
+        raise HTTPException(409, result["error"])
+    return result
 
 
 @app.post("/command")
@@ -1096,11 +1316,13 @@ async def arm(request: Request):
 
 @app.post("/estop")
 async def estop(request: Request):
+    """Hold the pose.  Not latched: the next command or /mode resumes.
+
+    The owner secures the arm by switching power off, so a latch that needed a
+    power cycle only made the bridge unusable.  See ``Bridge.estop_request``.
+    """
     _authorised(request)
-    with bridge.lock:
-        bridge.desired = "FAULT"
-        bridge.fault = "estop requested"
-    return {"mode": "FAULT", "latched": True}
+    return bridge.estop_request()
 
 
 @app.post("/calibration/wrist-zero")

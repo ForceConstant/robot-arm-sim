@@ -1,5 +1,5 @@
 [Unit]
-Description=SO-101 bridge (LeLab teleop / BC-250 remote joint owner)
+Description=SO-101 bridge (two-state teleop/remote joint owner)
 After=network-online.target
 Wants=network-online.target
 
@@ -11,13 +11,15 @@ WorkingDirectory=/home/pi/so101-bridge
 Environment=SO101_TOKEN_FILE=/home/pi/so101-bridge/token.txt
 Environment=SO101_PORT=8100
 Environment=SO101_MAX_SPEED=35
-Environment=SO101_HANDOVER_DEG=10
+# A TELEOP joint starts following once leader and follower are this close; the
+# others follow regardless, so this is a click-in radius, not a gate.
+Environment=SO101_CLICK_IN_DEG=10
 ExecStart=/home/pi/.local/share/uv/tools/lelab/bin/python /home/pi/so101-bridge/app.py
 Restart=on-failure
 RestartSec=3
-# The bridge owns the serial port only in REMOTE mode; LeLab keeps teleop.
-# Do not add a device allow-list here, and never run it alongside a second
-# process that opens the follower port.
+# The bridge owns the follower port in REMOTE and the leader port in TELEOP;
+# either way it is the only process that should open those ports.  Do not add a
+# device allow-list here, and never run it alongside a second process that does.
 StandardOutput=journal
 StandardError=journal
 
