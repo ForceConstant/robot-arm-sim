@@ -2637,6 +2637,12 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
 .cross line { stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
 .cross line.minor { opacity:.32; }
 .cross circle { fill:none; stroke:#7fd4a0; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.9; }
+.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:11px; opacity:.85; margin:6px 0 0 2px; }
+.legend span { display:flex; align-items:center; gap:5px; }
+.legend .sw { width:10px; height:10px; border-radius:2px; display:inline-block; }
+.legend .sw.aim { border:2px solid #ffd23f; background:transparent; }
+.legend .sw.tip { background:#35e0e8; }
+.legend .sw.cmd { background:#ff4fd8; }
 .tipmark { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; pointer-events:none; display:none; }
 .tipmark::before, .tipmark::after { content:""; position:absolute; background:#ffd23f; }
 .tipmark::before { left:10px; top:0; width:2px; height:22px; }
@@ -2681,6 +2687,11 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
           <circle cx="50" cy="50" r="2.4"></circle>
         </svg>
       </div></div>
+    </div>
+    <div class="legend mono">
+      <span><i class="sw aim"></i>aim ray (where the tool axis meets the board)</span>
+      <span><i class="sw tip"></i>tip pixel (mount constant)</span>
+      <span><i class="sw cmd"></i>commanded point</span>
     </div>
     <div class="panel" style="margin-top:10px">
       <div class="row"><span class="hint">focus score</span><span class="mono hint" id="peak">peak —</span></div>
@@ -2969,7 +2980,12 @@ el('jtab-xyz').onclick = () => jogTab('xyz');
 el('jtab-look').onclick = () => jogTab('look');
 
 // ---------------------------------------------------------- wrist calibration
-let crossOn = true;
+// Off by default.  This is a fixed screen-centre hairline, NOT the aim: it
+// sits at 50/50 of the frame whatever the arm is doing, so leaving it on
+// put a green cross near the baked cyan tip cross and the yellow aim
+// reticle and made three unrelated things look like one marker
+// (Brian, 2026-11-24).
+let crossOn = false;
 function showCross(on){
   const wristVisible = el('pane-wrist').style.display !== 'none';
   el('cross').style.display = (on && wristVisible) ? 'block' : 'none';
@@ -3001,7 +3017,11 @@ function tipRender(d){
   el('tipPixel').textContent = d.set ? d.pixel.join(', ') : '—';
   el('tipUpdated').textContent = d.updated || '—';
   const mark = el('tipmark');
-  if (d.set) {
+  // Only in the Tip-set pane.  On the live view the calibrated tip is already
+  // the baked cyan cross, and a second yellow cross 12 px away read as a
+  // different marker (Brian, 2026-11-24).
+  const tipPaneOpen = el('pane-tip').style.display !== 'none';
+  if (d.set && tipPaneOpen) {
     mark.style.display = 'block';
     mark.style.left = (d.pixel[0]/640*100) + '%';
     mark.style.top  = (d.pixel[1]/480*100) + '%';
