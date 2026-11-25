@@ -281,7 +281,7 @@ def test_plan_override_shifts_the_grasp(env):
 
 
 def test_sweep_grid_starts_with_the_baseline():
-    from robot_web.lab import Lab
+    from chess_sim.labsim.lab import Lab
     assert Lab.SWEEP_GRID[0] == {}
     assert any("grasp_dz" in p for p in Lab.SWEEP_GRID)
     assert any("span_deg" in p for p in Lab.SWEEP_GRID)

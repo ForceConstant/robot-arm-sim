@@ -64,7 +64,7 @@ def test_layout_ranking_prefers_execution_success_over_small_mean_error():
 
 
 def test_served_layout_suite_mirrors_the_same_tasks_without_self_captures():
-    from robot_web.torture import LAYOUT_CASES
+    from chess_sim.labsim.torture import LAYOUT_CASES
     assert len(LAYOUT_CASES)==2*len(CASES)
     for case in LAYOUT_CASES:
         board=chess.Board(case.fen);move=chess.Move.from_uci(case.move)

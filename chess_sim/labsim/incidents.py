@@ -43,7 +43,7 @@ def model_signature(env):
 def runtime_signature(model_hash):
     """Model plus controller/runtime source. Required to re-execute, not to view."""
     h = hashlib.sha256(str(model_hash).encode())
-    for folder in ('chess_sim', 'robot_web'):
+    for folder in ('chess_sim',):
         for p in sorted((Path(__file__).resolve().parents[1] / folder).glob('*.py')):
             h.update(p.name.encode()); h.update(p.read_bytes())
     return h.hexdigest()

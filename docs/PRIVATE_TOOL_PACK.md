@@ -6,7 +6,7 @@ release archives. Supply a pack locally and set:
 
 ```sh
 ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=/absolute/path/to/pack \
-  MUJOCO_GL=egl python -m uvicorn robot_web.app:app --port 8098
+  robot-arm-sim test
 ```
 
 Missing requested assets are an explicit startup error, not a silent stock-tool

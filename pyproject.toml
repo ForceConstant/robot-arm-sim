@@ -19,8 +19,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["chess_sim", "robot_web"]
+packages = ["chess_sim", "chess_sim.labsim"]
 
 [tool.setuptools.package-data]
 chess_sim = ["assets/**/*", "calib/*.json"]
-robot_web = ["index.html"]

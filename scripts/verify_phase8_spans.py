@@ -17,7 +17,7 @@ from chess_sim.controller import PlanOverride
 from chess_sim.env import ChessSimEnv
 from chess_sim.product import apply_mass_model, load_product_twin
 from chess_sim.tasks import MoveTask
-from robot_web.torture import CASES
+from chess_sim.labsim.torture import CASES
 
 
 def main():

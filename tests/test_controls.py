@@ -1,9 +1,6 @@
-import importlib
-
 import pytest
-from fastapi.testclient import TestClient
 
-from robot_web.lab import Interrupted, Lab
+from chess_sim.labsim.lab import Interrupted, Lab
 
 
 @pytest.fixture
@@ -41,7 +38,7 @@ def test_running_configuration_is_rejected(lab):
 
 
 def test_layout_suite_selects_its_own_cases_and_reports_total(lab):
-    from robot_web.torture import LAYOUT_CASES
+    from chess_sim.labsim.torture import LAYOUT_CASES
     lab.command('suite',suite='layout')
     state=lab.snapshot()['suite']
     assert state['version']=='layout-v1'
@@ -65,30 +62,3 @@ def test_running_suite_exclusively_owns_control(lab):
     # A stop is the one permitted command, so a real user can still cancel.
     lab.command("stop")
     assert lab.stop_requested
-
-
-def test_api_control_bounds_and_sensor_contract(lab, monkeypatch):
-    module = importlib.import_module("robot_web.app")
-    monkeypatch.setattr(module, "lab", lab)
-    lab.ready = True
-    # No context manager: this API test must not start another physics worker.
-    client = TestClient(module.app)
-    assert client.post("/api/control", json={"action": "start"}).status_code == 403
-    headers = {"X-Robot-Lab": "1"}
-    assert client.post("/api/control", headers={**headers, "Origin": "http://evil.invalid"},
-                       json={"action": "start"}).status_code == 403
-    assert client.post("/api/control", headers=headers,
-                       json={"action": "speed", "speed": 999}).status_code == 422
-    # Teleop deltas are clamped: a step larger than the arm can absorb is a bug,
-    # not a valid command.
-    assert client.post("/api/control", headers=headers,
-                       json={"action": "jog", "droll": 9}).status_code == 422
-    assert client.post("/api/control", headers=headers,
-                       json={"action": "jog", "dgrip": 9}).status_code == 422
-    data = client.get("/api/observations").json()
-    assert set(data["cameras"]) == {"white_wrist", "black_wrist"}
-    assert "fen" not in data and "pieces" not in data
-    assert client.post("/api/control", headers=headers,
-                       json={"action": "configure", "observations": "all"}).status_code == 200
-    assert "top" in client.get("/api/observations").json()["cameras"]
-    assert client.get("/api/frame/unknown.jpg").status_code == 404

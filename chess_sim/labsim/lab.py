@@ -1068,8 +1068,8 @@ class Lab:
                 'board_thickness_mm':board.thickness*1000,
                 'arm_base_m':list(board.arm_base),
             }
-            self.model_signature = __import__("robot_web.incidents", fromlist=["model_signature"]).model_signature(self.env)
-            self.runtime_signature = __import__("robot_web.incidents", fromlist=["runtime_signature"]).runtime_signature(self.model_signature)
+            self.model_signature = __import__("chess_sim.labsim.incidents", fromlist=["model_signature"]).model_signature(self.env)
+            self.runtime_signature = __import__("chess_sim.labsim.incidents", fromlist=["runtime_signature"]).runtime_signature(self.model_signature)
             self.incident_count = len(self.recorder.rows())
             self._reset()
             from OpenGL import GL

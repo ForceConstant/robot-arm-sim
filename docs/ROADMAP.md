@@ -775,7 +775,7 @@ and 90 mm board gap from `hardware/current_layout.json`; four 40 mm
   decision (bridge-owned lerobot loop), not a silent rewrite.
 - BC-250 `robot_live` (:8080): pulls the camera **once** and fans out to browsers,
   runs ArUco detection and pose estimation, orchestrates the scan, solves the
-  board pose, records the session, serves the GUI. Reuse `robot_web`'s same-origin
+  board pose, records the session, serves the GUI. (The `robot_web` browser service was retired 2026-11-25; use the headless tools.) Reuse the old same-origin
   POST guard, no-store headers and MJPEG pattern; do not expose to the Internet.
 
 **Protocol** (`robot_protocol`, versioned module so Phase 15 inherits it):

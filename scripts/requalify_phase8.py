@@ -26,7 +26,7 @@ from chess_sim.env import ChessSimEnv
 from chess_sim.product import apply_mass_model, load_product_twin
 from qualify_phase8 import (EMPTY_FEN, EXEC_TYPES, adjacent_target, git_commit,
                             scan, single_piece_fen, _strip_internal)
-from robot_web.torture import CASES, SUITE_VERSION
+from chess_sim.labsim.torture import CASES, SUITE_VERSION
 
 
 def main():

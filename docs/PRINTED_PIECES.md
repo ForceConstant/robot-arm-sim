@@ -1,6 +1,6 @@
 # Printed STL piece sets
 
-The browser lab supports `ROBOT_PIECE_SET=printed` with
+The headless tools and tests support `ROBOT_PIECE_SET=printed` with
 `ROBOT_PIECE_ASSETS=/absolute/path/to/pack`. Missing requested assets fail startup;
 there is no silent fallback to the generated pieces. Without these settings the
 public checkout retains the original set and needs no private geometry.
@@ -11,7 +11,7 @@ public checkout retains the original set and needs no private geometry.
 python tools/import_printed_set.py --source /path/to/six-stls \
   --output .private/piece-assets --name 'My printed set · 50%' --scale 0.5
 ROBOT_PIECE_SET=printed ROBOT_PIECE_ASSETS="$PWD/.private/piece-assets" \
-  MUJOCO_GL=egl .venv/bin/python -m uvicorn robot_web.app:app --port 18098
+  robot-arm-sim test
 ```
 
 Offline import requires `trimesh`, `numpy`, `shapely`, and `pillow`; it is not

@@ -13,12 +13,11 @@ import pytest
 
 from chess_sim import AppearanceConfig, ControlConfig, EnvConfig, MoveTask
 from chess_sim.dual import DualArmEnv
-from robot_web.incidents import (LABELS, Recording, Store, bookkeeping,
+from chess_sim.labsim.incidents import (LABELS, Recording, Store, bookkeeping,
                                  DIAGNOSTIC_DEFAULTS, model_signature, physics_state,
                                  reset_diagnostics, restore, runtime_signature,
                                  contact_classification)
-from robot_web.app import app
-from robot_web.torture import CASES, SUITE_VERSION
+from chess_sim.labsim.torture import CASES, SUITE_VERSION
 
 
 def test_contact_risk_candidates_are_phase_qualified():
@@ -26,11 +25,6 @@ def test_contact_risk_candidates_are_phase_qualified():
     assert contact_classification(True, False, "carry") == (False, True)
     assert contact_classification(True, True, "carry") == (True, False)
     assert contact_classification(False, False, "carry") == (False, False)
-
-
-def test_incident_download_route_precedes_generic_id_route():
-    paths = [route.path for route in app.routes]
-    assert paths.index("/api/incidents/{ident}.zip") < paths.index("/api/incidents/{ident}")
 
 
 def test_suite_cases_are_distinct_and_parseable():
@@ -134,7 +128,7 @@ def test_recording_round_trip(env, tmp_path):
 
 
 def test_camera_views_are_fixed_and_well_formed():
-    from robot_web.lab import VIEWS
+    from chess_sim.labsim.lab import VIEWS
     assert {"overview", "top", "left", "right", "white_side", "black_side"} <= set(VIEWS)
     assert sum(1 for name in VIEWS if name.startswith("iso_")) == 4
     for name, (kind, value) in VIEWS.items():

@@ -99,7 +99,7 @@ See [the tool-pack contract](docs/PRIVATE_TOOL_PACK.md) for mounting and testing
 - Wrist-only versus overhead-plus-wrists observation contract for future
   perception experiments; overhead remains available separately for debugging.
 - Confirmed-position display, physical failure logs, placement diagnostics and PGN export.
-- CPU physics plus NVIDIA EGL rendering in a single Dockhand-managed container.
+- CPU physics plus EGL rendering on the BC-250 workstation (headless).
 - No real robot, serial device or Docker socket is connected to the application.
 
 **Scope:** this milestone commissions the environment, not robust manipulation.
@@ -111,52 +111,24 @@ physically validated. Full pick/place optimization is explicitly deferred.
 
 ### Run
 
-The simulator and development environment target Python 3.11, which is already
-provided by the OpenClaw container. From the repository root, create/sync the
-project venv and launch with it; this does not install another Python runtime.
-Install Stockfish separately (`STOCKFISH_PATH=/usr/games/stockfish` in the
-Docker image). Without it, only the opening/capture replay is available.
+The browser simulator and its Dockhand container were **retired on 2026-11-25**;
+all simulation now runs headless on the BC-250 workstation (`cachyos`). From the
+project root there:
 
 ```sh
-scripts/ensure_venv.sh
-MUJOCO_GL=egl ROBOT_DATA_DIR=/tmp/robot-arm-data \
-  .venv/bin/python -m uvicorn robot_web.app:app --host 0.0.0.0 --port 8098
+~/.local/bin/robot-arm-sim test                    # full suite
+~/.local/bin/robot-arm-sim python tools/<tool>.py   # one tool
 ```
 
-Docker builds the dependencies and Stockfish into the image; startup does not
-download models or install packages. The shipped [compose](deploy/compose.yaml)
-is specific to Brian's HTPC LAN/GPU and embeds the [Dockerfile](Dockerfile).
-`python scripts/deploy.py` registers/uploads/builds only the `robot_arm` stack
-through Dockhand. It requires explicit infrastructure authorization; it is not
-an installation step for other users. Every deploy then waits for the job, waits
-for the new build to report ready, and runs the 25-case `crowded-v3` suite
-against it, including mirrored transfers to the far half and opposite corners,
-writing `.private/post-deploy-<version>.json`. Case failures are
-reported as data, not treated as a failed deploy. `--no-verify` skips the run
-for debugging only; `scripts/verify_deploy.py` can rerun it alone.
-
-The web service remains running when the simulation is stopped. Use the browser
-controls for run control, or Dockhand to stop/start the entire container. Pause
-resumes in place; Stop cancels a run and the next Start resets. Press M to switch
-the teleoperated arm; the HUD reports achieved motion, elbow clearance, wrist
-tilt, wrist roll and jaw gap for each step. Configure the
-driver, initial scene and observations only while stopped; Apply resets the scene.
-
-State/health: `/api/status`, `/health`. Selected sensor contract:
-`/api/observations` (joint feedback and selected camera links; no piece poses/FEN).
-View frames: `/api/frame/<view>.jpg` for `overview`, `top`, `left`, `right`,
-`white_side`, `black_side`, `iso_{ne,nw,se,sw}`, `white_wrist`, `black_wrist`.
-Completed moves persist as `/data/last-game.pgn` and `/data/last-run.json`.
+`scripts/ensure_venv.sh` rebuilds `.venv` against the workstation's Python 3.11;
+the launcher sets `MUJOCO_GL=egl` and single-threaded BLAS. Install Stockfish
+separately (`STOCKFISH_PATH=/usr/games/stockfish`) if a tool needs the engine.
 
 ### Tests
 
 ```sh
 MUJOCO_GL=egl python -m pytest -q tests
-TEST_URL=http://127.0.0.1:8098 node scripts/browser-check.mjs
 ```
-
-Local browser checks require Playwright and Chromium; they use the actual UI and
-will briefly start/pause/stop/reset the simulation. No hardware is commanded.
 
 ---
 
