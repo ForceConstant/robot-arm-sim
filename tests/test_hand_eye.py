@@ -12,12 +12,13 @@ from scipy.spatial.transform import Rotation
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from chess_sim import fiducials  # noqa: E402
 from chess_sim.env import ChessSimEnv  # noqa: E402
+from chess_sim.config import Camera  # noqa: E402
 from chess_sim.product import layout_env_config  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
-from solve_hand_eye import (MARKER_LAYOUT, _compare, _view_observations,  # noqa: E402
-                            calibration_views, refine_hand_eye)
+from solve_hand_eye import (_compare, _view_observations,  # noqa: E402
+                            calibration_views, flange_pose, marker_face_z,
+                            marker_layout, refine_hand_eye)
 
 # The sim scene is rendered by the model-exported camera (fx 738.64). The bench
 # hand-eye mount (fx 312.77) projects that scene to zero markers, so the mount
@@ -50,17 +51,37 @@ def _piece_assets(monkeypatch):
 @pytest.mark.skipif(not CALIBRATION.exists(), reason="no current-layout calibration")
 def test_refinement_recovers_a_perturbed_mount():
     calibration = WristCalibration.load(CALIBRATION)
-    truth = np.asarray(calibration.camera_in_tool, dtype=float)
     env = ChessSimEnv(layout_env_config("printed", cameras=()))
     try:
         env.reset("8/8/8/8/8/8/8/8")
-        board = env.board
-        marker_z = board.table_top + fiducials.marker_height_above_table(board.mat)
+        board, model, data = env.board, env.model, env.data
+        # Truth is the camera the scene actually carries, not the calibration
+        # file: the block3 file's mount is 44.8 mm / 22 deg away from the
+        # compiled one (measured 2026-11-25), so comparing to it pins the wrong
+        # transform.  The solver returns T_flange_cam, so express the model
+        # camera in the chain's flange frame.
+        cam_id = model.camera(str(Camera.WRIST)).id
+        cam = np.eye(4)
+        cam[:3, :3] = data.cam_xmat[cam_id].reshape(3, 3)
+        cam[:3, 3] = data.cam_xpos[cam_id]
+        joints = [float(data.qpos[env._joint_qpos[i]]) for i in range(6)]
+        flange_r, flange_t = flange_pose(calibration, joints)
+        flange = np.eye(4)
+        flange[:3, :3], flange[:3, 3] = flange_r, flange_t
+        truth = np.linalg.inv(flange) @ cam        # camera in the chain's flange frame
+        fovy = float(model.cam_fovy[cam_id])
+        height = 480
+        fy = (height / 2.0) / math.tan(math.radians(fovy) / 2.0)
+        intrinsics = (fy, fy, 320.0, 240.0)
+        layout = marker_layout(board)
+        marker_z = marker_face_z(board)
         views = calibration_views(env, calibration, board_origin=board.origin,
-                                  board_yaw=board.yaw, marker_z=marker_z, count=8)
+                                  board_yaw=board.yaw, marker_z=marker_z, count=8,
+                                  layout=layout)
         observations = _view_observations(
             views, calibration, board_origin=board.origin,
-            board_yaw=board.yaw, marker_z=marker_z)
+            board_yaw=board.yaw, marker_z=marker_z, layout=layout,
+            intrinsics=intrinsics)
         assert len(observations) >= 6
 
         prior = truth.copy()

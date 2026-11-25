@@ -290,6 +290,7 @@ def _refine(seed: np.ndarray, response: np.ndarray, calibration: CameraCalibrati
 def register_board(frame: np.ndarray, calibration: CameraCalibration,
                    board_z: float, *,
                    square_range: tuple[float, float] = (0.024, 0.032),
+                   square: float | None = None,
                    origin_search: float = 0.09,
                    yaw_search_deg: float = 15.0,
                    coarse_step: float = 0.008,
@@ -309,6 +310,10 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
     registration abstains on every frame.  ``exclusion_mask`` may hide known
     moving geometry (a robot arm) from the corner response; it is optional and
     the fit is already trimmed against a contiguous occluder.
+
+    ``square`` fixes the printed square size instead of estimating it.  With a
+    tilted top camera the estimated scale trades against ``board_z``, so a
+    known print dimension is a stronger anchor than the corner response.
     """
     frame = np.asarray(frame)
     if frame.ndim != 3 or frame.shape[2] != 3:
@@ -324,6 +329,13 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
     if not np.isfinite(board_z):
         raise ValueError("board_z must be finite")
     low_square, high_square = map(float, square_range)
+    if square is not None:
+        # Pin the scale to the printed dimension.  Keep a micron of width:
+        # least_squares requires strictly ordered bounds.
+        pinned = float(square)
+        if not np.isfinite(pinned) or pinned <= 0:
+            raise ValueError("square must be positive and finite")
+        low_square, high_square = pinned - 1e-6, pinned + 1e-6
     if not 0 < low_square <= high_square:
         raise ValueError("square_range must be positive and increasing")
     if origin_search <= 0 or yaw_search_deg <= 0 or coarse_step <= 0:
@@ -360,7 +372,10 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
         yaw_centre = float(board_yaw)
         origin_span = float(origin_search)
         yaw_span = np.radians(float(yaw_search_deg))
-        square_centre = 0.5 * (low_square + high_square)
+        square_centre = (float(square) if square is not None
+                         else 0.5 * (low_square + high_square))
+    if square is not None:
+        square_centre = float(square)
 
     # Include the exact centre in the coarse grid: an offset grid can start a
     # local refinement half a square away from the true pose.

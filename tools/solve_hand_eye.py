@@ -21,6 +21,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
 
 import cv2
 import mujoco
@@ -29,6 +30,7 @@ from scipy.optimize import least_squares
 from scipy.spatial.transform import Rotation
 
 from chess_sim import fiducials
+from chess_sim.charuco_face import CharucoLayout
 from chess_sim.config import Camera
 from chess_sim.env import ChessSimEnv
 from chess_sim.marker_scan import marker_corners_world
@@ -36,6 +38,20 @@ from chess_sim.product import current_layout, layout_env_config
 from chess_sim.wrist_calibration import WristCalibration, _transform
 
 MARKER_LAYOUT = fiducials.MarkerLayout.for_board(224.0, 15.0, plane="mat", margin_mm=40.0)
+
+
+def marker_layout(board):
+    """The correspondence model for the face this board actually prints."""
+    if getattr(board, "face", "") == "charuco":
+        return CharucoLayout(board.square * 1000.0)
+    return MARKER_LAYOUT
+
+
+def marker_face_z(board) -> float:
+    """Fiducial plane height: the board surface for ChArUco, the mat otherwise."""
+    if getattr(board, "face", "") == "charuco":
+        return float(board.top)
+    return board.table_top + fiducials.marker_height_above_table(board.mat)
 
 
 def flange_pose(calibration: WristCalibration, joints) -> tuple[np.ndarray, np.ndarray]:
@@ -56,7 +72,7 @@ def flange_pose(calibration: WristCalibration, joints) -> tuple[np.ndarray, np.n
 
 def board_pose_in_camera(image, calibration: WristCalibration, joints, *,
                          board_origin=(0.0, 0.0), board_yaw=0.0,
-                         marker_z: float) -> tuple[np.ndarray, np.ndarray, int] | None:
+                         marker_z: float, layout=MARKER_LAYOUT) -> tuple[np.ndarray, np.ndarray, int] | None:
     """Planar PnP of the marker mat: ``T_cam_board``."""
     detections = fiducials.detect_markers(image)
     if len(detections) < 2:
@@ -65,9 +81,9 @@ def board_pose_in_camera(image, calibration: WristCalibration, joints, *,
     image_points: list[tuple[float, float]] = []
     for detection in detections:
         corners = marker_corners_world(
-            MARKER_LAYOUT, detection.marker_id, origin_xy=board_origin,
+            layout, detection.marker_id, origin_xy=board_origin,
             yaw=board_yaw, marker_z=marker_z)
-        local = np.asarray(MARKER_LAYOUT.corners_mm(detection.marker_id),
+        local = np.asarray(layout.corners_mm(detection.marker_id),
                            dtype=float) / 1000.0
         for point in local:
             object_points.append((float(point[0]), float(point[1]), 0.0))
@@ -100,7 +116,8 @@ def board_pose_in_camera(image, calibration: WristCalibration, joints, *,
     return rotation, translation, len(detections)
 
 
-def _view_observations(views, calibration, *, board_origin, board_yaw, marker_z):
+def _view_observations(views, calibration, *, board_origin, board_yaw, marker_z,
+                       layout=MARKER_LAYOUT, intrinsics=None):
     """Per-view planar correspondences plus the tool pose that produced them."""
     observations = []
     for joints, image in views:
@@ -113,13 +130,17 @@ def _view_observations(views, calibration, *, board_origin, board_yaw, marker_z)
             # refinement can project them without carrying a per-view target
             # pose around.
             corners = marker_corners_world(
-                MARKER_LAYOUT, detection.marker_id, origin_xy=board_origin,
+                layout, detection.marker_id, origin_xy=board_origin,
                 yaw=board_yaw, marker_z=marker_z)
             object_points.extend(tuple(map(float, corner)) for corner in corners)
             image_points.extend(tuple(map(float, corner)) for corner in detection.corners)
         rotation_g, translation_g = flange_pose(calibration, joints)
+        camera = calibration.camera(joints)
+        if intrinsics is not None:
+            fx, fy, cx, cy = (float(v) for v in intrinsics)
+            camera = SimpleNamespace(fx=fx, fy=fy, cx=cx, cy=cy)
         observations.append((np.asarray(object_points), np.asarray(image_points),
-                             rotation_g, translation_g, calibration.camera(joints)))
+                             rotation_g, translation_g, camera))
     return observations
 
 
@@ -168,7 +189,8 @@ def _compare(recovered: np.ndarray, translation: np.ndarray,
 
 
 def calibration_views(env, calibration: WristCalibration, *, board_origin, board_yaw,
-                      marker_z: float, count: int = 12, seed: int = 11):
+                      marker_z: float, count: int = 12, seed: int = 11,
+                      layout=MARKER_LAYOUT):
     """Render varied wrist views that see at least two markers."""
     rng = np.random.default_rng(seed)
     base = np.array([0.0, -1.30, 0.75, 1.25, -1.50, -0.80])
@@ -184,7 +206,7 @@ def calibration_views(env, calibration: WristCalibration, *, board_origin, board
         image = env.render(Camera.WRIST).copy()
         board = board_pose_in_camera(image, calibration, joints,
                                      board_origin=board_origin, board_yaw=board_yaw,
-                                     marker_z=marker_z)
+                                     marker_z=marker_z, layout=layout)
         if board is None:
             continue
         views.append((joints.copy(), image))
@@ -208,12 +230,14 @@ def main() -> int:
     try:
         env.reset("8/8/8/8/8/8/8/8")
         board = env.board
-        marker_z = board.table_top + fiducials.marker_height_above_table(board.mat)
+        layout = marker_layout(board)
+        marker_z = marker_face_z(board)
         raw = calibration_views(env, calibration, board_origin=board.origin,
                                 board_yaw=board.yaw, marker_z=marker_z,
-                                count=args.views)
+                                count=args.views, layout=layout)
         observations = _view_observations(raw, calibration, board_origin=board.origin,
-                                          board_yaw=board.yaw, marker_z=marker_z)
+                                          board_yaw=board.yaw, marker_z=marker_z,
+                                          layout=layout)
         if len(observations) < 3:
             raise SystemExit(f"need at least 3 usable views, got {len(observations)}")
         # On hardware the prior is the CAD mount transform.  Validation perturbs
