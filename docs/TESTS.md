@@ -53,6 +53,54 @@ earliest layer (§7), and report — never widen a threshold to make it pass.
    off or unreachable, motion is **not** authorized — report the blocker and
    stop. Print each leg before executing it and run the sim clearance check.
 
+## 0b. Execution profile — measured 2026-11-25 (first pass, sim side)
+
+Copy-paste setup so a run starts executing instead of rediscovering the
+environment. The launcher default tool pack is the **pre-5y** pack; the pins and
+T3/T4 require the **5y** pack, and the printed-piece tests need the printed
+piece set. Getting this wrong looks like geometry drift (see below).
+
+```bash
+# on the BC-250, after the tree sync
+export ROBOT_GRIPPER=cad_parallel
+export ROBOT_GRIPPER_ASSETS=.private/gripper-assets-5y
+# printed-piece tests only (test_dual knight profile, test_layout_search):
+export ROBOT_PIECE_SET=printed
+export ROBOT_PIECE_ASSETS=.private/piece-assets-v9-brian-parallel-knight
+```
+
+| Step | Command (with the exports above where noted) | Expected on 805dec0a |
+| --- | --- | --- |
+| T2 | `robot-arm-sim test --tb=no --junitxml=/tmp/t2.xml` — **stock, do not export the gripper vars** | 274 collected: 221 passed, 11 failed, 42 skipped |
+| T2b | `robot-arm-sim test tests/test_frame_pins.py tests/test_board_facing.py tests/test_aim_geometry.py tests/test_vision_geometry.py tests/test_product_twin.py tests/test_hand_eye.py tests/test_tool_orientation.py --junitxml=/tmp/t2b.xml` — 5y pack | 47: 44 passed, 3 documented fails |
+| T3 | `robot-arm-sim python tools/phase1_parity.py --out reports/phase1_parity_<stamp>.json` — 5y pack | 5292 samples, worst Δ 0.000000 mm, rot 3.4e−6° |
+| T4 | `robot-arm-sim python tools/cartesian_squares.py --backend sim --bridge-limits http://192.168.1.167:8100 --out reports/squares_sim_<stamp>.json` — 5y pack | 64/64 solved; p50 4.21 / p95 10.29 / max 12.83 mm |
+| T4b | `robot-arm-sim python tools/phase2_squares.py --out reports/phase2_squares_<stamp>.json` — 5y pack | 20 mm gate mink 61/64; 3 mm gate 61/64 |
+
+Notes that cost time on the first pass:
+
+- **`pytest`'s totals line can be missing** from the log even when the exit code
+  is 1. Read counts from `--junitxml`, not the tail.
+- **Never run the pins with `ROBOT_GRIPPER=cad_parallel` but no pack override.**
+  The launcher then uses `.private/gripper-assets` (pre-5y) and six
+  tool-orientation checks fail with a systematic 10 mm tip / 8 mm jaw offset.
+  That is the wrong-pack trap, not drift.
+- **T3 does not run on the stock gripper** (`KeyError:
+  so101:moving_jaw_so101_v1`). It needs `cad_parallel` + 5y; the error is a
+  configuration requirement, not a finding.
+- `live_config.json` keys are `ik_solver: mink` and `move_tolerance_mm: 3.0`
+  (not `solver`). `TIP_IN_CHAIN` resolves from `live/tool_tip.json`, stamped
+  for the 5y pack (0.11045 m, `ok: true`).
+- `cartesian_squares --compare A B` labels A as the sim column and B as IRL.
+  Comparing two sim reports works mechanically but is not a paired T6.
+- **T4's 3.0 mm is a solver setting, not a pass gate in that tool.**
+  `cartesian_squares.py` accepts a square on solve success under its 20 mm / 8°
+  criteria, so residuals up to 12.83 mm are recorded as solved. If 3.0 mm must
+  be enforced, that is a tool change and a decision — do not assume the count
+  implies it.
+- First-pass receipt: `reports/full_parity_20261125_firstpass.json` (sim side,
+  result BLOCKED; T5/T8/T9 not run).
+
 ## 1. Test identity and artifacts
 
 ```
@@ -180,6 +228,15 @@ but NOT sufficient — T8 still reviews the pictures.
 - Home first (§0.3). `tools/cartesian_squares.py --backend irl` with the *same*
   target list, *same* solver, *same* rig state as T4; hold a `/stream` reader
   open (the detector only runs with a stream client attached).
+- **Tool gap — do not run T5 as the plan stands (recorded 2026-11-25).**
+  `run_irl()` in `tools/cartesian_squares.py` does none of the §0.6/§0.7
+  preconditions: it POSTs each target without printing the leg, without the sim
+  clearance check, without applying the bridge limits (those only bound the sim
+  column), and it continues after an HTTP refusal instead of stopping on a 409
+  or a branch change. Running it as-is would silently skip the gate's own safety
+  steps. Either patch the runner (print leg → simulate/clearance-check it →
+  then send; stop on the first refusal/409/branch change) or record an explicit
+  deviation approval before using it.
 - Cross-check with `tools/aim_squares.py` + `tools/aim_squares_eval.py` for the
   board-frame/pixel columns.
 - **Baseline (2026-11-25, `reports/aim_squares_boardfix_20261125.json`):**
@@ -333,7 +390,7 @@ them pass. They need a separate owner and a recorded decision.
 | Failing test | Status in this plan | Observed cause / note |
 | --- | --- | --- |
 | `test_hand_eye.py::test_refinement_recovers_a_perturbed_mount` | **Gated** in §T2b, §3, §3b (`test_hand_eye.py` green, corner overlay ≤2/4 px) | Already called out in §T2b: detected marker 14 is not in `MarkerLayout::_CENTRE_SIGNS`. Predates this plan; explicitly "do not log as drift" until a synced-tree look happens. |
-| `test_frame_pins.py::test_rig_state_snapshot_matches_manifest` | **Gated** in §0.4, T1, §3, §3b (rig state matches `MANIFEST.json`, zero DRIFT) | One of the 5 literal pin tests; 4/5 pass. `MANIFEST.json` expects `live_config.json` sha `4c28d879…`; committed snapshot is `8c8303a1…`. Stale pin, needs re-snapshot or explanation. |
+| `test_frame_pins.py::test_rig_state_snapshot_matches_manifest` | **Gated** in §0.4, T1, §3, §3b (rig state matches `MANIFEST.json`, zero DRIFT) | One of the 5 literal pin tests; 4/5 pass. The **test literal** `MANIFEST_HASHES["live_config.json"]` expects `4c28d879…`, while `MANIFEST.json` and the committed snapshot are both `8c8303a1…` (verified 2026-11-25). The manifest is consistent; the test constant is stale and needs a deliberate update, not a re-snapshot. |
 | `test_board_registration.py::test_registration_recovers_the_nominal_board` | Conceptual only: §3 "Registration 8/8 within 2 mm / 1°" (no filename) | Registration assertion fails on clean main. |
 | `test_board_registration.py::test_registration_tracks_a_shifted_turned_board_and_random_camera` | Conceptual only: same §3 registration line | Shifted/turned board + random camera registration fails on clean main. |
 | `test_marker_scan.py::test_plan_reports_missing_markers` | Not named; marker plans referenced conceptually in §3/§4 | Fails on clean main. |
