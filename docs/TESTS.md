@@ -76,6 +76,7 @@ export ROBOT_PIECE_ASSETS=.private/piece-assets-v9-brian-parallel-knight
 | T3 | `robot-arm-sim python tools/phase1_parity.py --out reports/phase1_parity_<stamp>.json` — 5y pack | 5292 samples, worst Δ 0.000000 mm, rot 3.4e−6° |
 | T4 | `robot-arm-sim python tools/cartesian_squares.py --backend sim --bridge-limits http://192.168.1.167:8100 --out reports/squares_sim_<stamp>.json` — 5y pack | 64/64 solved; p50 4.21 / p95 10.29 / max 12.83 mm |
 | T4b | `robot-arm-sim python tools/phase2_squares.py --out reports/phase2_squares_<stamp>.json` — 5y pack | 20 mm gate mink 61/64; 3 mm gate 61/64 |
+| T5 | `robot-arm-sim python tools/cartesian_squares.py --backend irl --bridge-limits http://192.168.1.167:8100 --out reports/squares_irl_<stamp>.json` — 5y pack, stream attached, arm homed | first run 58/59, stopped at c8 (409); see the T5 notes |
 
 Notes that cost time on the first pass:
 
@@ -228,15 +229,22 @@ but NOT sufficient — T8 still reviews the pictures.
 - Home first (§0.3). `tools/cartesian_squares.py --backend irl` with the *same*
   target list, *same* solver, *same* rig state as T4; hold a `/stream` reader
   open (the detector only runs with a stream client attached).
-- **Tool gap — do not run T5 as the plan stands (recorded 2026-11-25).**
-  `run_irl()` in `tools/cartesian_squares.py` does none of the §0.6/§0.7
-  preconditions: it POSTs each target without printing the leg, without the sim
-  clearance check, without applying the bridge limits (those only bound the sim
-  column), and it continues after an HTTP refusal instead of stopping on a 409
-  or a branch change. Running it as-is would silently skip the gate's own safety
-  steps. Either patch the runner (print leg → simulate/clearance-check it →
-  then send; stop on the first refusal/409/branch change) or record an explicit
-  deviation approval before using it.
+- **Runner updated 2026-11-25 (commit c13dae4).** `run_irl()` now solves each
+  target with the app's `MoveSolver` (mink), refuses locally on the move-
+  tolerance / 8° approach gate or a joint-limit violation, walks the
+  joint-space path against `GET /keep-in`, prints every leg before sending,
+  verifies a `/stream` client is registered, and stops on the first HTTP
+  refusal/error or wrist-roll branch change. `--dry-run` exercises the whole
+  path without sending (63/64 on the first check; d8 refused at 10.2°).
+- **Open decision — stop-on-409 vs the recorded baseline.** The baseline
+  (61/64 with 3 refusals) came from a runner that continued after a refusal,
+  while §0.6 says stop on a 409. The first guarded run stopped at c8:
+  58/59 solved, 5 squares not attempted. Decide whether a 409 "no reachable
+  pose" (arm did not move) is a recorded refusal that the sweep may continue
+  past, or a stop. Do not change the runner's stop rule without that decision.
+- **Pre-check is advisory.** On c8 the local pre-check predicted 0.74 mm /
+  5.3° and the app refused at 1.83 mm / 12.284° from the same seed family.
+  The app's gate remains authoritative; a local pass is not a landing promise.
 - Cross-check with `tools/aim_squares.py` + `tools/aim_squares_eval.py` for the
   board-frame/pixel columns.
 - **Baseline (2026-11-25, `reports/aim_squares_boardfix_20261125.json`):**
