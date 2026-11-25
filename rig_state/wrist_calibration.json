@@ -1,0 +1,46 @@
+{
+  "zero_deg": 0.0,
+  "min_rel_deg": -90.0,
+  "max_rel_deg": 90.0,
+  "model_offset_deg": -0.09,
+  "pan_zero_deg": 0.0,
+  "calibrated": true,
+  "servo": {
+    "ok": true,
+    "joint": "wrist_roll",
+    "raw_before": 2047,
+    "old_homing_offset": 630,
+    "homing_offset": 629,
+    "range_min": 1024,
+    "range_max": 3072,
+    "span_deg": 90.0,
+    "path": "/home/pi/.cache/huggingface/lerobot/calibration/robots/so_follower/so-arm-101.json",
+    "limits": {
+      "shoulder_pan": [
+        -108.99,
+        121.38
+      ],
+      "shoulder_lift": [
+        -107.05,
+        108.64
+      ],
+      "elbow_flex": [
+        -96.68,
+        94.75
+      ],
+      "wrist_flex": [
+        -104.59,
+        98.79
+      ],
+      "wrist_roll": [
+        -89.98,
+        90.07
+      ],
+      "gripper": [
+        0.0,
+        100.0
+      ]
+    }
+  },
+  "updated": "2026-11-19T15:30:55-0500"
+}

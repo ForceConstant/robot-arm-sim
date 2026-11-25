@@ -1,0 +1,32 @@
+{
+  "bridge_url": "http://192.168.1.167:8100",
+  "token_file": "live/bridge_token.txt",
+  "calibration": ".private/phase11d/calibration.json",
+  "plan": "chess_sim/assets/marker_scan_plan_charuco.json",
+  "board_half_mm": 122.0,
+  "square_m": 0.028,
+  "board_z_m": 0.43135,
+  "marker_z_m": 0.43135,
+  "layout_offset_mm": 152.0,
+  "settle_s": 0.6,
+  "pose_timeout_s": 12.0,
+  "speed_scale": 0.3,
+  "port": 8080,
+  "assumed_focal_px": 690.0,
+  "poses_file": "live/poses.json",
+  "auth_required": false,
+  "rotate_deg": 90,
+  "layout_kind": "charuco",
+  "home_joints": {
+    "shoulder_pan": 0.1,
+    "shoulder_lift": -55.1,
+    "elbow_flex": 72.0,
+    "wrist_flex": 39.3,
+    "wrist_roll": 22.4,
+    "gripper": 38.4
+  },
+  "move_tolerance_mm": 3.0,
+  "gripper": "cad_parallel",
+  "gripper_assets": ".private/gripper-assets-5y",
+  "ik_solver": "mink"
+}

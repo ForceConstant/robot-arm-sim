@@ -1,0 +1,31 @@
+{
+  "schema": "rig-state/1",
+  "created": "2026-11-25T07:16:32-0500",
+  "note": "post board-delta + mink flip baseline, 2026-11-25",
+  "files": {
+    "board.json": {
+      "canonical": "live/board.json",
+      "sha256": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
+      "bytes": 78,
+      "purpose": "board pose in the arm frame (x, y, z, yaw) - a wrong value moves every commanded square and fails silently"
+    },
+    "live_config.json": {
+      "canonical": "live/live_config.json",
+      "sha256": "4c28d87905dd904787bf1802e1be0f617d8e41d4fa8346e8825a637bc2c73408",
+      "bytes": 849,
+      "purpose": "console settings: solver (mink), move tolerance, auth posture, home pose, layout"
+    },
+    "wrist_calibration.json": {
+      "canonical": "live/wrist_calibration.json",
+      "sha256": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b",
+      "bytes": 882,
+      "purpose": "wrist roll zero and the allowed roll window"
+    },
+    "mount_calibration.json": {
+      "canonical": ".private/phase11d/calibration.json",
+      "sha256": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4",
+      "bytes": 4469,
+      "purpose": "camera-in-tool mount and the arm chain - every projection and aim point depends on it"
+    }
+  }
+}
