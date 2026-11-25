@@ -1,0 +1,53 @@
+wrist camera: reference, tool cad_parallel, resolved fovy 47.0000 deg (B5 reference 37e7232, measured vs IRL 95.8 px)
+START mode=REMOTE armed=True fault=None jaw=27.0 roll=0.2
+PREDICT pawn@e5 via square: (14.0, 14.0) ({'source': 'cartesian square centre'})
+AIM (14.0, 14.0) -- posting to the console overlay
+  image servo 0: {"tip_px": [320.0, 250.0], "tip_z_mm": 110.5, "tip_board_mm": [5.5, -12.3], "target_mm": [14.0, 14.0], "delta_mm": [8.47, 26.34], "sep_mm": 27.67, "markers": 6, "rms_px": 1.15}
+LEG servo 0: {"mode": "xyz", "x_mm": 15.5, "y_mm": 14.4, "z_mm": 79.5}  perr=0.12mm maxdelta=27.0
+  image servo 1: {"tip_px": [320.0, 250.0], "tip_z_mm": 76.9, "tip_board_mm": [17.4, 19.6], "target_mm": [14.0, 14.0], "delta_mm": [-3.37, -5.59], "sep_mm": 6.53, "markers": 5, "rms_px": 1.55}
+LEG servo 1: {"mode": "xyz", "x_mm": 12.3, "y_mm": 11.6, "z_mm": 88.1}  perr=0.54mm maxdelta=5.4
+  image servo 2: {"tip_px": [320.0, 250.0], "tip_z_mm": 86.0, "tip_board_mm": [11.3, 19.2], "target_mm": [14.0, 14.0], "delta_mm": [2.69, -5.23], "sep_mm": 5.88, "markers": 6, "rms_px": 1.28}
+LEG servo 2: {"mode": "xyz", "x_mm": 14.2, "y_mm": 8.9, "z_mm": 79.0}  perr=0.21mm maxdelta=4.4
+  image servo 3: {"tip_px": [320.0, 250.0], "tip_z_mm": 75.1, "tip_board_mm": [15.4, 13.8], "target_mm": [14.0, 14.0], "delta_mm": [-1.37, 0.21], "sep_mm": 1.39, "markers": 5, "rms_px": 1.27}
+CENTRING @obs {"status": "target", "markers": 5, "tip_mm": [14.0, 12.5, 75.1], "piece": {"square": "e5", "x_mm": 14.5, "y_mm": 19.1, "uv": [150.21, 295.61]}, "delta_mm": [0.5, 6.6], "abs_mm": 6.62, "tip_uv": [320.0, 250.0], "at_mm": 75.1}
+CORRECT to (14.5,20.6) mm (delta 0.50,6.60)
+LEG centre: {"mode": "xyz", "x_mm": 14.5, "y_mm": 20.6, "z_mm": 75.1}  perr=0.65mm maxdelta=6.4
+CENTRING @obs after correction {"status": "no target", "markers": 5, "tip_mm": [13.9, 24.4, 71.1], "piece": null, "reason": "centroid 30 mm from the square centre (limit 14 mm)"}
+DESCEND on corrected xy [13.9, 24.4] from z 71.1
+LEG descend 0: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 66.1}  perr=0.04mm maxdelta=3.4
+LEG descend 1: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 58.9}  perr=0.11mm maxdelta=3.1
+LEG descend 2: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 50.6}  perr=0.12mm maxdelta=3.7
+LEG descend 3: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 42.2}  perr=0.14mm maxdelta=3.9
+LEG descend 4: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 33.9}  perr=0.14mm maxdelta=3.9
+LEG descend 5: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 25.5}  perr=0.14mm maxdelta=4.1
+LEG descend 6: {"mode": "xyz", "x_mm": 13.9, "y_mm": 24.4, "z_mm": 17.2}  perr=0.14mm maxdelta=4.2
+CENTRING {"status": "no target", "markers": 0, "tip_mm": [13.0, 29.4, 14.1], "piece": null, "reason": "0 markers, no board pose"}
+SLOW CLOSE
+  jaw -> 70.0
+  jaw -> 64.3
+  jaw -> 58.6
+  jaw -> 52.9
+  jaw -> 47.2
+  jaw -> 41.5
+  jaw -> 35.8
+  jaw -> 30.1
+  jaw -> 24.4
+  jaw -> 18.699999999999996
+  jaw -> 13.0
+SLOW LIFT
+LEG lift: {"mode": "xyz", "x_mm": 14.5, "y_mm": 20.6, "z_mm": 30.0}  perr=0.01mm maxdelta=6.7
+LEG lift: {"mode": "xyz", "x_mm": 14.5, "y_mm": 20.6, "z_mm": 45.0}  perr=1.11mm maxdelta=7.5
+LEG lift: {"mode": "xyz", "x_mm": 14.5, "y_mm": 20.6, "z_mm": 60.0}  perr=1.06mm maxdelta=6.9
+PLACE -> e6 (14.0,42.0)
+LEG carry: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 70.0}  perr=0.02mm maxdelta=11.8
+LEG place descend 0: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 62.5}  perr=0.11mm maxdelta=3.4
+LEG place descend 1: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 53.9}  perr=0.12mm maxdelta=3.8
+LEG place descend 2: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 46.3}  perr=0.13mm maxdelta=3.6
+LEG place descend 3: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 38.3}  perr=0.14mm maxdelta=3.9
+LEG place descend 4: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 30.2}  perr=0.15mm maxdelta=4.1
+LEG place descend 5: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 22.1}  perr=0.16mm maxdelta=4.5
+LEG place descend 6: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 15.0}  perr=0.11mm maxdelta=4.0
+LEG place lift: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 30.0}  perr=0.03mm maxdelta=8.9
+LEG place lift: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 45.0}  perr=1.31mm maxdelta=8.2
+LEG place lift: {"mode": "xyz", "x_mm": 14.0, "y_mm": 42.0, "z_mm": 60.0}  perr=1.0mm maxdelta=6.9
+FINAL tip [13.2 44.  59.8] jaw 69.5 fault None

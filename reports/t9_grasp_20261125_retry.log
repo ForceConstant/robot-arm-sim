@@ -1,0 +1,4 @@
+wrist camera: reference, tool cad_parallel, resolved fovy 47.0000 deg (B5 reference 37e7232, measured vs IRL 95.8 px)
+START mode=REMOTE armed=True fault=None jaw=27.2 roll=0.1
+PREDICT pawn@c5 via measured: None ({'source': 'detector', 'status': 'no target', 'markers': 3, 'reason': 'no deviating component at the square centre'})
+no prediction

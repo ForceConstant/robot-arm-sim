@@ -1,0 +1,110 @@
+{
+  "backend": "irl",
+  "hover_mm": 60.0,
+  "dry_run": false,
+  "gate_mm": 3.0,
+  "gate_deg": 8.0,
+  "limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -89.98,
+      90.07
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "keep_in": {
+    "x_mm": 118.0,
+    "y_mm": 118.0,
+    "z_min_mm": -5.0,
+    "z_max_mm": 320.0
+  },
+  "stream": {
+    "attached": true,
+    "error": null
+  },
+  "stopped": null,
+  "squares": [
+    {
+      "square": "g8",
+      "target": [
+        70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.07,
+      "detail": null,
+      "achieved": [
+        67.6,
+        99.3,
+        57.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 69.8,
+          "y": 97.9,
+          "zmin": 60.0
+        },
+        "samples": 27
+      }
+    },
+    {
+      "square": "h8",
+      "target": [
+        98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.68,
+      "detail": null,
+      "achieved": [
+        96.9,
+        98.6,
+        58.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.9,
+          "y": 98.0,
+          "zmin": 60.0
+        },
+        "samples": 9
+      }
+    }
+  ]
+}

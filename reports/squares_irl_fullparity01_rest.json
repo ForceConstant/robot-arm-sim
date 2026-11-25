@@ -1,0 +1,149 @@
+{
+  "backend": "irl",
+  "hover_mm": 60.0,
+  "dry_run": false,
+  "gate_mm": 3.0,
+  "gate_deg": 8.0,
+  "limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -89.98,
+      90.07
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "keep_in": {
+    "x_mm": 118.0,
+    "y_mm": 118.0,
+    "z_min_mm": -5.0,
+    "z_max_mm": 320.0
+  },
+  "stream": {
+    "attached": true,
+    "error": null
+  },
+  "stopped": "HTTP 500 on f8",
+  "squares": [
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "HTTP 409: {\"detail\":\"no reachable pose: off by 1.83 mm / 12.284 deg\"}",
+      "achieved": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.5,
+          "y": 97.4,
+          "zmin": 59.6
+        },
+        "samples": 30
+      }
+    },
+    {
+      "square": "d8",
+      "target": [
+        -14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "pre-check: approach 10.1 deg > 8 deg",
+      "achieved": null,
+      "joints_deg": {
+        "shoulder_pan": -7.376,
+        "shoulder_lift": -60.518,
+        "elbow_flex": 61.831,
+        "wrist_flex": 98.768,
+        "wrist_roll": 81.476,
+        "gripper": 26.96
+      },
+      "margins_deg": {
+        "shoulder_pan": 101.61,
+        "shoulder_lift": 46.53,
+        "elbow_flex": 32.92,
+        "wrist_flex": 0.02,
+        "wrist_roll": 8.59
+      },
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 97.1,
+          "zmin": 59.3
+        },
+        "samples": 42
+      }
+    },
+    {
+      "square": "e8",
+      "target": [
+        14.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "HTTP 409: {\"detail\":\"no reachable pose: off by 1.37 mm / 10.478 deg\"}",
+      "achieved": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 19.0,
+          "y": 97.6,
+          "zmin": 59.8
+        },
+        "samples": 30
+      }
+    },
+    {
+      "square": "f8",
+      "target": [
+        42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "HTTP 500: Internal Server Error",
+      "achieved": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 43.3,
+          "y": 98.0,
+          "zmin": 60.0
+        },
+        "samples": 29
+      }
+    }
+  ]
+}

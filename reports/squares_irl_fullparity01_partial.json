@@ -1,0 +1,1924 @@
+{
+  "backend": "irl",
+  "hover_mm": 60.0,
+  "dry_run": false,
+  "gate_mm": 3.0,
+  "gate_deg": 8.0,
+  "limits": {
+    "shoulder_pan": [
+      -108.99,
+      121.38
+    ],
+    "shoulder_lift": [
+      -107.05,
+      108.64
+    ],
+    "elbow_flex": [
+      -96.68,
+      94.75
+    ],
+    "wrist_flex": [
+      -104.59,
+      98.79
+    ],
+    "wrist_roll": [
+      -89.98,
+      90.07
+    ],
+    "gripper": [
+      0.0,
+      100.0
+    ]
+  },
+  "keep_in": {
+    "x_mm": 118.0,
+    "y_mm": 118.0,
+    "z_min_mm": -5.0,
+    "z_max_mm": 320.0
+  },
+  "stream": {
+    "attached": true,
+    "error": null
+  },
+  "stopped": "HTTP 409 on c8",
+  "squares": [
+    {
+      "square": "a1",
+      "target": [
+        -98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.87,
+      "detail": null,
+      "achieved": [
+        -96.7,
+        -95.1,
+        52.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.8,
+          "y": 97.2,
+          "zmin": 59.7
+        },
+        "samples": 31
+      }
+    },
+    {
+      "square": "b1",
+      "target": [
+        -70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.06,
+      "detail": null,
+      "achieved": [
+        -67.6,
+        -95.6,
+        56.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.8,
+          "y": 98.2,
+          "zmin": 59.7
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "c1",
+      "target": [
+        -42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.43,
+      "detail": null,
+      "achieved": [
+        -40.2,
+        -94.1,
+        55.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 98.4,
+          "zmin": 59.9
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "d1",
+      "target": [
+        -14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.4,
+      "detail": null,
+      "achieved": [
+        -13.0,
+        -97.0,
+        57.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 98.4,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "e1",
+      "target": [
+        14.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.71,
+      "detail": null,
+      "achieved": [
+        14.6,
+        -94.0,
+        53.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 98.4,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "f1",
+      "target": [
+        42.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.69,
+      "detail": null,
+      "achieved": [
+        42.5,
+        -94.7,
+        53.2
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 98.4,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "g1",
+      "target": [
+        70.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.87,
+      "detail": null,
+      "achieved": [
+        69.7,
+        -93.4,
+        52.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 98.6,
+          "zmin": 59.9
+        },
+        "samples": 8
+      }
+    },
+    {
+      "square": "h1",
+      "target": [
+        98.0,
+        -98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.33,
+      "detail": null,
+      "achieved": [
+        95.5,
+        -93.8,
+        55.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 98.5,
+          "zmin": 59.9
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "a2",
+      "target": [
+        -98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.15,
+      "detail": null,
+      "achieved": [
+        -96.5,
+        -66.4,
+        55.9
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 109.9,
+          "zmin": 59.6
+        },
+        "samples": 24
+      }
+    },
+    {
+      "square": "b2",
+      "target": [
+        -70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.07,
+      "detail": null,
+      "achieved": [
+        -68.3,
+        -67.3,
+        56.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.4,
+          "y": 70.3,
+          "zmin": 59.6
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "c2",
+      "target": [
+        -42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.06,
+      "detail": null,
+      "achieved": [
+        -40.9,
+        -67.1,
+        56.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 70.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "d2",
+      "target": [
+        -14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.38,
+      "detail": null,
+      "achieved": [
+        -13.4,
+        -68.6,
+        58.2
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 70.4,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "e2",
+      "target": [
+        14.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.73,
+      "detail": null,
+      "achieved": [
+        14.4,
+        -66.3,
+        54.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 70.4,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "f2",
+      "target": [
+        42.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.82,
+      "detail": null,
+      "achieved": [
+        42.1,
+        -65.5,
+        53.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 70.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "g2",
+      "target": [
+        70.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.83,
+      "detail": null,
+      "achieved": [
+        68.9,
+        -65.9,
+        53.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 70.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "h2",
+      "target": [
+        98.0,
+        -70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.94,
+      "detail": null,
+      "achieved": [
+        96.6,
+        -65.5,
+        52.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 70.6,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "a3",
+      "target": [
+        -98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.27,
+      "detail": null,
+      "achieved": [
+        -97.0,
+        -38.1,
+        56.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 82.5,
+          "zmin": 60.0
+        },
+        "samples": 27
+      }
+    },
+    {
+      "square": "b3",
+      "target": [
+        -70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.04,
+      "detail": null,
+      "achieved": [
+        -68.0,
+        -39.1,
+        57.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "c3",
+      "target": [
+        -42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.14,
+      "detail": null,
+      "achieved": [
+        -40.6,
+        -38.5,
+        56.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "d3",
+      "target": [
+        -14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.32,
+      "detail": null,
+      "achieved": [
+        -13.2,
+        -41.1,
+        58.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "e3",
+      "target": [
+        14.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.53,
+      "detail": null,
+      "achieved": [
+        14.0,
+        -39.2,
+        55.7
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "f3",
+      "target": [
+        42.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.78,
+      "detail": null,
+      "achieved": [
+        41.3,
+        -37.9,
+        54.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "g3",
+      "target": [
+        70.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.52,
+      "detail": null,
+      "achieved": [
+        69.0,
+        -38.1,
+        54.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 42.5,
+          "zmin": 60.0
+        },
+        "samples": 5
+      }
+    },
+    {
+      "square": "h3",
+      "target": [
+        98.0,
+        -42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.73,
+      "detail": null,
+      "achieved": [
+        96.5,
+        -38.7,
+        53.9
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 42.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "a4",
+      "target": [
+        -98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.17,
+      "detail": null,
+      "achieved": [
+        -96.3,
+        -10.4,
+        56.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 56.4,
+          "zmin": 58.9
+        },
+        "samples": 30
+      }
+    },
+    {
+      "square": "b4",
+      "target": [
+        -70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.14,
+      "detail": null,
+      "achieved": [
+        -68.2,
+        -10.8,
+        57.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.8,
+          "y": 14.3,
+          "zmin": 58.9
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "c4",
+      "target": [
+        -42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.02,
+      "detail": null,
+      "achieved": [
+        -41.0,
+        -10.1,
+        57.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "d4",
+      "target": [
+        -14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.27,
+      "detail": null,
+      "achieved": [
+        -13.3,
+        -12.5,
+        59.2
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "e4",
+      "target": [
+        14.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.09,
+      "detail": null,
+      "achieved": [
+        13.8,
+        -11.4,
+        57.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "f4",
+      "target": [
+        42.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.27,
+      "detail": null,
+      "achieved": [
+        41.8,
+        -11.5,
+        56.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "g4",
+      "target": [
+        70.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.58,
+      "detail": null,
+      "achieved": [
+        69.0,
+        -10.5,
+        55.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "h4",
+      "target": [
+        98.0,
+        -14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.73,
+      "detail": null,
+      "achieved": [
+        96.6,
+        -10.6,
+        54.7
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 14.6,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "a5",
+      "target": [
+        -98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.11,
+      "detail": null,
+      "achieved": [
+        -96.0,
+        17.4,
+        57.2
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 32.0,
+          "zmin": 60.0
+        },
+        "samples": 35
+      }
+    },
+    {
+      "square": "b5",
+      "target": [
+        -70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.09,
+      "detail": null,
+      "achieved": [
+        -68.0,
+        17.7,
+        57.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.8,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "c5",
+      "target": [
+        -42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.98,
+      "detail": null,
+      "achieved": [
+        -40.6,
+        17.9,
+        57.7
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "d5",
+      "target": [
+        -14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.23,
+      "detail": null,
+      "achieved": [
+        -13.6,
+        14.8,
+        59.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "e5",
+      "target": [
+        14.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.96,
+      "detail": null,
+      "achieved": [
+        14.2,
+        15.3,
+        58.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "f5",
+      "target": [
+        42.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.12,
+      "detail": null,
+      "achieved": [
+        41.5,
+        15.7,
+        57.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 42.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "g5",
+      "target": [
+        70.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.13,
+      "detail": null,
+      "achieved": [
+        69.0,
+        15.5,
+        57.2
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "h5",
+      "target": [
+        98.0,
+        14.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.29,
+      "detail": null,
+      "achieved": [
+        96.3,
+        16.7,
+        56.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 14.0,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "a6",
+      "target": [
+        -98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.23,
+      "detail": null,
+      "achieved": [
+        -95.0,
+        46.1,
+        57.3
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 42.0,
+          "zmin": 60.0
+        },
+        "samples": 40
+      }
+    },
+    {
+      "square": "b6",
+      "target": [
+        -70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.03,
+      "detail": null,
+      "achieved": [
+        -67.9,
+        45.1,
+        57.9
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 42.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "c6",
+      "target": [
+        -42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.96,
+      "detail": null,
+      "achieved": [
+        -40.9,
+        45.1,
+        58.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 70.0,
+          "y": 42.0,
+          "zmin": 60.0
+        },
+        "samples": 8
+      }
+    },
+    {
+      "square": "d6",
+      "target": [
+        -14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.21,
+      "detail": null,
+      "achieved": [
+        -13.6,
+        43.1,
+        59.6
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 41.9,
+          "y": 42.0,
+          "zmin": 59.9
+        },
+        "samples": 9
+      }
+    },
+    {
+      "square": "e6",
+      "target": [
+        14.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.46,
+      "detail": null,
+      "achieved": [
+        14.2,
+        42.3,
+        59.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 14.0,
+          "y": 42.0,
+          "zmin": 59.9
+        },
+        "samples": 9
+      }
+    },
+    {
+      "square": "f6",
+      "target": [
+        42.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.54,
+      "detail": null,
+      "achieved": [
+        41.9,
+        42.5,
+        59.0
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 41.9,
+          "y": 42.0,
+          "zmin": 59.9
+        },
+        "samples": 8
+      }
+    },
+    {
+      "square": "g6",
+      "target": [
+        70.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.8,
+      "detail": null,
+      "achieved": [
+        69.6,
+        42.9,
+        58.3
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 69.9,
+          "y": 42.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "h6",
+      "target": [
+        98.0,
+        42.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.03,
+      "detail": null,
+      "achieved": [
+        96.8,
+        43.3,
+        57.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 42.0,
+          "zmin": 60.0
+        },
+        "samples": 6
+      }
+    },
+    {
+      "square": "a7",
+      "target": [
+        -98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.06,
+      "detail": null,
+      "achieved": [
+        -95.0,
+        72.6,
+        57.8
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 98.0,
+          "y": 70.0,
+          "zmin": 60.0
+        },
+        "samples": 48
+      }
+    },
+    {
+      "square": "b7",
+      "target": [
+        -70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.9,
+      "detail": null,
+      "achieved": [
+        -67.9,
+        72.4,
+        58.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.9,
+          "y": 70.0,
+          "zmin": 60.0
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "c7",
+      "target": [
+        -42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.01,
+      "detail": null,
+      "achieved": [
+        -40.7,
+        72.9,
+        57.7
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 69.9,
+          "y": 70.0,
+          "zmin": 60.0
+        },
+        "samples": 10
+      }
+    },
+    {
+      "square": "d7",
+      "target": [
+        -14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.27,
+      "detail": null,
+      "achieved": [
+        -13.6,
+        70.8,
+        59.4
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 41.9,
+          "y": 70.0,
+          "zmin": 59.9
+        },
+        "samples": 11
+      }
+    },
+    {
+      "square": "e7",
+      "target": [
+        14.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.3,
+      "detail": null,
+      "achieved": [
+        13.9,
+        70.2,
+        59.1
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 13.9,
+          "y": 70.0,
+          "zmin": 59.9
+        },
+        "samples": 11
+      }
+    },
+    {
+      "square": "f7",
+      "target": [
+        42.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.52,
+      "detail": null,
+      "achieved": [
+        41.7,
+        70.9,
+        58.6
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 41.9,
+          "y": 70.0,
+          "zmin": 59.9
+        },
+        "samples": 9
+      }
+    },
+    {
+      "square": "g7",
+      "target": [
+        70.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.7,
+      "detail": null,
+      "achieved": [
+        69.1,
+        70.8,
+        58.5
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 69.9,
+          "y": 70.0,
+          "zmin": 59.9
+        },
+        "samples": 7
+      }
+    },
+    {
+      "square": "h7",
+      "target": [
+        98.0,
+        70.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 0.8,
+      "detail": null,
+      "achieved": [
+        98.0,
+        70.2,
+        58.9
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.9,
+          "y": 70.0,
+          "zmin": 60.0
+        },
+        "samples": 8
+      }
+    },
+    {
+      "square": "a8",
+      "target": [
+        -98.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.13,
+      "detail": null,
+      "achieved": [
+        -94.4,
+        100.1,
+        57.7
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.9,
+          "y": 98.1,
+          "zmin": 59.6
+        },
+        "samples": 58
+      }
+    },
+    {
+      "square": "b8",
+      "target": [
+        -70.0,
+        98.0,
+        60.0
+      ],
+      "solved": true,
+      "settle_deg": 1.11,
+      "detail": null,
+      "achieved": [
+        -67.3,
+        100.2,
+        57.6
+      ],
+      "joints_deg": {},
+      "roll_deg": -0.18,
+      "roll_delta_deg": 0.0,
+      "marker": null,
+      "aim_pixel": null,
+      "offset_px": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 97.6,
+          "y": 98.1,
+          "zmin": 59.6
+        },
+        "samples": 9
+      }
+    },
+    {
+      "square": "c8",
+      "target": [
+        -42.0,
+        98.0,
+        60.0
+      ],
+      "solved": false,
+      "settle_deg": null,
+      "detail": "HTTP 409: {\"detail\":\"no reachable pose: off by 1.83 mm / 12.284 deg\"}",
+      "achieved": null,
+      "clearance": {
+        "clear": true,
+        "violations": 0,
+        "worst": {
+          "x": 69.9,
+          "y": 98.1,
+          "zmin": 59.5
+        },
+        "samples": 12
+      }
+    }
+  ]
+}

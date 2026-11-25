@@ -1,0 +1,126 @@
+Resolved 43 packages in 7ms
+Checked 43 packages in 0.79ms
+limits: shoulder_pan -108.99..121.38, shoulder_lift -107.05..108.64, elbow_flex -96.68..94.75, wrist_flex -104.59..98.79, wrist_roll -89.98..90.07, gripper 0..100
+wrist camera: reference, tool cad_parallel, resolved fovy 47.0000 deg (B5 reference 37e7232, measured vs IRL 95.8 px)
+stream: attached http://192.168.1.171:8080/stream (detector active)
+leg 01/64 a1: board (-98.0,-98.0,+60.0) span 0 | solve 0.84 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +3.7 deg
+  done: settle 1.87 deg | tip [-96.7, -95.1, 52.0] | roll -0.2 (+0.0)
+leg 02/64 b1: board (-70.0,-98.0,+60.0) span 0 | solve 0.14 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +7.6 deg
+  done: settle 1.06 deg | tip [-67.6, -95.6, 56.1] | roll -0.2 (+0.0)
+leg 03/64 c1: board (-42.0,-98.0,+60.0) span 0 | solve 0.05 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +9.7 deg
+  done: settle 1.43 deg | tip [-40.2, -94.1, 55.0] | roll -0.2 (+0.0)
+leg 04/64 d1: board (-14.0,-98.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +10.2 deg
+  done: settle 0.4 deg | tip [-13.0, -97.0, 57.5] | roll -0.2 (+0.0)
+leg 05/64 e1: board (+14.0,-98.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +9.4 deg
+  done: settle 1.71 deg | tip [14.6, -94.0, 53.0] | roll -0.2 (+0.0)
+leg 06/64 f1: board (+42.0,-98.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +7.0 deg
+  done: settle 1.69 deg | tip [42.5, -94.7, 53.2] | roll -0.2 (+0.0)
+leg 07/64 g1: board (+70.0,-98.0,+60.0) span 0 | solve 0.14 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +1.8 deg
+  done: settle 1.87 deg | tip [69.7, -93.4, 52.0] | roll -0.2 (+0.0)
+leg 08/64 h1: board (+98.0,-98.0,+60.0) span 0 | solve 0.07 mm / 2.3 deg | roll -0.2 | tightest wrist_flex +0.0 deg
+  done: settle 1.33 deg | tip [95.5, -93.8, 55.1] | roll -0.2 (+0.0)
+leg 09/64 a2: board (-98.0,-70.0,+60.0) span 0 | solve 0.81 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +15.2 deg
+  done: settle 1.15 deg | tip [-96.5, -66.4, 55.9] | roll -0.2 (+0.0)
+leg 10/64 b2: board (-70.0,-70.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +17.0 deg
+  done: settle 1.07 deg | tip [-68.3, -67.3, 56.5] | roll -0.2 (+0.0)
+leg 11/64 c2: board (-42.0,-70.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +18.1 deg
+  done: settle 1.06 deg | tip [-40.9, -67.1, 56.5] | roll -0.2 (+0.0)
+leg 12/64 d2: board (-14.0,-70.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +18.5 deg
+  done: settle 0.38 deg | tip [-13.4, -68.6, 58.2] | roll -0.2 (+0.0)
+leg 13/64 e2: board (+14.0,-70.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +18.0 deg
+  done: settle 1.73 deg | tip [14.4, -66.3, 54.0] | roll -0.2 (+0.0)
+leg 14/64 f2: board (+42.0,-70.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +16.7 deg
+  done: settle 1.82 deg | tip [42.1, -65.5, 53.4] | roll -0.2 (+0.0)
+leg 15/64 g2: board (+70.0,-70.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +14.3 deg
+  done: settle 1.83 deg | tip [68.9, -65.9, 53.0] | roll -0.2 (+0.0)
+leg 16/64 h2: board (+98.0,-70.0,+60.0) span 0 | solve 0.05 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +10.1 deg
+  done: settle 1.94 deg | tip [96.6, -65.5, 52.0] | roll -0.2 (+0.0)
+leg 17/64 a3: board (-98.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +20.6 deg
+  done: settle 1.27 deg | tip [-97.0, -38.1, 56.1] | roll -0.2 (+0.0)
+leg 18/64 b3: board (-70.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +21.9 deg
+  done: settle 1.04 deg | tip [-68.0, -39.1, 57.1] | roll -0.2 (+0.0)
+leg 19/64 c3: board (-42.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.6 deg
+  done: settle 1.14 deg | tip [-40.6, -38.5, 56.8] | roll -0.2 (+0.0)
+leg 20/64 d3: board (-14.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.8 deg
+  done: settle 0.32 deg | tip [-13.2, -41.1, 58.8] | roll -0.2 (+0.0)
+leg 21/64 e3: board (+14.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.5 deg
+  done: settle 1.53 deg | tip [14.0, -39.2, 55.7] | roll -0.2 (+0.0)
+leg 22/64 f3: board (+42.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +21.7 deg
+  done: settle 1.78 deg | tip [41.3, -37.9, 54.5] | roll -0.2 (+0.0)
+leg 23/64 g3: board (+70.0,-42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +20.2 deg
+  done: settle 1.52 deg | tip [69.0, -38.1, 54.8] | roll -0.2 (+0.0)
+leg 24/64 h3: board (+98.0,-42.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +17.6 deg
+  done: settle 1.73 deg | tip [96.5, -38.7, 53.9] | roll -0.2 (+0.0)
+leg 25/64 a4: board (-98.0,-14.0,+60.0) span 0 | solve 1.35 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.0 deg
+  done: settle 1.17 deg | tip [-96.3, -10.4, 56.8] | roll -0.2 (+0.0)
+leg 26/64 b4: board (-70.0,-14.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.1 deg
+  done: settle 1.14 deg | tip [-68.2, -10.8, 57.1] | roll -0.2 (+0.0)
+leg 27/64 c4: board (-42.0,-14.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.2 deg
+  done: settle 1.02 deg | tip [-41.0, -10.1, 57.4] | roll -0.2 (+0.0)
+leg 28/64 d4: board (-14.0,-14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.2 deg
+  done: settle 0.27 deg | tip [-13.3, -12.5, 59.2] | roll -0.2 (+0.0)
+leg 29/64 e4: board (+14.0,-14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.2 deg
+  done: settle 1.09 deg | tip [13.8, -11.4, 57.1] | roll -0.2 (+0.0)
+leg 30/64 f4: board (+42.0,-14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.0 deg
+  done: settle 1.27 deg | tip [41.8, -11.5, 56.5] | roll -0.2 (+0.0)
+leg 31/64 g4: board (+70.0,-14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.3 deg
+  done: settle 1.58 deg | tip [69.0, -10.5, 55.4] | roll -0.2 (+0.0)
+leg 32/64 h4: board (+98.0,-14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +21.8 deg
+  done: settle 1.73 deg | tip [96.6, -10.6, 54.7] | roll -0.2 (+0.0)
+leg 33/64 a5: board (-98.0,+14.0,+60.0) span 0 | solve 0.18 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.1 deg
+  done: settle 1.11 deg | tip [-96.0, 17.4, 57.2] | roll -0.2 (+0.0)
+leg 34/64 b5: board (-70.0,+14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.6 deg
+  done: settle 1.09 deg | tip [-68.0, 17.7, 57.5] | roll -0.2 (+0.0)
+leg 35/64 c5: board (-42.0,+14.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.9 deg
+  done: settle 0.98 deg | tip [-40.6, 17.9, 57.7] | roll -0.2 (+0.0)
+leg 36/64 d5: board (-14.0,+14.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.7 deg
+  done: settle 0.23 deg | tip [-13.6, 14.8, 59.4] | roll -0.2 (+0.0)
+leg 37/64 e5: board (+14.0,+14.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.0 deg
+  done: settle 0.96 deg | tip [14.2, 15.3, 58.0] | roll -0.2 (+0.0)
+leg 38/64 f5: board (+42.0,+14.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.7 deg
+  done: settle 1.12 deg | tip [41.5, 15.7, 57.5] | roll -0.2 (+0.0)
+leg 39/64 g5: board (+70.0,+14.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.2 deg
+  done: settle 1.13 deg | tip [69.0, 15.5, 57.2] | roll -0.2 (+0.0)
+leg 40/64 h5: board (+98.0,+14.0,+60.0) span 0 | solve 0.03 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.8 deg
+  done: settle 1.29 deg | tip [96.3, 16.7, 56.4] | roll -0.2 (+0.0)
+leg 41/64 a6: board (-98.0,+42.0,+60.0) span 0 | solve 0.02 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +22.6 deg
+  done: settle 1.23 deg | tip [-95.0, 46.1, 57.3] | roll -0.2 (+0.0)
+leg 42/64 b6: board (-70.0,+42.0,+60.0) span 0 | solve 0.05 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +20.3 deg
+  done: settle 1.03 deg | tip [-67.9, 45.1, 57.9] | roll -0.2 (+0.0)
+leg 43/64 c6: board (-42.0,+42.0,+60.0) span 0 | solve 0.07 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +18.2 deg
+  done: settle 0.96 deg | tip [-40.9, 45.1, 58.1] | roll -0.2 (+0.0)
+leg 44/64 d6: board (-14.0,+42.0,+60.0) span 0 | solve 0.08 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +17.4 deg
+  done: settle 0.21 deg | tip [-13.6, 43.1, 59.6] | roll -0.2 (+0.0)
+leg 45/64 e6: board (+14.0,+42.0,+60.0) span 0 | solve 0.08 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +18.5 deg
+  done: settle 0.46 deg | tip [14.2, 42.3, 59.1] | roll -0.2 (+0.0)
+leg 46/64 f6: board (+42.0,+42.0,+60.0) span 0 | solve 0.07 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +20.8 deg
+  done: settle 0.54 deg | tip [41.9, 42.5, 59.0] | roll -0.2 (+0.0)
+leg 47/64 g6: board (+70.0,+42.0,+60.0) span 0 | solve 0.06 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.0 deg
+  done: settle 0.8 deg | tip [69.6, 42.9, 58.3] | roll -0.2 (+0.0)
+leg 48/64 h6: board (+98.0,+42.0,+60.0) span 0 | solve 0.04 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +24.1 deg
+  done: settle 1.03 deg | tip [96.8, 43.3, 57.4] | roll -0.2 (+0.0)
+leg 49/64 a7: board (-98.0,+70.0,+60.0) span 0 | solve 0.07 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +19.1 deg
+  done: settle 1.06 deg | tip [-95.0, 72.6, 57.8] | roll -0.2 (+0.0)
+leg 50/64 b7: board (-70.0,+70.0,+60.0) span 0 | solve 0.07 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +13.9 deg
+  done: settle 0.9 deg | tip [-67.9, 72.4, 58.1] | roll -0.2 (+0.0)
+leg 51/64 c7: board (-42.0,+70.0,+60.0) span 0 | solve 0.12 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +9.2 deg
+  done: settle 1.01 deg | tip [-40.7, 72.9, 57.7] | roll -0.2 (+0.0)
+leg 52/64 d7: board (-14.0,+70.0,+60.0) span 0 | solve 0.17 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +7.5 deg
+  done: settle 0.27 deg | tip [-13.6, 70.8, 59.4] | roll -0.2 (+0.0)
+leg 53/64 e7: board (+14.0,+70.0,+60.0) span 0 | solve 0.17 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +10.0 deg
+  done: settle 0.3 deg | tip [13.9, 70.2, 59.1] | roll -0.2 (+0.0)
+leg 54/64 f7: board (+42.0,+70.0,+60.0) span 0 | solve 0.16 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +14.9 deg
+  done: settle 0.52 deg | tip [41.7, 70.9, 58.6] | roll -0.2 (+0.0)
+leg 55/64 g7: board (+70.0,+70.0,+60.0) span 0 | solve 0.10 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +19.8 deg
+  done: settle 0.7 deg | tip [69.1, 70.8, 58.5] | roll -0.2 (+0.0)
+leg 56/64 h7: board (+98.0,+70.0,+60.0) span 0 | solve 0.07 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +23.1 deg
+  done: settle 0.8 deg | tip [98.0, 70.2, 58.9] | roll -0.2 (+0.0)
+leg 57/64 a8: board (-98.0,+98.0,+60.0) span 0 | solve 0.52 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +14.3 deg
+  done: settle 1.13 deg | tip [-94.4, 100.1, 57.7] | roll -0.2 (+0.0)
+leg 58/64 b8: board (-70.0,+98.0,+60.0) span 0 | solve 0.11 mm / 0.0 deg | roll -0.2 | tightest wrist_flex +5.1 deg
+  done: settle 1.11 deg | tip [-67.3, 100.2, 57.6] | roll -0.2 (+0.0)
+leg 59/64 c8: board (-42.0,+98.0,+60.0) span 0 | solve 0.74 mm / 5.3 deg | roll -0.2 | tightest wrist_flex +0.0 deg
+  REFUSED by app: HTTP 409 {"detail":"no reachable pose: off by 1.83 mm / 12.284 deg"}
+irl: 58/59 solved -> reports/squares_irl_fullparity01.json
+STOPPED: HTTP 409 on c8
+  FAIL c8: HTTP 409: {"detail":"no reachable pose: off by 1.83 mm / 12.284 deg"}

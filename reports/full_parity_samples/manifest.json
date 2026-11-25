@@ -1,0 +1,87 @@
+{
+  "tool": "tools/full_parity_sample_images.py",
+  "git_head": "d2084823cf452f1fa0aec5c4e078cc7c8ed32da5",
+  "pose": {
+    "shoulder_pan": 11.69,
+    "shoulder_lift": -65.19,
+    "elbow_flex": 80.57,
+    "wrist_flex": 44.35,
+    "wrist_roll": 21.54,
+    "gripper": 0.86
+  },
+  "note": "T8 per Brian 2026-11-25: no external IRL photographs required; sim external views + sim/IRL wrist pair + aim overlay",
+  "laser": {
+    "third_person": {
+      "azimuth": 135.0,
+      "elevation": -35.0,
+      "distance": 1.2,
+      "lookat": [
+        0.0,
+        0.0,
+        0.4332
+      ],
+      "standoff_mm": 156.22,
+      "board_hit_world_mm": [
+        36.8,
+        4.0,
+        433.2
+      ]
+    },
+    "wrist": "tool -z axis projected through the model's wrist camera"
+  },
+  "images": {
+    "sim_external.png": {
+      "mean": 88.81,
+      "std": 64.84,
+      "distinct_colors": 152765,
+      "size": [
+        1280,
+        1088
+      ]
+    },
+    "sim_jaw_closeup.png": {
+      "mean": 73.77,
+      "std": 71.01,
+      "distinct_colors": 21739,
+      "size": [
+        640,
+        564
+      ]
+    },
+    "sim_wrist.png": {
+      "mean": 76.44,
+      "std": 79.9,
+      "distinct_colors": 7514,
+      "size": [
+        640,
+        564
+      ]
+    },
+    "sim_aim_laser_3p.png": {
+      "mean": 72.88,
+      "std": 48.12,
+      "distinct_colors": 16043,
+      "size": [
+        640,
+        564
+      ]
+    }
+  },
+  "t8_irl": {
+    "captured_at": "2026-11-25T13:34:27",
+    "joint_pose": "11.69,-65.19,80.57,44.35,21.54",
+    "board_solve": {
+      "markers": 1,
+      "rms_px": null
+    },
+    "aim_mm": [
+      0,
+      0,
+      15
+    ],
+    "files": [
+      "t8_wrist_pair.png",
+      "t8_aim_overlay.png"
+    ]
+  }
+}

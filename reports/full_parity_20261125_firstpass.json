@@ -1,0 +1,287 @@
+{
+  "test_id": "FULL-PARITY-01",
+  "date": "2026-11-25T13:01:03-05:00",
+  "result": "FULL-PARITY-01: not a pass. T1,T3,T4,T5,T7 pass; T8 approved; T2/T2b carry the 11+3 documented pre-existing failures; T9 fails (accepted as a known gap).",
+  "host": "cachyos-x8664 / CachyOS",
+  "heads": {
+    "local_source": "805dec0a28ca5a309bf4213ccc10342b85645e01",
+    "bc250": "805dec0a28ca5a309bf4213ccc10342b85645e01"
+  },
+  "dirty_tracked": [],
+  "sync_method": "git bundle 805dec0 -> git fetch + merge --ff-only on BC-250",
+  "rig_state": {
+    "board.json": {
+      "manifest_sha256": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
+      "snapshot_sha256": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665"
+    },
+    "live_config.json": {
+      "manifest_sha256": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8",
+      "snapshot_sha256": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8"
+    },
+    "wrist_calibration.json": {
+      "manifest_sha256": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b",
+      "snapshot_sha256": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b"
+    },
+    "mount_calibration.json": {
+      "manifest_sha256": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4",
+      "snapshot_sha256": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4"
+    }
+  },
+  "rig_verify_before": "MATCHES the manifest",
+  "rig_verify_after": "MATCHES the manifest",
+  "solver": "mink",
+  "move_tolerance_mm": 3.0,
+  "gripper": {
+    "kind": "cad_parallel",
+    "asset_root": ".private/gripper-assets-5y",
+    "why": "pinned 5y pack; launcher default .private/gripper-assets is pre-5y and fails the tool-frame pins"
+  },
+  "tip_in_chain_m": [
+    0.0,
+    0.0,
+    -0.11045
+  ],
+  "board": {
+    "x_mm": -27.62,
+    "y_mm": -31.63,
+    "z_mm": 432.65,
+    "yaw_deg": 184.32
+  },
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "intrinsics": [
+      831.897,
+      833.014,
+      320.0,
+      240.0
+    ],
+    "calibration_id": "handeye-2026-11-18T11-block4c",
+    "mount_source": "rig_state/mount_calibration.json (solved hand-eye)",
+    "assumed_focal_px": 690.0
+  },
+  "steps": {
+    "T1": {
+      "status": "PASS",
+      "evidence": "git diff --check clean; rig_state verify MATCHES; board exact; ik_solver mink; tolerance 3.0; TIP_IN_CHAIN (0,0,-0.11045)"
+    },
+    "T2": {
+      "status": "FAIL (documented pre-existing)",
+      "tests": 274,
+      "passed": 221,
+      "failed": 11,
+      "skipped": 42,
+      "failures": [
+        "test_board_registration (2)",
+        "test_frame_pins (1)",
+        "test_hand_eye (1)",
+        "test_marker_scan (4)",
+        "test_self_occlusion (3)"
+      ],
+      "note": "exactly the 11 failures listed in docs/TESTS.md \u00a74b; totals match the documented baseline"
+    },
+    "T2b": {
+      "status": "FAIL (documented pre-existing)",
+      "tests": 47,
+      "passed": 44,
+      "failed": 3,
+      "failures": [
+        "test_frame_pins::test_rig_state_snapshot_matches_manifest",
+        "test_hand_eye::test_refinement_recovers_a_perturbed_mount",
+        "test_tool_orientation::test_base_extents_in_its_own_part_frame"
+      ],
+      "pins": "4/5 literal pins pass"
+    },
+    "T3": {
+      "status": "PASS",
+      "samples": 5292,
+      "worst_delta_mm": 0.0,
+      "worst_delta_rot_deg": 3.42e-06,
+      "tolerance_mm": 0.1
+    },
+    "T4": {
+      "status": "PASS (count), distribution noted",
+      "squares": 64,
+      "solved": 64,
+      "tip_err_mm": {
+        "p50": 4.21,
+        "p95": 10.29,
+        "max": 12.83
+      },
+      "prior_sim_baseline": {
+        "p50": 3.7,
+        "p95": 12.3,
+        "max": 14.92
+      },
+      "bridge_limits": {
+        "shoulder_pan": [
+          -108.99,
+          121.38
+        ],
+        "shoulder_lift": [
+          -107.05,
+          108.64
+        ],
+        "elbow_flex": [
+          -96.68,
+          94.75
+        ],
+        "wrist_flex": [
+          -104.59,
+          98.79
+        ],
+        "wrist_roll": [
+          -89.98,
+          90.07
+        ],
+        "gripper": [
+          0.0,
+          100.0
+        ]
+      },
+      "note": "64/64 solved; p50 +0.51 mm vs prior sim run, p95 -2.0 mm; a1 moved 3.85->12.14 mm (branch/seed, watch)"
+    },
+    "T4b_phase2_squares": {
+      "status": "NOTE \u2014 real MoveSolver wiring, unconstrained limits",
+      "gate20_mink": 61,
+      "gate3_mink": 61,
+      "gate20_ls": 64,
+      "gate3_ls": 9,
+      "mink_regressions_20mm": 3,
+      "gate_deg": 8.0,
+      "note": "3 corner squares (c8,d8,e8) exceed the 8 deg approach gate; mink residual max 2.78 mm. Not the 64/64 T4 column: different limits and an approach-angle gate."
+    },
+    "T6": {
+      "status": "PARTIAL \u2014 60/64 agreement",
+      "compare": "mismatches c8,d8,e8,f8 (sim solved; IRL refused/unconfirmed)",
+      "note": "sim report at 805dec0; run_sim unchanged by c13dae4"
+    },
+    "T7": {
+      "status": "PASS",
+      "note": "rig_state verify MATCHES after motion; arm homed, tip (6.6,-12.3,111.7) mm = 14.0 mm from centre"
+    },
+    "T5": {
+      "status": "COMPLETE 64/64 attempted \u2014 60 solved, 4 not (3 reachability refusals, 1 bridge timeout after motion)",
+      "runner": "tools/cartesian_squares.py; three passes merged (a1..c8, c8..f8, g8..h8) at head c13dae4, same rig state",
+      "solved": 60,
+      "not_solved": 4,
+      "refusals": {
+        "c8": "409 no reachable pose 1.83 mm / 12.284 deg",
+        "d8": "local pre-check: approach 10.1 deg > 8 deg",
+        "e8": "409 no reachable pose 1.37 mm / 10.478 deg",
+        "f8": "HTTP 500: bridge /command read timed out; motion had applied (observed tip 53.6, 95.3, 59.8 vs target 42, 98, 60 = ~11.6 mm); recorded unconfirmed"
+      },
+      "tip_err_mm": {
+        "p50": 4.68,
+        "p95": 8.19,
+        "max": 9.28
+      },
+      "settle_deg": {
+        "p50": 1.09,
+        "p95": 1.83
+      },
+      "roll_delta_deg": [
+        0.0
+      ],
+      "stream": "attached and verified (stream_age 0.2 s, 4.6 fps)",
+      "marker_columns": "absent \u2014 /move returned no square/aim_pixel/offset_px even with /stream attached"
+    },
+    "T8": {
+      "status": "APPROVED by Brian 2026-11-25 14:01 after the camera-roll fix (commit 255cba3)",
+      "tool_fixes_applied": [
+        "tools/full_parity_sample_images.py now applies sim_wrist_roll() (-87.21 deg); it previously used the live roll directly",
+        "wrist render now uses the measured fovy 32.1445 deg instead of the 47 deg marker-size fudge",
+        "added --joints so a pose that solves markers can be rendered"
+      ],
+      "artifacts": "reports/full_parity_samples/ (first sheet); corrected sim_wrist.png rendered at pan -45 with the fixes",
+      "review_failure": "Brian 2026-11-25: sim camera did not line up with the aim laser; aim missing from IRL; sim camera wrong rotation",
+      "fix": {
+        "camera": "chess_sim/scene.py adds wrist_landscape on the gripper body: R @ Rz(-90), fovy 32.1445 deg; perception Camera.WRIST untouched",
+        "roll_joint": "tools/full_parity_sample_images.py applies sim_wrist_roll() (-87.21 deg)",
+        "irl_aim": "captured at pan -45 where the board solves 6 markers, rms 1.25; aim visible=true at (73.6,266.6)",
+        "verification": {
+          "sim": {
+            "tip_px": [
+              395.8,
+              243.3
+            ],
+            "aim_px": [
+              132.6,
+              241.7
+            ],
+            "offset": [
+              -263.2,
+              -1.6
+            ]
+          },
+          "irl": {
+            "tip_px": [
+              311.97,
+              261.83
+            ],
+            "aim_px": [
+              73.6,
+              266.55
+            ],
+            "offset": [
+              -238.4,
+              4.7
+            ]
+          },
+          "reading": "both offsets horizontal, same sign; residual ~10% scale, no rotation error"
+        },
+        "tests": "test_vision_geometry + test_aim_geometry green; only the two documented failures remain"
+      },
+      "files": [
+        "reports/full_parity_samples/t8_contact_sheet.png",
+        "reports/full_parity_samples/t8_diagnostic.png",
+        "reports/full_parity_samples/t8_wrist_pair.png",
+        "reports/full_parity_samples/t8_aim_overlay.png"
+      ],
+      "approved": {
+        "by": "Brian",
+        "at": "2026-11-25T14:01:00-05:00",
+        "evidence": "corrected contact sheet + diagnostic; sim/IRL aim offsets both horizontal (-263 vs -238 px)"
+      }
+    },
+    "T9": {
+      "status": "FAILED twice (blocking human gate not met)",
+      "attempt": "pawn@e5 -> e6, aim square, --correct, --execute",
+      "result": "full sequence executed (close, lift, carry, place, retreat); final tip (13.2,44.0,59.8), jaw 69.5, no fault; the piece REMAINED at e5 (~2 mm shift), so the grasp did not secure it",
+      "centring": "before close: piece 6.6 mm from tip; the --correct step overshot to y 24.4 while the piece sat at y 19.1 and the descent used that xy",
+      "retry": "c5 with --aim measured aborted at detection: no target, 3 markers, 'no deviating component at the square centre'",
+      "video": "reports/t9_grasp_20261125.gif (240x320, 5 fps, 224 frames, 44.8 s, 11 MB); source mp4 614 frames / 76.75 s",
+      "reviewer": "grasp success criteria NOT satisfied; do not record T9 as approved",
+      "retry_2": {
+        "run": "pawn@e5 -> e6, aim measured, no --correct",
+        "servo": "converged to 1.61 mm at the measured piece; descent then used tip xy 5.3 mm from the piece",
+        "verdict": "an isolated still-frame review of the recorded video reports the jaws empty at lift and no piece held; the sequence completed with no fault",
+        "gif": "reports/t9_grasp_20261125_retry.gif",
+        "note": "the script segfaulted at interpreter exit (code 139) after FINAL; the motion sequence had already completed"
+      }
+    }
+  },
+  "commands": [
+    "~/.local/bin/robot-arm-sim test --tb=no --junitxml=/tmp/t2_stock.xml",
+    "ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=.private/gripper-assets-5y ~/.local/bin/robot-arm-sim test tests/test_frame_pins.py tests/test_board_facing.py tests/test_aim_geometry.py tests/test_vision_geometry.py tests/test_product_twin.py tests/test_hand_eye.py tests/test_tool_orientation.py --tb=no --junitxml=/tmp/t2b.xml",
+    "ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=.private/gripper-assets-5y ~/.local/bin/robot-arm-sim python tools/phase1_parity.py --out reports/phase1_parity_fullparity01.json",
+    "ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=.private/gripper-assets-5y ~/.local/bin/robot-arm-sim python tools/cartesian_squares.py --backend sim --bridge-limits http://192.168.1.167:8100 --out reports/squares_sim_fullparity01.json",
+    "ROBOT_GRIPPER=cad_parallel ROBOT_GRIPPER_ASSETS=.private/gripper-assets-5y ~/.local/bin/robot-arm-sim python tools/phase2_squares.py --out reports/phase2_squares_fullparity01.json"
+  ],
+  "plan_gaps_found": [
+    "TESTS.md does not state the gripper pack: the 5y pack is required; the launcher default pre-5y pack produces 6 false tool-orientation failures (10 mm tip, 8 mm jaw offsets)",
+    "T3 crashes on the stock gripper (KeyError so101:moving_jaw_so101_v1); it needs ROBOT_GRIPPER=cad_parallel + 5y",
+    "printed-piece tests need ROBOT_PIECE_SET=printed + ROBOT_PIECE_ASSETS=.private/piece-assets-v9-brian-parallel-knight; without them one test raises ValueError and another reports squeeze None",
+    "docs/TESTS.md \u00a74b describes the stale rig-state pin backwards: the test constant expects 4c28d879, while MANIFEST.json and the committed snapshot are 8c8303a1",
+    "T4 says 'solver gate 3.0 mm' but cartesian_squares accepts 64/64 with residuals up to 12.83 mm; the gate is config, not enforced by that tool",
+    "pytest's final totals line is missing from both suite logs; counts taken from --junitxml instead",
+    "T5 stop-on-409 conflicts with its own baseline: the recorded 61/64 run had 3 refusals, which requires continuing after a refusal. Decide whether a 409 'no reachable pose' is a recorded refusal (arm did not move) or a stop.",
+    "The local pre-check and the app do not always agree from the same seed (c8: 5.3 vs 12.28 deg). The app's gate is authoritative; the pre-check is advisory only.",
+    "The Pi bridge can time out mid-move: f8's /command read timed out (HTTP 500) after the arm had moved to the target. The sweep stopped, the app stayed healthy, and the arm was re-homed; treat a 5xx as unconfirmed, not refusal.",
+    "T8 needs external front/side/top photographs of the real arm; there is no external camera in the rig (wrist camera + Pi bridge only), so the contact sheet cannot be produced as specified.",
+    "T9 needs gripper actuation, which remains a specific ask under the standing motion approval.",
+    "T8 as originally written needed external IRL photos; removed by Brian 2026-11-25, but tiles 1/2 are therefore sim-only and the cross-check rests on the wrist pair.",
+    "T9's centring correction overshot and the descent used the corrected xy rather than the measured piece; without --correct the tip stayed 6.6 mm from the piece.",
+    "The wrist detector returns the same dominant piece for every aim argument and its occupancy is pose-dependent (c5 at home, e5 at pan -45); do not treat per-square probes as a board map."
+  ]
+}
