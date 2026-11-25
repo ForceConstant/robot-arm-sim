@@ -1,0 +1,86 @@
+{
+  "tool": "tools/mast_free_views.py",
+  "git_head": "0d33f8c3087af9f3fb02914d62e948dba1531062",
+  "aim_laser": true,
+  "mast_geoms": [],
+  "pose": {
+    "shoulder_pan": -12.37,
+    "shoulder_lift": -13.02,
+    "elbow_flex": 4.8,
+    "wrist_flex": 98.34,
+    "wrist_roll": 0.0,
+    "gripper": 38.4
+  },
+  "images": {
+    "third_person.png": {
+      "mean": 82.01,
+      "std": 50.4,
+      "red_px": 31,
+      "yellow_px": 248,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "close_gripper.png": {
+      "mean": 87.65,
+      "std": 62.63,
+      "red_px": 11,
+      "yellow_px": 164,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "side.png": {
+      "mean": 82.05,
+      "std": 48.73,
+      "red_px": 20,
+      "yellow_px": 138,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "top.png": {
+      "mean": 117.35,
+      "std": 84.69,
+      "red_px": 0,
+      "yellow_px": 371,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "external.png": {
+      "mean": 76.83,
+      "std": 61.9,
+      "red_px": 0,
+      "yellow_px": 246,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "wrist.png": {
+      "mean": 102.06,
+      "std": 89.75,
+      "red_px": 0,
+      "yellow_px": 269,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "views_sheet.png": {
+      "mean": 84.62,
+      "std": 69.97,
+      "red_px": 62,
+      "yellow_px": 1436,
+      "size": [
+        1920,
+        1054
+      ]
+    }
+  }
+}
