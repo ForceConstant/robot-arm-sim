@@ -28,9 +28,9 @@ from chess_sim.config import Camera, RandomizationConfig
 from chess_sim import gripper
 from chess_sim.fiducials import MarkerLayout, detect_markers
 from chess_sim.move_inference import SquareEvidence, infer_move
-from chess_sim.perception import PerceptionModel, square_mask_fraction
+from chess_sim.perception import CLASSES, PerceptionModel, square_mask_fraction
 from chess_sim.env import ChessSimEnv
-from chess_sim.perception_data import render_mask, robot_geometry_ids
+from chess_sim.perception_data import render_mask, robot_geometry_ids, truth_labels
 from chess_sim.product import layout_env_config, load_product_twin
 from chess_sim.positions import PositionConfig
 from chess_sim.wrist_calibration import WristCalibration
@@ -115,6 +115,23 @@ def _visible(env, registration, calibration) -> np.ndarray:
     return covered < 0.05
 
 
+def _marker_geometry(board):
+    """Marker layout and printed-face height for this board.
+
+    The product board prints the ChArUco face into its playing surface
+    (2026-11-20), so its markers sit at the board top; the Phase 9 mat board
+    printed them on a sheet under the slab.  Using the mat height for the
+    ChArUco face biases the pose by the slab thickness (~2-3 px at wrist
+    range) and is one of the reasons registration never returned.
+    """
+    if getattr(board, "face", "wood") == "charuco":
+        from chess_sim.charuco_face import CharucoLayout
+        return CharucoLayout(square_mm=board.square * 1000.0), float(board.top)
+    return (MarkerLayout.for_board(board.field * 1000.0, board.border * 1000.0,
+                                   board.marker_plane),
+            float(board.table_top + board.marker_above_table))
+
+
 def _capture(env, scanner, poses) -> list[ScanFrame]:
     frames: list[ScanFrame] = []
     for pose in poses:
@@ -187,6 +204,10 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--crowded-only", action="store_true")
     parser.add_argument("--no-self-occlusion", action="store_true", help="paired unmasked ablation")
+    parser.add_argument("--no-references", action="store_true",
+                        help="skip the per-pose empty-board reference patches (registration "
+                             "and self-occlusion are unchanged); measures the reference-free "
+                             "feature path the IRL stack would use without an empty capture")
     parser.add_argument("--stress-shadow-extreme", action="store_true",
                         help="engineered cast-shadow-extreme/harsh lighting stress envelope")
     parser.add_argument("--stress-arm-over-changed", action="store_true",
@@ -202,6 +223,9 @@ def main() -> int:
     records: list[dict] = []
     sessions: list[dict] = []
     registration_rows: list[dict] = []
+    square_rows = {"total": 0, "labelled": 0, "correct_labelled": 0,
+                   "correct_any": 0, "unknown": 0, "confident_errors": 0}
+    threshold = float(model.confidence_threshold)
 
     for index in range(args.sessions):
         env, place_rng = _scene(args.seed * 1000 + index, stress_shadow_extreme=args.stress_shadow_extreme)
@@ -210,13 +234,12 @@ def main() -> int:
             # Place the board for this session, then freeze that pose as nominal.
             env.reset(EMPTY, rng=place_rng)
             env.config = env.config.model_copy(update={"board": env.board})
+            marker_layout, marker_z = _marker_geometry(env.board)
             scanner = WristScanner(
                 watch, poses, model,
                 square=env.board.square, board_z=env.board.top,
-                marker_z=env.board.table_top + env.board.marker_above_table,
-                marker_layout=MarkerLayout.for_board(env.board.field * 1000.0,
-                                                     env.board.border * 1000.0,
-                                                     env.board.marker_plane),
+                marker_z=marker_z,
+                marker_layout=marker_layout,
                 method=args.method, self_occlusion=not args.no_self_occlusion)
             empty_frames = _capture(env, scanner, poses)
             references = {item.pose: item.frame for item in empty_frames}
@@ -290,10 +313,11 @@ def main() -> int:
                 registration = None
                 used_scans = 0
                 markers: tuple[int, ...] = ()
+                scan_references = None if args.no_references else references
                 for scan in range(MAX_SCANS):
                     used_scans = scan + 1
                     frames = _capture(env, scanner, active)
-                    result = scanner.scan(frames, references, timestamp=float(case_index))
+                    result = scanner.scan(frames, scan_references, timestamp=float(case_index))
                     if result.registration is not None:
                         registration = result.registration
                         markers = tuple(sorted({d.marker_id for d in detect_markers(
@@ -327,6 +351,21 @@ def main() -> int:
                             (registration.yaw - truth_yaw + math.pi) % (2 * math.pi) - math.pi), 4),
                         "coverage": registration.coverage,
                     })
+                # Per-square scoring against the sim board at this case's state.
+                # Truth is evaluator-only: it never reaches the scanner.
+                truth = truth_labels(env)
+                for prediction in result.predictions:
+                    square_rows["total"] += 1
+                    actual = int(truth[prediction.square])
+                    if prediction.label == "unknown":
+                        square_rows["unknown"] += 1
+                        continue
+                    square_rows["labelled"] += 1
+                    right = CLASSES.index(prediction.label) == actual
+                    square_rows["correct_any"] += int(right)
+                    square_rows["correct_labelled"] += int(right)
+                    if not right and prediction.confidence >= threshold:
+                        square_rows["confident_errors"] += 1
                 inference = infer_move(case["previous"], evidence)
                 accepted = inference.status in ("confirmed", "unchanged")
                 if case["kind"] == "move":
@@ -382,6 +421,22 @@ def main() -> int:
         "registration_within_2mm_1deg": sum(
             1 for r in registration_rows
             if r["xy_error_mm"] <= REGISTRATION_MM and abs(r["yaw_error_deg"]) <= REGISTRATION_DEG),
+        "per_square": {
+            "samples": square_rows["total"],
+            "labelled": square_rows["labelled"],
+            "accuracy_labelled": round(square_rows["correct_labelled"]
+                                       / square_rows["labelled"], 4)
+            if square_rows["labelled"] else 0.0,
+            "accuracy_all": round(square_rows["correct_any"] / square_rows["total"], 4)
+            if square_rows["total"] else 0.0,
+            "unknown_rate": round(square_rows["unknown"] / square_rows["total"], 4)
+            if square_rows["total"] else 0.0,
+            "confident_errors": square_rows["confident_errors"],
+            "confident_error_rate": round(square_rows["confident_errors"]
+                                          / square_rows["total"], 4)
+            if square_rows["total"] else 0.0,
+            "threshold": threshold,
+        },
     }
     stress_modes = {
         "shadow_extreme": args.stress_shadow_extreme,
@@ -394,6 +449,7 @@ def main() -> int:
         "model_sha256": hashlib.sha256(Path(args.model).read_bytes()).hexdigest(),
         "crowded_only": args.crowded_only,
         "self_occlusion": not args.no_self_occlusion,
+        "references": not args.no_references,
         "stress_modes": stress_modes,
         "source_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
                           for p in map(Path, [__file__, "chess_sim/wrist_scan.py",

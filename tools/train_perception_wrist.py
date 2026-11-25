@@ -4,7 +4,9 @@ Sessions randomise board placement and lighting; frames are rendered at the
 planned scan poses with the arm in place, so natural self-occlusion is part of
 the data and such squares are labelled ``unknown`` rather than guessed.  The
 empty-board reference for each pose is captured before pieces are placed, which
-is how the product's calibration epoch works.
+is how the product's calibration epoch works.  ``--no-references`` trains
+without it (the reference features stay zero), for a stack that has no empty
+capture to offer.
 
     MUJOCO_GL=egl ROBOT_GRIPPER=cad_parallel \
     ROBOT_GRIPPER_ASSETS=$PWD/.private/gripper-assets-v3 \
@@ -72,6 +74,10 @@ def main() -> int:
     parser.add_argument("--plan", default=str(Path("chess_sim/assets/wrist_scan_plan.json")))
     parser.add_argument("--out-model", default="chess_sim/assets/perception/model_wrist.json")
     parser.add_argument("--out-report", default=".private/phase9/wrist_training.json")
+    parser.add_argument("--no-references", action="store_true",
+                        help="train without the per-pose empty-board reference patches; "
+                             "the reference features stay zero, matching "
+                             "`predict_board(reference_patches=None)`")
     args = parser.parse_args()
 
     poses = load_plan(args.plan)
@@ -91,16 +97,17 @@ def main() -> int:
             env.config = env.config.model_copy(update={"board": env.board})
             arm_ids = robot_geometry_ids(env)
             references = {}
-            for pose in poses:
-                env.data.qpos[env._joint_qpos] = np.asarray(pose.joints)
-                mujoco.mj_forward(env.model, env.data)
-                camera = CameraCalibration.from_mujoco(
-                    env.model, env.data, str(Camera.WRIST), 640, 480)
-                frame = env.render(Camera.WRIST).copy()
-                registration = BoardRegistration(
-                    env.board.origin, env.board.yaw, env.board.square, env.board.top, 1.0, 1.0)
-                patches, valid = board_patches(frame, camera, registration)
-                references[pose.name] = (patches, valid)
+            if not args.no_references:
+                for pose in poses:
+                    env.data.qpos[env._joint_qpos] = np.asarray(pose.joints)
+                    mujoco.mj_forward(env.model, env.data)
+                    camera = CameraCalibration.from_mujoco(
+                        env.model, env.data, str(Camera.WRIST), 640, 480)
+                    frame = env.render(Camera.WRIST).copy()
+                    registration = BoardRegistration(
+                        env.board.origin, env.board.yaw, env.board.square, env.board.top, 1.0, 1.0)
+                    patches, valid = board_patches(frame, camera, registration)
+                    references[pose.name] = (patches, valid)
             for position_index in range(args.positions):
                 board = PositionConfig(min_extra_pieces=2, max_extra_pieces=8).sample(rng)
                 env.reset(board)
@@ -114,7 +121,7 @@ def main() -> int:
                     registration = BoardRegistration(
                         env.board.origin, env.board.yaw, env.board.square, env.board.top, 1.0, 1.0)
                     patches, valid = board_patches(frame, camera, registration)
-                    ref_patches, _ = references[pose.name]
+                    ref_patches = None if args.no_references else references[pose.name][0]
                     occlusion = square_mask_fraction(
                         render_mask(env, Camera.WRIST, arm_ids), camera, registration)
                     expected = expected_background(patches, valid)
@@ -156,6 +163,7 @@ def main() -> int:
         "trained_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "sessions": args.sessions, "positions": args.positions,
         "views": len(poses), "scene": "product twin + marker mat, wrist scan poses",
+        "references": not args.no_references,
         "operating_point": operating,
     })
     output = Path(args.out_model)

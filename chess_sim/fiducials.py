@@ -397,9 +397,23 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         if best is None:
             return None
 
-    lower = np.array([-span * 2, -span * 2, -yaw_span * 2])
-    upper = np.array([span * 2, span * 2, yaw_span * 2])
-    best = np.clip(np.asarray(best, dtype=float), lower + 1e-9, upper - 1e-9)
+    if guesses and best is not None:
+        # Bound the refinement around the best seed, not around the board-frame
+        # origin.  A board set down at yaw ~ pi (ARM_PLAYS = black) seeds
+        # within 0.1 deg of truth and used to be clipped to +-16 deg, so the
+        # least-squares pass could only reach a local minimum and every gate
+        # rejected a good fusion (sim wrist bench 2026-11-25: rms 246 px on
+        # views whose direct projection is 0.8 px).  The search spans are
+        # unchanged; only their centre follows the seed.
+        centre = np.asarray(best, dtype=float).copy()
+        centre[2] = (centre[2] + math.pi) % (2.0 * math.pi) - math.pi
+        lower = centre - np.array([span * 2, span * 2, yaw_span * 2])
+        upper = centre + np.array([span * 2, span * 2, yaw_span * 2])
+        best = np.clip(centre, lower + 1e-9, upper - 1e-9)
+    else:
+        lower = np.array([-span * 2, -span * 2, -yaw_span * 2])
+        upper = np.array([span * 2, span * 2, yaw_span * 2])
+        best = np.clip(np.asarray(best, dtype=float), lower + 1e-9, upper - 1e-9)
     # First pass is robust: a single 780 px false-positive detection dominates
     # an unweighted sum and drags the pose so far that the MAD pruner can no
     # longer tell it apart from the rest (block 5j: rms 97.8, no pruning).
@@ -480,7 +494,7 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
         return None
     return BoardRegistration(
         origin=(float(pose[0]), float(pose[1])),
-        yaw=float(pose[2]),
+        yaw=float((pose[2] + math.pi) % (2.0 * math.pi) - math.pi),
         square=float(square),
         board_z=float(board_z),
         score=float(max(0.0, 1.0 - rms / max_rms_px)),
