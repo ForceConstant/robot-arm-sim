@@ -46,6 +46,10 @@ cleared.  Before every ``/move`` the runner now:
 * stops the sweep on the first HTTP refusal (409), bridge error or wrist-roll
   branch change instead of driving on.
 
+``--continue-on-refusal`` records a 409 "no reachable pose" refusal (the arm
+did not move) and continues to the next square; every other 409 and every 5xx
+still stops the sweep. ``--only a1,b2`` restricts a pass to named squares.
+
 ``--dry-run`` does the solve, clearance and print for all 64 squares without
 sending anything, which is how the runner itself is checked before motion.
 """
@@ -294,7 +298,8 @@ def run_sim(live_dir: Path, squares, hover_mm: float,
 def run_irl(squares, hover_mm: float, base: str, live_dir: Path,
             limits: dict | None = None, dry_run: bool = False,
             gate_mm: float | None = None, gate_deg: float = 8.0,
-            attach_stream: bool = True) -> dict:
+            attach_stream: bool = True,
+            continue_on_refusal: bool = False) -> dict:
     """Paired real-arm sweep with the plan's preconditions applied per leg."""
     bridge, zone = _irl_preflight(base)
     limits = limits or {k: [float(v[0]), float(v[1])]
@@ -394,6 +399,13 @@ def run_irl(squares, hover_mm: float, base: str, live_dir: Path,
                          "settle_deg": None,
                          "detail": f"HTTP {exc.code}: {detail}",
                          "achieved": None, "clearance": clearance})
+            if (continue_on_refusal and exc.code == 409
+                    and "no reachable pose" in detail):
+                # The app refused the target; no motion was commanded. The
+                # plan's stop rule exists for an unexpected state after motion,
+                # which this is not — record the refusal and move on.
+                print("  recorded refusal (no motion); continuing")
+                continue
             stopped = f"HTTP {exc.code} on {name}"
             break
         except Exception as exc:                     # noqa: BLE001
@@ -480,6 +492,11 @@ def main() -> None:
                         help="irl approach-angle gate in degrees (default 8.0, the app's)")
     parser.add_argument("--no-stream", action="store_true",
                         help="irl: do not attach a /stream reader (detector stays idle)")
+    parser.add_argument("--only", default=None,
+                        help="comma-separated square names to visit (e.g. c8,d8,e8)")
+    parser.add_argument("--continue-on-refusal", action="store_true",
+                        help="irl: record a 409 'no reachable pose' (no motion) and "
+                             "continue; every other 409 still stops the sweep")
     args = parser.parse_args()
 
     if args.compare:
@@ -496,13 +513,21 @@ def main() -> None:
     targets = square_targets(args.hover_mm)
     if args.reverse:
         targets = list(reversed(targets))
+    if args.only:
+        wanted = [s.strip() for s in args.only.split(",") if s.strip()]
+        known = {row[0] for row in targets}
+        unknown = [s for s in wanted if s not in known]
+        if unknown:
+            parser.error(f"unknown square(s): {', '.join(unknown)}")
+        targets = [row for row in targets if row[0] in wanted]
     if args.backend == "sim":
         result = run_sim(Path(args.live_dir), targets, args.hover_mm, limits)
     else:
         result = run_irl(targets, args.hover_mm, args.base, Path(args.live_dir),
                          limits=limits, dry_run=args.dry_run,
                          gate_mm=args.gate_mm, gate_deg=args.gate_deg,
-                         attach_stream=not args.no_stream)
+                         attach_stream=not args.no_stream,
+                         continue_on_refusal=args.continue_on_refusal)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(result, indent=2) + "\n")
     solved = sum(1 for r in result["squares"] if r["solved"])
