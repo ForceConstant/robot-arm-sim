@@ -7,6 +7,7 @@ be exported as a standalone MuJoCo XML.
 """
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 
@@ -498,6 +499,21 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         xyaxes = np.concatenate([x_axis, y_axis])
     fovy = wrist_camera_fovy()
     tool_body.add_camera(name=str(name), pos=list(pos), xyaxes=list(xyaxes), fovy=fovy)
+    if gripper.CUSTOM and CAMERA_SOURCE == "reference":
+        # Landscape comparison view (T8 / tip-center.md §3.2): the real C270 is
+        # mounted 90 deg to the model, so the landscape image is the wrist
+        # camera rolled -90 about its optical axis at the measured lens.  This
+        # camera exists for sim-vs-IRL pixel comparison and is not the
+        # perception camera (Camera.WRIST stays unchanged).
+        theta = math.radians(-90.0)
+        rz = np.array([[math.cos(theta), -math.sin(theta), 0.0],
+                       [math.sin(theta), math.cos(theta), 0.0],
+                       [0.0, 0.0, 1.0]])
+        rolled = np.asarray(rot, dtype=float) @ rz
+        tool_body.add_camera(
+            name=str(name) + "_landscape", pos=list(pos),
+            xyaxes=list(rolled[:, 0]) + list(rolled[:, 1]),
+            fovy=tool_reference.fovy_deg())
     # Orient the housing body with the camera, not the gripper body. A MuJoCo
     # camera looks down its own -z, so the box sits at +z from the lens and its
     # front face lands exactly on the image plane.

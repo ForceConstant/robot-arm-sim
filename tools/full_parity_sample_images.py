@@ -120,10 +120,10 @@ def draw_laser(frame, project, world_pts, board_hit, labels=True):
     return np.asarray(out), (len(beam), hit)
 
 
-def wrist_laser(m, d, frame):
+def wrist_laser(m, d, frame, camera_name: str = "wrist_landscape"):
     """Legacy wrist-camera laser (kept for the sim_wrist sample)."""
     h, w = frame.shape[:2]
-    cam = m.camera(str(Camera.WRIST))
+    cam = m.camera(str(camera_name))
     cam_pos = np.asarray(d.cam_xpos[cam.id], float)
     cam_R = np.asarray(d.cam_xmat[cam.id], float).reshape(3, 3)
     fovy = float(np.asarray(cam.fovy).reshape(-1)[0])
@@ -235,13 +235,15 @@ def main() -> None:
         d.qpos[env._joint_qpos[5]] = np.radians(joints["gripper"])
         mujoco.mj_forward(m, d)
 
-        # Render the wrist at the measured lens for pixel comparison, not the
-        # 47 deg marker-size fudge used by the scene (tip-center.md §3.4).
+        # The landscape comparison camera carries the measured lens and the
+        # -90 deg optical-axis roll (scene.py, tip-center.md §3.2/§3.4).  The
+        # perception camera (Camera.WRIST) keeps its 47 deg fudge untouched.
         from chess_sim import tool_reference
-        cam_id = m.camera(str(Camera.WRIST)).id
-        m.cam_fovy[cam_id] = tool_reference.fovy_deg()
-        print(f"wrist pixel-comparison fovy {tool_reference.fovy_deg():.4f} deg "
-              f"(scene default {wrist_camera_fovy():.4f})")
+        WRIST_LANDSCAPE = str(Camera.WRIST) + "_landscape"
+        cam_id = m.camera(WRIST_LANDSCAPE).id
+        print(f"wrist comparison camera {WRIST_LANDSCAPE}: "
+              f"fovy {float(m.cam_fovy[cam_id]):.4f} deg "
+              f"(perception wrist {wrist_camera_fovy():.4f})")
 
         gid = m.body("so101:gripper").id
         lookat = d.xpos[gid] + d.xmat[gid].reshape(3, 3) @ np.array([0, 0, -0.070])
@@ -264,8 +266,8 @@ def main() -> None:
         caption(ImageDraw.Draw(laser_sheet), provenance(), laser_sheet.width, 4)
         laser_sheet.save(OUT / "sim_aim_laser_3p.png")
 
-        wrist = env.render(camera=Camera.WRIST)
-        wrist = wrist_laser(m, d, wrist)
+        wrist = env.render(camera=WRIST_LANDSCAPE)
+        wrist = wrist_laser(m, d, wrist, WRIST_LANDSCAPE)
 
         h, w = tiles[0][1].shape[:2]
         sheet = Image.new("RGB", (w * 2, (h + 22) * 2 + banner), (14, 14, 16))
