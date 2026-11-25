@@ -47,6 +47,31 @@ from chess_sim.product import current_layout
 from chess_sim.wrist_calibration import WristCalibration
 
 
+#: Take-up final-leg behaviour.  A take-up exists to remove the last 0.2-0.7 deg
+#: of direction-dependent settle, so the final leg may not use the ordinary
+#: 3.5 deg settle allowance (that would swallow the very error it is there to
+#: remove) and it may not stream for the full 30 s (it is only a few degrees
+#: long by construction).
+#:
+#: The allowance is 1.6 deg because the return leg lands inside the servo's static
+#: band, which measured 0.6-1.3 deg on the loaded elbow at a folded pose.  The
+#: settle break and the stall FAULT are therefore separate numbers:
+#:
+#:   * a leg that has stopped with <= 1.6 deg to go is a settle (break, report it);
+#:   * a leg with a > 3.0 deg lead and no motion for 20 ticks is not actuating
+#:     (raise, exactly as before).  The leg is only 3.5 deg long, so a 3.0 lead
+#:     cannot be a resting offset.
+#:
+#: Both numbers matter: with the allowance at 0.8 the stall guard fired on a
+#: healthy 0.80 settle, and at 1.2 it fired at 1.22 - each time the move path's
+#: recovery swung the arm home for a servo that was simply resting inside its
+#: friction band (measured 2026-11-25, recovery_log 09:08:57).
+TAKE_UP_SETTLE_DEG = 0.3
+TAKE_UP_SETTLE_ALLOW_DEG = 1.6
+TAKE_UP_STALL_LEAD_DEG = 3.0
+TAKE_UP_FINAL_DEADLINE_S = 10.0
+
+
 class StuckError(BridgeError):
     """A move that cannot continue without the arm being reset.
 
@@ -110,6 +135,14 @@ DEFAULTS = {
     # loop fix landed.  3.0 mm on the least_squares path alone would refuse
     # 52/64 valid squares, which is why the two always change together.
     "move_tolerance_mm": 3.0,
+    # Backlash take-up (2026-11-25).  The servos settle 0.2-0.7 deg away from a
+    # commanded goal, and the sign depends on the direction the joint arrived
+    # from (reports/deadband_root_cause_20261125.md).  For the final approach to
+    # a target, the joint is driven this many degrees PAST it and then back, so
+    # the play is always taken up from one known side and the last leg is a
+    # short, known-length move instead of a stop inside the stiction band.
+    # 0 disables it (the A/B switch); the gripper is never part of a take-up.
+    "backlash_take_up_deg": 3.5,
     # Phase 2: mink solves /move.  ``least_squares`` stays supported in
     # live/solver.py for bisecting a solver problem on the arm, but it is no
     # longer the default.
@@ -1104,7 +1137,7 @@ class Live:
                         f"{joint} jog to {asked:.2f}° is outside its limits "
                         f"{limits[0]:.2f}..{limits[1]:.2f}°")
             self._keep_in_check(target)
-            result = self._stream_to(target, start)
+            result = self._stream_with_take_up(target, start)
             if note:
                 result["note"] = note
             return result
@@ -1448,13 +1481,17 @@ class Live:
         delta = max(abs(a - b) for a, b in zip(target[:5], start[:5]))
         if body.get("dry_run"):
             # Solve without moving: lets a large reorientation be inspected
-            # before the arm swings through anything.
+            # before the arm swings through anything.  The take-up is planned
+            # too, so a dry run answers "what would this move actually do"
+            # including the overshoot leg and any reason it was refused.
+            plan = self._take_up_request(target, start)
             return {"dry_run": True, "requested": detail,
                     "target_joints": dict(zip(JOINTS, [round(v, 2) for v in target])),
-                    "max_joint_delta_deg": round(delta, 1)}
+                    "max_joint_delta_deg": round(delta, 1),
+                    "take_up": self._take_up_receipt(plan)}
         self._keep_in_check(target)
         settle = float(body.get("settle_deg", 0.7))
-        result = self._stream_to(target, start, tolerance=settle)
+        result = self._stream_with_take_up(target, start, tolerance=settle)
         result.update(requested=detail, pose=self.pose_now())
         return result
 
@@ -1673,7 +1710,10 @@ class Live:
                 "pose": self.pose_now()}
 
     def _stream_to(self, target: list[float], start: list[float],
-                   tolerance: float = 0.7, trace: list | None = None) -> dict:
+                   tolerance: float = 0.7, trace: list | None = None,
+                   settle_allow: float | None = None,
+                   deadline_s: float | None = None,
+                   stall_lead_deg: float | None = None) -> dict:
         """Drive to the target and stop when the MEASURED joints are close.
 
         The original loop compared its own interpolated command against the
@@ -1710,7 +1750,14 @@ class Live:
         # The lead must therefore ACCUMULATE from the last command until it is
         # wide enough to cross the deadband.  The bridge still bounds it to
         # MAX_LAG_DEG ahead of the measured pose, so it cannot wind up a backlog.
-        settle_allow = float(self.config.get("move_settle_deadband_deg", 3.5))
+        if settle_allow is None:
+            settle_allow = float(self.config.get("move_settle_deadband_deg", 3.5))
+        settle_allow = float(settle_allow)
+        # The lead that means "not actuating" rather than "resting inside the
+        # friction band".  The ordinary loop uses the settle allowance for both;
+        # the take-up final leg needs them apart (see TAKE_UP_* above).
+        stall_lead = (settle_allow if stall_lead_deg is None
+                      else float(stall_lead_deg))
         stall_ticks = int(self.config.get("move_stall_ticks", 20))
 
         def read_measured() -> list[float]:
@@ -1737,7 +1784,7 @@ class Live:
         current = list(measured)
         needed = max(abs(a - b) for a, b in zip(target[:5], origin[:5]))
         started = time.time()
-        deadline = started + 30.0
+        deadline = started + (30.0 if deadline_s is None else float(deadline_s))
         sent = 0
         last_error = max(abs(a - b) for a, b in zip(measured, target))
         unchanged = 0
@@ -1779,7 +1826,7 @@ class Live:
             # the joint is not actuating (torque off, jammed, or physically
             # blocked).  Say so now rather than at the deadline.
             lead = max(abs(a - b) for a, b in zip(current, measured))
-            if unchanged >= stall_ticks and lead > settle_allow:
+            if unchanged >= stall_ticks and lead > stall_lead:
                 raise StuckError(
                     f"joint not actuating: commanded {lead:.2f} deg ahead of "
                     f"measured for {unchanged} ticks with no motion "
@@ -1805,7 +1852,127 @@ class Live:
                 "error_deg": round(last_error, 2),
                 "commands": sent,
                 "travel_deg": round(travel, 2),
-                "needed_deg": round(needed, 2)}
+                "needed_deg": round(needed, 2),
+                "origin_deg": dict(zip(names, origin))}
+
+    # ------------------------------------------------------------ take-up
+    def _take_up_request(self, target: list[float],
+                         start: list[float]) -> dict:
+        """Plan the backlash take-up leg for an approach to ``target``.
+
+        The servos settle 0.2-0.7 deg away from a commanded goal and the sign
+        depends on the direction the joint arrived from, so a target that is
+        only 1-2 deg away can be ignored outright and a direct approach stops
+        short (or long) by a pose-dependent amount.  Driving PAST the target by
+        a bounded margin and then commanding the target makes the final leg a
+        short move from one known side, which is the primitive that took a
+        1.49 deg wrist_roll stall to -0.26 deg by hand.
+
+        This only plans; it does not move.  ``applied`` is False, with a
+        reason, whenever the overshoot cannot be made safely: disabled,
+        nothing but the gripper to move, the joint envelope, the calibrated
+        wrist window, or the keep-in box.  The caller falls back to a direct
+        move and records the reason.
+        """
+        margin = float(self.config.get("backlash_take_up_deg", 3.5))
+        plan = {"deg": round(margin, 2), "applied": False, "reason": "",
+                "target": None, "moving": []}
+        if margin <= 0:
+            plan["reason"] = "disabled (backlash_take_up_deg <= 0)"
+            return plan
+        moving = [index for index in range(5)
+                  if abs(float(target[index]) - float(start[index])) >= 0.2]
+        if not moving:
+            plan["reason"] = "no non-gripper travel to take up"
+            return plan
+        overshoot = list(target)
+        for index in moving:
+            travel = float(target[index]) - float(start[index])
+            overshoot[index] = float(target[index]) + math.copysign(margin, travel)
+        # The gripper is a jaw, not a joint: it is held at the target in both
+        # legs and never included in the overshoot.
+        overshoot[5] = float(target[5])
+        bad = self.kinematics.violations(overshoot)
+        if bad and self._excess(overshoot) > self._excess(start) + 0.05:
+            plan["reason"] = ("overshoot would leave the joint envelope: "
+                              + ", ".join(f"{name} {value} not in {lo}..{hi}"
+                                          for name, value, (lo, hi) in bad))
+            return plan
+        window = self._wrist_window()
+        if window and 4 in moving:
+            servo_target = overshoot[4] - self.frame_offset.offset_deg
+            if not window[0] <= servo_target <= window[1]:
+                plan["reason"] = (f"overshoot wrist roll {servo_target:.1f} deg "
+                                  f"outside the calibrated window "
+                                  f"{window[0]:.1f}..{window[1]:.1f}")
+                return plan
+        problem = self._keep_in_problem(overshoot)
+        if problem:
+            plan["reason"] = "overshoot " + problem
+            return plan
+        plan.update(applied=True, target=overshoot, moving=moving)
+        return plan
+
+    @staticmethod
+    def _take_up_receipt(plan: dict) -> dict:
+        """The plan as it appears in a move result: no hidden state, no guesses."""
+        receipt = {"deg": plan["deg"], "applied": bool(plan["applied"]),
+                   "reason": plan["reason"],
+                   "moving": [JOINTS[index] for index in plan["moving"]]}
+        if plan.get("target"):
+            receipt["overshoot_deg"] = {name: round(float(plan["target"][i]), 2)
+                                        for i, name in enumerate(JOINTS)}
+        return receipt
+
+    def _stream_with_take_up(self, target: list[float], start: list[float],
+                             tolerance: float = 0.7,
+                             trace: list | None = None) -> dict:
+        """``_stream_to`` with the take-up leg in front of the final approach.
+
+        Used by every Cartesian/joint move (``_execute_target``) and by
+        ``jog``.  When the plan is refused, or when the overshoot leg itself
+        stalls, the direct move still runs under the ordinary guards - the
+        fallback is recorded in ``take_up.reason`` rather than hidden.
+        """
+        plan = self._take_up_request(target, start)
+        if not plan["applied"]:
+            result = self._stream_to(target, start, tolerance=tolerance,
+                                     trace=trace)
+            result["take_up"] = self._take_up_receipt(plan)
+            return result
+        try:
+            leg = self._stream_to(plan["target"], start, trace=trace)
+        except StuckError as exc:
+            result = self._stream_to(target, start, tolerance=tolerance,
+                                     trace=trace)
+            receipt = self._take_up_receipt(plan)
+            receipt.update(applied=False, fell_back=True,
+                           reason=f"take-up leg did not execute: {exc}")
+            result["take_up"] = receipt
+            return result
+        approach = [float(leg["joints"][name]) for name in JOINTS]
+        result = self._stream_to(
+            target, approach,
+            tolerance=min(float(tolerance), TAKE_UP_SETTLE_DEG),
+            settle_allow=TAKE_UP_SETTLE_ALLOW_DEG,
+            stall_lead_deg=TAKE_UP_STALL_LEAD_DEG,
+            deadline_s=TAKE_UP_FINAL_DEADLINE_S, trace=trace)
+        receipt = self._take_up_receipt(plan)
+        receipt.update(overshoot_error_deg=leg["error_deg"],
+                       overshoot_commands=leg["commands"],
+                       final_commands=result["commands"])
+        # travel_deg/needed_deg describe the REQUEST the caller made, not the
+        # last 3.5 deg leg: the two legs move in opposite directions.
+        origin = leg["origin_deg"]
+        final = result["joints"]
+        result["travel_deg"] = round(max(
+            abs(float(final[name]) - float(origin[name])) for name in JOINTS[:5]), 2)
+        result["needed_deg"] = round(max(
+            abs(float(target[i]) - float(origin[JOINTS[i]]))
+            for i in range(5)), 2)
+        result["take_up"] = receipt
+        result["commands"] = leg["commands"] + result["commands"]
+        return result
 
     # -------------------------------------------------------------- recovery
     def recovery_pose(self) -> list[float]:

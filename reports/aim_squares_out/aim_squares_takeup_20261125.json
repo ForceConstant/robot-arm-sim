@@ -1,0 +1,316 @@
+{
+  "schema": "aim-squares/2",
+  "started": "2026-11-25T09:10:46",
+  "stamp": "2026-11-25T09:10:46",
+  "base": "http://127.0.0.1:8080",
+  "z_mm": 70.0,
+  "tolerance_mm": 4.0,
+  "iterations": 3,
+  "board_frame": {
+    "x_mm": -27.62,
+    "y_mm": -31.63,
+    "z_mm": 432.65,
+    "yaw_deg": -175.68
+  },
+  "squares": {
+    "a1": {
+      "square": "a1",
+      "target_mm": [
+        -98.0,
+        -98.0
+      ],
+      "z_mm": 70.0,
+      "tip": {
+        "done": true,
+        "ok": true,
+        "move_s": 7.7,
+        "error_deg": 1.04,
+        "commands": 86,
+        "travel_deg": 51.34,
+        "tip_mm": [
+          -95.7,
+          -94.5,
+          65.8
+        ],
+        "tip_err_mm": 4.19,
+        "aim_ok": false,
+        "aim_reason": "aim ray points away from the board",
+        "aim_board_mm": null,
+        "aim_square": null,
+        "aim_pixel": null,
+        "tip_pixel": [
+          311.97,
+          261.83
+        ],
+        "offset_px": null,
+        "ray_length_mm": null,
+        "plane": {
+          "source": "markers",
+          "samples": 9,
+          "spread_mm": 1.79,
+          "age_s": 8.58,
+          "rms_px": 1.85,
+          "ids": 2
+        },
+        "plane_age_spread_s": 0.86,
+        "joints_deg": {
+          "shoulder_pan": 13.71,
+          "shoulder_lift": 36.62,
+          "elbow_flex": -41.8,
+          "wrist_flex": 94.73,
+          "wrist_roll": 0.0,
+          "gripper": 37.95
+        },
+        "board_ids": null,
+        "board_rms_px": null,
+        "square_uv": null,
+        "pixel_delta": null,
+        "pixel_delta_uv": null,
+        "square_uv_cfg": [
+          119.7,
+          258.02
+        ],
+        "pixel_delta_cfg": null,
+        "pixel_delta_cfg_uv": null,
+        "aim_err_mm": null,
+        "samples": 3,
+        "aim_board_spread_mm": null,
+        "aim_pixel_spread_px": null
+      },
+      "aim": {
+        "done": false,
+        "ok": false,
+        "refused": "plane before aim_point: aim ray points away from the board"
+      },
+      "plane_failures": [
+        {
+          "at": "09:11:07",
+          "leg": "aim",
+          "reason": "aim ray points away from the board"
+        }
+      ]
+    },
+    "b1": {
+      "square": "b1",
+      "target_mm": [
+        -70.0,
+        -98.0
+      ],
+      "z_mm": 70.0,
+      "refresh": [
+        {
+          "leg": "recover",
+          "ok": true,
+          "landed": null
+        }
+      ],
+      "plane_failures": [
+        {
+          "at": "09:11:35",
+          "reason": "board plane is stale: last marker solve 49 s ago (limit 30 s)",
+          "plane": {
+            "source": "markers",
+            "samples": 9,
+            "spread_mm": 1.79,
+            "age_s": 48.86,
+            "rms_px": 1.85,
+            "ids": 2
+          }
+        }
+      ]
+    },
+    "c1": {
+      "square": "c1",
+      "target_mm": [
+        -42.0,
+        -98.0
+      ],
+      "z_mm": 70.0,
+      "refresh": [
+        {
+          "leg": "recover",
+          "ok": true,
+          "landed": null
+        }
+      ],
+      "plane_failures": [
+        {
+          "at": "09:11:51",
+          "reason": "board plane is stale: last marker solve 65 s ago (limit 30 s)",
+          "plane": {
+            "source": "markers",
+            "samples": 9,
+            "spread_mm": 1.79,
+            "age_s": 65.14,
+            "rms_px": 1.85,
+            "ids": 2
+          }
+        }
+      ]
+    },
+    "d1": {
+      "square": "d1",
+      "target_mm": [
+        -14.0,
+        -98.0
+      ],
+      "z_mm": 70.0,
+      "refresh": [
+        {
+          "leg": "recover",
+          "ok": true,
+          "landed": null
+        }
+      ],
+      "plane_failures": [
+        {
+          "at": "09:12:07",
+          "reason": "board plane is stale: last marker solve 81 s ago (limit 30 s)",
+          "plane": {
+            "source": "markers",
+            "samples": 9,
+            "spread_mm": 1.79,
+            "age_s": 81.42,
+            "rms_px": 1.85,
+            "ids": 2
+          }
+        }
+      ]
+    }
+  },
+  "stopped": {
+    "reason": "board plane unavailable",
+    "at": "d1"
+  },
+  "finished": "2026-11-25T09:12:07",
+  "summary": {
+    "stamp": "2026-11-25T09:10:46",
+    "squares": 64,
+    "aim_done": 0,
+    "aim_ok": 0,
+    "aim_refused": 0,
+    "aim_converged": 0,
+    "aim_refined": 0,
+    "aim_point_only_p50": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "tip_done": 1,
+    "tip_ok": 1,
+    "tip_refused": 0,
+    "plane_failures": 4,
+    "aim_err_mm": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "tip_err_mm": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "aim_px": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "tip_px": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "aim_px_cfg": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "tip_px_cfg": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "aim_tip_err_mm": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "tip_tip_err_mm": {
+      "n": 1,
+      "p50": 4.19,
+      "p95": 4.19,
+      "max": 4.19,
+      "mean": 4.19
+    },
+    "aim_controller_err_mm": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "readout_spread_mm": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "readout_spread_px": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "max": null,
+      "mean": null
+    },
+    "failures": [
+      {
+        "square": "a1",
+        "leg": "aim",
+        "reason": "plane before aim_point: aim ray points away from the board"
+      },
+      {
+        "square": "a1",
+        "leg": "plane",
+        "reason": "aim ray points away from the board"
+      },
+      {
+        "square": "b1",
+        "leg": "plane",
+        "reason": "board plane is stale: last marker solve 49 s ago (limit 30 s)"
+      },
+      {
+        "square": "c1",
+        "leg": "plane",
+        "reason": "board plane is stale: last marker solve 65 s ago (limit 30 s)"
+      },
+      {
+        "square": "d1",
+        "leg": "plane",
+        "reason": "board plane is stale: last marker solve 81 s ago (limit 30 s)"
+      }
+    ],
+    "square_total": 64
+  },
+  "artifacts": {
+    "heatmap": "reports/aim_squares_out/aim_squares_heatmap.png",
+    "gif": null,
+    "frames": "reports/aim_squares_frames_takeup_20261125"
+  }
+}

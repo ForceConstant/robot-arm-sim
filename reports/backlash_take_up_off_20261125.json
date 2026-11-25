@@ -1,0 +1,288 @@
+{
+  "label": "take-up-off",
+  "anchor_pose": {
+    "shoulder_pan": -59.87,
+    "shoulder_lift": -15.69,
+    "elbow_flex": 40.04,
+    "wrist_flex": 78.37,
+    "wrist_roll": 0.09,
+    "gripper": 26.77
+  },
+  "delta_deg": 10.0,
+  "reps": 3,
+  "records": [
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 0,
+      "goal": 50.04,
+      "reached": 50.15,
+      "residual": -0.11,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.33,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 40.04
+    },
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 1,
+      "goal": 50.84,
+      "reached": 50.77,
+      "residual": 0.07,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.6,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 40.84
+    },
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 2,
+      "goal": 50.84,
+      "reached": 50.86,
+      "residual": -0.02,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.16,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 40.84
+    },
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 0,
+      "goal": 30.84,
+      "reached": 31.87,
+      "residual": -1.03,
+      "tail_spread": 0.0,
+      "move_error_deg": 1.03,
+      "move_commands": 26,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 40.84
+    },
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 1,
+      "goal": 29.69,
+      "reached": 30.81,
+      "residual": -1.12,
+      "tail_spread": 0.0,
+      "move_error_deg": 1.12,
+      "move_commands": 26,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 39.69
+    },
+    {
+      "label": "take-up-off",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 2,
+      "goal": 29.69,
+      "reached": 30.9,
+      "residual": -1.21,
+      "tail_spread": 0.0,
+      "move_error_deg": 1.21,
+      "move_commands": 23,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": 39.69
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 0,
+      "goal": -49.78,
+      "reached": -49.93,
+      "residual": 0.15,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.62,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -59.78
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 1,
+      "goal": -49.69,
+      "reached": -49.93,
+      "residual": 0.24,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.26,
+      "move_commands": 16,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -59.69
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 2,
+      "goal": -49.78,
+      "reached": -50.11,
+      "residual": 0.33,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.33,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -59.78
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 0,
+      "goal": -69.78,
+      "reached": -69.54,
+      "residual": -0.24,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.59,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -59.78
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 1,
+      "goal": -70.04,
+      "reached": -69.8,
+      "residual": -0.24,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.41,
+      "move_commands": 15,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -60.04
+    },
+    {
+      "label": "take-up-off",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 2,
+      "goal": -70.13,
+      "reached": -69.89,
+      "residual": -0.24,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.59,
+      "move_commands": 14,
+      "take_up": {
+        "deg": 0.0,
+        "applied": false,
+        "reason": "disabled (backlash_take_up_deg <= 0)",
+        "moving": []
+      },
+      "moved_start": -60.13
+    }
+  ],
+  "elbow_flex": {
+    "+1": {
+      "median": -0.02,
+      "values": [
+        -0.11,
+        0.07,
+        -0.02
+      ],
+      "abs_median": 0.02
+    },
+    "-1": {
+      "median": -1.12,
+      "values": [
+        -1.03,
+        -1.12,
+        -1.21
+      ],
+      "abs_median": 1.12
+    },
+    "both_directions_le_0_3": false,
+    "consistent": false
+  },
+  "shoulder_pan": {
+    "+1": {
+      "median": 0.24,
+      "values": [
+        0.15,
+        0.24,
+        0.33
+      ],
+      "abs_median": 0.24
+    },
+    "-1": {
+      "median": -0.24,
+      "values": [
+        -0.24,
+        -0.24,
+        -0.24
+      ],
+      "abs_median": 0.24
+    },
+    "both_directions_le_0_3": true,
+    "consistent": false
+  },
+  "take_up_seen": []
+}

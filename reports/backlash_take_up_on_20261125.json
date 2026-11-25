@@ -1,0 +1,941 @@
+{
+  "label": "take-up-on",
+  "anchor_pose": {
+    "shoulder_pan": -59.96,
+    "shoulder_lift": -15.6,
+    "elbow_flex": 40.04,
+    "wrist_flex": 78.46,
+    "wrist_roll": 0.0,
+    "gripper": 26.77
+  },
+  "delta_deg": 10.0,
+  "reps": 3,
+  "records": [
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 0,
+      "goal": 50.04,
+      "reached": 50.68,
+      "residual": -0.64,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.64,
+      "move_commands": 35,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -59.96,
+          "shoulder_lift": -15.6,
+          "elbow_flex": 53.54,
+          "wrist_flex": 78.46,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.17,
+        "overshoot_commands": 20,
+        "final_commands": 15
+      },
+      "moved_start": 40.04
+    },
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 1,
+      "goal": 50.04,
+      "reached": 50.68,
+      "residual": -0.64,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.64,
+      "move_commands": 34,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -60.04,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 53.54,
+          "wrist_flex": 78.46,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.26,
+        "overshoot_commands": 20,
+        "final_commands": 14
+      },
+      "moved_start": 40.04
+    },
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": 1.0,
+      "rep": 2,
+      "goal": 50.22,
+      "reached": 50.95,
+      "residual": -0.73,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.73,
+      "move_commands": 35,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -60.04,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 53.72,
+          "wrist_flex": 78.46,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.31,
+        "overshoot_commands": 20,
+        "final_commands": 15
+      },
+      "moved_start": 40.22
+    },
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 0,
+      "goal": 30.22,
+      "reached": 30.46,
+      "residual": -0.24,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.24,
+      "move_commands": 35,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -60.04,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 26.72,
+          "wrist_flex": 78.46,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.93,
+        "overshoot_commands": 30,
+        "final_commands": 5
+      },
+      "moved_start": 40.22
+    },
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 1,
+      "goal": 30.84,
+      "reached": 30.99,
+      "residual": -0.15,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.17,
+      "move_commands": 42,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -59.96,
+          "shoulder_lift": -15.6,
+          "elbow_flex": 27.34,
+          "wrist_flex": 78.37,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.92,
+        "overshoot_commands": 37,
+        "final_commands": 5
+      },
+      "moved_start": 40.84
+    },
+    {
+      "label": "take-up-on",
+      "joint": "elbow_flex",
+      "direction": -1.0,
+      "rep": 2,
+      "goal": 30.84,
+      "reached": 30.99,
+      "residual": -0.15,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.15,
+      "move_commands": 34,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "elbow_flex"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -60.04,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 27.34,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 1.1,
+        "overshoot_commands": 29,
+        "final_commands": 5
+      },
+      "moved_start": 40.84
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 0,
+      "goal": -50.04,
+      "reached": -49.93,
+      "residual": -0.11,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.26,
+      "move_commands": 25,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -46.54,
+          "shoulder_lift": -15.6,
+          "elbow_flex": 41.01,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.58,
+        "overshoot_commands": 20,
+        "final_commands": 5
+      },
+      "moved_start": -60.04
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 1,
+      "goal": -49.96,
+      "reached": -49.93,
+      "residual": -0.03,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.18,
+      "move_commands": 27,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -46.46,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 40.22,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.18,
+        "overshoot_commands": 21,
+        "final_commands": 6
+      },
+      "moved_start": -59.96
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": 1.0,
+      "rep": 2,
+      "goal": -50.04,
+      "reached": -50.11,
+      "residual": 0.07,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.18,
+      "move_commands": 27,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -46.54,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 40.04,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.32,
+        "overshoot_commands": 21,
+        "final_commands": 6
+      },
+      "moved_start": -60.04
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 0,
+      "goal": -70.22,
+      "reached": -70.33,
+      "residual": 0.11,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.18,
+      "move_commands": 26,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -73.72,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 40.22,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.4,
+        "overshoot_commands": 20,
+        "final_commands": 6
+      },
+      "moved_start": -60.22
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 1,
+      "goal": -69.96,
+      "reached": -69.98,
+      "residual": 0.02,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.18,
+      "move_commands": 27,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -73.46,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 40.22,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.23,
+        "overshoot_commands": 21,
+        "final_commands": 6
+      },
+      "moved_start": -59.96
+    },
+    {
+      "label": "take-up-on",
+      "joint": "shoulder_pan",
+      "direction": -1.0,
+      "rep": 2,
+      "goal": -69.78,
+      "reached": -69.89,
+      "residual": 0.11,
+      "tail_spread": 0.0,
+      "move_error_deg": 0.29,
+      "move_commands": 25,
+      "take_up": {
+        "deg": 3.5,
+        "applied": true,
+        "reason": "",
+        "moving": [
+          "shoulder_pan"
+        ],
+        "overshoot_deg": {
+          "shoulder_pan": -73.28,
+          "shoulder_lift": -15.43,
+          "elbow_flex": 40.22,
+          "wrist_flex": 78.29,
+          "wrist_roll": 0.0,
+          "gripper": 26.77
+        },
+        "overshoot_error_deg": 0.49,
+        "overshoot_commands": 20,
+        "final_commands": 5
+      },
+      "moved_start": -59.78
+    }
+  ],
+  "elbow_flex": {
+    "+1": {
+      "median": -0.64,
+      "values": [
+        -0.64,
+        -0.64,
+        -0.73
+      ],
+      "abs_median": 0.64
+    },
+    "-1": {
+      "median": -0.15,
+      "values": [
+        -0.24,
+        -0.15,
+        -0.15
+      ],
+      "abs_median": 0.15
+    },
+    "both_directions_le_0_3": false,
+    "consistent": false
+  },
+  "shoulder_pan": {
+    "+1": {
+      "median": -0.03,
+      "values": [
+        -0.11,
+        -0.03,
+        0.07
+      ],
+      "abs_median": 0.03
+    },
+    "-1": {
+      "median": 0.11,
+      "values": [
+        0.11,
+        0.02,
+        0.11
+      ],
+      "abs_median": 0.11
+    },
+    "both_directions_le_0_3": true,
+    "consistent": true
+  },
+  "take_up_seen": [
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 53.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.17,
+      "overshoot_commands": 20,
+      "final_commands": 15
+    },
+    {
+      "leg": "anchor",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex",
+        "wrist_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 36.54,
+        "wrist_flex": 81.96,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.04,
+      "overshoot_commands": 30,
+      "final_commands": 6
+    },
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -60.04,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 53.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.26,
+      "overshoot_commands": 20,
+      "final_commands": 14
+    },
+    {
+      "leg": "anchor",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_lift",
+        "elbow_flex",
+        "wrist_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 36.54,
+        "wrist_flex": 81.96,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.04,
+      "overshoot_commands": 29,
+      "final_commands": 6
+    },
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -60.04,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 53.72,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.31,
+      "overshoot_commands": 20,
+      "final_commands": 15
+    },
+    {
+      "leg": "anchor",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_lift",
+        "elbow_flex",
+        "wrist_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 36.54,
+        "wrist_flex": 81.96,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.04,
+      "overshoot_commands": 30,
+      "final_commands": 6
+    },
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -60.04,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 26.72,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.93,
+      "overshoot_commands": 30,
+      "final_commands": 5
+    },
+    {
+      "leg": "anchor",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_lift",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 43.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.86,
+      "overshoot_commands": 28,
+      "final_commands": 15
+    },
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 27.34,
+        "wrist_flex": 78.37,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.92,
+      "overshoot_commands": 37,
+      "final_commands": 5
+    },
+    {
+      "leg": "anchor",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 43.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.59,
+      "overshoot_commands": 18,
+      "final_commands": 14
+    },
+    {
+      "leg": "step",
+      "joint": "elbow_flex",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -60.04,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 27.34,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.1,
+      "overshoot_commands": 29,
+      "final_commands": 5
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_lift",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -59.96,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 43.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.86,
+      "overshoot_commands": 28,
+      "final_commands": 15
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -46.54,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 41.01,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.58,
+      "overshoot_commands": 20,
+      "final_commands": 5
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -63.46,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 36.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.95,
+      "overshoot_commands": 31,
+      "final_commands": 7
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -46.46,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 40.22,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.18,
+      "overshoot_commands": 21,
+      "final_commands": 6
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -63.46,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 36.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.04,
+      "overshoot_commands": 30,
+      "final_commands": 6
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -46.54,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 40.04,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.32,
+      "overshoot_commands": 21,
+      "final_commands": 6
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan",
+        "shoulder_lift"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -63.46,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 40.04,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.86,
+      "overshoot_commands": 30,
+      "final_commands": 7
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -73.72,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 40.22,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.4,
+      "overshoot_commands": 20,
+      "final_commands": 6
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -56.46,
+        "shoulder_lift": -15.6,
+        "elbow_flex": 36.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 1.04,
+      "overshoot_commands": 30,
+      "final_commands": 6
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -73.46,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 40.22,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.23,
+      "overshoot_commands": 21,
+      "final_commands": 6
+    },
+    {
+      "leg": "anchor",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan",
+        "shoulder_lift",
+        "elbow_flex"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -56.46,
+        "shoulder_lift": -19.1,
+        "elbow_flex": 36.54,
+        "wrist_flex": 78.46,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.95,
+      "overshoot_commands": 30,
+      "final_commands": 7
+    },
+    {
+      "leg": "step",
+      "joint": "shoulder_pan",
+      "deg": 3.5,
+      "applied": true,
+      "reason": "",
+      "moving": [
+        "shoulder_pan"
+      ],
+      "overshoot_deg": {
+        "shoulder_pan": -73.28,
+        "shoulder_lift": -15.43,
+        "elbow_flex": 40.22,
+        "wrist_flex": 78.29,
+        "wrist_roll": 0.0,
+        "gripper": 26.77
+      },
+      "overshoot_error_deg": 0.49,
+      "overshoot_commands": 20,
+      "final_commands": 5
+    }
+  ]
+}

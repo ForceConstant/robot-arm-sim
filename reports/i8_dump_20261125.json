@@ -1,0 +1,161 @@
+{
+ "port": "/dev/ttyACM0",
+ "servos": {
+  "1": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 310,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 80,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 1000
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  },
+  "2": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 310,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 80,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 1000
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  },
+  "3": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 310,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 80,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 1000
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  },
+  "4": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 310,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 80,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 1000
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  },
+  "5": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 310,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 80,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 1000
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  },
+  "6": {
+   "present": true,
+   "model": 777,
+   "registers": {
+    "P_Coefficient": 32,
+    "D_Coefficient": 32,
+    "I_Coefficient": 8,
+    "Minimum_Startup_Force": 16,
+    "CW_Dead_Zone": 1,
+    "CCW_Dead_Zone": 1,
+    "Protection_Current": 250,
+    "Angular_Resolution": 1,
+    "Operating_Mode": 0,
+    "Protective_Torque": 20,
+    "Overload_Torque": 25,
+    "Velocity_P": 10,
+    "Velocity_I": 200,
+    "Torque_Enable": 0,
+    "Acceleration": 254,
+    "Torque_Limit": 500
+   },
+   "dead_zone_deg": {
+    "cw": 0.088,
+    "ccw": 0.088
+   }
+  }
+ }
+}
