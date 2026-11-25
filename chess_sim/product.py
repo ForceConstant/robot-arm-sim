@@ -186,7 +186,7 @@ class ProductTwin(Config):
 
     def appearance(self, piece_set: str = "printed") -> AppearanceConfig:
         return AppearanceConfig(piece_set=piece_set, board_labels=self.board.labels,
-                                board_finish="plastic", camera_mast=False,
+                                board_finish="plastic",
                                 board_markers=True)
 
     def env_config(self, piece_set: str = "printed",

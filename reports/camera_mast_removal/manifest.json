@@ -1,0 +1,109 @@
+{
+  "tool": "tools/camera_mast_removal.py",
+  "git_head": "0d33f8c3087af9f3fb02914d62e948dba1531062",
+  "config_sha256": "53beb0556b7d5da74157f95701a183fae87e1cb8d4a2cb23bdf61ac93e9f0c95",
+  "scene_sha256": "1e694b690310c881392ffdf42076e6e2e041309f2ef7cb4ff66e71274cd40b26",
+  "mast_geoms_before": [
+    "mast_camera",
+    "mast_lower",
+    "mast_plate",
+    "mast_upper"
+  ],
+  "mast_geoms_after": [],
+  "aim_laser": false,
+  "pose": {
+    "shoulder_pan": 11.69,
+    "shoulder_lift": -65.19,
+    "elbow_flex": 80.57,
+    "wrist_flex": 44.35,
+    "wrist_roll": 21.54,
+    "gripper": 0.86
+  },
+  "views": {
+    "wide": {
+      "lookat": [
+        0.0,
+        0.0,
+        0.4332
+      ],
+      "azimuth": 135.0,
+      "elevation": -32.0,
+      "distance": 1.05,
+      "changed": {
+        "pixels": 23440,
+        "bbox": [
+          164,
+          0,
+          436,
+          381
+        ]
+      }
+    },
+    "mast": {
+      "lookat": [
+        0.12,
+        -0.2,
+        0.78
+      ],
+      "azimuth": 160.0,
+      "elevation": -12.0,
+      "distance": 0.55,
+      "changed": {
+        "pixels": 25873,
+        "bbox": [
+          213,
+          0,
+          448,
+          479
+        ]
+      }
+    }
+  },
+  "images": {
+    "wide_before.png": {
+      "mean": 80.72,
+      "std": 51.65,
+      "distinct_colors": 17443,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "wide_after.png": {
+      "mean": 80.74,
+      "std": 47.14,
+      "distinct_colors": 18845,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "mast_before.png": {
+      "mean": 88.58,
+      "std": 59.2,
+      "distinct_colors": 54666,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "mast_after.png": {
+      "mean": 92.36,
+      "std": 57.84,
+      "distinct_colors": 57926,
+      "size": [
+        640,
+        480
+      ]
+    },
+    "comparison.png": {
+      "mean": 76.92,
+      "std": 56.22,
+      "distinct_colors": 71672,
+      "size": [
+        1280,
+        1102
+      ]
+    }
+  }
+}

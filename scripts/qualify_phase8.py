@@ -272,8 +272,7 @@ def layout_comparison() -> list[dict]:
         board = twin.board_config().model_copy(update={"arm_gap": gap, "arm_riser": riser})
         cfg = EnvConfig(board=board,
                         appearance=AppearanceConfig(piece_set="default",
-                                                    board_labels=True,
-                                                    camera_mast=False),
+                                                    board_labels=True),
                         control=ControlConfig(cameras=()))
         from chess_sim.env import ChessSimEnv
         env = ChessSimEnv(cfg)

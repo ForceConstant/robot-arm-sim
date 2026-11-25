@@ -1050,11 +1050,10 @@ class Lab:
                 from chess_sim.product import layout_env_config
                 base=layout_env_config(piece_set='printed', cameras=())
                 config=base.model_copy(update={
-                    'appearance':base.appearance.model_copy(update={'camera_mast':False}),
                     'control':ControlConfig(cameras=(), image_size=(800, 600))})
             else:
                 config=EnvConfig(
-                    appearance=AppearanceConfig(camera_mast=False, piece_set=piece_set),
+                    appearance=AppearanceConfig(piece_set=piece_set),
                     control=ControlConfig(cameras=(), image_size=(800, 600)))
             self.env = env_type(config)
             self.env.model.vis.quality.shadowsize = 2048

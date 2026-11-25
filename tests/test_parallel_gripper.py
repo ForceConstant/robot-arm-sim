@@ -39,7 +39,7 @@ def custom_env():
         pytest.skip('Private CAD integration requires ROBOT_GRIPPER=cad_parallel and an explicit asset pack')
     from chess_sim.dual import DualArmEnv
     e = DualArmEnv(EnvConfig(control=ControlConfig(cameras=()),
-                            appearance=AppearanceConfig(camera_mast=False)))
+                            appearance=AppearanceConfig()))
     e.reset()
     yield e
     e.close()

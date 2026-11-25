@@ -18,12 +18,17 @@ import trimesh
 from chess_sim import BoardConfig, Camera, ChessSimEnv, Config, ControlConfig, EnvConfig, START_FEN
 from diagrams import write_elevation, write_plan
 from chess_sim.assets import ASSET_DIR, SET_COUNTS, piece_geometry
-from chess_sim.scene import (MAST_HEIGHT, MAST_SIDE, MAST_WIDTH, WRIST_CAMERA)
+from chess_sim.scene import WRIST_CAMERA
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STL_DIR = os.path.join(HERE, "stl")
 MEDIA_DIR = os.path.join(os.path.dirname(HERE), "docs", "media")
 MM = 1000.0
+# Physical mast dimensions (mm). The rendered sim scene no longer builds a mast;
+# these stay here for the printable parts and scale drawings.
+MAST_SIDE = 0.16       # mast axis beside the arm, m
+MAST_HEIGHT = 0.60     # tube height above the plate, m
+MAST_WIDTH = 0.03      # square-tube side, m
 TOP_CAMERA_FOVY = 24          # degrees, as built in scene.py
 MAST_PLATE_THICKNESS = 0.010  # scene.py: the plate under the arm base
 MAST_PLATE_MARGIN = 0.06      # how far the plate reaches past the mast axis

@@ -66,7 +66,7 @@ def test_absolute_dimensions_and_identical_colour_geometry(printed_pack):
 def test_product_mass_can_cover_parked_pieces_before_first_reset(printed_pack):
     from chess_sim.env import ChessSimEnv
     from chess_sim.product import load_product_twin,apply_mass_model
-    env=ChessSimEnv(EnvConfig(appearance=AppearanceConfig(piece_set='printed',camera_mast=False),
+    env=ChessSimEnv(EnvConfig(appearance=AppearanceConfig(piece_set='printed'),
                             control=ControlConfig(cameras=())))
     try:
         assert not env._square_slot
@@ -79,7 +79,7 @@ def test_product_mass_can_cover_parked_pieces_before_first_reset(printed_pack):
 
 
 def test_compound_contacts_mass_and_stable_settling(printed_pack):
-    spec = build_scene(BoardConfig(), AppearanceConfig(piece_set="printed", camera_mast=False), dual_arms=True)
+    spec = build_scene(BoardConfig(), AppearanceConfig(piece_set="printed"), dual_arms=True)
     model = spec.compile()
     data = mujoco.MjData(model)
     # Avoid creating an IK solver just to check standalone free-body contacts.
@@ -98,7 +98,7 @@ def test_compound_contacts_mass_and_stable_settling(printed_pack):
             assert body.mass[0] == pytest.approx(records[assets._TYPE_NAME[kind]]["mass_kg"])
     assert model.neq == (4 if __import__('chess_sim.gripper', fromlist=['CUSTOM']).CUSTOM else 0)
     # Test actual reset and board settling of all 32 pieces in the two-arm world.
-    env = DualArmEnv(EnvConfig(appearance=AppearanceConfig(piece_set="printed", camera_mast=False),
+    env = DualArmEnv(EnvConfig(appearance=AppearanceConfig(piece_set="printed"),
                               control=ControlConfig(cameras=())))
     try:
         env.reset()

@@ -86,7 +86,7 @@ def main() -> int:
                             yaw=math.radians(board["yaw_deg"]), mat=0.0,
                             table_top=board["z_mm"] / 1e3 - 0.0032)
     model = scene.build_scene(board=bc,
-                              appearance=config.AppearanceConfig(camera_mast=False)).compile()
+                              appearance=config.AppearanceConfig()).compile()
     data = mujoco.MjData(model)
     q = dict(joints)
     q["wrist_roll"] = config.sim_wrist_roll(joints["wrist_roll"])

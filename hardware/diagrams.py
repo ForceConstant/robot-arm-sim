@@ -7,7 +7,11 @@ at any zoom and never go stale - `hardware/generate.py` rewrites them.
 from __future__ import annotations
 
 from chess_sim import BoardConfig
-from chess_sim.scene import MAST_HEIGHT, MAST_SIDE, MAST_WIDTH
+# Physical mast dimensions, kept here so the printed parts and scale drawings do
+# not depend on the rendered scene (which no longer builds a mast).
+MAST_SIDE = 0.16       # mast axis beside the arm, m
+MAST_HEIGHT = 0.60     # tube height above the plate, m
+MAST_WIDTH = 0.03      # square-tube side, m
 
 MM = 1000.0
 SCALE = 1.6                 # svg pixels per millimetre

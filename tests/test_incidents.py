@@ -74,7 +74,7 @@ def test_store_rejects_unknown_or_malformed_ids(tmp_path):
 @pytest.fixture(scope="module")
 def env():
     e = DualArmEnv(EnvConfig(control=ControlConfig(cameras=()),
-                             appearance=AppearanceConfig(camera_mast=False)))
+                             appearance=AppearanceConfig()))
     e.reset()
     yield e
     e.close()

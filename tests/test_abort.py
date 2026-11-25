@@ -12,7 +12,7 @@ from chess_sim.dual import DualArmEnv
 @pytest.fixture(scope="module")
 def env():
     e = DualArmEnv(EnvConfig(control=ControlConfig(cameras=()),
-                            appearance=AppearanceConfig(camera_mast=False)))
+                            appearance=AppearanceConfig()))
     e.reset(chess.STARTING_FEN)
     yield e
     e.close()

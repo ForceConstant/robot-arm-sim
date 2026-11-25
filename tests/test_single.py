@@ -5,7 +5,7 @@ import chess
 
 def test_one_follower_handles_both_colours_without_a_hidden_second_arm():
     env=SingleFollowerEnv(EnvConfig(control=ControlConfig(cameras=()),
-                                  appearance=AppearanceConfig(camera_mast=False)))
+                                  appearance=AppearanceConfig()))
     try:
         assert env.model.nu==6 and list(env._contexts)==['white']
         assert not any(env.model.body(i).name.startswith('black:') for i in range(env.model.nbody))

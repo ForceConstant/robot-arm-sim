@@ -9,7 +9,7 @@ from chess_sim.dual import DualArmEnv
 @pytest.fixture(scope="module")
 def env():
     e = DualArmEnv(EnvConfig(control=ControlConfig(cameras=()),
-                            appearance=AppearanceConfig(camera_mast=False,
+                            appearance=AppearanceConfig(
                                 piece_set=os.environ.get("ROBOT_PIECE_SET", "default"))))
     yield e
     e.close()
@@ -35,7 +35,7 @@ def legacy_crowded_env():
     # an empty-board reach qualification does not qualify every crowded grasp.
     e=DualArmEnv(EnvConfig(board=BoardConfig(arm_gap=.12,arm_riser=.06,thickness=.012),
                           control=ControlConfig(cameras=()),
-                          appearance=AppearanceConfig(camera_mast=False,
+                          appearance=AppearanceConfig(
                               piece_set=os.environ.get('ROBOT_PIECE_SET','default'))))
     yield e
     e.close()

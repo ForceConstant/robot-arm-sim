@@ -82,7 +82,7 @@ def main() -> int:
                             yaw=math.radians(board["yaw_deg"]), mat=0.0,
                             table_top=board["z_mm"] / 1e3 - 0.0032)
     model = scene.build_scene(board=bc,
-                              appearance=config.AppearanceConfig(camera_mast=False)).compile()
+                              appearance=config.AppearanceConfig()).compile()
     data = mujoco.MjData(model)
     cid = model.camera("wrist").id
     baked_fovy = float(model.cam_fovy[cid])

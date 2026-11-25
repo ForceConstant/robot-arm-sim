@@ -82,7 +82,7 @@ def sim_geom():
                             yaw=math.radians(board["yaw_deg"]), mat=0.0,
                             table_top=plane_z - 0.0032)
     model = scene.build_scene(board=bc,
-                              appearance=config.AppearanceConfig(camera_mast=False)).compile()
+                              appearance=config.AppearanceConfig()).compile()
     return model, mujoco.MjData(model), model.body("so101:gripper").id, plane_z
 
 
