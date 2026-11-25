@@ -321,6 +321,36 @@ an unexplained revert is itself a regression.
 - Localisation target is nominal square centre (4.06 mm median on 46 real
   frames); sim-trained keypoint loses on real data — do not use it as gate truth.
 
+## 4b. Known failing tests on `origin/main` (2026-11-25, pre-existing)
+
+The full suite (`robot-arm-sim test`) is **not** green on a clean `origin/main`
+checkout (`fae2b36`). These 11 failures were reproduced both on the updated
+BC-250 and on a fresh detached worktree at `origin/main`, so they are **not**
+caused by the BC-250 update, the mast removal or the aim-laser work. Do not log
+them as drift findings from those changes, and do not relax a threshold to make
+them pass. They need a separate owner and a recorded decision.
+
+| Failing test | Status in this plan | Observed cause / note |
+| --- | --- | --- |
+| `test_hand_eye.py::test_refinement_recovers_a_perturbed_mount` | **Gated** in §T2b, §3, §3b (`test_hand_eye.py` green, corner overlay ≤2/4 px) | Already called out in §T2b: detected marker 14 is not in `MarkerLayout::_CENTRE_SIGNS`. Predates this plan; explicitly "do not log as drift" until a synced-tree look happens. |
+| `test_frame_pins.py::test_rig_state_snapshot_matches_manifest` | **Gated** in §0.4, T1, §3, §3b (rig state matches `MANIFEST.json`, zero DRIFT) | One of the 5 literal pin tests; 4/5 pass. `MANIFEST.json` expects `live_config.json` sha `4c28d879…`; committed snapshot is `8c8303a1…`. Stale pin, needs re-snapshot or explanation. |
+| `test_board_registration.py::test_registration_recovers_the_nominal_board` | Conceptual only: §3 "Registration 8/8 within 2 mm / 1°" (no filename) | Registration assertion fails on clean main. |
+| `test_board_registration.py::test_registration_tracks_a_shifted_turned_board_and_random_camera` | Conceptual only: same §3 registration line | Shifted/turned board + random camera registration fails on clean main. |
+| `test_marker_scan.py::test_plan_reports_missing_markers` | Not named; marker plans referenced conceptually in §3/§4 | Fails on clean main. |
+| `test_marker_scan.py::test_plan_round_trip` | Not named | Fails on clean main. |
+| `test_marker_scan.py::test_committed_plan_covers_every_marker_twice` | Not named (related to the §3 marker/registration concepts) | Fails on clean main. |
+| `test_marker_scan.py::test_tolerant_plan_keeps_nominal_quality` | Not named | Fails on clean main. |
+| `test_self_occlusion.py::test_projection_tracks_measured_joint_rotation_and_cache_is_not_mutable` | Not named; occlusion discussed in §T8/§4 only | `SelfOcclusionModel` constructed without the required `calibration` argument (constructor signature changed); 2 other tests in the file pass. |
+| `test_self_occlusion.py::test_near_plane_clipping_and_behind_camera_rejection` | Not named | Same missing-`calibration` construction failure. |
+| `test_self_occlusion.py::test_pixel_margin_is_conservative_and_invalid_joints_raise` | Not named | Same missing-`calibration` construction failure. |
+
+**Reading this table:** T2 ("existing suite green") is the intent, not the
+current state; §T2b already documents that it does not claim its two companion
+guards green. A future run that turns any of these green is welcome, but must
+come with a reason and a source-of-truth update — not an unexplained threshold
+change. Full-suite result on `fae2b36`: **221 passed, 11 failed, 42 skipped**.
+The T2b literal pins alone are **4/5** (the rig-state pin above is the fail).
+
 ## 5. Drift decision rule
 
 A change is a **regression** only if, on the paired set:
