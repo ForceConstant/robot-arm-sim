@@ -332,6 +332,12 @@ convert on the BC-250 with `ffmpeg` palette/fps/scale and attach with
 `MEDIA:<path>`. Verify numerically (`ffprobe`/`ffmpeg`: frame count, duration,
 dimensions) — never `view_image` your own review artifacts.
 
+**Allowed fail for the first pass (Brian, 2026-11-25).** The grasping feature
+has not been through yet, so T9 is waived for this pass only: record the
+attempts in the receipt and do not treat them as a new regression. Re-enable
+T9 as a blocking gate once the grasp path is qualified. Every other gate is
+unchanged.
+
 Reviewer confirms: grasp succeeds, piece rests on target square, gripper empty,
 no fault, trajectory shape matches sim, no unexpected branch change, and the
 close/grasp moment is visible (stepped frames). Record verdict in the receipt.
