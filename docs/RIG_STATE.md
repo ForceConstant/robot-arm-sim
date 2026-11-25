@@ -49,6 +49,24 @@ After any deliberate recalibration:
 
 Then commit `rig_state/`.
 
+## Home before every task
+
+`AGENTS.md` makes this a standing rule: any work that moves the arm starts by
+driving it to the stored home pose.
+
+```bash
+.venv/bin/python tools/home_arm.py --check   # report only
+.venv/bin/python tools/home_arm.py           # home, then verify
+```
+
+Home is `recovery_joints` — a stored joint pose, never an IK target, so it works
+even when the solver is broken. The gripper is carried through untouched.
+
+Why it is a rule and not a habit: a task left the arm parked at an experiment
+pose, off the board and low, and the next vision run reported no markers and a
+soft image. That looks exactly like a camera fault and cost an hour of
+diagnosis before anyone checked where the arm was pointing.
+
 ## Proving the arm is controllable
 
 `tools/verify_baseline.py` checks seven things and exits non-zero on any

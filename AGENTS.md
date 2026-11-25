@@ -15,6 +15,17 @@ user; the roadmap is not authorization to implement all future phases at once.
 
 ## Invariants
 
+- **Home before every task (Brian, 2026-11-25).** Any work that moves the arm
+  begins by driving it to the stored home pose — tip above the middle of the
+  board, `recovery_joints`, currently `(pan -12.37, lift -13.02, elbow 4.80,
+  flex 98.34, roll 0.00)`. Reason: a task left the arm parked at a working pose
+  from a previous experiment, off the board and low, and the next vision run
+  then reported "no markers" and a soft image — which looked like a camera
+  fault and cost an hour of diagnosis. Home is the only pose from which the
+  wrist camera is known to see the board. Use `POST /recover` (or
+  `tools/home_arm.py`), then confirm the tip is within ~15 mm of board centre
+  before commanding anything else. Homing does not actuate the gripper.
+
 - Current-mount Phase 8 rerun: `docs/PHASE8_UPDATED_OFFSETS.md` and
   `reports/phase8_updated_*.json`. The unchanged CAD jaw passes 64/64 source
   paths after retries; a span-only candidate passes 25/25 crowded cases. Keep
