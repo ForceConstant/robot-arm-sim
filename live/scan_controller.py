@@ -220,6 +220,10 @@ class ScanController:
         self.clock = clock
         self.sleep = sleep
         self._seq = 0
+        # Accepted frames with the pose that produced them.  Consumers that
+        # need the pixels (wrist perception) read them here; the marker scan
+        # itself only keeps the calibration.
+        self.captured: list[tuple[str, Frame]] = []
 
     # ------------------------------------------------------------------ public
     def run(self) -> ScanReport:
@@ -395,13 +399,19 @@ class ScanController:
             visit.note = "pose timeout"
             return visit, None
         for attempt in range(self.capture_retries + 1):
-            frame = self.frames.capture()
+            try:
+                frame = self.frames.capture()
+            except Exception as exc:              # noqa: BLE001 - camera blips
+                visit.note = f"capture failed: {exc}"
+                self.sleep(self.command_period_s)
+                continue
             state = self.bridge.state()
             current = self._joints_from_state(state)
             drift = self._error_deg(current, frame.joints_deg)
             if drift <= self.freshness_deg:
                 visit.captured = True
                 camera = self.camera_from_joints(frame.joints_deg)
+                self.captured.append((name, frame))
                 return visit, (frame.image, camera)
             visit.note = f"stale frame ({drift:.1f} deg from current pose)"
             self.sleep(self.command_period_s)

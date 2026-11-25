@@ -16,6 +16,7 @@ is the qualification for that path.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -23,6 +24,7 @@ from typing import Any, Iterable, Mapping, Sequence
 import numpy as np
 
 from chess_sim.charuco_face import CharucoLayout
+from chess_sim.config import WRIST_ROLL_ZERO_SIM_DEG
 from chess_sim.fiducials import MarkerLayout
 from chess_sim.perception import CLASSES, PerceptionModel
 from chess_sim.wrist_calibration import WristCalibration
@@ -32,6 +34,8 @@ from chess_sim.wrist_scan import (PLAN_PATH, WRIST_MODEL_PATH, ScanFrame,
 
 CONFIG_PATH = Path(__file__).resolve().parent / "live_config.json"
 SQUARE_CLASSES = CLASSES
+JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex",
+          "wrist_flex", "wrist_roll", "gripper")
 
 
 @dataclass(frozen=True)
@@ -125,6 +129,37 @@ def scan_frames(captures: Iterable["Capture | Mapping[str, Any]"]) -> list[ScanF
     return [ScanFrame(frame=item.frame, joints=item.joints, timestamp=0.0,
                       pose=item.pose)
             for item in (_as_capture(value) for value in captures)]
+
+
+def plan_pose_degrees(pose: ScanPose) -> tuple[float, ...]:
+    """Simulator plan radians -> Pi-bridge degrees.
+
+    The five arm joints are a plain radians conversion, except ``wrist_roll``:
+    the sim joint is offset by -87.21 deg from the live zero, so the bridge
+    value is ``sim - WRIST_ROLL_ZERO_SIM_DEG``.  The jaw is lerobot's 0..100.
+    """
+    from chess_sim import gripper
+
+    values = [math.degrees(float(v)) for v in pose.joints]
+    values[4] = math.degrees(float(pose.joints[4])) - WRIST_ROLL_ZERO_SIM_DEG
+    span = float(gripper.JOINT_MAX - gripper.JOINT_MIN)
+    values[5] = (float(np.clip((float(pose.joints[5]) - gripper.JOINT_MIN)
+                               / span * 100.0, 0.0, 100.0)) if span > 0 else 0.0)
+    return tuple(values)
+
+
+def frames_from_captured(captured: Iterable[tuple[str, Any]]) -> list[ScanFrame]:
+    """``ScanController.captured`` (degrees) -> scanner frames (radians).
+
+    The live calibration's ``camera(joints)`` takes radians; the bridge and the
+    capture record are in degrees, so this is the one place that converts.
+    """
+    frames: list[ScanFrame] = []
+    for name, frame in captured:
+        joints = tuple(math.radians(float(v)) for v in frame.joints_deg)
+        frames.append(ScanFrame(frame=frame.image, joints=joints,
+                                timestamp=float(frame.timestamp), pose=str(name)))
+    return frames
 
 
 def run_scan(captures: Sequence["Capture | Mapping[str, Any]"],

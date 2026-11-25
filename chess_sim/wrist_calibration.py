@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +18,12 @@ from scipy.spatial.transform import Rotation
 from scipy.ndimage import map_coordinates
 
 from .vision_geometry import CameraCalibration
+
+#: The chain limits guard against unit errors (radians sent as degrees), not
+#: against a servo settling a fraction of a degree past its nominal stop.  The
+#: scan plan can legitimately sit on a limit, and the measured arm then reads
+#: slightly beyond it; 1.5 deg keeps that from turning into a false rejection.
+LIMIT_TOLERANCE_RAD = math.radians(1.5)
 
 
 def _transform(position, rotation):
@@ -77,7 +84,8 @@ class WristCalibration:
             if 'joint_index' not in link:
                 continue
             angle = joints[link['joint_index']]
-            if not link['limits'][0] - 1e-6 <= angle <= link['limits'][1] + 1e-6:
+            if not (link['limits'][0] - LIMIT_TOLERANCE_RAD <= angle
+                    <= link['limits'][1] + LIMIT_TOLERANCE_RAD):
                 raise ValueError('measured joint outside calibrated hard limits')
             anchor = np.asarray(link['anchor'])
             rot = Rotation.from_rotvec(np.asarray(link['axis']) * (angle - link['reference'])).as_matrix()

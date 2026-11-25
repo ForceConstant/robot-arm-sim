@@ -147,3 +147,41 @@ def test_runner_registers_and_labels_a_sim_board():
         and prediction.label == "empty" and prediction.confidence >= threshold]
     assert confident_wrong == [], (
         f"occupied squares confidently labelled empty: {confident_wrong}")
+
+
+def test_plan_pose_degrees_maps_the_sim_roll_to_the_bridge():
+    """The plan is sim joint space; the bridge wrist_roll is offset by -87.21 deg."""
+    from live.wrist_scan_runner import plan_pose_degrees
+
+    plan = load_plan()
+    rolls = []
+    for pose in plan:
+        values = plan_pose_degrees(pose)
+        assert len(values) == 6 and all(math.isfinite(v) for v in values)
+        rolls.append(values[4])
+        assert 0.0 <= values[5] <= 100.0, values[5]
+    assert min(rolls) >= -90.5 and max(rolls) <= 90.5, rolls
+    # The vertical plan poses sit at the live zero, not at sim -87.2.
+    assert any(abs(roll) < 0.5 for roll in rolls), rolls
+    assert max(rolls) > 60.0 and min(rolls) < -60.0, rolls
+
+
+def test_frames_from_captured_converts_degrees_to_radians():
+    """The live calibration's camera() takes radians; captures are in degrees."""
+    from dataclasses import dataclass
+
+    from live.wrist_scan_runner import frames_from_captured
+
+    @dataclass
+    class Frame:
+        image: np.ndarray
+        joints_deg: tuple[float, ...]
+        timestamp: float = 0.0
+
+    frame = Frame(np.zeros((4, 4, 3), dtype=np.uint8),
+                  (0.0, 0.0, 0.0, 0.0, -87.21, 0.0), 1.5)
+    frames = frames_from_captured([("v1", frame)])
+    assert len(frames) == 1
+    assert frames[0].pose == "v1"
+    assert frames[0].timestamp == 1.5
+    assert abs(frames[0].joints[4] - math.radians(-87.21)) < 1e-12

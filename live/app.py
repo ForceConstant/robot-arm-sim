@@ -40,11 +40,15 @@ from solver import MoveSolver
 from scan_controller import ScanController, plan_in_degrees
 from target_overlay import TargetOverlay, draw as draw_target
 from tip_frame import TIP_IN_CHAIN, describe as describe_tip_frame
+from wrist_scan_runner import (ScanInputs, frames_from_captured, load_inputs,
+                               plan_pose_degrees, run_scan as run_wrist_scan,
+                               summarize as summarize_wrist_scan)
 from chess_sim import fiducials
-from chess_sim.marker_scan import (MarkerLayout, board_offset, load_plan,
-                                   marker_corners_world)
+from chess_sim.marker_scan import (MarkerLayout, MarkerScanPlan, PoseCoverage,
+                                   board_offset, load_plan, marker_corners_world)
 from chess_sim.product import current_layout
 from chess_sim.wrist_calibration import WristCalibration
+from chess_sim.wrist_scan import load_plan as load_wrist_poses
 
 
 #: Take-up final-leg behaviour.  A take-up exists to remove the last 0.2-0.7 deg
@@ -280,10 +284,23 @@ class Live:
         else:
             self.layout = MarkerLayout(
                 offset_mm=float(self.config["layout_offset_mm"]))
+        # Wrist perception scan: a separate plan (sim joint units converted to
+        # bridge degrees here) and the reference-free model.  It is additive;
+        # /scan keeps the marker plan and the aim overlay keeps TargetDetector.
+        self.wrist_poses = load_wrist_poses()
+        self.wrist_plan = MarkerScanPlan(
+            poses=tuple(PoseCoverage(pose.name, plan_pose_degrees(pose), (), ())
+                        for pose in self.wrist_poses),
+            min_views=1,
+            layout_offset_mm=float(self.config.get("layout_offset_mm", 152.0)),
+            note="wrist perception plan (bridge units)")
         self.lock = threading.Lock()
         self.scan_lock = threading.Lock()
         self.last_scan: dict | None = None
         self.scan_running = False
+        self.last_board: dict | None = None
+        self.board_scan_running = False
+        self.board_scan_error: str | None = None
         self.last_error: str | None = None
         self.annotated: bytes | None = None
         self.annotated_ts = 0.0
@@ -940,6 +957,100 @@ class Live:
 
     def camera_from_joints(self, joints_deg):
         return self.calibration.camera(tuple(math.radians(v) for v in joints_deg))
+
+    # ------------------------------------------------------- wrist perception
+    def start_board_scan(self) -> dict:
+        """Run the wrist perception plan and classify all 64 squares."""
+        if not self.scan_lock.acquire(blocking=False):
+            raise HTTPException(409, "a scan is already running")
+        try:
+            state = self.bridge.state()
+            if state.get("mode") != "REMOTE" or not state.get("armed"):
+                raise HTTPException(409, "bridge must be REMOTE and armed")
+        except BridgeError as exc:
+            self.scan_lock.release()
+            raise HTTPException(502, str(exc)) from exc
+        except Exception:
+            self.scan_lock.release()
+            raise
+        threading.Thread(target=self._board_scan_worker, name="board-scan",
+                         daemon=True).start()
+        return {"started": True}
+
+    def _board_scan_worker(self) -> None:
+        with self.lock:
+            self.board_scan_running = True
+            self.board_scan_error = None
+        stop_stream = threading.Event()
+        stream_reader = threading.Thread(
+            target=self._hold_stream_client, args=(stop_stream,),
+            name="board-scan-stream", daemon=True)
+        try:
+            # Home before the task (AGENTS invariant), then hold the motion
+            # lock so /move cannot interleave with the pose sequence.
+            self.recover_to_home(reason="pre-board-scan")
+            stream_reader.start()
+            if not self.motion.acquire(timeout=10):
+                raise BridgeError("another motion is running; cannot scan")
+            try:
+                board_z = float(self.kinematics.board[2, 3])
+                controller = ScanController(
+                    self.bridge, self.frames, self.camera_from_joints,
+                    self.wrist_plan,
+                    layout=self.layout,
+                    square_m=self.config["square_m"],
+                    board_z_m=board_z,
+                    marker_z_m=board_z,
+                    base_xy_m=(self.config["base_x_m"], self.config["base_y_m"]),
+                    board_half_mm=self.config["board_half_mm"],
+                    settle_s=self.config["settle_s"],
+                    pose_timeout_s=self.config["pose_timeout_s"],
+                    speed_scale=self.config["speed_scale"])
+                report = controller.run()
+                if not report.ok:
+                    raise RuntimeError(report.note or "wrist scan failed")
+                base = load_inputs()
+                inputs = ScanInputs(
+                    calibration=base.calibration, poses=base.poses,
+                    model=base.model, square=base.square,
+                    board_z=board_z, marker_z=board_z,
+                    layout=base.layout, config_path=base.config_path)
+                frames = frames_from_captured(controller.captured)
+                if not frames:
+                    raise RuntimeError("wrist scan captured no fresh frames")
+                result = run_wrist_scan(frames, inputs)
+                with self.lock:
+                    self.last_board = summarize_wrist_scan(result)
+            finally:
+                self.motion.release()
+        except Exception as exc:                       # noqa: BLE001
+            with self.lock:
+                self.board_scan_error = f"{type(exc).__name__}: {exc}"
+        finally:
+            stop_stream.set()
+            try:
+                self.recover_to_home(reason="post-board-scan")
+            except Exception:                          # noqa: BLE001
+                pass
+            with self.lock:
+                self.board_scan_running = False
+            self.scan_lock.release()
+
+    def _hold_stream_client(self, stop: threading.Event) -> None:
+        """Keep one /stream client attached: the bridge stops producing frames
+        for /capture when nothing consumes the stream (measured 2026-11-25:
+        pose 10 of a live wrist scan failed with 503 'no camera frame')."""
+        import urllib.request
+
+        port = int(self.config.get("port", 8080))
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{port}/stream",
+                                        timeout=10) as response:
+                while not stop.is_set():
+                    if not response.read(65536):
+                        break
+        except Exception:                              # noqa: BLE001
+            pass
 
     # ------------------------------------------------------------- poses/jog
     def poses(self) -> dict:
@@ -2297,6 +2408,9 @@ def state():
                 "aim_point": aim_state,
                 "scan": live.last_scan,
                 "scan_running": live.scan_running,
+                "board_scan": live.last_board,
+                "board_scan_running": live.board_scan_running,
+                "board_scan_error": live.board_scan_error,
                 "error": live.last_error,
                 "stream_age_s": round(time.time() - live.annotated_ts, 2)
                 if live.annotated_ts else None,
@@ -2310,6 +2424,13 @@ def state():
 async def scan(request: Request):
     _authorised(request)
     return await run_in_threadpool(live.start_scan)
+
+
+@app.post("/board/scan")
+async def board_scan(request: Request):
+    """Wrist perception scan: 64 square labels from the plan captures."""
+    _authorised(request)
+    return await run_in_threadpool(live.start_board_scan)
 
 
 @app.get("/camera/controls")
