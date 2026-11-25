@@ -1,0 +1,15 @@
+  shoulder_pan   +10.0  A   -69.54 -> B   -59.54  final   -59.69  residual  +0.15  peak past B 0.200  tail 0.440  rev 1  20 Hz
+  shoulder_pan   +10.0  A   -59.69 -> B   -49.69  final   -49.76  residual  +0.07  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  shoulder_pan   -10.0  A   -49.76 -> B   -59.76  final   -59.87  residual  +0.11  peak past B 0.110  tail 0.270  rev 0  20 Hz
+  shoulder_pan   -10.0  A   -59.87 -> B   -69.87  final   -69.89  residual  +0.02  peak past B 0.020  tail 0.000  rev 0  20 Hz
+  elbow_flex     +10.0  A    40.92 -> B    50.92  final    50.77  residual  +0.15  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  elbow_flex     +10.0  A    50.77 -> B    60.77  final    60.97  residual  -0.20  peak past B 0.200  tail 0.000  rev 0  20 Hz
+  elbow_flex     -10.0  A    60.97 -> B    50.97  final    51.03  residual  -0.06  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  elbow_flex     -10.0  A    51.03 -> B    41.03  final    41.27  residual  -0.24  peak past B 0.000  tail 0.000  rev 0  20 Hz
+    shoulder_pan +10.0: residual +0.11, peak past B 0.200, tail 0.440, rev 1 (n=2)
+    shoulder_pan -10.0: residual +0.07, peak past B 0.110, tail 0.270, rev 0 (n=2)
+    elbow_flex +10.0: residual -0.03, peak past B 0.200, tail 0.000, rev 0 (n=2)
+    elbow_flex -10.0: residual -0.15, peak past B 0.000, tail 0.000, rev 0 (n=2)
+
+  sample rate: min 19.9 Hz, median 19.9 Hz (need >=15)
+  wrote after_i8_overshoot.json

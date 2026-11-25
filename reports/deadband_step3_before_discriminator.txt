@@ -1,0 +1,35 @@
+  shoulder_pan   +10.0  goal   -60.33  reached   -60.31  residual  -0.02  tail spread 0.000
+  shoulder_pan   +10.0  goal   -50.31  reached   -50.46  residual  +0.15  tail spread 0.000
+  shoulder_pan   +10.0  goal   -40.46  reached   -40.70  residual  +0.24  tail spread 0.000
+  shoulder_pan   -10.0  goal   -50.70  reached   -50.55  residual  -0.15  tail spread 0.000
+  shoulder_pan   -10.0  goal   -60.55  reached   -60.31  residual  -0.24  tail spread 0.000
+  shoulder_pan   -10.0  goal   -70.31  reached   -70.15  residual  -0.16  tail spread 0.000
+    shoulder_pan +10.0: median residual +0.15 deg (n=3)
+    shoulder_pan -10.0: median residual -0.16 deg (n=3)
+  elbow_flex     +10.0  goal    57.08  reached    57.10  residual  -0.02  tail spread 0.000
+  elbow_flex     +10.0  goal    67.10  reached    66.51  residual  +0.59  tail spread 0.000
+  elbow_flex     +10.0  goal    76.51  reached    71.25  residual  +5.26  tail spread 0.000
+  elbow_flex     -10.0  goal    61.25  reached    61.85  residual  -0.60  tail spread 0.000
+  elbow_flex     -10.0  goal    51.85  reached    52.53  residual  -0.68  tail spread 0.000
+  elbow_flex     -10.0  goal    42.53  reached    43.47  residual  -0.94  tail spread 0.000
+    elbow_flex +10.0: median residual +0.59 deg (n=3)
+    elbow_flex -10.0: median residual -0.68 deg (n=3)
+
+interpretation:
+  residual near 0 (<=0.2 deg) with the external arm short  -> mechanical slop
+  residual large (1-4 deg) with the servo loaded            -> servo-loop droop
+  opposite signs for +delta vs -delta                       -> hysteresis/backlash
+{
+ "results": [
+  {
+   "joint": "shoulder_pan",
+   "delta": 10.0,
+   "start": -70.33,
+   "goal": -60.33,
+   "reached": -60.31,
+   "residual": -0.02,
+   "travel": 10.02,
+   "tail_spread": 0.0
+  },
+  {
+ ...

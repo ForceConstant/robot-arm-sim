@@ -1,0 +1,15 @@
+  shoulder_pan   +10.0  A   -69.71 -> B   -59.71  final   -59.78  residual  +0.07  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  shoulder_pan   +10.0  A   -59.78 -> B   -49.78  final   -49.93  residual  +0.15  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  shoulder_pan   -10.0  A   -49.93 -> B   -59.93  final   -59.78  residual  -0.15  peak past B 0.030  tail 0.000  rev 0  20 Hz
+  shoulder_pan   -10.0  A   -59.78 -> B   -69.78  final   -69.63  residual  -0.15  peak past B 0.110  tail 0.000  rev 0  20 Hz
+  elbow_flex     +10.0  A    44.53 -> B    54.53  final    54.46  residual  +0.07  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  elbow_flex     +10.0  A    54.46 -> B    64.46  final    64.22  residual  +0.24  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  elbow_flex     -10.0  A    64.31 -> B    54.31  final    55.08  residual  -0.77  peak past B 0.000  tail 0.000  rev 0  20 Hz
+  elbow_flex     -10.0  A    55.08 -> B    45.08  final    45.93  residual  -0.85  peak past B 0.000  tail 0.000  rev 0  20 Hz
+    shoulder_pan +10.0: residual +0.11, peak past B 0.000, tail 0.000, rev 0 (n=2)
+    shoulder_pan -10.0: residual -0.15, peak past B 0.110, tail 0.000, rev 0 (n=2)
+    elbow_flex +10.0: residual +0.15, peak past B 0.000, tail 0.000, rev 0 (n=2)
+    elbow_flex -10.0: residual -0.81, peak past B 0.000, tail 0.000, rev 0 (n=2)
+
+  sample rate: min 19.9 Hz, median 19.9 Hz (need >=15)
+  wrote before_overshoot.json

@@ -1,0 +1,16 @@
+  shoulder_pan   +10.0  goal   -54.88  reached   -55.03  residual  +0.15  tail spread 0.000
+  shoulder_pan   +10.0  goal   -45.03  reached   -45.19  residual  +0.16  tail spread 0.000
+  shoulder_pan   +10.0  goal   -35.19  reached   -35.43  residual  +0.24  tail spread 0.000
+  shoulder_pan   -10.0  goal   -45.43  reached   -45.36  residual  -0.07  tail spread 0.000
+  shoulder_pan   -10.0  goal   -55.36  reached   -55.12  residual  -0.24  tail spread 0.000
+  shoulder_pan   -10.0  goal   -65.12  reached   -65.05  residual  -0.07  tail spread 0.000
+    shoulder_pan +10.0: median residual +0.16 deg (n=3)
+    shoulder_pan -10.0: median residual -0.07 deg (n=3)
+  elbow_flex     +10.0  goal    74.40  reached    70.37  residual  +4.03  tail spread 0.000
+  elbow_flex     +10.0  goal    80.37  reached    72.57  residual  +7.80  tail spread 0.000
+  elbow_flex     +10.0  goal    82.57  reached    72.66  residual  +9.91  tail spread 0.000
+  elbow_flex     -10.0  goal    62.66  reached    63.34  residual  -0.68  tail spread 0.000
+  elbow_flex     -10.0  goal    53.34  reached    54.11  residual  -0.77  tail spread 0.000
+  elbow_flex     -10.0  goal    44.11  reached    45.32  residual  -1.21  tail spread 0.000
+    elbow_flex +10.0: median residual +7.80 deg (n=3)
+    elbow_flex -10.0: median residual -0.77 deg (n=3)

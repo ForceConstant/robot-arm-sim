@@ -1,0 +1,38 @@
+{
+ "config": {
+  "reps": 2,
+  "delta": 10.0,
+  "speed": 0.25
+ },
+ "limit_probe": {
+  "joint": "elbow_flex",
+  "pushed_goal": 76.0,
+  "walk": [
+   {
+    "goal": 56.55,
+    "reached": 56.4
+   },
+   {
+    "goal": 66.55,
+    "reached": 66.24
+   },
+   {
+    "goal": 76.0,
+    "reached": 71.78
+   }
+  ],
+  "stalled_at": 71.78,
+  "error_at_stall": 4.22,
+  "hold_s": 2.0,
+  "reversal_target": 66.0,
+  "final": 66.24,
+  "reverse_window_s": 10.0,
+  "release_after_s": 0.55,
+  "residual": -0.24,
+  "peak_past_reversal": 0.0,
+  "tail_spread": 0.0,
+  "reversals_500ms": 0,
+  "rate_hz": 19.9,
+  "rejected": 0
+ }
+}

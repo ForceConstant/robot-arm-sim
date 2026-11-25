@@ -424,8 +424,18 @@ class Bridge:
         # With I=0 the loop cannot null a constant load, so the steady-state
         # shortfall is residual = load/Kp: measured 2026-11-25 at P=16,
         # shoulder_pan +0.33/-0.24 deg, loaded elbow_flex +0.50/-1.56 deg, with
-        # tail_spread 0.000 (settled, not mid-flight).  This step is the
-        # single-variable experiment: restore the factory P and nothing else.
+        # tail_spread 0.000 (settled, not mid-flight).  P=32 was kept (2026-11-25
+        # step 2: loaded elbow droop -1.56 -> -0.77 deg).
+        #
+        # I stays 0: a bounded integral was tried and REVERTED (step 3).  I=8
+        # removed the load-proportional droop (loaded elbow -0.81 -> -0.15 deg)
+        # and could not be made to hunt on a reachable hold, but it introduced
+        # integral windup at a target the arm cannot reach: after a 2 s stall
+        # the servo ignored reverse commands for >10 s.  I=4 was no better - a
+        # ~6 deg reverse command was needed before the joint moved at all - so
+        # the factory/default I=0 is restored.  Evidence:
+        # reports/deadband_step3_integral_20261125.md.  Do not raise I without a
+        # way to bound it (the register set has no anti-windup clamp we own).
         robot = SO101Follower(SO101FollowerConfig(port=self.follower_port,
                                                   id=self.follower_cal,
                                                   position_p_coefficient=32,
