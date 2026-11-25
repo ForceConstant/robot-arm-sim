@@ -1,7 +1,7 @@
 {
   "test_id": "FULL-PARITY-01",
   "date": "2026-11-25T13:01:03-05:00",
-  "result": "FULL-PARITY-01: stock suite 274/274 and T2b 47/47; T8 approved; T9 remains an allowed fail for this pass.",
+  "result": "FULL-PARITY-01: stock suite 272/272, T2b 47/47, T8 approved, T9 allowed fail. Browser sim retired from main.",
   "host": "cachyos-x8664 / CachyOS",
   "heads": {
     "local_source": "805dec0a28ca5a309bf4213ccc10342b85645e01",
@@ -67,11 +67,11 @@
     },
     "T2": {
       "status": "PASS",
-      "tests": 274,
-      "passed": 274,
+      "tests": 272,
+      "passed": 272,
       "failed": 0,
       "skipped": 42,
-      "note": "11 failures fixed: 9 stale pins/assets, registration seed, plus the stale ChArUco face texture; perception model retrained on the corrected face"
+      "note": "web-service tests removed with the browser sim; all remaining tests pass"
     },
     "T2b": {
       "status": "PASS",
