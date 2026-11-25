@@ -204,10 +204,10 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--crowded-only", action="store_true")
     parser.add_argument("--no-self-occlusion", action="store_true", help="paired unmasked ablation")
-    parser.add_argument("--no-references", action="store_true",
-                        help="skip the per-pose empty-board reference patches (registration "
-                             "and self-occlusion are unchanged); measures the reference-free "
-                             "feature path the IRL stack would use without an empty capture")
+    parser.add_argument("--with-references", action="store_true",
+                        help="feed the per-pose empty-board reference patches (legacy path; "
+                             "the shipped model is trained reference-free, so this mismatches it "
+                             "and is for ablation only)")
     parser.add_argument("--stress-shadow-extreme", action="store_true",
                         help="engineered cast-shadow-extreme/harsh lighting stress envelope")
     parser.add_argument("--stress-arm-over-changed", action="store_true",
