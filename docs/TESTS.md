@@ -450,7 +450,8 @@ Eleven failures were fixed, and the two survivors were root-caused:
 - The perception model was retrained on the corrected face (same protocol,
   seed 61): answered accuracy 0.975, coverage 0.718, 36 confident errors.
 
-Current full suite (stock): **274 tests, 274 passed, 0 failed, 42 skipped.**
+Current full suite (stock): **272 tests, 272 passed, 0 failed, 42 skipped**
+(two web-service tests were removed with the browser sim on 2026-11-25).
 T2b companions (5y pack): **47 tests, 47 passed, 0 failed.** The base-extents
 guard now reads the authored `gripper_base_1__solid1.stl` (the compiled pack
 merges that visual into `complete_fixed_jaw_bin`, so it is no longer
