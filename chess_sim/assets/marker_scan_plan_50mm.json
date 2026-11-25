@@ -1,5 +1,6 @@
 {
   "schema": "robot-arm-marker-scan-plan/1",
+  "marker_ids": [0, 1, 2, 3],
   "min_views": 2,
   "layout_offset_mm": 152.0,
   "note": "placement tolerance +/-50 mm, +/-5 deg; 74/75 placements reach 3 markers; nominal views {0: 2, 1: 2, 2: 2, 3: 2}",

@@ -131,7 +131,7 @@ def test_greedy_falls_back_when_no_diverse_view_exists():
 def test_plan_reports_missing_markers():
     plan = plan_from_observations([
         ("a", (0.0,) * 6, {0: _obs(0), 1: _obs(1)}),
-    ], min_views=2)
+    ], min_views=2, marker_ids=(0, 1, 2, 3))
     assert not plan.complete()
     assert plan.missing() == (0, 1, 2, 3)
 
@@ -148,7 +148,7 @@ def test_plan_round_trip(tmp_path):
          {m: _obs(m) for m in range(4)}),
         ("b", (0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
          {m: _obs(m) for m in range(4)}),
-    ], min_views=2)
+    ], min_views=2, marker_ids=(0, 1, 2, 3))
     path = save_plan(plan, tmp_path / "plan.json")
     loaded = load_plan(path)
     assert loaded.min_views == 2

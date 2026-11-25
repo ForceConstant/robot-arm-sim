@@ -428,6 +428,25 @@ come with a reason and a source-of-truth update — not an unexplained threshold
 change. Full-suite result on `fae2b36`: **221 passed, 11 failed, 42 skipped**.
 The T2b literal pins alone are **4/5** (the rig-state pin above is the fail).
 
+### 4c. Status after the 2026-11-25 fix pass (`70bd237` + fixes)
+
+Nine of the eleven were stale expectations/assets and are fixed: the
+`MANIFEST_HASHES` literal, both marker-scan plans (`marker_ids: [0,1,2,3]`),
+the two marker-scan tests, and the three `SelfOcclusionModel` stub tests
+(fixture now carries `near_plane_m`). The shifted/turned registration failure
+was a coarse-shortlist seed issue; the prior pose is now always refined.
+
+Current full suite (stock): **274 tests, 272 passed, 2 failed, 42 skipped.**
+T2b companions (5y pack): **47 tests, 45 passed, 2 failed.**
+
+Remaining failures are the two design items: `test_board_registration::
+test_registration_recovers_the_nominal_board` (square-scale anchor; the fitted
+square is 4.2 % low against a 1 mm tolerance) and `test_hand_eye::
+test_refinement_recovers_a_perturbed_mount` (the hand-eye tool still models the
+4-tag mat while the face prints ChArUco ids 5–36). T2b also still has
+`test_tool_orientation::test_base_extents_in_its_own_part_frame` (no matching
+base mesh in the built 5y model).
+
 ## 5. Drift decision rule
 
 A change is a **regression** only if, on the paired set:

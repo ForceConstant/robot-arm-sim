@@ -41,7 +41,7 @@ BOARD_EXPECTED = {
 }
 MANIFEST_HASHES = {
     "board.json": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
-    "live_config.json": "4c28d87905dd904787bf1802e1be0f617d8e41d4fa8346e8825a637bc2c73408",
+    "live_config.json": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8",
     "wrist_calibration.json": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b",
     "mount_calibration.json": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4",
 }

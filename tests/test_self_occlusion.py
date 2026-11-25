@@ -19,6 +19,7 @@ def _model(triangle, padding=0):
     vertices = np.asarray(triangle, dtype=float)
     model.calibration = calibration
     model.padding_pixels = padding
+    model.near_plane_m = 0.02      # __init__ default; the stub must carry it
     model._custom = True
     model._jaw_limits = (-1., 1.)
     model._parts = [('gripper', vertices, np.eye(4))]

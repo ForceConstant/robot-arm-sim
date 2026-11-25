@@ -394,6 +394,12 @@ def register_board(frame: np.ndarray, calibration: CameraCalibration,
                     + 0.35 * _edge_consistency(luminance, calibration, poses[index], board_z),
                     reverse=True)
     seeds: list[np.ndarray] = []
+    if prior is not None:
+        # The coarse shortlist can be dominated by the wrong one-square phase.
+        # The prior pose is inside the search bounds and is the cheapest
+        # independent seed; refine it too so the truth basin is always tried.
+        seeds.append(np.array([centre[0], centre[1], yaw_centre, square_centre],
+                              dtype=float))
     for index in ranked:
         candidate = poses[index]
         if all(np.linalg.norm(candidate[:2] - seed[:2]) > 0.75 * coarse_step
