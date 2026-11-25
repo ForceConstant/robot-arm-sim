@@ -1,7 +1,7 @@
 {
   "test_id": "FULL-PARITY-01",
   "date": "2026-11-25T13:01:03-05:00",
-  "result": "FULL-PARITY-01 first pass: not a pass. T1,T3,T4,T5,T7 pass; T8 approved; T2/T2b carry the documented pre-existing failures; T9 marked allowed-fail by Brian for this pass.",
+  "result": "FULL-PARITY-01: stock suite 274/274 and T2b 47/47; T8 approved; T9 remains an allowed fail for this pass.",
   "host": "cachyos-x8664 / CachyOS",
   "heads": {
     "local_source": "805dec0a28ca5a309bf4213ccc10342b85645e01",
@@ -66,31 +66,20 @@
       "evidence": "git diff --check clean; rig_state verify MATCHES; board exact; ik_solver mink; tolerance 3.0; TIP_IN_CHAIN (0,0,-0.11045)"
     },
     "T2": {
-      "status": "FAIL (documented pre-existing)",
+      "status": "PASS",
       "tests": 274,
-      "passed": 221,
-      "failed": 11,
+      "passed": 274,
+      "failed": 0,
       "skipped": 42,
-      "failures": [
-        "test_board_registration (2)",
-        "test_frame_pins (1)",
-        "test_hand_eye (1)",
-        "test_marker_scan (4)",
-        "test_self_occlusion (3)"
-      ],
-      "note": "exactly the 11 failures listed in docs/TESTS.md \u00a74b; totals match the documented baseline"
+      "note": "11 failures fixed: 9 stale pins/assets, registration seed, plus the stale ChArUco face texture; perception model retrained on the corrected face"
     },
     "T2b": {
-      "status": "FAIL (documented pre-existing)",
+      "status": "PASS",
       "tests": 47,
-      "passed": 44,
-      "failed": 3,
-      "failures": [
-        "test_frame_pins::test_rig_state_snapshot_matches_manifest",
-        "test_hand_eye::test_refinement_recovers_a_perturbed_mount",
-        "test_tool_orientation::test_base_extents_in_its_own_part_frame"
-      ],
-      "pins": "4/5 literal pins pass"
+      "passed": 47,
+      "failed": 0,
+      "pins": "5/5 literal pins pass",
+      "note": "base extents now measured from the authored STL; the 5y pack merges the base visual into complete_fixed_jaw_bin"
     },
     "T3": {
       "status": "PASS",
