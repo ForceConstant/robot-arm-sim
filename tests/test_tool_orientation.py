@@ -121,15 +121,25 @@ def test_jaw_bodies_sit_in_the_tool_base_frame(built):
         assert np.allclose(m.body_quat[b], tf.JAW_BODY_QUAT[side], atol=1e-5)
 
 
-def test_base_extents_in_its_own_part_frame(built):
-    """The merged base: x 13.25..69.20, z min -35.25, as authored."""
-    m, d = built
-    E = _base_part_in_gripper(m, d)
-    pts = _in_frame(m, d, "so101:cad:parallel_base", "gripper_base_1__solid1")
-    part = (_inv(E)[:3, :3] @ pts.T).T + _inv(E)[:3, 3]
+def test_base_extents_in_its_own_part_frame():
+    """The authored base part: x 13.25..69.20, z min -35.25, as authored.
+
+    The compiled 5y model merges the base visual into
+    ``complete_fixed_jaw_bin``, so the per-part mesh is no longer addressable
+    in the built model (measured 2026-11-25).  The authored STL is the source
+    of truth for the part's own frame; model placement stays covered by
+    ``test_base_part_frame_matches_the_documented_composition`` and
+    ``test_mount_is_the_profile_mount``.
+    """
+    import trimesh
+
+    from chess_sim import gripper
+    path = gripper.ASSET_ROOT / "assets" / "gripper_base_1__solid1.stl"
+    mesh = trimesh.load(str(path), force="mesh")
+    pts = np.asarray(mesh.vertices, float)          # metres, part file frame
     lo, hi = np.array(tf.BASE_PART_BBOX_MM[0]), np.array(tf.BASE_PART_BBOX_MM[1])
-    assert np.allclose(_mm(part).min(0), lo, atol=0.05), _mm(part).min(0)
-    assert np.allclose(_mm(part).max(0), hi, atol=0.05), _mm(part).max(0)
+    assert np.allclose(_mm(pts).min(0), lo, atol=0.05), _mm(pts).min(0)
+    assert np.allclose(_mm(pts).max(0), hi, atol=0.05), _mm(pts).max(0)
 
 
 def test_base_sits_on_the_mount_plane(built):

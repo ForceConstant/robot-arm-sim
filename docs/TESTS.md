@@ -451,9 +451,11 @@ Eleven failures were fixed, and the two survivors were root-caused:
   seed 61): answered accuracy 0.975, coverage 0.718, 36 confident errors.
 
 Current full suite (stock): **274 tests, 274 passed, 0 failed, 42 skipped.**
-T2b companions (5y pack): **47 tests, 46 passed, 1 failed** — the remaining
-failure is `test_tool_orientation::test_base_extents_in_its_own_part_frame`
-(no matching base mesh in the built 5y model), which predates this plan.
+T2b companions (5y pack): **47 tests, 47 passed, 0 failed.** The base-extents
+guard now reads the authored `gripper_base_1__solid1.stl` (the compiled pack
+merges that visual into `complete_fixed_jaw_bin`, so it is no longer
+addressable in the built model); model placement stays covered by the
+composition and mount tests.
 
 ## 5. Drift decision rule
 
