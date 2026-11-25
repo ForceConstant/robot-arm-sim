@@ -27,6 +27,7 @@ Outputs (reports/full_parity_samples/):
 from __future__ import annotations
 
 import hashlib
+import argparse
 import json
 import subprocess
 import sys
@@ -38,7 +39,8 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import mujoco  # noqa: E402
-from chess_sim.config import Camera, EnvConfig  # noqa: E402
+from chess_sim.config import Camera, EnvConfig, sim_wrist_roll  # noqa: E402
+from chess_sim.scene import wrist_camera_fovy  # noqa: E402
 from chess_sim.env import ChessSimEnv  # noqa: E402
 from live.tip_frame import TIP_IN_CHAIN  # noqa: E402
 
@@ -57,12 +59,14 @@ def provenance() -> list[str]:
     config = json.loads((ROOT / "live" / "live_config.json").read_text())
     stamp = json.loads((ROOT / "live" / "tool_tip.json").read_text())
     board = json.loads((ROOT / "rig_state" / "board.json").read_text())
+    from chess_sim import tool_reference
     return [
         f"FULL-PARITY-01 sim sample  git {git_head()[:12]}",
         f"tool {stamp['pack']} / {config.get('gripper_assets', 'n/a')}",
         f"tip z {-float(TIP_IN_CHAIN[2, 3]):.5f} m  solver {config.get('ik_solver')}",
         f"board x{board['x_mm']} y{board['y_mm']} z{board['z_mm']} yaw{board['yaw_deg']}",
-        "camera: sim MuJoCo wrist (mount from rig calibration)",
+        f"camera: sim B5 mount, fovy {tool_reference.fovy_deg():.3f} deg, "
+        f"roll {sim_wrist_roll(0.0):+.2f} deg offset (live->sim)",
     ]
 
 
@@ -203,16 +207,41 @@ def stats(img: np.ndarray) -> dict:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    rec = next(r for r in json.loads((ROOT / "reports" / "block5m_frames.json").read_text())
-               if r["pose"] == "marker14")
-    joints = rec["joints_deg"]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--joints", default=None,
+                        help="live joint degrees pan,lift,elbow,flex,roll,gripper; "
+                             "default is the committed block5m marker14 pose")
+    args = parser.parse_args()
+    if args.joints:
+        values = [float(v) for v in args.joints.split(",")]
+        if len(values) != 6:
+            parser.error("--joints needs six values")
+        joints = dict(zip(("shoulder_pan", "shoulder_lift", "elbow_flex",
+                           "wrist_flex", "wrist_roll", "gripper"), values))
+    else:
+        rec = next(r for r in json.loads((ROOT / "reports" / "block5m_frames.json").read_text())
+                   if r["pose"] == "marker14")
+        joints = rec["joints_deg"]
     env = ChessSimEnv(EnvConfig())
     try:
         m, d = env.model, env.data
-        d.qpos[env._joint_qpos[:5]] = np.radians([joints[k] for k in
-            ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")])
+        # The live wrist_roll and the sim wrist_roll are different zeroes:
+        # skipping sim_wrist_roll() renders the pose ~87 deg out (tip-center.md
+        # §3.3, Brian 2026-11-24).  This render used to skip it.
+        sim_joints = [joints[k] for k in
+                      ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex")]
+        sim_joints.append(sim_wrist_roll(joints["wrist_roll"]))
+        d.qpos[env._joint_qpos[:5]] = np.radians(sim_joints)
         d.qpos[env._joint_qpos[5]] = np.radians(joints["gripper"])
         mujoco.mj_forward(m, d)
+
+        # Render the wrist at the measured lens for pixel comparison, not the
+        # 47 deg marker-size fudge used by the scene (tip-center.md §3.4).
+        from chess_sim import tool_reference
+        cam_id = m.camera(str(Camera.WRIST)).id
+        m.cam_fovy[cam_id] = tool_reference.fovy_deg()
+        print(f"wrist pixel-comparison fovy {tool_reference.fovy_deg():.4f} deg "
+              f"(scene default {wrist_camera_fovy():.4f})")
 
         gid = m.body("so101:gripper").id
         lookat = d.xpos[gid] + d.xmat[gid].reshape(3, 3) @ np.array([0, 0, -0.070])
