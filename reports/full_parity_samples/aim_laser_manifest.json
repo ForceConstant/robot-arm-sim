@@ -1,0 +1,90 @@
+{
+  "tool": "tools/aim_laser_render.py",
+  "git_head": "0d33f8c3087af9f3fb02914d62e948dba1531062",
+  "pose": [
+    -12.37,
+    -13.02,
+    4.8,
+    98.34,
+    0.0,
+    38.4
+  ],
+  "spec": "jaw origin -> tip centre (110.45 mm) -> board impact; red line, yellow impact marker",
+  "ray": {
+    "origin_mm": [
+      -35.16,
+      -12.0,
+      658.32
+    ],
+    "tip_mm": [
+      -35.12,
+      -12.22,
+      547.87
+    ],
+    "hit_mm": [
+      -35.06,
+      -12.46,
+      433.2
+    ],
+    "standoff_mm": 225.12,
+    "axis": [
+      0.00045,
+      -0.00205,
+      -1.0
+    ]
+  },
+  "pack": "cad_parallel",
+  "tip_depth_m": 0.11045,
+  "shots": [
+    {
+      "name": "close",
+      "azimuth": -135.0,
+      "elevation": -38.0,
+      "distance": 0.42,
+      "camera_pos_mm": [
+        198.9,
+        222.0,
+        691.8
+      ],
+      "ray_pixels": 60,
+      "hit_pixel": [
+        319.5,
+        240.2
+      ],
+      "stats": {
+        "mean": 90.84,
+        "std": 69.63,
+        "colors": 14927,
+        "size": [
+          640,
+          480
+        ]
+      }
+    },
+    {
+      "name": "wide",
+      "azimuth": -150.0,
+      "elevation": -30.0,
+      "distance": 0.8,
+      "camera_pos_mm": [
+        564.8,
+        334.4,
+        833.2
+      ],
+      "ray_pixels": 81,
+      "hit_pixel": [
+        319.7,
+        240.1
+      ],
+      "stats": {
+        "mean": 77.81,
+        "std": 50.09,
+        "colors": 20886,
+        "size": [
+          640,
+          480
+        ]
+      }
+    }
+  ]
+}

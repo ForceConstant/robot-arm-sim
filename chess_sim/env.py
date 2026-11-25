@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from typing import Callable
 from . import gripper
+from . import aim_laser as laser_geom
 
 import chess
 import math
@@ -209,6 +210,8 @@ class ChessSimEnv:
         self.diagnostic_gap = None
         self.diagnostic_offset = np.zeros(3)
         self.diagnostic_contained_contacts = 0   # bounded release grazes accepted
+        self._laser_on = bool(config.appearance.aim_laser)
+        self._laser_tip_depth_m = laser_geom.TIP_DEPTH_M
         self._orbit = None               # (lookat, distance, azimuth, elevation)
         self.controller = PickPlaceController(self)
         self._step_count = 0
@@ -277,6 +280,9 @@ class ChessSimEnv:
         gripper.seed_coupled(self.model, self.data, ARM_PREFIX)
         self.data.qvel[:] = 0
         mujoco.mj_forward(self.model, self.data)
+        if self._laser_on:
+            laser_geom.update(self.model, self.data, board_z=float(self.board.top),
+                              tip_depth_m=self._laser_tip_depth_m)
         action = start
         for _ in range(int(self.config.control.settle_seconds * self.control_hz)):
             self.apply_action(action)
@@ -375,6 +381,9 @@ class ChessSimEnv:
             self.data.ctrl[aid] = target
         for _ in range(self.substeps):
             mujoco.mj_step(self.model, self.data)
+        if self._laser_on:
+            laser_geom.update(self.model, self.data, board_z=float(self.board.top),
+                              tip_depth_m=self._laser_tip_depth_m)
         self._step_count += 1
 
     def _action_noise(self) -> np.ndarray:
@@ -691,6 +700,9 @@ class ChessSimEnv:
                orbit: dict | None = None) -> np.ndarray:
         """Render one camera. `orbit` overrides `camera` with a free camera
         (azimuth/elevation in degrees, distance and lookat in metres)."""
+        if self._laser_on:
+            laser_geom.update(self.model, self.data, board_z=float(self.board.top),
+                              tip_depth_m=self._laser_tip_depth_m)
         if self._renderer is None:
             width, height = self.config.control.image_size
             self._renderer = mujoco.Renderer(self.model, height=height, width=width)

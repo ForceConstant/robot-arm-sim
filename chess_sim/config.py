@@ -372,7 +372,7 @@ SIDE_RIG_CAMERA = dict(
     camera_height=SIDE_CAMERA_DISTANCE * float(np.sin(np.radians(SIDE_CAMERA_ELEVATION_DEG))),
     camera_offset=(-SIDE_CAMERA_DISTANCE * float(np.cos(np.radians(SIDE_CAMERA_ELEVATION_DEG))), 0.0),
     camera_fovy=float(np.degrees(2 * np.arctan(CAMERA_FRAMED_HALF_WIDTH / SIDE_CAMERA_DISTANCE))),
-    camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0, camera_mast=False)
+    camera_over_board=0.0, camera_aim=(0.0, 0.0), camera_roll=0.0)
 # the workspace cameras a collection can hold fixed instead of drawing one per episode
 FIXED_CAMERAS = {"rig": PUBLISHED_RIG_CAMERA, "side": SIDE_RIG_CAMERA}
 
@@ -389,10 +389,11 @@ class AppearanceConfig(Config):
     board_labels: bool = True             # measured printed board has a-h / 1-8 labels
     board_finish: str = "wood"            # one of BOARD_FINISHES: how the board looks and grips
     board_markers: bool = False           # printed fiducial mat under the board (Phase 9)
-    # The overhead camera. None keeps the published rig: the lens on the mast beside
-    # the arm, 678 mm above the board, 24 degrees. Otherwise the lens sits `camera_height`
-    # above the board, `camera_over_board` of the way from the mast to straight above
-    # the board centre (a boom arm), looking at the centre plus `camera_aim`.
+    # The overhead camera. None keeps the published rig lens position (678 mm above
+    # the board, 24 degrees); the mast geometry is no longer built into the scene.
+    # Otherwise the lens sits `camera_height` above the board, `camera_over_board` of
+    # the way from the rig position to straight above the board centre (a boom arm),
+    # looking at the centre plus `camera_aim`.
     camera_height: float | None = None
     camera_fovy: float = 24.0
     camera_over_board: float = 0.0
@@ -401,7 +402,6 @@ class AppearanceConfig(Config):
     # a boom-arm camera anywhere above the table: offset of the lens from the board
     # centre (x, y); overrides camera_over_board when set
     camera_offset: tuple[float, float] | None = None
-    camera_mast: bool = True              # the published rig's mast beside the arm, built into the scene
     white_rgba: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)  # tint over the texture
     black_rgba: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)
     light_square: tuple[int, int, int] = (214, 178, 132)   # board colors, 0-255
@@ -414,15 +414,19 @@ class AppearanceConfig(Config):
     fill_intensity: float = 1.0                                  # the soft light from the room
     ambient: float = 0.0                                         # light from everywhere, flattens shadows
     shadow_softness: float = 0.02                                # key light's radius, metres: hard to soft shadows
+    # Aim laser: a red ray from the jaw origin through the tip centre to the
+    # board, with a yellow impact marker. Baked into the scene so it appears in
+    # every render. Brian, 2026-11-25. Set False for clean perception renders.
+    aim_laser: bool = True
     table_surface: str = "plain"                                 # one of TABLE_SURFACES; `table_rgb` tints it
     backdrop_tint: tuple[float, float, float] = (1.0, 1.0, 1.0)  # the room behind the table
     backdrop_brightness: float = 0.55
 
     @staticmethod
     def sample_camera(rng: np.random.Generator) -> dict:
-        """Where the workspace camera stands: the published mast a third of the time,
-        otherwise a boom arm over the board or a tripod beside it. Every field is
-        returned, so applying the draw to a scene on the mast moves it off, and back."""
+        """Where the workspace camera stands: the published rig position a third of
+        the time, otherwise a boom arm over the board or a tripod beside it. Every
+        field is returned, so applying the draw to a scene moves the lens and back."""
         u = rng.uniform
         camera = dict(PUBLISHED_RIG_CAMERA)
         if rng.random() >= PUBLISHED_RIG_CHANCE:

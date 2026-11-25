@@ -18,6 +18,7 @@ from . import assets, gripper, tool_reference
 from .assets import (ASSET_DIR, DEFAULT_SET, SET_COUNTS, PieceGeometry, piece_asset_name,
                      piece_geometry, piece_obj_path, piece_texture_path, piece_tint)
 from . import fiducials
+from . import aim_laser as laser_geom
 from .config import BOARD_FINISHES, AppearanceConfig, BoardConfig, Camera, Config, JointPose
 
 ARM_PREFIX = "so101:"
@@ -201,6 +202,8 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
     _add_board(spec, board, board_texture, appearance)
     _add_pieces(spec, board, appearance)
     _add_arm(spec, board)
+    if appearance.aim_laser:
+        laser_geom.add_aim_laser(spec, board)
     if dual_arms:
         _add_arm(spec, board.model_copy(update={"arm_side": "black"}), prefix="black:")
         if board.arm_riser > 0 and board.arm_pedestal:
@@ -208,7 +211,7 @@ def build_scene(board: BoardConfig = BoardConfig(), appearance: AppearanceConfig
             spec.worldbody.add_geom(name="black_pedestal", type=mujoco.mjtGeom.mjGEOM_BOX,
                 size=[0.055, 0.055, board.arm_riser / 2],
                 pos=[ax, ay, board.table_top + board.arm_riser / 2], rgba=[0.25, 0.25, 0.28, 1])
-    camera_pos = _add_camera_mast(spec, board) if appearance.camera_mast else mast_lens(board)
+    camera_pos = mast_lens(board)
 
     if dual_arms:
         # Pulled in toward the same aim point so the two arms and the board fill
@@ -260,45 +263,22 @@ def overhead_camera(board, appearance, mast_lens):
 LOOKING_DOWN_DEG = 52.0    # steeper than this the image is oriented along the files, not by gravity
 
 
-MAST_SIDE = 0.16      # mast axis this far beside the arm axis (+x: the arm's right)
-MAST_HEIGHT = 0.60    # pole height above the base plate
-MAST_WIDTH = 0.03     # square-tube side
-
-
-def _add_camera_mast(spec, board) -> tuple[float, float, float]:
-    """Overhead-camera mast as on the real rig: a plate under the arm base
-    carries a square tube beside the arm with the workspace camera on top,
-    pointed down at the board. Returns the camera position."""
-    ax, ay, az = board.arm_base
-    plate = MAST_PLATE
-    spec.worldbody.add_geom(name="mast_plate", type=mujoco.mjtGeom.mjGEOM_BOX,
-                            size=[0.5 * MAST_SIDE + 0.06, 0.07, plate / 2],
-                            pos=[ax + 0.5 * MAST_SIDE, ay, az + plate / 2],
-                            rgba=[0.78, 0.86, 0.20, 1])
-    mx, lower = ax + MAST_SIDE, 0.20
-    spec.worldbody.add_geom(name="mast_lower", type=mujoco.mjtGeom.mjGEOM_BOX,
-                            size=[MAST_WIDTH / 2, MAST_WIDTH / 2, lower / 2],
-                            pos=[mx, ay, az + plate + lower / 2], rgba=[0.78, 0.86, 0.20, 1])
-    spec.worldbody.add_geom(name="mast_upper", type=mujoco.mjtGeom.mjGEOM_BOX,
-                            size=[MAST_WIDTH / 2, MAST_WIDTH / 2, (MAST_HEIGHT - lower) / 2],
-                            pos=[mx, ay, az + plate + lower + (MAST_HEIGHT - lower) / 2],
-                            rgba=[0.08, 0.08, 0.08, 1])
-    cam_z = az + plate + MAST_HEIGHT + 0.02
-    spec.worldbody.add_geom(name="mast_camera", type=mujoco.mjtGeom.mjGEOM_BOX,
-                            size=list(MAST_HOUSING), pos=[mx, ay + 0.02, cam_z],
-                            rgba=[0.08, 0.08, 0.08, 1], contype=0, conaffinity=0)
-    return mast_lens(board)
-
-
-MAST_PLATE = 0.010
-MAST_HOUSING = (0.015, 0.03, 0.02)
+# The published rig's lens sits beside the arm where the old mast carried it.
+# These are lens-placement constants only: the yellow/black mast geometry itself
+# was retired from the rendered scene on Brian's 2026-11-25 request. The hardware
+# drawings keep their own copies of the physical tube dimensions.
+LENS_SIDE = 0.16       # lens offset beside the arm axis (+x: the arm's right)
+LENS_HEIGHT = 0.60     # old pole height above the base plate
+LENS_PLATE = 0.010     # old plate under the arm base
+LENS_HOUSING_DEPTH = 0.03   # old camera housing, along +y
 
 
 def mast_lens(board) -> tuple[float, float, float]:
-    """Where the lens of the published rig's camera sits: just ahead of the housing
-    on top of the mast beside the arm."""
+    """Where the lens of the published rig's camera sits: where the retired
+    mast's housing used to put it."""
     ax, ay, az = board.arm_base
-    return (ax + MAST_SIDE, ay + 0.02 + MAST_HOUSING[1] + 0.005, az + MAST_PLATE + MAST_HEIGHT + 0.02)
+    return (ax + LENS_SIDE, ay + 0.02 + LENS_HOUSING_DEPTH + 0.005,
+            az + LENS_PLATE + LENS_HEIGHT + 0.02)
 
 
 def _add_environment(spec, board, appearance):
