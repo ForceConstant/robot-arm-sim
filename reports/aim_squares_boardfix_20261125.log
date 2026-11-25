@@ -1,0 +1,282 @@
+stream pulling: connected=True
+sweep: 64 squares, z 70.0 mm, tolerance 4.0 mm, iterations 3, refine<= 3
+a1 tip: ok True tip_err 7.17 aim_err 7.47 px None 'a1'
+a1 aim_point: ok True conv False err 9.96 iters 2 stalled
+a1 refine: ok True conv True err 2.69 steps 2 shortfall 2.46
+a1 aim final: aim_err 2.69 px None cfg_px 17.11 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.84, 'age_s': 10.69, 'rms_px': 0.661, 'ids': 2}
+b1 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+b1 tip: ok True tip_err 9.77 aim_err 12.88 px 89.07 'b1'
+b1 aim_point: ok True conv False err 8.28 iters 3 
+b1 refine: ok False conv None err 8.28 steps 1 shortfall 2.0  REFUSED no reachable pose: off by 5.1 mm / 0.44 deg
+b1 aim final: aim_err 8.28 px 68.16 cfg_px 66.92 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.28, 'age_s': 0.18, 'rms_px': 0.846, 'ids': 3}
+c1 tip: ok True tip_err 9.01 aim_err 12.35 px 84.95 'c1'
+c1 aim_point: ok True conv False err 5.77 iters 3 
+c1 refine: ok True conv False err 8.51 steps 1 shortfall 5.21
+c1 aim final: aim_err 8.51 px None cfg_px 69.07 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.81, 'age_s': 6.03, 'rms_px': 1.281, 'ids': 2}
+d1 tip: ok True tip_err 9.68 aim_err 12.98 px 85.53 'd1'
+d1 aim_point: ok True conv False err 6.71 iters 3 
+d1 refine: ok True conv False err 8.57 steps 1 shortfall 5.26
+d1 aim final: aim_err 8.57 px None cfg_px 77.75 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.26, 'age_s': 2.32, 'rms_px': 1.203, 'ids': 2}
+e1 tip: ok True tip_err 8.22 aim_err 11.3 px 63.61 'e1'
+e1 aim_point: ok True conv False err 6.24 iters 3 
+e1 refine: ok True conv False err 8.61 steps 1 shortfall 5.3
+e1 aim final: aim_err 8.61 px 48.42 cfg_px 79.73 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.7, 'age_s': 0.42, 'rms_px': 1.767, 'ids': 2}
+f1 tip: ok True tip_err 8.59 aim_err 11.38 px 35.92 'f1'
+f1 aim_point: ok True conv False err 10.65 iters 2 stalled
+f1 refine: ok False conv None err 10.65 steps 1 shortfall 2.0  REFUSED no reachable pose: off by 6.9 mm / 0.6 deg
+f1 aim final: aim_err 10.65 px 37.45 cfg_px 74.85 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.87, 'age_s': 0.27, 'rms_px': 3.055, 'ids': 2}
+g1 tip: ok True tip_err 11.99 aim_err 14.6 px 58.71 'g1'
+g1 aim_point: ok True conv False err 10.2 iters 3 stalled
+g1 refine: ok False conv None err 10.2 steps 1 shortfall 2.0  REFUSED no reachable pose: off by 7.3 mm / 0.58 deg
+g1 aim final: aim_err 10.2 px 38.47 cfg_px 76.78 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.81, 'age_s': 0.23, 'rms_px': 3.022, 'ids': 2}
+h1 tip: ok True tip_err 10.08 aim_err 9.19 px 23.25 'h1'
+h1 aim_point: ok True conv False err 11.82 iters 2 stalled
+h1 refine: ok False conv None err 11.82 steps 1 shortfall 2.0  REFUSED no reachable pose: off by 8.6 mm / 0.65 deg
+h1 aim final: aim_err 11.91 px 22.88 cfg_px 55.31 plane {'source': 'markers', 'samples': 9, 'spread_mm': 15.28, 'age_s': 0.53, 'rms_px': 4.325, 'ids': 2}
+status card: reports/aim_squares_status_08.png
+a2 tip: ok True tip_err 10.07 aim_err 13.73 px None 'a2'
+a2 aim_point: ok True conv False err 8.64 iters 3 stalled
+a2 refine: ok True conv False err 7.88 steps 2 shortfall 6.35
+a2 aim final: aim_err 7.34 px 94.09 cfg_px 71.55 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.56, 'age_s': 0.1, 'rms_px': 4.739, 'ids': 2}
+b2 tip: ok True tip_err 9.28 aim_err 12.75 px 97.66 'b2'
+b2 aim_point: ok True conv False err 2.76 iters 3 
+b2 refine: ok True conv True err 2.76 steps 0 shortfall 2.0
+b2 aim final: aim_err 2.76 px 45.21 cfg_px 27.42 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.73, 'age_s': 2.48, 'rms_px': 4.358, 'ids': 2}
+c2 tip: ok True tip_err 10.09 aim_err 13.75 px None 'c2'
+c2 aim_point: ok True conv False err 3.32 iters 3 
+c2 refine: ok True conv True err 3.32 steps 0 shortfall 2.0
+c2 aim final: aim_err 3.25 px 20.97 cfg_px 22.37 plane {'source': 'markers', 'samples': 9, 'spread_mm': 8.93, 'age_s': 0.73, 'rms_px': 2.72, 'ids': 2}
+d2 tip: ok True tip_err 10.12 aim_err 13.45 px 78.18 'd2'
+d2 aim_point: ok True conv False err 4.57 iters 3 
+d2 refine: ok True conv False err 8.85 steps 1 shortfall 5.27
+d2 aim final: aim_err 8.85 px None cfg_px 47.54 plane {'source': 'markers', 'samples': 9, 'spread_mm': 7.46, 'age_s': 7.41, 'rms_px': 1.072, 'ids': 2}
+e2 tip: ok True tip_err 9.51 aim_err 12.81 px None 'e2'
+e2 aim_point: ok True conv False err 3.14 iters 3 
+e2 refine: ok True conv True err 3.14 steps 0 shortfall 2.0
+e2 aim final: aim_err 2.82 px 11.71 cfg_px 36.38 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.25, 'age_s': 0.34, 'rms_px': 1.295, 'ids': 2}
+f2 tip: ok True tip_err 9.05 aim_err 11.95 px 62.06 'f2'
+f2 aim_point: ok True conv False err 2.75 iters 3 
+f2 refine: ok True conv True err 2.75 steps 0 shortfall 2.0
+f2 aim final: aim_err 3.14 px 6.02 cfg_px 41.31 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.62, 'age_s': 0.29, 'rms_px': 1.825, 'ids': 3}
+g2 tip: ok True tip_err 9.12 aim_err 12.43 px 52.27 'g2'
+g2 aim_point: ok True conv False err 2.69 iters 3 
+g2 refine: ok True conv True err 2.69 steps 0 shortfall 2.0
+g2 aim final: aim_err 2.69 px None cfg_px 28.13 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.87, 'age_s': 5.51, 'rms_px': 0.545, 'ids': 2}
+h2 tip: ok True tip_err 9.6 aim_err 13.06 px 45.1 'h2'
+h2 aim_point: ok True conv False err 5.38 iters 3 
+h2 refine: ok True conv False err 8.8 steps 1 shortfall 5.38
+h2 aim final: aim_err 8.8 px None cfg_px 69.19 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.71, 'age_s': 10.11, 'rms_px': 2.787, 'ids': 3}
+status card: reports/aim_squares_status_16.png
+a3 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+a3 tip: ok True tip_err 9.42 aim_err 12.75 px None 'a3'
+a3 aim_point: ok True conv False err 2.91 iters 3 
+a3 refine: ok True conv True err 2.91 steps 0 shortfall 2.0
+a3 aim final: aim_err 2.91 px None cfg_px 17.42 plane {'source': 'markers', 'samples': 9, 'spread_mm': 7.97, 'age_s': 7.99, 'rms_px': 1.891, 'ids': 2}
+b3 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+b3 tip: ok True tip_err 3.26 aim_err 4.06 px 52.79 'b3'
+b3 aim_point: ok True conv True err 3.98 iters 1 
+b3 aim final: aim_err 3.92 px 62.34 cfg_px 27.3 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.58, 'age_s': 0.34, 'rms_px': 0.93, 'ids': 3}
+c3 tip: ok True tip_err 5.4 aim_err 8.51 px 83.47 'c3'
+c3 aim_point: ok True conv False err 9.21 iters 2 stalled
+c3 refine: ok True conv False err 7.53 steps 2 shortfall 6.05
+c3 aim final: aim_err 7.53 px None cfg_px 57.36 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.96, 'age_s': 3.93, 'rms_px': 3.879, 'ids': 2}
+d3 tip: ok True tip_err 6.5 aim_err 9.93 px 76.89 'd3'
+d3 aim_point: ok True conv True err 3.22 iters 3 
+d3 aim final: aim_err 3.22 px None cfg_px 34.92 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.4, 'age_s': 2.05, 'rms_px': 1.634, 'ids': 2}
+e3 tip: ok True tip_err 6.84 aim_err 10.36 px 63.58 'e3'
+e3 aim_point: ok True conv True err 3.54 iters 3 
+e3 aim final: aim_err 3.54 px 13.89 cfg_px 41.26 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.71, 'age_s': 0.33, 'rms_px': 1.219, 'ids': 2}
+f3 tip: ok True tip_err 3.18 aim_err 4.4 px 48.86 'f3'
+f3 aim_point: ok True conv False err 9.11 iters 2 stalled
+f3 refine: ok True conv False err 8.38 steps 2 shortfall 6.76
+f3 aim final: aim_err 8.38 px None cfg_px 47.15 plane {'source': 'markers', 'samples': 9, 'spread_mm': 5.84, 'age_s': 4.03, 'rms_px': 1.861, 'ids': 2}
+g3 tip: ok True tip_err 9.14 aim_err 13.29 px 48.02 'g3'
+g3 aim_point: ok True conv False err 4.5 iters 3 
+g3 refine: ok True conv False err 6.52 steps 1 shortfall 4.25
+g3 aim final: aim_err 6.52 px 22.7 cfg_px 65.87 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.05, 'age_s': 0.21, 'rms_px': 1.085, 'ids': 2}
+h3 tip: ok True tip_err 9.49 aim_err 12.76 px 47.08 'h3'
+h3 aim_point: ok True conv True err 3.91 iters 3 
+h3 aim final: aim_err 3.83 px 42.67 cfg_px 40.53 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.48, 'age_s': 0.13, 'rms_px': 0.95, 'ids': 2}
+status card: reports/aim_squares_status_24.png
+a4 tip: ok True tip_err 6.67 aim_err 10.04 px 115.4 'a4'
+a4 aim_point: ok True conv True err 3.11 iters 3 
+a4 aim final: aim_err 3.11 px None cfg_px 31.04 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.2, 'age_s': 2.93, 'rms_px': 3.112, 'ids': 2}
+b4 tip: ok True tip_err 5.47 aim_err 8.51 px 103.12 'b4'
+b4 aim_point: ok True conv False err 9.77 iters 2 stalled
+b4 refine: ok True conv False err 8.95 steps 2 shortfall 6.84
+b4 aim final: aim_err 8.95 px 96.57 cfg_px 64.79 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.77, 'age_s': 0.33, 'rms_px': 5.439, 'ids': 3}
+c4 tip: ok True tip_err 4.7 aim_err 7.42 px 84.51 'c4'
+c4 aim_point: ok True conv False err 10.66 iters 2 stalled
+c4 refine: ok True conv False err 6.62 steps 3 shortfall 6.36
+c4 aim final: aim_err 6.62 px 63.79 cfg_px 47.9 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.61, 'age_s': 0.36, 'rms_px': 4.545, 'ids': 2}
+d4 tip: ok True tip_err 4.32 aim_err 7.18 px 53.48 'd4'
+d4 aim_point: ok True conv False err 10.16 iters 2 stalled
+d4 refine: ok True conv False err 8.34 steps 2 shortfall 6.83
+d4 aim final: aim_err 8.34 px None cfg_px 51.4 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.97, 'age_s': 1.51, 'rms_px': 2.56, 'ids': 2}
+e4 tip: ok True tip_err 5.48 aim_err 8.57 px 48.84 'e4'
+e4 aim_point: ok True conv False err 9.73 iters 2 stalled
+e4 refine: ok True conv False err 6.9 steps 3 shortfall 6.42
+e4 aim final: aim_err 6.9 px None cfg_px 54.74 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.08, 'age_s': 3.45, 'rms_px': 2.298, 'ids': 3}
+f4 tip: ok True tip_err 4.52 aim_err 7.38 px 36.61 'f4'
+f4 aim_point: ok True conv False err 8.55 iters 2 stalled
+f4 refine: ok True conv False err 8.01 steps 1 shortfall 5.01
+f4 aim final: aim_err 8.01 px 42.48 cfg_px 63.49 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.7, 'age_s': 0.18, 'rms_px': 3.878, 'ids': 4}
+g4 tip: ok True tip_err 10.21 aim_err 14.05 px None 'g4'
+g4 aim_point: ok True conv True err 3.26 iters 3 
+g4 aim final: aim_err 3.26 px None cfg_px 43.37 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.92, 'age_s': 7.54, 'rms_px': 4.158, 'ids': 3}
+h4 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+h4 tip: ok True tip_err 6.01 aim_err 8.07 px 35.66 'h4'
+h4 aim_point: ok True conv False err 8.35 iters 2 stalled
+h4 refine: ok True conv False err 7.72 steps 1 shortfall 4.86
+h4 aim final: aim_err 7.72 px 36.53 cfg_px 54.44 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.36, 'age_s': 0.43, 'rms_px': 0.382, 'ids': 2}
+status card: reports/aim_squares_status_32.png
+a5 tip: ok True tip_err 5.87 aim_err 9.09 px None 'a5'
+a5 aim_point: ok True conv False err 10.46 iters 2 stalled
+a5 refine: ok True conv False err 9.67 steps 1 shortfall 5.83
+a5 aim final: aim_err 9.67 px None cfg_px 63.61 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.52, 'age_s': 6.93, 'rms_px': 2.067, 'ids': 2}
+b5 tip: ok True tip_err 3.01 aim_err 5.25 px 96.64 'b5'
+b5 aim_point: ok True conv False err 11.17 iters 2 stalled
+b5 refine: ok True conv False err 10.85 steps 1 shortfall 6.43
+b5 aim final: aim_err 10.85 px 115.9 cfg_px 69.6 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.74, 'age_s': 0.13, 'rms_px': 1.637, 'ids': 3}
+c5 tip: ok True tip_err 2.01 aim_err 3.63 px 70.65 'c5'
+c5 aim_point: ok True conv True err 3.63 iters 1 
+c5 aim final: aim_err 3.75 px 65.8 cfg_px 29.11 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.7, 'age_s': 0.34, 'rms_px': 2.666, 'ids': 4}
+d5 tip: ok True tip_err 1.14 aim_err 2.28 px 42.04 'd5'
+d5 aim_point: ok True conv True err 2.28 iters 1 
+d5 aim final: aim_err 2.28 px 41.05 cfg_px 22.6 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.63, 'age_s': 0.42, 'rms_px': 1.309, 'ids': 4}
+e5 tip: ok True tip_err 4.44 aim_err 5.87 px 47.44 'e5'
+e5 aim_point: ok True conv False err 11.21 iters 2 stalled
+e5 refine: ok True conv False err 10.7 steps 1 shortfall 6.35
+e5 aim final: aim_err 10.7 px None cfg_px 70.98 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.81, 'age_s': 2.39, 'rms_px': 1.262, 'ids': 2}
+f5 tip: ok True tip_err 11.63 aim_err 15.88 px 77.77 'f6'
+f5 aim_point: ok True conv False err 4.58 iters 3 
+f5 refine: ok True conv False err 9.21 steps 1 shortfall 5.59
+f5 aim final: aim_err 9.21 px None cfg_px 61.6 plane {'source': 'markers', 'samples': 9, 'spread_mm': 4.03, 'age_s': 6.47, 'rms_px': 4.759, 'ids': 2}
+g5 tip: ok True tip_err 5.95 aim_err 9.25 px 42.13 'g5'
+g5 aim_point: ok True conv False err 9.42 iters 2 stalled
+g5 refine: ok True conv False err 9.2 steps 1 shortfall 5.6
+g5 aim final: aim_err 9.2 px None cfg_px 65.1 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.54, 'age_s': 3.23, 'rms_px': 3.472, 'ids': 2}
+h5 tip: ok True tip_err 11.6 aim_err 16.06 px 56.02 'h5'
+h5 aim_point: ok True conv True err 3.16 iters 3 
+h5 aim final: aim_err 3.16 px 54.08 cfg_px 31.05 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.59, 'age_s': 0.44, 'rms_px': 2.334, 'ids': 3}
+status card: reports/aim_squares_status_40.png
+a6 tip: ok True tip_err 3.08 aim_err 5.17 px 104.99 'a6'
+a6 aim_point: ok True conv False err 10.26 iters 2 stalled
+a6 refine: ok True conv False err 11.05 steps 1 shortfall 6.52
+a6 aim final: aim_err 11.05 px 129.44 cfg_px 67.37 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.68, 'age_s': 0.4, 'rms_px': 0.922, 'ids': 2}
+b6 tip: ok True tip_err 1.48 aim_err 2.91 px 73.44 'b6'
+b6 aim_point: ok True conv True err 2.91 iters 1 
+b6 aim final: aim_err 2.91 px 69.0 cfg_px 20.83 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.45, 'age_s': 0.24, 'rms_px': 0.814, 'ids': 2}
+c6 tip: ok True tip_err 0.3 aim_err 1.22 px 34.86 'c6'
+c6 aim_point: ok True conv True err 1.22 iters 1 
+c6 aim final: aim_err 1.22 px 34.81 cfg_px 10.57 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.17, 'age_s': 0.43, 'rms_px': 1.027, 'ids': 3}
+d6 tip: ok True tip_err 0.67 aim_err 1.34 px 10.02 'd6'
+d6 aim_point: ok True conv True err 1.34 iters 1 
+d6 aim final: aim_err 1.34 px 10.38 cfg_px 14.9 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.75, 'age_s': 0.25, 'rms_px': 1.109, 'ids': 4}
+e6 tip: ok True tip_err 5.54 aim_err 7.31 px 36.02 'e6'
+e6 aim_point: ok True conv False err 11.2 iters 2 stalled
+e6 refine: ok True conv False err 11.1 steps 1 shortfall 6.55
+e6 aim final: aim_err 11.1 px 57.74 cfg_px 67.47 plane {'source': 'markers', 'samples': 9, 'spread_mm': 3.49, 'age_s': 0.36, 'rms_px': 0.928, 'ids': 2}
+f6 tip: ok True tip_err 9.54 aim_err 13.21 px 60.96 'f6'
+f6 aim_point: ok True conv False err 4.92 iters 3 
+f6 refine: ok True conv False err 9.6 steps 1 shortfall 5.79
+f6 aim final: aim_err 9.6 px 49.64 cfg_px 64.31 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.42, 'age_s': 0.04, 'rms_px': 0.565, 'ids': 2}
+g6 tip: ok True tip_err 11.54 aim_err 15.8 px 60.42 'g6'
+g6 aim_point: ok True conv False err 3.97 iters 3 
+g6 refine: ok True conv True err 3.97 steps 0 shortfall 2.0
+g6 aim final: aim_err 3.97 px 53.5 cfg_px 36.26 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.54, 'age_s': 0.7, 'rms_px': 4.48, 'ids': 2}
+h6 tip: ok True tip_err 12.01 aim_err 16.53 px 56.25 'h6'
+h6 aim_point: ok True conv False err 2.69 iters 3 
+h6 refine: ok True conv True err 2.69 steps 0 shortfall 2.0
+h6 aim final: aim_err 2.69 px None cfg_px 26.58 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.35, 'age_s': 3.12, 'rms_px': 1.284, 'ids': 3}
+status card: reports/aim_squares_status_48.png
+a7 tip: ok True tip_err 1.24 aim_err 2.06 px None 'a7'
+a7 aim_point: ok True conv True err 2.06 iters 1 
+a7 aim final: aim_err 2.06 px None cfg_px 17.72 plane {'source': 'markers', 'samples': 9, 'spread_mm': 3.34, 'age_s': 3.57, 'rms_px': 1.209, 'ids': 2}
+b7 tip: ok True tip_err 0.36 aim_err 0.92 px 82.02 'b7'
+b7 aim_point: ok True conv True err 0.92 iters 1 
+b7 aim final: aim_err 0.92 px 80.25 cfg_px 7.89 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.05, 'age_s': 0.28, 'rms_px': 0.96, 'ids': 3}
+c7 tip: ok True tip_err 0.45 aim_err 0.73 px 42.47 'c7'
+c7 aim_point: ok True conv True err 0.73 iters 1 
+c7 aim final: aim_err 0.73 px 41.92 cfg_px 9.01 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.13, 'age_s': 0.43, 'rms_px': 0.622, 'ids': 2}
+d7 tip: ok True tip_err 1.12 aim_err 0.92 px 9.64 'd7'
+d7 aim_point: ok True conv True err 0.92 iters 1 
+d7 aim final: aim_err 0.92 px 9.77 cfg_px 1.88 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.15, 'age_s': 0.35, 'rms_px': 0.953, 'ids': 3}
+e7 tip: ok True tip_err 4.83 aim_err 6.53 px 42.31 'e7'
+e7 aim_point: ok True conv False err 8.14 iters 2 stalled
+e7 refine: ok True conv False err 10.3 steps 1 shortfall 6.15
+e7 aim final: aim_err 10.16 px 58.64 cfg_px 61.53 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.87, 'age_s': 0.27, 'rms_px': 0.555, 'ids': 2}
+f7 tip: ok True tip_err 8.15 aim_err 10.64 px None 'f7'
+f7 aim_point: ok True conv False err 10.15 iters 2 stalled
+f7 refine: ok True conv False err 12.01 steps 1 shortfall 7.0
+f7 aim final: aim_err 12.01 px None cfg_px 74.57 plane {'source': 'markers', 'samples': 9, 'spread_mm': 0.58, 'age_s': 3.47, 'rms_px': 1.686, 'ids': 2}
+g7 tip: ok True tip_err 8.44 aim_err 11.04 px 54.02 'g7'
+g7 aim_point: ok True conv False err 11.74 iters 2 stalled
+g7 refine: ok True conv False err 11.67 steps 1 shortfall 6.83
+g7 aim final: aim_err 11.59 px 60.47 cfg_px 67.68 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.84, 'age_s': 0.06, 'rms_px': 1.261, 'ids': 3}
+h7 tip: ok True tip_err 8.51 aim_err 11.08 px None 'h7'
+h7 aim_point: ok True conv False err 11.58 iters 2 stalled
+h7 refine: ok True conv False err 11.44 steps 1 shortfall 6.72
+h7 aim final: aim_err 11.44 px None cfg_px 70.08 plane {'source': 'markers', 'samples': 9, 'spread_mm': 1.1, 'age_s': 7.28, 'rms_px': 1.196, 'ids': 2}
+status card: reports/aim_squares_status_56.png
+a8 tip: ok True tip_err 1.0 aim_err 1.43 px None 'a8'
+a8 aim_point: ok True conv True err 1.43 iters 1 
+a8 aim final: aim_err 1.43 px None cfg_px 9.13 plane {'source': 'markers', 'samples': 9, 'spread_mm': 2.12, 'age_s': 4.91, 'rms_px': 1.194, 'ids': 2}
+b8 tip: ok True tip_err 1.28 aim_err 5.45 px None 'b8'
+b8 aim: plane not usable (no usable board plane); not commanding
+c8 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+c8 tip: ok False tip_err None aim_err None px None 'None'  REFUSED no reachable pose: off by 15.77 mm / 3.471 deg
+c8 aim: arm not near the square; skipped
+d8 tip: ok False tip_err None aim_err None px None 'None'  REFUSED no reachable pose: off by 15.39 mm / 10.427 deg
+d8 aim: arm not near the square; skipped
+e8 tip: ok False tip_err None aim_err None px None 'None'  REFUSED no reachable pose: off by 14.29 mm / 2.737 deg
+e8 aim: arm not near the square; skipped
+f8 tip: ok True tip_err 3.14 aim_err 6.75 px 64.19 'f8'
+f8 aim_point: ok True conv False err 8.31 iters 2 stalled
+f8 refine: ok True conv False err 10.1 steps 1 shortfall 6.05
+f8 aim final: aim_err 9.96 px 66.34 cfg_px 68.62 plane {'source': 'markers', 'samples': 9, 'spread_mm': 7.65, 'age_s': 0.4, 'rms_px': 3.518, 'ids': 2}
+g8 tip: ok True tip_err 8.27 aim_err 10.96 px None 'g8'
+g8 aim_point: ok True conv False err 11.41 iters 2 stalled
+g8 refine: ok True conv False err 11.05 steps 1 shortfall 6.52
+g8 aim final: aim_err 11.05 px None cfg_px 65.83 plane {'source': 'markers', 'samples': 9, 'spread_mm': 7.65, 'age_s': 9.12, 'rms_px': 3.518, 'ids': 2}
+h8 refresh: {'leg': 'recover', 'ok': True, 'landed': None}
+h8 tip: ok True tip_err 3.98 aim_err 6.14 px None 'h8'
+h8 aim_point: ok True conv False err 11.62 iters 2 stalled
+h8 refine: ok True conv False err 11.87 steps 1 shortfall 6.93
+h8 aim final: aim_err 11.87 px None cfg_px 68.21 plane {'source': 'markers', 'samples': 9, 'spread_mm': 9.33, 'age_s': 6.97, 'rms_px': 1.821, 'ids': 2}
+
+=== summary
+  aim_done           60
+  aim_ok             60
+  aim_converged      26
+  aim_refined        39
+  aim_refused        0
+  tip_done           64
+  tip_refused        3
+  plane_failures     1
+  aim_err_mm         n 60  p50 7.44  p95 11.6  max 12.01  mean 6.48
+  tip_err_mm         n 61  p50 9.25  p95 15.8  max 16.53  mean 9.0
+  aim_px             n 35  p50 48.42  p95 102.37  max 129.44  mean 50.66
+  tip_px             n 47  p50 56.25  p95 101.48  max 115.4  mean 60.4
+  aim_px_cfg         n 60  p50 52.92  p95 74.95  max 79.73  mean 47.47
+  tip_px_cfg         n 61  p50 59.82  p95 95.17  max 97.89  mean 54.43
+  aim_tip_err_mm     n 0  p50 None  p95 None  max None  mean None
+  tip_tip_err_mm     n 61  p50 6.67  p95 11.6  max 12.01  mean 6.44
+  readout_spread_mm  n 60  p50 0.0  p95 0.1  max 0.3  mean 0.02
+  readout_spread_px  n 60  p50 0.1  p95 2.74  max 6.5  mean 0.7
+  FAIL b1 aim/refine: no reachable pose: off by 5.1 mm / 0.44 deg
+  FAIL f1 aim/refine: no reachable pose: off by 6.9 mm / 0.6 deg
+  FAIL g1 aim/refine: no reachable pose: off by 7.3 mm / 0.58 deg
+  FAIL h1 aim/refine: no reachable pose: off by 8.6 mm / 0.65 deg
+  FAIL b8 aim: plane before aim_point: no usable board plane
+  FAIL b8 plane: no usable board plane
+  FAIL c8 tip: no reachable pose: off by 15.77 mm / 3.471 deg
+  FAIL c8 aim: arm is not over the square after the tip leg (tip [4.7, -11.5, 109.3] vs [-42.0, 98.0, 70.0]); skipped
+  FAIL d8 tip: no reachable pose: off by 15.39 mm / 10.427 deg
+  FAIL d8 aim: arm is not over the square after the tip leg (tip [4.7, -11.5, 109.3] vs [-14.0, 98.0, 70.0]); skipped
+  FAIL e8 tip: no reachable pose: off by 14.29 mm / 2.737 deg
+  FAIL e8 aim: arm is not over the square after the tip leg (tip [4.7, -11.5, 109.3] vs [14.0, 98.0, 70.0]); skipped
+  receipt  reports/aim_squares_boardfix_20261125.json
+  heatmap  reports/aim_squares_heatmap.png
+  gif      reports/aim_squares.gif
+  report   reports/aim_squares_boardfix_20261125.md
