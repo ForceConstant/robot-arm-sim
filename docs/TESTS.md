@@ -428,24 +428,32 @@ come with a reason and a source-of-truth update — not an unexplained threshold
 change. Full-suite result on `fae2b36`: **221 passed, 11 failed, 42 skipped**.
 The T2b literal pins alone are **4/5** (the rig-state pin above is the fail).
 
-### 4c. Status after the 2026-11-25 fix pass (`70bd237` + fixes)
+### 4c. Status after the 2026-11-25 fix pass (`70bd237`, `bb6ef15`, `5761feb`)
 
-Nine of the eleven were stale expectations/assets and are fixed: the
-`MANIFEST_HASHES` literal, both marker-scan plans (`marker_ids: [0,1,2,3]`),
-the two marker-scan tests, and the three `SelfOcclusionModel` stub tests
-(fixture now carries `near_plane_m`). The shifted/turned registration failure
-was a coarse-shortlist seed issue; the prior pose is now always refined.
+Eleven failures were fixed, and the two survivors were root-caused:
 
-Current full suite (stock): **274 tests, 272 passed, 2 failed, 42 skipped.**
-T2b companions (5y pack): **47 tests, 45 passed, 2 failed.**
+- Nine stale expectations/assets: the `MANIFEST_HASHES` literal, both
+  marker-scan plans (`marker_ids: [0,1,2,3]`), the two marker-scan tests, the
+  three `SelfOcclusionModel` stub tests, and the shifted/turned registration
+  seed (the prior pose is now always refined).
+- **The registration square error was a stale generated face texture.** The
+  cached `board_charuco.png` was written for a **15 mm** border while the board
+  prints **10 mm**, so the field was stretched and the rendered squares were
+  26.9 mm. `ensure_scene_assets` now regenerates the face when its size does not
+  match the board; registration fits 28.16 mm again.
+- **The hand-eye tool now reads the printed face** (`CharucoLayout`, marker
+  plane `board.top`) instead of the 4-tag mat, and compares against the compiled
+  model camera. The generated face lands **5.1 mm off the board body origin in
+  y** (measured by fitting marker reprojection with a fixed true camera;
+  `charuco_face.FIELD_OFFSET_MM`). With that offset the mount solves to
+  **0.40 mm / 0.10°** at 8 views.
+- The perception model was retrained on the corrected face (same protocol,
+  seed 61): answered accuracy 0.975, coverage 0.718, 36 confident errors.
 
-Remaining failures are the two design items: `test_board_registration::
-test_registration_recovers_the_nominal_board` (square-scale anchor; the fitted
-square is 4.2 % low against a 1 mm tolerance) and `test_hand_eye::
-test_refinement_recovers_a_perturbed_mount` (the hand-eye tool still models the
-4-tag mat while the face prints ChArUco ids 5–36). T2b also still has
-`test_tool_orientation::test_base_extents_in_its_own_part_frame` (no matching
-base mesh in the built 5y model).
+Current full suite (stock): **274 tests, 274 passed, 0 failed, 42 skipped.**
+T2b companions (5y pack): **47 tests, 46 passed, 1 failed** — the remaining
+failure is `test_tool_orientation::test_base_extents_in_its_own_part_frame`
+(no matching base mesh in the built 5y model), which predates this plan.
 
 ## 5. Drift decision rule
 

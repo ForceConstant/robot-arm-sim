@@ -30,7 +30,7 @@ from scipy.optimize import least_squares
 from scipy.spatial.transform import Rotation
 
 from chess_sim import fiducials
-from chess_sim.charuco_face import CharucoLayout
+from chess_sim.charuco_face import FIELD_OFFSET_MM, CharucoLayout
 from chess_sim.config import Camera
 from chess_sim.env import ChessSimEnv
 from chess_sim.marker_scan import marker_corners_world
@@ -52,6 +52,20 @@ def marker_face_z(board) -> float:
     if getattr(board, "face", "") == "charuco":
         return float(board.top)
     return board.table_top + fiducials.marker_height_above_table(board.mat)
+
+
+def face_origin(board) -> tuple[float, float]:
+    """Board origin plus the measured field offset of the printed face.
+
+    The compiled box maps the generated face slightly off its body origin
+    (charuco_face.FIELD_OFFSET_MM).  Using the body origin here biases the
+    hand-eye translation by ~5 mm; the offset is a property of the sim face,
+    so the live path (a real print) does not get it.
+    """
+    if getattr(board, "face", "") == "charuco":
+        return (board.origin[0] + FIELD_OFFSET_MM[0] / 1000.0,
+                board.origin[1] + FIELD_OFFSET_MM[1] / 1000.0)
+    return tuple(board.origin)
 
 
 def flange_pose(calibration: WristCalibration, joints) -> tuple[np.ndarray, np.ndarray]:
@@ -232,10 +246,11 @@ def main() -> int:
         board = env.board
         layout = marker_layout(board)
         marker_z = marker_face_z(board)
-        raw = calibration_views(env, calibration, board_origin=board.origin,
+        origin = face_origin(board)
+        raw = calibration_views(env, calibration, board_origin=origin,
                                 board_yaw=board.yaw, marker_z=marker_z,
                                 count=args.views, layout=layout)
-        observations = _view_observations(raw, calibration, board_origin=board.origin,
+        observations = _view_observations(raw, calibration, board_origin=origin,
                                           board_yaw=board.yaw, marker_z=marker_z,
                                           layout=layout)
         if len(observations) < 3:

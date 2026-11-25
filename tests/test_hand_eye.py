@@ -17,8 +17,8 @@ from chess_sim.config import Camera  # noqa: E402
 from chess_sim.product import layout_env_config  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from solve_hand_eye import (_compare, _view_observations,  # noqa: E402
-                            calibration_views, flange_pose, marker_face_z,
-                            marker_layout, refine_hand_eye)
+                            calibration_views, face_origin,
+                            marker_face_z, marker_layout, refine_hand_eye)
 
 # The sim scene is rendered by the model-exported camera (fx 738.64). The bench
 # hand-eye mount (fx 312.77) projects that scene to zero markers, so the mount
@@ -61,25 +61,28 @@ def test_refinement_recovers_a_perturbed_mount():
         # transform.  The solver returns T_flange_cam, so express the model
         # camera in the chain's flange frame.
         cam_id = model.camera(str(Camera.WRIST)).id
+        grip_id = model.body("so101:gripper").id
+        grip = np.eye(4)
+        grip[:3, :3] = data.xmat[grip_id].reshape(3, 3)
+        grip[:3, 3] = data.xpos[grip_id]
         cam = np.eye(4)
         cam[:3, :3] = data.cam_xmat[cam_id].reshape(3, 3)
         cam[:3, 3] = data.cam_xpos[cam_id]
-        joints = [float(data.qpos[env._joint_qpos[i]]) for i in range(6)]
-        flange_r, flange_t = flange_pose(calibration, joints)
-        flange = np.eye(4)
-        flange[:3, :3], flange[:3, 3] = flange_r, flange_t
-        truth = np.linalg.inv(flange) @ cam        # camera in the chain's flange frame
+        # The compiled gripper body is the frame the solve returns: comparing
+        # against the chain frame adds a fixed 5 mm link offset.
+        truth = np.linalg.inv(grip) @ cam
         fovy = float(model.cam_fovy[cam_id])
         height = 480
         fy = (height / 2.0) / math.tan(math.radians(fovy) / 2.0)
         intrinsics = (fy, fy, 320.0, 240.0)
         layout = marker_layout(board)
         marker_z = marker_face_z(board)
-        views = calibration_views(env, calibration, board_origin=board.origin,
+        origin = face_origin(board)
+        views = calibration_views(env, calibration, board_origin=origin,
                                   board_yaw=board.yaw, marker_z=marker_z, count=8,
                                   layout=layout)
         observations = _view_observations(
-            views, calibration, board_origin=board.origin,
+            views, calibration, board_origin=origin,
             board_yaw=board.yaw, marker_z=marker_z, layout=layout,
             intrinsics=intrinsics)
         assert len(observations) >= 6

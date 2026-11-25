@@ -24,6 +24,15 @@ MARKER_RATIO = 20.0 / 28.0
 MODULES = 6
 FILES = "abcdefgh"
 
+#: Where the printed field's centre lands relative to the compiled board body
+#: origin, in board millimetres.  Measured 2026-11-25 by fitting the four-pose
+#: marker reprojection with a fixed true camera: without it the residuals are
+#: ~15 px and the hand-eye translation is biased ~5 mm; with it the residual is
+#: 0.8 px and the mount solves to 0.40 mm / 0.10 deg.  This is a property of the
+#: box-top texture mapping, not of the markers: re-measure if the board width,
+#: border or texture resolution changes.
+FIELD_OFFSET_MM = (0.18, -5.1)
+
 
 def square_of(marker_id: int) -> tuple[int, int] | None:
     """(col, rank) of a ChArUco marker in board axes, or None if not on the face."""

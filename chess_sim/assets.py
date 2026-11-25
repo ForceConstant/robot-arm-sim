@@ -325,7 +325,21 @@ def ensure_scene_assets(board, appearance=None) -> str:
         # Printed calibration face: the markers live in the texture, not as geoms.
         os.makedirs(GENERATED_DIR, exist_ok=True)
         path = os.path.join(GENERATED_DIR, "board_charuco.png")
-        if not os.path.exists(path):
+        # The generated face is geometry-specific: its border band is sized for
+        # the board it was written for.  A cached file from a wider border
+        # stretches the 8x8 field on the current board (measured 2026-11-25: a
+        # 15 mm-border texture on a 10 mm board rendered 26.9 mm squares, which
+        # broke registration's square estimate and the perception model).
+        expected = 8 * 224 + 2 * round(224 * board.border / board.square)
+        stale = True
+        if os.path.exists(path):
+            try:
+                from PIL import Image
+                with Image.open(path) as cached:
+                    stale = cached.size != (expected, expected)
+            except Exception:
+                stale = True
+        if stale:
             from .charuco_face import write_face
             write_face(path, board)
         return os.path.relpath(path, ASSET_DIR)
