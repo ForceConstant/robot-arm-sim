@@ -299,6 +299,7 @@ class Live:
         self.last_scan: dict | None = None
         self.scan_running = False
         self.last_board: dict | None = None
+        self.last_board_dir: str | None = None
         self.board_scan_running = False
         self.board_scan_error: str | None = None
         self.last_error: str | None = None
@@ -1007,6 +1008,7 @@ class Live:
                     pose_timeout_s=self.config["pose_timeout_s"],
                     speed_scale=self.config["speed_scale"])
                 report = controller.run()
+                self._save_board_captures(controller.captured)
                 if not report.ok:
                     raise RuntimeError(report.note or "wrist scan failed")
                 base = load_inputs()
@@ -1051,6 +1053,24 @@ class Live:
                         break
         except Exception:                              # noqa: BLE001
             pass
+
+    def _save_board_captures(self, captured) -> None:
+        """Persist the accepted scan frames so a failed fusion can be diagnosed."""
+        from PIL import Image
+
+        stamp = time.strftime("%Y%m%dT%H%M%S")
+        out = self.capture_dir.parent / "captures_board_scan" / stamp
+        out.mkdir(parents=True, exist_ok=True)
+        rows = []
+        for name, frame in captured:
+            filename = f"{name}.png"
+            Image.fromarray(frame.image).save(out / filename)
+            rows.append({"pose": name, "file": filename,
+                         "joints_deg": [float(v) for v in frame.joints_deg],
+                         "timestamp": float(frame.timestamp)})
+        (out / "manifest.json").write_text(json.dumps(rows, indent=2) + "\n")
+        with self.lock:
+            self.last_board_dir = str(out)
 
     # ------------------------------------------------------------- poses/jog
     def poses(self) -> dict:
@@ -2409,6 +2429,7 @@ def state():
                 "scan": live.last_scan,
                 "scan_running": live.scan_running,
                 "board_scan": live.last_board,
+                "board_scan_dir": live.last_board_dir,
                 "board_scan_running": live.board_scan_running,
                 "board_scan_error": live.board_scan_error,
                 "error": live.last_error,

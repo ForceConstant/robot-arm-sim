@@ -275,6 +275,7 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
                         marker_z: float, layout: MarkerLayout,
                         min_markers: int = MIN_MARKERS,
                         max_rms_px: float = MAX_RMS_PX,
+                        max_view_rms_px: float = 5.0,
                         search_mm: float = 40.0,
                         search_deg: float = 8.0) -> BoardRegistration | None:
     """Fuse marker corners from one or more frames into one board pose.
@@ -317,6 +318,30 @@ def estimate_board_pose(views: list[tuple[np.ndarray, CameraCalibration]],
             image_list.extend(quad)
             seen.add(detection.marker_id)
         if not object_list:
+            continue
+        # A view whose own planar PnP cannot explain its marker quads is a
+        # false/mis-associated detection, not board evidence.  Dropping it here
+        # keeps one bad view from dragging the joint fit (measured 2026-11-25:
+        # a 2-marker view at 50.7 px rms took the 12-view fusion to 67 px and
+        # every gate returned None, while the other 11 views were 0.7-2.3 px).
+        matrix = np.array([[calibration.fx, 0.0, calibration.cx],
+                           [0.0, calibration.fy, calibration.cy],
+                           [0.0, 0.0, 1.0]])
+        try:
+            ok, view_rvec, view_tvec = cv2.solvePnP(
+                np.asarray(object_list, dtype=np.float64),
+                np.asarray(image_list, dtype=np.float64),
+                matrix, np.zeros(5), flags=cv2.SOLVEPNP_SQPNP)
+        except cv2.error:
+            continue
+        if not ok:
+            continue
+        view_projection, _ = cv2.projectPoints(
+            np.asarray(object_list, dtype=np.float64), view_rvec, view_tvec,
+            matrix, np.zeros(5))
+        view_rms = float(np.sqrt(np.mean((view_projection.reshape(-1, 2)
+                                          - np.asarray(image_list, dtype=np.float64)) ** 2)))
+        if not np.isfinite(view_rms) or view_rms > max_view_rms_px:
             continue
         observations.append((calibration, np.asarray(object_list, dtype=np.float64),
                              np.asarray(image_list, dtype=np.float64)))

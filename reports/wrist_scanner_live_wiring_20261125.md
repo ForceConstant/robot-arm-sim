@@ -36,3 +36,42 @@ mount/FK used by the fusion or a bad outlier view, not the layout.
 
 Side effect: the plan carries jaw 0.6 rad, which maps to a fully open gripper
 (99.7); the arm is left homed with the jaw open.
+
+## Frame capture and the fusion diagnosis (second session)
+
+`/board/scan` now saves every accepted frame plus `manifest.json` under
+`live/captures_board_scan/<stamp>/`, and `/state` exposes `board_scan_dir`.
+A twelfth run reproduced the failure with the frames saved.
+
+Per-view PnP on those frames (CharucoLayout, face plane 432.65 mm):
+
+- 11 of 12 views solve at **0.7–2.3 px** rms.
+- `v12` (2 markers, low view) solves at **50.7 px** — a false/mis-associated
+  view that alone took the 12-view fusion from 67 px and blocked it.
+- `chess_sim/fiducials.estimate_board_pose` now pre-screens a view by its own
+  planar PnP and drops anything above 5 px. Fusion with that filter: 11 views,
+  **33 px rms** — still above the 1.5 px gate.
+
+Transforming each view's camera-frame board pose into the arm base frame with
+the live calibration gives:
+
+| view (roll) | board x,y,z mm | yaw |
+|---|---|---|
+| v1 (0.3) | −84, −50, 4.7 | −173.4 |
+| v4 (0.0) | −89, −44, 4.4 | −173.3 |
+| v8 (0.3) | −39, −77, −10.8 | −172.8 |
+| v9 (0.3) | −127, −23, 18.3 | −172.9 |
+| v6 (90) | +26, −112, 4.1 | −172.4 |
+
+The yaw is consistent (4° spread) but the position scatters ~48 mm, and the
+scatter does not respond to focal-length scaling (0.85–1.1 all ~48 mm). A
+single per-view pose is self-consistent, so this is the **FK calibration**
+(chain/camera mount) not matching the arm pose-by-pose, not the scan code.
+Phase 9's mat-based registration did not expose it.
+
+## Status
+
+Wiring: complete and exercised (12 poses, correct roll sequence, frames saved,
+endpoint and state fields). Blocked on: re-deriving/validating the live chain
+and camera mount against these frames (hand-eye bundle or a board-position
+survey). No labels are published until the fusion gate passes.
