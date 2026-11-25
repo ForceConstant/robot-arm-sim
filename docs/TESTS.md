@@ -275,10 +275,15 @@ but NOT sufficient — T8 still reviews the pictures.
 **Do not commit or hand off until Brian approves.** Post a labelled contact
 sheet with provenance printed on it (§1), one tile per required view:
 
+> **Scope change (Brian, 2026-11-25): external IRL photographs of the arm are
+> not required.** There is no external camera in the rig, so tiles 1 and 2 are
+> sim-only and tile 3 carries the sim↔IRL comparison from the wrist camera.
+> Do not re-add a photo requirement without a camera to produce it.
+
 1. External orthogonal views — front, side, top — full arm, board visible,
-   sim render next to the corresponding IRL photo.
+   **sim render only** (no IRL photo).
 2. Jaw/base seam close-up and fingertip plane with a **millimetre dimension
-   callout**, sim and IRL side by side.
+   callout**, **sim render only** (no IRL photo).
 3. Wrist-camera view as the camera actually sees it, sim and IRL side by side.
 4. Aim-ray overlay: simulated aim point projected onto the *real* frame, with
    per-corner residuals; detected-marker overlay from `/scan` with board pose
@@ -290,10 +295,11 @@ approval):
 - **Jaw placement:** base sits under the wrist with no gap; both fingers
   symmetric and coplanar; fingertips at the pinned depth (110.450 mm measured,
   ±0.05); the jaw/base seam callout matches the millimetre number printed.
-- **No reverted frame/rotation:** sim and IRL jaw geometry and board alignment
-  agree — explicitly check for a 90° or 180° rotation about the approach axis,
-  a non-mirrored jaw pair, a half-turn board set-down (rank-1 nearest the arm),
-  and a sim-vs-IRL camera mount flip. Check the board is in the right place —
+- **No reverted frame/rotation:** the sim jaw matches the tool-chain constants
+  (T2b) and the sim wrist view agrees with the IRL wrist view on board coverage
+  and orientation — explicitly check for a 90° or 180° rotation about the
+  approach axis, a non-mirrored jaw pair, a half-turn board set-down (rank-1
+  nearest the arm), and a sim-vs-IRL camera mount flip. Check the board is in the right place —
   a wrong board (or a 180°/5 mm frame flip) still produces a clean-looking
   scan, so the picture is the only check. Check for a silent gripper-pack swap
   (stock vs `cad_parallel` 5y) or a changed tip constant; the caption must name
