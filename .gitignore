@@ -45,3 +45,6 @@ sim/captures_wrist/
 
 # Block 3 generated capture frames (reproducible with tools/block3_placement_matrix.py)
 reports/block3_captures/
+
+# Recoverable local trash for retired one-off artifacts (never commit)
+.trash/
