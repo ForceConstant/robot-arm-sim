@@ -28,5 +28,8 @@
   "move_tolerance_mm": 3.0,
   "gripper": "cad_parallel",
   "gripper_assets": ".private/gripper-assets-5y",
-  "ik_solver": "mink"
+  "ik_solver": "mink",
+  "backlash_take_up_deg": 3.5,
+  "move_settle_deadband_deg": 3.5,
+  "move_stall_ticks": 20
 }

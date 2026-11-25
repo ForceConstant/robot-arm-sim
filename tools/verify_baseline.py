@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 CONSOLE = "http://127.0.0.1:8080"
+BRIDGE = "http://192.168.1.167:8100"
 TOKEN_FILE = ROOT / "live" / "bridge_token.txt"
 NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex",
          "wrist_flex", "wrist_roll", "gripper")
@@ -76,6 +77,23 @@ def post(path: str, body: dict, timeout: float = 120.0) -> dict:
 
 def joints() -> dict:
     return (get("/state").get("bridge") or {}).get("joints") or {}
+
+
+DEFAULT_TAKE_UP = 3.5
+
+
+def command(target: dict, seq: int) -> dict:
+    """Direct bridge command; the console's own guards are exercised elsewhere."""
+    body = {"v": 1, "seq": seq, "ttl_ms": 400, "speed_scale": 0.25,
+            "joints": [float(target[name]) for name in NAMES]}
+    request = urllib.request.Request(
+        BRIDGE + "/command", data=json.dumps(body).encode(), method="POST",
+        headers={"Content-Type": "application/json", "x-bridge-token": token()})
+    try:
+        with urllib.request.urlopen(request, timeout=10) as reply:
+            return json.loads(reply.read().decode() or "{}")
+    except urllib.error.HTTPError as exc:
+        return {"http_error": exc.code, "detail": exc.read().decode()[:160]}
 
 
 def settle(seconds: float = 1.2) -> dict:
@@ -190,6 +208,40 @@ def main() -> int:
         drift = max(abs(home.get(n, 0.0) - before.get(n, 0.0)) for n in NAMES[:5])
         record("arm returned to its starting pose", drift <= 4.0,
                f"max drift {drift:.2f} deg (deadband is 2-4)")
+
+    # 8. servo baseline.  P=32 (servo config), backlash take-up and the
+    # settle/fault split are what took the 2-4 deg shortfall down to ~0.2 deg.
+    # Assert them by BEHAVIOUR on the loaded joint: a 10 deg elbow step must
+    # settle inside 0.6 deg with no hunting.  With P=16 or take-up disabled this
+    # is ~1.1-1.6 deg, so the threshold discriminates.
+    if not args.no_motion:
+        try:
+            config = json.loads((ROOT / "live" / "live_config.json").read_text())
+        except Exception:  # noqa: BLE001 - absent config means code defaults
+            config = {}
+        take_up = float(config.get("backlash_take_up_deg",
+                                   DEFAULT_TAKE_UP))
+        record("servo baseline: backlash take-up enabled", take_up > 0.0,
+               f"{take_up} deg")
+
+        # Through the CONSOLE, not the bridge: backlash take-up lives in the
+        # console's move path, so a direct /command measures the raw P-only
+        # servo and reports ~1.1 deg (measured 2026-11-25).  Driving /jog is the
+        # path operators and tasks actually use.
+        before = joints()
+        goal = before["elbow_flex"] - 10.0
+        post("/jog", {"joint": "elbow_flex", "delta": -10.0})
+        samples = []
+        for _ in range(14):
+            samples.append(joints()["elbow_flex"])
+            time.sleep(0.1)
+        residual = goal - samples[-1]
+        spread = max(samples[-5:]) - min(samples[-5:])
+        ok = abs(residual) <= 0.6 and spread <= 0.05
+        record("servo baseline: loaded elbow settles <0.6 deg", ok,
+               f"residual {residual:+.2f} deg, spread {spread:.3f}")
+        post("/jog", {"joint": "elbow_flex", "delta": 10.0})
+        time.sleep(1.0)
 
     failed = [name for name, ok, _ in results if not ok]
     print()

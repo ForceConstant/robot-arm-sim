@@ -82,7 +82,13 @@ PASS  aim point ok on a fresh marker plane
 PASS  actuation: 4 deg jog moves the arm
 PASS  rel mode accepts a 10 mm board nudge
 PASS  arm returned to its starting pose
+PASS  servo baseline: backlash take-up enabled
+PASS  servo baseline: loaded elbow settles <0.6 deg
 ```
+
+The last two are the servo baseline. The settle check goes through the console
+on purpose: a direct bridge command measures the un-tuned path and reports
+~1.1°, which is how the take-up margin was calibrated.
 
 Run it at the start of every new phase. `--no-motion` skips the move checks for
 a read-only survey.
@@ -92,6 +98,16 @@ a read-only survey.
 These are the fixes that made the arm usable; each has a check above so a
 regression cannot pass unnoticed.
 
+- **Backlash take-up 3.5°, pinned in config.** The final approach drives past
+  the target then back, so each move takes up its play from a known side.
+  Measured on the loaded elbow: 1.12° short without it, 0.15° with it. It lives
+  in the console's move path, so anything that commands the bridge directly
+  (`/command`) still sees the raw P-only servo — that is how the 3.5° margin was
+  calibrated and it is why `verify_baseline` probes through `/jog`.
+- **Settle allowance 3.5° and stall lead 3.0° are separate.** They were one
+  number; a take-up final leg sitting inside the servo band tripped the stall
+  guard, and the move path's recovery then swung the arm 64° home. Separation
+  fixes that.
 - **Position gain P=32, the servo's factory value.** LeRobot ships P=16 and
   `configure()` rewrites P/I/D on every bus open, so the bridge sets 32/0/32
   explicitly. With I=0 the loop cannot null a constant load and settles at

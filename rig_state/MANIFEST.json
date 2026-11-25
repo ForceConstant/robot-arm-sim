@@ -1,7 +1,7 @@
 {
   "schema": "rig-state/1",
-  "created": "2026-11-25T07:16:32-0500",
-  "note": "post board-delta + mink flip baseline, 2026-11-25",
+  "created": "2026-11-25T10:56:19-0500",
+  "note": "servo baseline pinned: P=32/I=0/D=32, take-up 3.5, settle/fault split",
   "files": {
     "board.json": {
       "canonical": "live/board.json",
@@ -11,8 +11,8 @@
     },
     "live_config.json": {
       "canonical": "live/live_config.json",
-      "sha256": "4c28d87905dd904787bf1802e1be0f617d8e41d4fa8346e8825a637bc2c73408",
-      "bytes": 849,
+      "sha256": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8",
+      "bytes": 941,
       "purpose": "console settings: solver (mink), move tolerance, auth posture, home pose, layout"
     },
     "wrist_calibration.json": {
