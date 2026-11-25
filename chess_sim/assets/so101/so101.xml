@@ -159,7 +159,7 @@
     <position class="sts3215" name="shoulder_lift" joint="shoulder_lift" forcerange="-1.81601509 1.84376582" ctrlrange="-1.81601509 1.84376582"/>
     <position class="sts3215" name="elbow_flex" joint="elbow_flex" forcerange="-1.63502444 1.60133959" ctrlrange="-1.63502444 1.60133959"/>
     <position class="sts3215" name="wrist_flex" joint="wrist_flex" forcerange="-1.77307999 1.67185089" ctrlrange="-1.77307999 1.67185089"/>
-    <position class="sts3215" name="wrist_roll" joint="wrist_roll" forcerange="-1.37566852 1.53676241" ctrlrange="-1.37566852 1.53676241"/>
+    <position class="sts3215" name="wrist_roll" joint="wrist_roll" forcerange="-3.09289797 0.04869469" ctrlrange="-3.09289797 0.04869469"/>
     <position class="sts3215" name="gripper" joint="gripper" forcerange="-3.35 3.35" ctrlrange="-0.17453 1.74533"/>
   </actuator>
   <equality/>

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 import math
 from pathlib import Path
 import sys
@@ -27,6 +28,7 @@ from chess_sim.config import Camera
 from chess_sim.env import ChessSimEnv
 from chess_sim.perception import board_patches, square_mask_fraction
 from chess_sim.perception_data import render_mask, robot_geometry_ids
+from chess_sim import gripper
 from chess_sim.product import layout_env_config
 from chess_sim.vision_geometry import CameraCalibration
 
@@ -214,8 +216,8 @@ def main() -> int:
                 Path(args.save_dir) / f"pose-{order + 1:02d}.png")
         plan = {
             "schema": SCHEMA,
-            "generated_at": "2026-11-03",
-            "layout": "hardware/current_layout.json (90 mm gap, 30 mm riser, custom jaw v3)",
+            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "layout": f"hardware/current_layout.json (90 mm gap, 30 mm riser; tool {gripper.KIND}, assets {gripper.ASSET_ROOT.name})",
             "method": "wrist-lens targets solved inside hard joint limits "
                       "(vertical grid plus tilted board-facing views); greedy set "
                       "cover on arm occlusion and lens-to-square distance",
