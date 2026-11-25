@@ -417,8 +417,20 @@ class Bridge:
 
         if self.follower is not None:
             return
+        # Position gains are written to all six servos on every bus open by
+        # SO101Follower.configure(), so this config - not the servo EEPROM - is
+        # the source of truth.  LeRobot 0.6.1 ships P=16, I=0, D=32; the Feetech
+        # STS3215 factory default for the position loop is P=32, D=32, I=0.
+        # With I=0 the loop cannot null a constant load, so the steady-state
+        # shortfall is residual = load/Kp: measured 2026-11-25 at P=16,
+        # shoulder_pan +0.33/-0.24 deg, loaded elbow_flex +0.50/-1.56 deg, with
+        # tail_spread 0.000 (settled, not mid-flight).  This step is the
+        # single-variable experiment: restore the factory P and nothing else.
         robot = SO101Follower(SO101FollowerConfig(port=self.follower_port,
-                                                  id=self.follower_cal))
+                                                  id=self.follower_cal,
+                                                  position_p_coefficient=32,
+                                                  position_i_coefficient=0,
+                                                  position_d_coefficient=32))
         try:
             robot.bus.connect()
             robot.bus.write_calibration(robot.calibration)

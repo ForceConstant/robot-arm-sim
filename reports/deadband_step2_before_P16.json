@@ -1,0 +1,220 @@
+{
+ "captured_at": "2026-11-25T07:59:31-0500",
+ "reps": 3,
+ "results": [
+  {
+   "joint": "shoulder_pan",
+   "delta": 10.0,
+   "start": -70.42,
+   "goal": -60.42,
+   "reached": -60.75,
+   "residual": 0.33,
+   "travel": 9.67,
+   "tail_spread": 0.0,
+   "rep": 0
+  },
+  {
+   "joint": "shoulder_pan",
+   "delta": 10.0,
+   "start": -60.75,
+   "goal": -50.75,
+   "reached": -51.08,
+   "residual": 0.33,
+   "travel": 9.67,
+   "tail_spread": 0.0,
+   "rep": 1
+  },
+  {
+   "joint": "shoulder_pan",
+   "delta": 10.0,
+   "start": -51.08,
+   "goal": -41.08,
+   "reached": -41.67,
+   "residual": 0.59,
+   "travel": 9.41,
+   "tail_spread": 0.0,
+   "rep": 2
+  },
+  {
+   "joint": "shoulder_pan",
+   "delta": -10.0,
+   "start": -41.67,
+   "goal": -51.67,
+   "reached": -51.43,
+   "residual": -0.24,
+   "travel": -9.76,
+   "tail_spread": 0.0,
+   "rep": 0
+  },
+  {
+   "joint": "shoulder_pan",
+   "delta": -10.0,
+   "start": -51.43,
+   "goal": -61.43,
+   "reached": -61.19,
+   "residual": -0.24,
+   "travel": -9.76,
+   "tail_spread": 0.0,
+   "rep": 1
+  },
+  {
+   "joint": "shoulder_pan",
+   "delta": -10.0,
+   "start": -61.19,
+   "goal": -71.19,
+   "reached": -70.86,
+   "residual": -0.33,
+   "travel": -9.67,
+   "tail_spread": 0.0,
+   "rep": 2
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": 10.0,
+   "start": 46.99,
+   "goal": 56.99,
+   "reached": 56.92,
+   "residual": 0.07,
+   "travel": 9.93,
+   "tail_spread": 0.0,
+   "rep": 0
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": 10.0,
+   "start": 56.92,
+   "goal": 66.92,
+   "reached": 66.42,
+   "residual": 0.5,
+   "travel": 9.5,
+   "tail_spread": 0.0,
+   "rep": 1
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": 10.0,
+   "start": 66.42,
+   "goal": 76.42,
+   "reached": 70.29,
+   "residual": 6.13,
+   "travel": 3.87,
+   "tail_spread": 0.0,
+   "rep": 2
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": -10.0,
+   "start": 70.29,
+   "goal": 60.29,
+   "reached": 61.67,
+   "residual": -1.38,
+   "travel": -8.62,
+   "tail_spread": 0.0,
+   "rep": 0
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": -10.0,
+   "start": 61.67,
+   "goal": 51.67,
+   "reached": 53.23,
+   "residual": -1.56,
+   "travel": -8.44,
+   "tail_spread": 0.0,
+   "rep": 1
+  },
+  {
+   "joint": "elbow_flex",
+   "delta": -10.0,
+   "start": 53.23,
+   "goal": 43.23,
+   "reached": 45.32,
+   "residual": -2.09,
+   "travel": -7.91,
+   "tail_spread": 0.0,
+   "rep": 2
+  }
+ ],
+ "summary": {
+  "shoulder_pan:+10": {
+   "n": 3,
+   "median_residual": 0.33,
+   "residuals": [
+    0.33,
+    0.33,
+    0.59
+   ],
+   "max_tail_spread": 0.0,
+   "goals": [
+    -60.42,
+    -50.75,
+    -41.08
+   ],
+   "reached": [
+    -60.75,
+    -51.08,
+    -41.67
+   ]
+  },
+  "shoulder_pan:-10": {
+   "n": 3,
+   "median_residual": -0.24,
+   "residuals": [
+    -0.24,
+    -0.24,
+    -0.33
+   ],
+   "max_tail_spread": 0.0,
+   "goals": [
+    -51.67,
+    -61.43,
+    -71.19
+   ],
+   "reached": [
+    -51.43,
+    -61.19,
+    -70.86
+   ]
+  },
+  "elbow_flex:+10": {
+   "n": 3,
+   "median_residual": 0.5,
+   "residuals": [
+    0.07,
+    0.5,
+    6.13
+   ],
+   "max_tail_spread": 0.0,
+   "goals": [
+    56.99,
+    66.92,
+    76.42
+   ],
+   "reached": [
+    56.92,
+    66.42,
+    70.29
+   ]
+  },
+  "elbow_flex:-10": {
+   "n": 3,
+   "median_residual": -1.56,
+   "residuals": [
+    -1.38,
+    -1.56,
+    -2.09
+   ],
+   "max_tail_spread": 0.0,
+   "goals": [
+    60.29,
+    51.67,
+    43.23
+   ],
+   "reached": [
+    61.67,
+    53.23,
+    45.32
+   ]
+  }
+ }
+}

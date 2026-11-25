@@ -74,6 +74,12 @@ a read-only survey.
 These are the fixes that made the arm usable; each has a check above so a
 regression cannot pass unnoticed.
 
+- **Position gain P=32, the servo's factory value.** LeRobot ships P=16 and
+  `configure()` rewrites P/I/D on every bus open, so the bridge sets 32/0/32
+  explicitly. With I=0 the loop cannot null a constant load and settles at
+  `residual = load / Kp`; at P=16 the loaded elbow left 1.56 deg on the table,
+  at P=32 it leaves 0.77. I stays 0 deliberately - an integrator adds windup at
+  the travel limits.
 - **Torque on every bridge open.** LeRobot's `disconnect()` clears the servo
   torque register. The bridge now re-enables it after `configure()`; without it
   the arm accepts 266 commands and moves 0.00° (`actuation`).
