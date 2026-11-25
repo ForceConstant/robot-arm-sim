@@ -252,7 +252,8 @@ def main() -> int:
     parser.add_argument("--sessions", type=int, default=3)
     parser.add_argument("--seed", type=int, default=7001)
     parser.add_argument("--views", choices=("top", "fused"), default="fused")
-    parser.add_argument("--model", default="chess_sim/assets/perception/model.json")
+    parser.add_argument("--model", default=None,
+                        help="required; the overhead model.json was retired 2026-11-25")
     parser.add_argument("--out", default=".private/move-inference/heldout.json")
     parser.add_argument("--min-support", type=float, default=0.5)
     parser.add_argument("--deviation-confidence", type=float, default=0.5)
@@ -260,6 +261,8 @@ def main() -> int:
     if args.sessions < 1:
         parser.error("sessions must be positive")
 
+    if not args.model:
+        parser.error("--model is required; the overhead model.json was retired 2026-11-25")
     model = PerceptionModel.load(args.model)
     started = time.time()
     records: list[dict] = []

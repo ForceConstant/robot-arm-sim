@@ -211,4 +211,4 @@ container; elsewhere the driver's own EGL is enough.
 Board registration and occupancy/colour perception are qualified for the
 fixed-overhead-rig envelope. See [PERCEPTION_ACCEPTANCE.md](PERCEPTION_ACCEPTANCE.md)
 for the measured result, limits and reproduction. Train with
-`tools/train_perception.py`; evaluate with `tools/benchmark_perception.py`.
+`tools/train_perception_wrist.py` (the overhead trainer was retired 2026-11-25).

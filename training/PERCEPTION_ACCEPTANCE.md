@@ -1,3 +1,9 @@
+> **RETIRED 2026-11-25.** The real rig has no overhead camera, so this
+> overhead training/evaluation path was removed from the product: the
+> trainer, benchmark, its model artifact and its tests are gone. The
+> shipped perception trainer is `tools/train_perception_wrist.py` and the
+> runtime path is `chess_sim/wrist_scan.py`. This file is kept as history.
+
 # Priority 6 acceptance — board registration and occupancy/colour perception
 
 **Status (2026-10-30): complete for the qualified fixed-overhead-rig envelope.**

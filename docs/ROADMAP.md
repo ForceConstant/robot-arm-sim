@@ -407,8 +407,9 @@ camera-to-arm chain.
   No physical capture session is claimed.
 - **Implementation:** `chess_sim/board_registration.py`,
   `chess_sim/perception.py`, `chess_sim/perception_data.py`,
-  `tools/train_perception.py`, `tools/benchmark_perception.py`; model artifact
-  `chess_sim/assets/perception/model.json`. Local regression passed
+  `tools/train_perception.py`, `tools/benchmark_perception.py` (both retired
+  2026-11-25 — no overhead camera on the rig); the wrist trainer is
+  `tools/train_perception_wrist.py`. Local regression passed
   **67 passed, 4 skipped**. Receipt `training/PERCEPTION_ACCEPTANCE.md`, private
   receipts `.private/perception/heldout-v8.json` and `training-v8.json`.
 

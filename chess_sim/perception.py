@@ -647,5 +647,6 @@ def load_default_model(path: str | Path = MODEL_PATH) -> PerceptionModel:
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(
-            f"no perception model at {path}; run tools/train_perception.py")
+            f"no perception model at {path}; train the wrist model with "
+            f"tools/train_perception_wrist.py (the overhead trainer was retired 2026-11-25)")
     return PerceptionModel.load(path)
