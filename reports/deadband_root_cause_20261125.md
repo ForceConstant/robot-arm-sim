@@ -71,6 +71,40 @@ than a fourth mechanism.
   `wrist_roll` to −1.8° and back to 0 landed at −0.26° where a direct command
   stalled at 1.49°. It is already the right tool for the ~0.7° that remains.
 
+
+## Vendor register table — and why the plan changed
+
+From the ST3215 register documentation (Mickael-Roger/python-st3215, which
+transcribes the Feetech table):
+
+| addr | register | factory default | range | unit | ours | note |
+|---|---|---|---|---|---|---|
+| 0x15 | Position loop **P** | **32** | 0–254 | — | **16** | **we run at half the factory stiffness** |
+| 0x16 | Position loop D | 32 | 0–254 | — | 32 | matches |
+| 0x17 | Position loop I | 0 | 0–254 | — | 0 | matches |
+| 0x18 | Minimum starting force | 16 | 0–1000 | — | 16 | matches |
+| 0x1A | CW insensitive zone | 1 | 0–32 | step (0.088°) | 1 | already minimum |
+| 0x1B | CCW insensitive zone | 1 | 0–32 | step (0.088°) | 1 | already minimum |
+| 0x29 | Acceleration | 0 | 0–254 | 100 step/s² | 254 | **SRAM, not EEPROM** — resets each power-up; 254 = max |
+
+Two consequences:
+
+1. **The dead-zone registers are at the factory minimum too**, not a mis-set
+   value. They were never the mechanism.
+2. **`SO101FollowerConfig` ships P=16, which is half the servo's design value of
+   32.** With I=0, a lower Kp means a larger steady-state error under the same
+   load — exactly the `residual = load/Kp` behaviour measured above. So the
+   cheapest correct experiment is not "add an integrator": it is **restore the
+   manufacturer's P of 32**, which is a known, bounded, well-understood value
+   rather than a new control term.
+
+Integral gain stays as the second step, only if P=32 leaves a residual, because
+an integrator adds windup behaviour at the travel limits that proportional gain
+does not.
+
+Revised order: P 16 → 32 first (factory default), measure with
+`tools/deadband_discriminator.py`; only then consider a small I.
+
 ## Open items
 
 - Feetech manual values for `Minimum_Startup_Force` semantics and whether
