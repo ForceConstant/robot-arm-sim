@@ -787,12 +787,26 @@ class Live:
             raise BridgeError(
                 "board PnP needs at least two ChArUco markers in view "
                 f"(found {len(detections)}); nothing was changed")
-        measured = camera_yaw.image_yaw_deg(
-            lambda xy, z: board.project(solution, xy, z),
-            BOARD_SQUARE_MM * 2.0)
-        if measured is None:
-            raise BridgeError(
-                "the board x-axis did not project into the image")
+        # The image yaw of the board alone is not the camera error: it includes
+        # the board's pose relative to the arm.  Compare the PnP board pose in
+        # the camera with the chain-predicted one and take the residual roll
+        # about the camera's optical axis.
+        rotation_cv, _ = cv2.Rodrigues(np.asarray(solution["rvec"], dtype=float))
+        flip = np.diag([1.0, -1.0, -1.0])
+        measured_board = np.eye(4)
+        measured_board[:3, :3] = flip @ rotation_cv
+        measured_board[:3, 3] = flip @ np.ravel(np.asarray(solution["tvec"], dtype=float))
+        # Build the camera pose without WristCalibration.camera(): its hard
+        # limit guard still carries the upstream flex limit (95 deg) while the
+        # home pose sits at 98, so calling it here would reject a valid frame.
+        # kinematics.fk is the same chain without that guard.
+        camera_pose = self.kinematics.fk(frame.joints_deg) @ np.asarray(
+            self.calibration.camera_in_tool)
+        camera_pose[:3, :3] = (camera_pose[:3, :3]
+                               @ camera_yaw.rotation_matrix(float(self.yaw["offset_deg"])))
+        predicted_board = np.linalg.inv(camera_pose) @ np.asarray(self.kinematics.board)
+        measured = camera_yaw.yaw_error_deg(measured_board[:3, :3],
+                                           predicted_board[:3, :3])
         self.yaw_measured = float(measured)
         self.yaw_measured_offset = float(self.yaw["offset_deg"])
         self.yaw_measured_at = time.strftime("%Y-%m-%dT%H:%M:%S%z")
@@ -2971,7 +2985,7 @@ async def wrist_auto_align(request: Request):
 
 @app.get("/wrist/yaw")
 def wrist_yaw():
-    """Current offset plus the last measured image yaw, if any."""
+    """Current offset plus the last measured camera yaw error, if any."""
     return live.camera_yaw_state()
 
 
@@ -3410,7 +3424,7 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
 
     <div class="panel"><h2>Camera yaw</h2>
       <div class="row"><span class="hint">yaw offset (0 = calibrated)</span><span class="mono" id="wcYaw">—</span></div>
-      <div class="row"><span class="hint">measured image yaw</span><span class="mono" id="wcYawMeasured">—</span></div>
+      <div class="row"><span class="hint">measured camera yaw error</span><span class="mono" id="wcYawMeasured">—</span></div>
       <div class="hint">coarse · 10°</div>
       <div class="grid2" style="margin:4px 0 8px">
         <button onclick="yawJog(-10)">coarse −10°</button>

@@ -125,3 +125,15 @@ def test_offset_file_missing_corrupt_and_foreign_schema_read_as_zero(tmp_path):
 def test_save_refuses_implausible_offsets(tmp_path, bad):
     with pytest.raises(ValueError):
         camera_yaw.save(tmp_path / "x.json", bad)
+
+
+def test_yaw_error_is_the_residual_roll():
+    """R_meas = R_pred @ Rz(theta) must report theta, whatever R_pred is."""
+    from scipy.spatial.transform import Rotation
+
+    import camera_yaw
+
+    predicted = Rotation.from_euler("xyz", [12.0, -5.0, 30.0], degrees=True).as_matrix()
+    for theta in (0.0, 1.7, -3.2, 11.0):
+        measured = predicted @ Rotation.from_euler("z", theta, degrees=True).as_matrix()
+        assert camera_yaw.yaw_error_deg(measured, predicted) == pytest.approx(theta, abs=1e-9)

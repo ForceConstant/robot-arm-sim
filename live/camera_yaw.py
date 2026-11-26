@@ -135,3 +135,17 @@ def image_yaw_deg(project, half_span_mm: float) -> float | None:
     if math.hypot(dx, dy) < 1e-6:
         return None
     return math.degrees(math.atan2(dy, dx))
+
+def yaw_error_deg(measured_rotation, predicted_rotation) -> float:
+    """Residual camera roll about the optical axis, in degrees.
+
+    Both rotations are camera-from-board.  Their difference in camera
+    coordinates is ``R_pred^T @ R_meas``; its z-rotation is the in-plane yaw.
+    Positive means the measured camera is rolled one way about its view axis,
+    and nulling it is ``offset -= error`` (see the module convention).
+    """
+    measured = np.asarray(measured_rotation, dtype=float).reshape(3, 3)
+    predicted = np.asarray(predicted_rotation, dtype=float).reshape(3, 3)
+    delta = predicted.T @ measured
+    return math.degrees(math.atan2(float(delta[1, 0]), float(delta[0, 0])))
+
