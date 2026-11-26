@@ -143,7 +143,10 @@ def plan_in_degrees(plan: MarkerScanPlan) -> MarkerScanPlan:
     from chess_sim.marker_scan import PoseCoverage
 
     def convert(joints) -> tuple[float, ...]:
-        values = [float(np.degrees(v)) for v in joints]
+        # Wrap into (-180, 180]: a plan angle like 6.40 rad is 7 deg physically,
+        # but a bare radians->degrees conversion gives 367 and the controller's
+        # plausibility guard rejects the whole plan (marker14_r68, 2026-11-25).
+        values = [((math.degrees(v) + 180.0) % 360.0) - 180.0 for v in joints]
         values[5] = _sim_jaw_to_command(float(joints[5]))
         return tuple(values)
 
