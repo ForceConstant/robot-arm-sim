@@ -32,9 +32,10 @@ from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
                                Response, StreamingResponse)
 from starlette.concurrency import run_in_threadpool
 
-from bridge_client import BridgeError, HttpBridge, HttpFrames
+import camera_yaw
 from aim import (CameraMount, PlaneTracker, aim_translation,
                  evaluate as aim_evaluate, plane_from_solution)
+from bridge_client import BridgeError, HttpBridge, HttpFrames
 from kinematics import JOINTS, SQUARE_MM, ArmKinematics, square_xy
 from solver import MoveSolver
 from scan_controller import ScanController, plan_in_degrees
@@ -44,6 +45,7 @@ from wrist_scan_runner import (ScanInputs, frames_from_captured, load_inputs,
                                plan_pose_degrees, run_scan as run_wrist_scan,
                                summarize as summarize_wrist_scan)
 from chess_sim import fiducials
+from chess_sim.board_target import Board, SQUARE_MM as BOARD_SQUARE_MM
 from chess_sim.marker_scan import (MarkerLayout, MarkerScanPlan, PoseCoverage,
                                    board_offset, load_plan, marker_corners_world)
 from chess_sim.product import current_layout
@@ -121,6 +123,10 @@ DEFAULTS = {
     # Wrist calibration: the roll angle accepted as "wrist 0" and the ±90°
     # window around it that manual roll moves are allowed to use.
     "wrist_file": "live/wrist_calibration.json",
+    # Camera yaw: a small user-local rotation about the wrist camera's
+    # optical axis, stacked on the pinned hand-eye calibration.  Its own
+    # file: the calibration and rig_state are never rewritten for this.
+    "camera_yaw_file": "live/camera_yaw.json",
     # Working envelope in board-frame mm.  The arm should stay over the playing
     # surface, both so the camera keeps the board in view and so a Cartesian
     # mistake cannot drive the jaws into the table beside it.
@@ -320,6 +326,12 @@ class Live:
         self._aim: dict | None = None
         self.wrist_path = Path(self.config.get(
             "wrist_file", "live/wrist_calibration.json"))
+        self.yaw_path = Path(self.config.get(
+            "camera_yaw_file", "live/camera_yaw.json"))
+        self.yaw = camera_yaw.load(self.yaw_path)
+        self.yaw_measured: float | None = None
+        self.yaw_measured_offset: float | None = None
+        self.yaw_measured_at: str | None = None
         self.frame_offset.offset_deg = float(
             self.wrist_cal().get("model_offset_deg", 0.0))
         self.kinematics = ArmKinematics(self.calibration, {}, self._board_frame())
@@ -682,6 +694,152 @@ class Live:
             result["servo_error"] = servo_error
         return result
 
+    # ------------------------------------------------------- camera yaw offset
+    def camera_yaw_state(self) -> dict:
+        """Offset plus the last board measurement (None until one is taken)."""
+        result = dict(self.yaw)
+        measured = self.yaw_measured
+        result["measured_deg"] = None if measured is None else round(measured, 2)
+        result["measured_offset_deg"] = (
+            None if self.yaw_measured_offset is None
+            else round(self.yaw_measured_offset, 2))
+        result["measured_stale"] = (
+            measured is not None
+            and round(self.yaw_measured_offset or 0.0, 3)
+            != round(self.yaw["offset_deg"], 3))
+        result["measured_at"] = self.yaw_measured_at
+        result["path"] = str(self.yaw_path)
+        result["calibration_id"] = self.calibration.calibration_id
+        return result
+
+    def _store_camera_yaw(self, offset_deg: float, source: str) -> dict:
+        data = camera_yaw.save(self.yaw_path, offset_deg, source)
+        self.yaw = {key: data[key] for key in ("schema", "offset_deg",
+                                               "updated", "source")}
+        return data
+
+    def set_camera_yaw(self, offset_deg=None, delta_deg=None,
+                       source: str = "manual") -> dict:
+        """Set or nudge the offset; the pinned calibration is not touched."""
+        if offset_deg is None and delta_deg is None:
+            raise ValueError("offset_deg or delta_deg is required")
+        with self.lock:
+            if self.scan_running or self.board_scan_running:
+                raise BridgeError("a scan is running; camera yaw change refused")
+        previous = float(self.yaw["offset_deg"])
+        if offset_deg is not None:
+            value = float(offset_deg)
+        else:
+            value = previous + float(delta_deg)
+        self._store_camera_yaw(value, source)
+        result = self.camera_yaw_state()
+        result["previous_offset_deg"] = round(previous, 3)
+        return result
+
+    def _board_target(self) -> Board:
+        return Board({"intrinsics": self.calibration.intrinsics,
+                      "distortion": self.calibration.distortion,
+                      "chain": self.calibration.chain,
+                      "camera_in_tool": self.calibration.camera_in_tool})
+
+    def measure_camera_yaw(self) -> dict:
+        """Board x-axis rotation in one fresh frame: capture and PnP only.
+
+        No motion, no joint command and no calibration write.  The measurement
+        is cached so the tab can show it and "accept as yaw 0" can use it.
+        """
+        with self.lock:
+            if self.scan_running or self.board_scan_running:
+                raise BridgeError(
+                    "a scan is running; camera yaw measurement refused")
+        # /capture goes quiet unless something consumes the bridge stream (the
+        # same reason _hold_stream_client exists); hold a stream reference and
+        # give a few frames a chance before reporting the bridge's own error.
+        self.attach()
+        try:
+            error = None
+            for _ in range(3):
+                try:
+                    frame = self.frames.capture()
+                    break
+                except BridgeError as exc:
+                    error = exc
+                    time.sleep(0.6)
+            else:
+                raise error
+        finally:
+            self.detach()
+        if frame.image is None:
+            raise BridgeError("bridge capture returned no image")
+        image = np.asarray(frame.image)
+        if image.ndim != 3 or image.shape[2] != 3:
+            raise BridgeError(
+                f"capture is not RGB HxWx3 (shape {image.shape})")
+        if image.shape[:2] != (self.calibration.height,
+                               self.calibration.width):
+            raise BridgeError(
+                f"capture is {image.shape[1]}x{image.shape[0]}, calibration is "
+                f"{self.calibration.width}x{self.calibration.height}")
+        board = self._board_target()
+        solution, detections = board.solve(
+            board.rectify(cv2.cvtColor(image, cv2.COLOR_RGB2BGR)))
+        if solution is None or len(detections) < 2:
+            raise BridgeError(
+                "board PnP needs at least two ChArUco markers in view "
+                f"(found {len(detections)}); nothing was changed")
+        measured = camera_yaw.image_yaw_deg(
+            lambda xy, z: board.project(solution, xy, z),
+            BOARD_SQUARE_MM * 2.0)
+        if measured is None:
+            raise BridgeError(
+                "the board x-axis did not project into the image")
+        self.yaw_measured = float(measured)
+        self.yaw_measured_offset = float(self.yaw["offset_deg"])
+        self.yaw_measured_at = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        return {"measured_deg": round(float(measured), 2),
+                "measured_offset_deg": round(self.yaw_measured_offset, 2),
+                "rms_px": round(float(solution["rms_px"]), 2),
+                "markers": [int(d.marker_id) for d in detections],
+                "measured_at": self.yaw_measured_at}
+
+    def accept_camera_yaw(self) -> dict:
+        """offset -= measured, so the board reads level afterwards."""
+        measurement = None
+        measured = self.yaw_measured
+        stale = (measured is None or self.yaw_measured_offset is None
+                 or round(self.yaw_measured_offset, 3)
+                 != round(self.yaw["offset_deg"], 3))
+        if stale:
+            # A cached angle taken at a different offset no longer nulls this
+            # camera; measure again rather than apply the wrong correction.
+            measurement = self.measure_camera_yaw()
+            measured = float(measurement["measured_deg"])
+        previous = float(self.yaw["offset_deg"])
+        try:
+            self._store_camera_yaw(previous - float(measured), "accept")
+        except ValueError as exc:
+            raise BridgeError(f"camera yaw not saved: {exc}") from exc
+        result = self.camera_yaw_state()
+        result["previous_offset_deg"] = round(previous, 3)
+        result["measured_deg"] = round(float(measured), 2)
+        if measurement:
+            result["measurement"] = measurement
+        return result
+
+    def auto_measure_camera_yaw(self) -> dict:
+        """Fresh ArUco measurement, then null it."""
+        measurement = self.measure_camera_yaw()
+        previous = float(self.yaw["offset_deg"])
+        try:
+            self._store_camera_yaw(
+                previous - float(measurement["measured_deg"]), "aruco")
+        except ValueError as exc:
+            raise BridgeError(f"camera yaw not saved: {exc}") from exc
+        result = self.camera_yaw_state()
+        result["previous_offset_deg"] = round(previous, 3)
+        result["measurement"] = measurement
+        return result
+
     def _wrist_window(self) -> tuple[float, float] | None:
         cal = self.wrist_cal()
         if not cal.get("calibrated"):
@@ -957,7 +1115,11 @@ class Live:
             self.scan_lock.release()
 
     def camera_from_joints(self, joints_deg):
-        return self.calibration.camera(tuple(math.radians(v) for v in joints_deg))
+        camera = self.calibration.camera(
+            tuple(math.radians(v) for v in joints_deg))
+        # Camera yaw: camera-local rotation about the optical axis, applied
+        # on top of the pinned calibration the app loaded at startup.
+        return camera_yaw.apply(camera, self.yaw["offset_deg"])
 
     # ------------------------------------------------------- wrist perception
     def start_board_scan(self) -> dict:
@@ -2424,6 +2586,7 @@ def state():
     with live.lock:
         return {"bridge": bridge_state,
                 "wrist": live.wrist_state(bridge_state),
+                "camera_yaw": live.camera_yaw_state(),
                 "tool_tip": describe_tip_frame(),
                 "aim_point": aim_state,
                 "scan": live.last_scan,
@@ -2802,6 +2965,53 @@ async def wrist_auto_align(request: Request):
     _authorised(request)
     try:
         return await run_in_threadpool(live.auto_align_wrist)
+    except BridgeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/wrist/yaw")
+def wrist_yaw():
+    """Current offset plus the last measured image yaw, if any."""
+    return live.camera_yaw_state()
+
+
+@app.post("/wrist/yaw")
+async def wrist_yaw_set(request: Request):
+    _authorised(request)
+    body = await request.json()
+
+    def _optional(name: str):
+        value = body.get(name)
+        return None if value is None else float(value)
+
+    try:
+        offset = _optional("offset_deg")
+        delta = _optional("delta_deg")
+        if offset is None and delta is None:
+            raise ValueError("offset_deg or delta_deg is required")
+        return await run_in_threadpool(
+            live.set_camera_yaw, offset, delta,
+            str(body.get("source") or "manual"))
+    except (BridgeError, ValueError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.post("/wrist/yaw/zero")
+async def wrist_yaw_zero(request: Request):
+    """Accept the measured yaw as the new zero (measures once if unknown)."""
+    _authorised(request)
+    try:
+        return await run_in_threadpool(live.accept_camera_yaw)
+    except BridgeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.post("/wrist/yaw/auto")
+async def wrist_yaw_auto(request: Request):
+    """Measure the board with a fresh capture, then null the offset."""
+    _authorised(request)
+    try:
+        return await run_in_threadpool(live.auto_measure_camera_yaw)
     except BridgeError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -3197,6 +3407,29 @@ label { display:block; font-size:10px; color:#7f97ae; text-transform:uppercase; 
       <div class="hint" style="margin-top:6px">Sets the wrist window to ±90° around the current roll and saves it to live/wrist_calibration.json. The window is enforced on roll jogs and joint moves.</div>
       <div id="wcZeroInfo" class="mono hint" style="margin-top:4px">—</div>
     </div>
+
+    <div class="panel"><h2>Camera yaw</h2>
+      <div class="row"><span class="hint">yaw offset (0 = calibrated)</span><span class="mono" id="wcYaw">—</span></div>
+      <div class="row"><span class="hint">measured image yaw</span><span class="mono" id="wcYawMeasured">—</span></div>
+      <div class="hint">coarse · 10°</div>
+      <div class="grid2" style="margin:4px 0 8px">
+        <button onclick="yawJog(-10)">coarse −10°</button>
+        <button onclick="yawJog(10)">coarse +10°</button>
+      </div>
+      <div class="hint">fine · 1°</div>
+      <div class="grid2" style="margin-top:4px">
+        <button onclick="yawJog(-1)">fine −1°</button>
+        <button onclick="yawJog(1)">fine +1°</button>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <button id="wcYawAccept" class="go">Accept current as yaw 0</button>
+        <button id="wcYawAuto" class="go">Auto-measure (ArUco)</button>
+      </div>
+      <button id="wcYawReset" style="width:100%;margin-top:6px">Reset to 0°</button>
+      <div id="wcYawStatus" class="mono hint" style="margin-top:6px">—</div>
+      <div class="hint" style="margin-top:6px">A camera-local rotation about the optical axis, stacked on the saved calibration. It never rewrites the hand-eye file: the offset lives in <span class="mono">live/camera_yaw.json</span> and is applied to every wrist camera built from measured joints.</div>
+      <div id="wcYawPath" class="mono hint" style="margin-top:4px">—</div>
+    </div>
    </div>
    <div id="pane-camera" style="display:none">
     <div class="panel"><h2>Auto</h2>
@@ -3402,6 +3635,52 @@ el('wcAuto').onclick = async () => {
   el('wcStatus').textContent = 'auto-align ' + (d.ok ? 'ok' : 'incomplete') +
     ' · tilt ' + d.tilt_before.toFixed(1) + '° → ' + d.tilt_after.toFixed(1) +
     '° in ' + d.iterations + ' moves';
+};
+
+// ---------------------------------------------------------- camera yaw panel
+function yawSigned(v){ return (v >= 0 ? '+' : '') + Number(v).toFixed(1) + '°'; }
+function renderYaw(y){
+  if (!y) return;
+  el('wcYaw').textContent = yawSigned(y.offset_deg);
+  if (y.measured_deg === null || y.measured_deg === undefined){
+    el('wcYawMeasured').textContent = '— (press Auto-measure)';
+  } else {
+    el('wcYawMeasured').textContent = yawSigned(y.measured_deg) +
+      (y.measured_stale ? ' (stale · measured at ' + yawSigned(y.measured_offset_deg) + ')' : '');
+  }
+  el('wcYawPath').textContent = 'file ' + (y.path || 'live/camera_yaw.json') +
+    (y.updated ? ' · saved ' + y.updated : ' · not saved yet');
+}
+async function yawPost(path, body){
+  const r = await post(path, body || {});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok){ el('wcYawStatus').textContent = 'yaw failed: ' + (d.detail || r.status); return null; }
+  renderYaw(d); return d;
+}
+async function yawJog(delta){
+  const d = await yawPost('/wrist/yaw', {delta_deg: delta, source: 'button'});
+  if (d) el('wcYawStatus').textContent = 'offset ' + yawSigned(d.offset_deg) +
+    ' (was ' + yawSigned(d.previous_offset_deg) + ')';
+}
+el('wcYawAccept').onclick = async () => {
+  el('wcYawStatus').textContent = 'nulling the measured yaw…';
+  const d = await yawPost('/wrist/yaw/zero');
+  if (d) el('wcYawStatus').textContent = 'yaw 0 accepted · offset ' +
+    yawSigned(d.offset_deg) + ' (was ' + yawSigned(d.previous_offset_deg) +
+    ', measured ' + yawSigned(d.measured_deg) + ')';
+};
+el('wcYawAuto').onclick = async () => {
+  el('wcYawStatus').textContent = 'measuring the board with a fresh capture…';
+  const d = await yawPost('/wrist/yaw/auto');
+  if (d) el('wcYawStatus').textContent = 'ArUco measured ' +
+    yawSigned(d.measurement.measured_deg) + ' · offset ' + yawSigned(d.offset_deg) +
+    ' (was ' + yawSigned(d.previous_offset_deg) + ') · rms ' +
+    d.measurement.rms_px + ' px · ' + d.measurement.markers.length + ' markers';
+};
+el('wcYawReset').onclick = async () => {
+  const d = await yawPost('/wrist/yaw', {offset_deg: 0, source: 'reset'});
+  if (d) el('wcYawStatus').textContent = 'offset reset to 0° (was ' +
+    yawSigned(d.previous_offset_deg) + ')';
 };
 
 // ----------------------------------------------------------------- camera tab
@@ -3912,6 +4191,7 @@ async function tick(){
     const b = s.bridge || {};
     renderJoints(b);
     renderWrist(s.wrist);
+    renderYaw(s.camera_yaw);
     el('mode').textContent = (b.mode||'?') + (b.armed ? ' · armed' : ' · disarmed');
     el('mode').className = 'badge ' + (b.mode === 'FAULT' ? 'bad' : (b.mode === 'REMOTE' ? 'ok' : ''));
     el('link').textContent = b.follower_open ? 'follower open' : (b.lelab_active ? 'teleop' : 'idle');
