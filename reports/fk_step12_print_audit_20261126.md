@@ -92,3 +92,27 @@ ssh brian@192.168.1.171 'sha256sum live/{board,live_config,wrist_calibration}.js
 ~/.local/bin/robot-arm-sim python /tmp/fk_step12_cells.py           # threshold recheck (discarded metric)
 ```
 Artifacts: `/tmp/fk_step12/{audit.json,audit_fixed.json,closing.json,mount_polarity.json,rectified_4ppmm*.png,valid_mask.png}`.
+
+## Physical measurements and root cause (Brian, 2026-11-26)
+
+Brian measured the checklist and found the real fault while doing it:
+
+- **Root cause: the wrist-to-jaw connection was loose.** Both the camera and
+  the jaw moved together relative to the wrist. The mount had been checked and
+  was tight; the joint below it was not. It has been fixed.
+- Slab 3.2 mm, **no mat** (so the playing surface is 3.2 mm above the table,
+  not the 3.7 mm used by the Phase 9/board config).
+- Items 4-8 (pitch, extent, diagonal, borders, marker edge) confirmed.
+- Item 11 (lens front to nearest jaw face along the view axis): **97 mm ±0.5**
+  — different from the 63.6 mm camera centre / 83.0 mm tip implicitly assumed
+  by the block4c mount and the current calibration.
+- Item 12 (camera centre to board plane at home): confirmed.
+- Items 9 (board edge to base frame) and 10 (board yaw) are still unknown.
+- Item 13: at wrist_roll servo 0.0 the image is slightly rotated, so a camera
+  yaw offset control is being added to the wrist calibration page.
+
+Consequence: every prior mount/board fit in this investigation was made with a
+moving camera, which explains the pose-dependent scatter that no mount, board,
+joint-offset or chain solve could explain. A full recalibration (wide-volume
+capture) is required after the yaw control lands; do not reuse any pre-fix
+calibration receipt as truth.
