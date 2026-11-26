@@ -8,6 +8,7 @@ plus a receipt.
 from __future__ import annotations
 
 import json
+import math
 import time
 from pathlib import Path
 
@@ -54,7 +55,7 @@ def main() -> int:
         if rec is None or not rec.get("markers"):
             continue
         joints = list(pose["joints"])
-        joints[4] = joints[4] + ROLL_OFFSET
+        joints[4] = joints[4] + math.radians(ROLL_OFFSET)
         item = {"name": f"{pose['name']}_r68", "joints": joints,
                 "visible": [m["id"] for m in rec["markers"]],
                 "edge_px": [m["edge_px"] for m in rec["markers"]],
