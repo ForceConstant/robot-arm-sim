@@ -259,3 +259,36 @@ Recommended: apply the −90°, re-measure the jaw depths (expect them equal) an
 new tip depth, then re-pin deliberately with `tools/repin_rig_state.py` semantics
 and run the suite to see which grasp tests move. That needs Brian's go-ahead because
 it changes a pinned physical constant, not because it is technically uncertain.
+
+## Orientation and scale after the revert: it is the render configuration
+
+Brian: in the side-by-side, IRL has the fingers on the right and the sim has them at
+the bottom, and the aspect/orientation look changed. Measured, same pose:
+
+```
+IRL capture shape            640x480 (raw bridge frame)
+env.render("wrist") shape    640x480
+marker side, Renderer 640x480     46.60 px
+marker side, Renderer 480x640     57.70 px   (portrait)
+marker side, env.render()        67-80 px   (control.image_size)
+real camera                      95.80 px
+board-origin depth   IRL 233 / 289 / 240 mm
+                     SIM 300 / 343 / 341 mm   (65-100 mm farther)
+```
+
+So three different render configurations give three different marker scales, and
+none of them lands on 95.8 px. The 47° reference FOV was fitted at *one* specific
+size and orientation (`reports/sim_vs_irl_fovfit.json`); away from that exact
+configuration the geometry drifts, and the rendered image sits at a different
+orientation from the raw sensor frame — the sensor is mounted 90° to the model
+(`scene.py`, "Portrait 480x640 is the render orientation that matches the sensor").
+
+That is what Brian is seeing: a portrait-intent camera drawn into a landscape frame.
+Nothing about it changed in the revert — the revert restored the arrangement that
+was already there; the mismatch predates today's work and was masked because the
+comparisons were only ever qualitative.
+
+Consequence: no pixel column, marker count or image comparison is meaningful until
+the render configuration (size + orientation) is pinned to the one the FOV was
+fitted at. That is a different question from the mount, which the calibration
+states correctly, and from the CAD tool, which is 90° pitched.
