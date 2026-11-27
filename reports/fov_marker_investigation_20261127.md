@@ -598,3 +598,36 @@ laser simply not drawn into frames used for detection — `AppearanceConfig.aim_
 is on by default for the sim, and drawing it only in the display overlay is the
 cleaner arrangement. Suite after the change: 298 collected, 274 passed, 22 skipped,
 2 failed (both pre-existing).
+
+## Aim laser off by default (Brian) — and the one test it changes
+
+`AppearanceConfig.aim_laser` now defaults to `False`. Verified: `AppearanceConfig()`
+returns False, the compiled model contains **0** `aim_laser` bodies, and the three
+bench poses detect the laser-free counts —
+
+```
+pose h  8 markers (was 5 with the laser drawn)
+pose a 10 (was 8)
+pose f  9 (was 7)
+```
+
+**One regression, measured rather than papered over:**
+`tests/test_hand_eye.py::test_refinement_recovers_a_perturbed_mount` passes with the
+laser on and fails with it off:
+
+```
+laser on   passes
+laser off  translation_mm 2.737  (gate <= 1.0), rotation 1.369 deg
+```
+
+Confirmed as caused by this default, not by the laser masking — the failure is
+identical with `detect_markers(ignore_laser=False)`.
+
+The gate was **not** relaxed and the test was **not** pinned to the old scene. Both
+would have hidden the change; the numbers above are the evidence for deciding.
+
+Reading: with the laser gone the render yields *more* marker detections, and the
+refinement gets worse — which suggests some of the extra detections are poor
+(grazing or edge markers) and pull the fit, rather than that the laser was helping.
+That is a solver/question for the next session, not something to settle by moving a
+threshold at 16:00 on the day it was found.

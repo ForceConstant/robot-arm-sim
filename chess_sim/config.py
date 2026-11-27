@@ -416,8 +416,15 @@ class AppearanceConfig(Config):
     shadow_softness: float = 0.02                                # key light's radius, metres: hard to soft shadows
     # Aim laser: a red ray from the jaw origin through the tip centre to the
     # board, with a yellow impact marker. Baked into the scene so it appears in
-    # every render. Brian, 2026-11-25. Set False for clean perception renders.
-    aim_laser: bool = True
+    # every render. Brian, 2026-11-25.
+    #
+    # Off by default since 2026-11-27 (Brian): the spot and streak land on top of
+    # the print and destroy the code underneath. Measured at the same joints, laser
+    # on vs off: pose h 5 vs 8 markers, a 8 vs 10, f 7 vs 9. Masking the red pixels
+    # in fiducials recovers only one or two of those, because a streak wider than a
+    # code module cannot be inpainted back. Set True only for a demo render where
+    # seeing the ray matters; never for a frame that feeds detection.
+    aim_laser: bool = False
     table_surface: str = "plain"                                 # one of TABLE_SURFACES; `table_rgb` tints it
     backdrop_tint: tuple[float, float, float] = (1.0, 1.0, 1.0)  # the room behind the table
     backdrop_brightness: float = 0.55
