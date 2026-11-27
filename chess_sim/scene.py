@@ -84,61 +84,6 @@ WRIST_CAMERA_MEASURED = CameraMountMeasured(
             -0.218268, -0.973702, -0.065290),
     fovy=32.1445)
 
-
-def measured_mount_from_calibration() -> CameraMountMeasured | None:
-    """The calibrated camera_in_tool, read at build time instead of transcribed.
-
-    The numbers above are hand-copied and were measured to sit 23.4 deg and
-    ~15 mm away from `camera_in_tool` at every pose
-    (reports/fov_marker_investigation_20261127.md).  The simulator must follow the
-    bench calibration, not the other way round, so the camera pose is taken from
-    the calibration file whenever it can be read.
-
-    Convention: MuJoCo ``xyaxes`` are the camera's +x and +y axes expressed in the
-    mounting body frame, which are the *columns* of ``camera_in_tool``'s rotation
-    (the rows are off by 23.4 deg).  Deriving it this way reproduces the
-    calibration's rotation to 0.00 deg at every test pose, leaving a constant
-    ~5 mm lateral residual that is reported rather than fitted away.
-
-    Returns None when the calibration cannot be read, so the transcription
-    remains a documented fallback instead of a crash.
-    """
-    import json
-    import math
-    from pathlib import Path
-
-    candidates = []
-    try:
-        config = json.loads((Path("live") / "live_config.json").read_text())
-        candidates.append(config.get("calibration"))
-    except (OSError, ValueError):
-        pass
-    candidates.append(".private/phase11d/calibration.json")
-    for candidate in candidates:
-        if not candidate:
-            continue
-        path = Path(candidate)
-        if not path.is_absolute():
-            path = Path(__file__).resolve().parents[1] / path
-        try:
-            data = json.loads(path.read_text())
-            fx, fy, _cx, _cy = data["intrinsics"]
-            rotation = np.asarray(data["camera_in_tool"], dtype=float)[:3, :3]
-            translation = np.asarray(data["camera_in_tool"], dtype=float)[:3, 3]
-        except (OSError, KeyError, ValueError, TypeError):
-            continue
-        fovy = math.degrees(2.0 * math.atan(240.0 / float(fy)))
-        return CameraMountMeasured(
-            pos=tuple(float(v) for v in translation),
-            xyaxes=tuple(float(v) for v in np.concatenate(
-                [rotation[:, 0], rotation[:, 1]])),
-            fovy=fovy)
-    return None
-
-
-# Derived once at import; None keeps WRIST_CAMERA_MEASURED in play.
-WRIST_CAMERA_CALIBRATED = measured_mount_from_calibration()
-
 # Wrist camera source.  "reference" is the accepted B5 arrangement frozen at
 # 37e7232 (tool_reference.py maps its tool_mount frame into the gripper body);
 # "4c" is the calibrated bench mount solved on the old tool.  Both stay
@@ -165,8 +110,6 @@ def wrist_camera_fovy() -> float:
     """
     if gripper.CUSTOM and CAMERA_SOURCE == "reference":
         return WRIST_REFERENCE_FOVY_DEG
-    if gripper.CUSTOM and WRIST_CAMERA_CALIBRATED is not None:
-        return WRIST_CAMERA_CALIBRATED.fovy
     if gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
         return WRIST_CAMERA_MEASURED.fovy
     return (WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA).fovy
@@ -542,16 +485,11 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         # that fy = 833 px implies for the landscape reference aspect: rendered
         # portrait 480x640 at the same joints, 42.0283 deg put the marker side at
         # 108.5 px where the IRL C270 measures 95.8 px.  Env override above.
-    elif gripper.CUSTOM and (WRIST_CAMERA_CALIBRATED is not None
-                             or WRIST_CAMERA_MEASURED is not None):
-        # Calibrated bench camera: already expressed in the gripping-body frame,
+    elif gripper.CUSTOM and WRIST_CAMERA_MEASURED is not None:
+        # Calibrated bench camera: already expressed in the gripper body frame,
         # which is the frame `camera_in_tool` uses.  No site transform applies.
-        # Prefer the mount read from the calibration file — the hand-copied one
-        # was 23.4 deg and ~15 mm off it at every pose
-        # (reports/fov_marker_investigation_20261127.md).
-        mount = WRIST_CAMERA_CALIBRATED or WRIST_CAMERA_MEASURED
-        pos = np.asarray(mount.pos, dtype=float)
-        xyaxes = np.asarray(mount.xyaxes, dtype=float)
+        pos = np.asarray(WRIST_CAMERA_MEASURED.pos, dtype=float)
+        xyaxes = np.asarray(WRIST_CAMERA_MEASURED.xyaxes, dtype=float)
         x_axis, y_axis = xyaxes[:3], xyaxes[3:]
     else:
         cam = WRIST_CAMERA_CUSTOM if gripper.CUSTOM else WRIST_CAMERA
