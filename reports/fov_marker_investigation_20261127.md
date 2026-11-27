@@ -360,3 +360,43 @@ I do not understand that result and am not presenting it as evidence. The next s
 is a fair comparison scene with the pieces genuinely gone (hidden geoms, not merely
 parked), verified by a segmentation check that the mat is unobstructed before any
 frame is used for a pixel comparison.
+
+## Corrections from Brian's two notes (2026-11-27, 14:50)
+
+**Note 1 — there are no pieces on the board in either view. Correct, and my
+occlusion claim was wrong.** Retracted.
+
+Two errors in that probe:
+
+- MuJoCo segmentation returns **geom** ids, not body ids. I read id 2/3 and looked up
+  *body* 2/3, which happened to be `white_pawn1`/`white_pawn2`. Looking up the geoms:
+  geom 2 is `table`, geom 3 is `board`. Every sampled marker centre was landing on
+  the mat, exactly as it should.
+- The projection also carried a y-sign slip (`v = fy*(+y)/depth` instead of the
+  project convention `v = fy*(-y)/depth`). With the sign corrected, the same 21
+  markers still resolve to table/board — i.e. **nothing is occluded**.
+
+So "parked pieces between lens and mat" is false, and the accompanying commit
+(`d7180db`) and its figure should be read as retracted.
+
+**Note 2 — the IRL looks rotated ~15° CCW by eye. Measured: it is the mat heading,
+not a camera roll.**
+
+```
+sim BOARD_TURN            +180.00 deg
+session live/board.json   -165.50 deg
+difference                 +14.50 deg
+```
+
+The mat was physically rotated this session (the earlier scan measured +21.1° from
+the stored value, then it was nudged back). The simulator keeps a fixed
+`BOARD_TURN`, so the IRL board appears rotated against the sim board by exactly that
+difference. A fair comparison needs the sim board yaw set to the session's
+registered yaw; it is not a lens or mount property.
+
+**What is still unexplained, and where it now points:** at pose h, 21 markers project
+inside the frame with nothing in front of them, yet the render detects 3 — and those
+3 are all in one row (ids 30/31/32 at board y = +70 mm). At pose a the 7 detected ids
+are likewise a subset. That pattern points at the **sim board's marker texture
+covering only part of the mat**, while the layout model assumes the full 5–36. That
+is the next thing to check, and it is an asset/texture question, not a camera one.
