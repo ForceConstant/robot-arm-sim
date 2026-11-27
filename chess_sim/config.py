@@ -594,7 +594,19 @@ def square_at(square: int | str | Square) -> Square:
 # 0 deg.  Convert an operator wrist_roll into the sim joint value with this
 # offset.  It is a frame convention only - it is not folded into calibration,
 # TIP_IN_CHAIN, the plan or any gate constant.
-WRIST_ROLL_ZERO_SIM_DEG: float = -87.21
+#
+# Re-measured 2026-11-27 against eight bench poses (live/captures_boardreg_20261127,
+# written to live/board.json), comparing the board orientation from PnP in each
+# IRL frame with the same quantity rendered through the `wrist_landscape` camera
+# at 32.1445 deg.  Best extra delta per pose was -5, -5, -10, 0, -10, -5, -10, -10
+# deg: median -7.5, spread 10, so this offset moves by the median.
+# Brian approved taking it into the baseline.
+# What it does NOT do: 3.7-10.5 deg remains at each pose's own best delta, and the
+# spread means some poses improve while others do not.  That residual is
+# pose-dependent and belongs to the chain, not to this constant - do not absorb it
+# by moving this number further.  See
+# reports/fov_marker_investigation_20261127.md.
+WRIST_ROLL_ZERO_SIM_DEG: float = -94.71
 
 
 def sim_wrist_roll(live_deg: float) -> float:

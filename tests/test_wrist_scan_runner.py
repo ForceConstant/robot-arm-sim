@@ -150,7 +150,7 @@ def test_runner_registers_and_labels_a_sim_board():
 
 
 def test_plan_pose_degrees_maps_the_sim_roll_to_the_bridge():
-    """The plan is sim joint space; the bridge wrist_roll is offset by -87.21 deg."""
+    """The plan is sim joint space; the bridge wrist_roll is offset by the measured zero."""
     from live.wrist_scan_runner import plan_pose_degrees
 
     plan = load_plan()
@@ -161,7 +161,7 @@ def test_plan_pose_degrees_maps_the_sim_roll_to_the_bridge():
         rolls.append(values[4])
         assert 0.0 <= values[5] <= 100.0, values[5]
     assert min(rolls) >= -90.5 and max(rolls) <= 90.5, rolls
-    # The vertical plan poses sit at the live zero, not at sim -87.2.
+    # The vertical plan poses sit at the live zero once the measured offset is applied.
     assert any(abs(roll) < 0.5 for roll in rolls), rolls
     assert max(rolls) > 60.0 and min(rolls) < -60.0, rolls
 

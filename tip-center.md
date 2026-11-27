@@ -110,7 +110,12 @@ Brian confirmed these by eye. Do not change them without asking.
    `R_cam = camera_in_gripper()[1] @ Rz(-90°)`, then `add_camera(..., xyaxes=...)`
    on the `so101:gripper` body. Roll +90° does **not** match.
 3. **Apply `sim_wrist_roll()` to the wrist_roll joint.** The sim roll is
-   `live_roll + WRIST_ROLL_ZERO_SIM_DEG` where the offset is **−87.21°**.
+   `live_roll + WRIST_ROLL_ZERO_SIM_DEG`. The offset was **−87.21°**; re-measured
+   2026-11-27 against eight bench poses as a median of −7.5° further, so it is now
+   **−94.71°** (Brian approved; see `reports/fov_marker_investigation_20261127.md`).
+   The same change shifted `chess_sim/assets/wrist_scan_plan.json` by −7.5° so those
+   poses stay physically identical. A 3.7–10.5° pose-dependent residual remains and
+   is *not* to be absorbed by moving this constant again.
    Skipping this rotates the rendered pose ~87° and wrecks the comparison.
 4. **Render at the measured lens, not the render default.** Use
    `fovy = 2*atan(240 / 833.014) = 32.144°` so sim pixels correspond to real
