@@ -72,7 +72,10 @@ user; the roadmap is not authorization to implement all future phases at once.
   whatever was stored. `camera_in_tool` is a hardware constant; `live/board.json`
   is a per-session measurement. Never re-fit the camera mount to absorb a board
   offset — that corrupts the hardware constant with a session artifact. Register
-  the board from images at the start of a session and leave the mount alone.
+  the board from images at the start of a session, then re-pin it with
+  `tools/repin_rig_state.py --file board.json --why "<reason>"` as a recorded
+  test step (`docs/TESTS.md` §0c; decision 2026-11-27: the board stays in the
+  pinned set and is re-pinned every session) and leave the mount alone.
   Evidence: `reports/block5r_wide3_20261127.md` (a mount re-fit over one volume
   produced a consistent ~15 mm "correction" that is board placement, and a joint
   mount+board fit still left 17 px held-out because distance trades against focal

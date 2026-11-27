@@ -128,8 +128,16 @@ in the pinned set and it refuses any run without a non-blank `--why`.
 
 - **A re-pin without a reason is a failure.** No silent re-pin, no "just update
 the number". The reason is the evidence that the change was deliberate.
-- The pinned set is read from `MANIFEST.json`, so whether `board.json` stays
-pinned per session or leaves the set is a manifest decision, not a tool edit.
+- **`board.json` stays pinned and is re-pinned every session** (decision: Brian,
+  2026-11-27). Session start order is: register the board from images →
+  `tools/repin_rig_state.py --file board.json --why "<session> board registration"`
+  → `tools/rig_state.py verify` → run. A re-registration that is not re-pinned
+  fails §T2b, which is the tripwire working as intended: a session that changed
+  where the mat sits without recording it is exactly the half-restored rig this
+  pin exists to catch.
+- The pinned set is read from `MANIFEST.json`, so the policy lives there rather
+  than in the tool. Keeping `board.json` in the set is deliberate; removing it
+  would have to be done in the manifest and the §T2b literals together.
 - Pinning is not a claim of accuracy: a board pose whose own per-view spread is
   tens of millimetres is still only as good as its spread (§3c), it is simply
   the number this session actually measured.
