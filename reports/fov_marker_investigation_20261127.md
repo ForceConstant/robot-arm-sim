@@ -558,3 +558,43 @@ depth, ~9–11° of orientation) plus the 14.5° board-heading offset: a 14.5° 
 of a ~200 mm mat moves the far edge by ~50 mm, which is enough to push a row out of
 frame. The earlier board-heading test only compared marker *counts*, which is a weak
 instrument when detection also degrades at the frame edge.
+
+## The laser was eating markers — Brian's diagnosis confirmed
+
+Marker counts at the same joints, laser drawn versus not:
+
+```
+pose      laser on        laser off
+ h        5  markers      8  markers   (+34, 35, 36)
+ a        8              10            (+19, 27)
+ f        7               9            (+11, 19)
+```
+
+So the aim laser's spot and streak sit on top of the print and destroy the code
+underneath. It is also the real cause of the "out of frame" story in the previous
+section: with the laser gone, ids 34/35/36 are detected at pose h, which means they
+**were** in frame and my projection of them (v = −f·y/z + 240) had the y sign wrong.
+That claim is retracted; the y-sign has now misled me three times in this
+investigation, which is an argument for never trusting a hand-written projection
+when a rendered image can answer the same question.
+
+### Fix applied, and its limit
+
+`chess_sim/fiducials.py` now has `laser_mask()` and `suppress_laser()`, and
+`detect_markers()` ignores the laser by default: red-dominant pixels are masked
+(measured laser mean RGB is (102, 32, 9) — strongly red but not bright, so ratios do
+the work, not a saturation threshold) and inpainted before detection.
+
+```
+pose      laser on, before   laser on, with suppression   laser off
+ h              5                     6                       8
+ a              8                     9                      10
+ f              7                     8                       9
+```
+
+It recovers one or two of the lost markers and stops there: a streak wide enough to
+cover more than one code module cannot be inpainted back. Full recovery needs the
+laser simply not drawn into frames used for detection — `AppearanceConfig.aim_laser`
+is on by default for the sim, and drawing it only in the display overlay is the
+cleaner arrangement. Suite after the change: 298 collected, 274 passed, 22 skipped,
+2 failed (both pre-existing).

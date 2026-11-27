@@ -227,14 +227,50 @@ def _detector():
 _DETECTOR = None
 
 
-def detect_markers(frame: np.ndarray) -> list[MarkerDetection]:
-    """Detect markers in one undistorted RGB frame."""
+def laser_mask(image: np.ndarray) -> np.ndarray:
+    """Saturated red pixels: the aim laser and its hot spot.
+
+    The aim laser draws a red dot and a streak on the mat.  In greyscale that
+    lands on top of a marker and destroys the code, so a marker under the spot
+    simply stops being detected - which is what happened at pose h (5 markers
+    with the laser drawn, 8 with it off).
+    """
+    # Measured on a rendered laser spot: mean RGB (102, 32, 9) over the streak -
+    # strongly red-dominant but not bright, so a saturation threshold alone misses
+    # most of it.  Ratios do the work; the absolute floor only rejects near-black.
+    rgb = np.asarray(image, dtype=np.float32)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    red = (r > 45.0) & (r > 1.6 * g) & (r > 1.8 * b) & (g < 140.0) & (b < 140.0)
+    return (red.astype(np.uint8) * 255)
+
+
+def suppress_laser(image: np.ndarray) -> np.ndarray:
+    """Replace laser pixels with surrounding content before detection.
+
+    Inpainting rather than painting them white/black: a marker's code cell may sit
+    under the spot, and a flat patch would be just as wrong as the red one.
+    """
+    mask = laser_mask(image)
+    if not mask.any():
+        return np.asarray(image)
+    mask = cv2.dilate(mask, np.ones((3, 3), np.uint8), iterations=1)
+    return cv2.inpaint(np.asarray(image), mask, 3, cv2.INPAINT_TELEA)
+
+
+def detect_markers(frame: np.ndarray, *, ignore_laser: bool = True) -> list[MarkerDetection]:
+    """Detect markers in one undistorted RGB frame.
+
+    ``ignore_laser`` removes the aim laser before detection: the spot is not part
+    of the print, and leaving it in silently hides whatever marker it lands on.
+    """
     global _DETECTOR
     if _DETECTOR is None:
         _DETECTOR = _detector()
     image = np.asarray(frame)
     if image.ndim != 3 or image.shape[2] != 3:
         raise ValueError("frame must be H x W x 3 RGB")
+    if ignore_laser:
+        image = suppress_laser(image)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     corners, ids, _ = _DETECTOR.detectMarkers(gray)
     if ids is None or len(ids) == 0:
