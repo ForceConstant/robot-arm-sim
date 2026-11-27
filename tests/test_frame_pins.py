@@ -42,7 +42,7 @@ BOARD_EXPECTED = {
 MANIFEST_HASHES = {
     "board.json": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
     "live_config.json": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8",
-    "wrist_calibration.json": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b",
+    "wrist_calibration.json": "8ccb496166c9600a20e0f8f5894dad7e292dc8f9bf3e6131d96a76e9ea5d0480",
     "mount_calibration.json": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4",
 }
 TIP_M = 0.11045                       # live/tip_frame.py -> -TIP_IN_CHAIN z

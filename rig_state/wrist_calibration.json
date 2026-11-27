@@ -2,15 +2,15 @@
   "zero_deg": 0.0,
   "min_rel_deg": -90.0,
   "max_rel_deg": 90.0,
-  "model_offset_deg": -0.09,
+  "model_offset_deg": 0.0,
   "pan_zero_deg": 0.0,
   "calibrated": true,
   "servo": {
     "ok": true,
     "joint": "wrist_roll",
-    "raw_before": 2047,
-    "old_homing_offset": 630,
-    "homing_offset": 629,
+    "raw_before": 2048,
+    "old_homing_offset": 509,
+    "homing_offset": 509,
     "range_min": 1024,
     "range_max": 3072,
     "span_deg": 90.0,
@@ -42,5 +42,5 @@
       ]
     }
   },
-  "updated": "2026-11-19T15:30:55-0500"
+  "updated": "2026-11-26T09:27:48-0500"
 }

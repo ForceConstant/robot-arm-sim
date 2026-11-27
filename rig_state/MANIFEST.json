@@ -1,7 +1,7 @@
 {
   "schema": "rig-state/1",
   "created": "2026-11-25T10:56:19-0500",
-  "note": "servo baseline pinned: P=32/I=0/D=32, take-up 3.5, settle/fault split",
+  "note": "servo baseline pinned: P=32/I=0/D=32, take-up 3.5, settle/fault split; wrist calibration re-pinned 2026-11-27 after the accepted zero of 2026-11-26T09:27",
   "files": {
     "board.json": {
       "canonical": "live/board.json",
@@ -17,8 +17,8 @@
     },
     "wrist_calibration.json": {
       "canonical": "live/wrist_calibration.json",
-      "sha256": "021bc97f14eabfb3581ae928fe31aff743ae5db90274fe91d634fb339dcc062b",
-      "bytes": 882,
+      "sha256": "8ccb496166c9600a20e0f8f5894dad7e292dc8f9bf3e6131d96a76e9ea5d0480",
+      "bytes": 880,
       "purpose": "wrist roll zero and the allowed roll window"
     },
     "mount_calibration.json": {
