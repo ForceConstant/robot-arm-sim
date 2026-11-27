@@ -479,3 +479,21 @@ residual seen on the real arm, not a mount error.
 Recommended: move `WRIST_ROLL_ZERO_SIM_DEG` by about −5° as a measured improvement,
 and treat the residual ~6° as the known pose-dependent term rather than trying to
 absorb it into the camera or the mount.
+
+### Wrist-roll delta across all eight poses
+
+Scanning the extra roll delta at every board-registration pose (residual = board
+orientation difference at the best delta):
+
+```
+pose  a   b   c   d   e   f   g   h
+best -5  -5 -10  +0 -10  -5 -10 -10   deg
+res   7.1 9.1 3.7 10.5 6.3 6.6 6.0 5.7  deg
+```
+
+Median best delta **−7.5°**, spread −10…0; residual at the best delta **3.7–10.5°**.
+So moving `WRIST_ROLL_ZERO_SIM_DEG` by about −7.5° is a real improvement on average,
+but it cannot make the comparison exact: even with each pose's own best delta there
+is 4–10° left, and the best delta itself varies by 10° across poses. That is a
+pose-dependent residual, matching the real arm's chain behaviour, and it belongs in
+the chain rather than in the camera or in this constant.
