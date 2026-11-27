@@ -35,6 +35,7 @@ import numpy as np
 
 from chess_sim import fiducials
 from chess_sim.marker_scan import MarkerLayout, marker_corners_world
+from chess_sim.projection import pnp_tool_frame, project_tool_frame
 from chess_sim.wrist_calibration import WristCalibration
 
 JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex",
@@ -88,8 +89,6 @@ def estimate(captures: Path, calibration: WristCalibration, layout_name: str,
              max_reproj_px: float = 2.5) -> dict:
     layout = layout_for(layout_name)
     allowed = set(LAYOUTS[layout_name]["ids"])
-    fx, fy, cx, cy = calibration.intrinsics
-    camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
     estimates = []
     rejected = []
     for record_path in sorted(captures.glob("*.json")):
@@ -115,27 +114,25 @@ def estimate(captures: Path, calibration: WristCalibration, layout_name: str,
                     yaw=0, marker_z=0), dtype=float)
             except (ValueError, KeyError):
                 continue
-            ok, rvec, tvec = cv2.solvePnP(
-                corners, np.asarray(detection.corners, dtype=float),
-                camera_matrix, None, flags=cv2.SOLVEPNP_IPPE)
-            if not ok:
+            # Raw captures: solve and validate through the calibrated lens, and
+            # keep the lower-residual of IPPE's two planar branches.
+            solved = pnp_tool_frame(corners,
+                                    np.asarray(detection.corners, dtype=float),
+                                    calibration)
+            if solved is None:
                 continue
-            projected, _ = cv2.projectPoints(corners, rvec, tvec, camera_matrix, None)
+            camera_from_board = solved[0]
+            camera_pts = (camera_from_board @ np.c_[corners, np.ones(len(corners))].T).T[:, :3]
+            projected = project_tool_frame(camera_pts, calibration)
             error = float(np.mean(np.linalg.norm(
                 projected.reshape(-1, 2) - np.asarray(detection.corners, float), axis=1)))
             if error > max_reproj_px:
                 rejected.append((record_path.stem, detection.marker_id, round(error, 2)))
                 continue
-            rotation, _ = cv2.Rodrigues(rvec)
-            # solvePnP is board -> OpenCV camera (+z forward, +y down); the
-            # calibrated camera is MuJoCo's (-z forward, +y up).  Compose
-            # base<-camera with board->camera after the axis flip.  Inverting
-            # the PnP transform here (the old code) made the board plane
-            # several hundred millimetres high yet left x/y plausible.
-            flip = np.diag([1.0, -1.0, -1.0])
-            camera_from_board = np.eye(4)
-            camera_from_board[:3, :3] = flip @ rotation
-            camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+            # pnp_tool_frame already returns board -> calibrated camera
+            # (-z forward, +y up).  Inverting the PnP transform here (the old
+            # code, before the flip) made the board plane several hundred
+            # millimetres high yet left x/y plausible.
             board = base_camera @ camera_from_board
             estimates.append({
                 "capture": record_path.stem,

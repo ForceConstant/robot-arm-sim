@@ -40,6 +40,7 @@ from chess_sim.env import ChessSimEnv  # noqa: E402
 from chess_sim.marker_scan import (MarkerLayout, MarkerScanPlan,  # noqa: E402
                                    PoseCoverage, board_offset, load_plan,
                                    marker_corners_world)
+from chess_sim.projection import pnp_tool_frame, project_tool_frame  # noqa: E402
 from chess_sim.product import current_layout, layout_env_config  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from scan_controller import Frame, ScanController, plan_in_degrees  # noqa: E402
@@ -192,8 +193,6 @@ def derive_candidates(frame: np.ndarray, joints_deg, calibration,
     base_camera = (offline_tool.flange_pose(
         calibration, np.radians(np.asarray(joints_deg, dtype=float)))
         @ np.asarray(calibration.camera_in_tool, dtype=float))
-    fx, fy, cx, cy = calibration.intrinsics
-    camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
     out = []
     for detection in detections:
         if not 5 <= detection.marker_id <= 36:
@@ -204,20 +203,17 @@ def derive_candidates(frame: np.ndarray, joints_deg, calibration,
                 marker_z=0), dtype=float)
         except (ValueError, KeyError):
             continue
-        ok, rvec, tvec = cv2.solvePnP(
-            corners, np.asarray(detection.corners, dtype=float),
-            camera_matrix, None, flags=cv2.SOLVEPNP_IPPE)
-        if not ok:
+        solved = pnp_tool_frame(corners,
+                                np.asarray(detection.corners, dtype=float),
+                                calibration)
+        if solved is None:
             continue
-        rotation, _ = cv2.Rodrigues(rvec)
-        # PnP is board -> OpenCV camera (+z forward, +y down); the calibrated
-        # camera frame is MuJoCo's (-z forward, +y up).  Flip and compose.
-        flip = np.diag([1.0, -1.0, -1.0])
-        camera_from_board = np.eye(4)
-        camera_from_board[:3, :3] = flip @ rotation
-        camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+        # pnp_tool_frame returns board -> calibrated camera (-z forward,
+        # +y up), the frame base_camera lives in.
+        camera_from_board = solved[0]
         board = base_camera @ camera_from_board
-        projected, _ = cv2.projectPoints(corners, rvec, tvec, camera_matrix, None)
+        camera_pts = (camera_from_board @ np.c_[corners, np.ones(len(corners))].T).T[:, :3]
+        projected = project_tool_frame(camera_pts, calibration)
         error_px = float(np.mean(np.linalg.norm(
             projected.reshape(-1, 2) - np.asarray(detection.corners, dtype=float),
             axis=1)))
@@ -263,16 +259,10 @@ def plane_fit_view(frame: np.ndarray, joints_deg, calibration,
         np.radians(np.asarray(joints_deg, dtype=float)))
     fx, fy, cx, cy = (view_calibration.fx, view_calibration.fy,
                       view_calibration.cx, view_calibration.cy)
-    camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
-    ok, rvec, tvec = cv2.solvePnP(points, pixels, camera_matrix, None,
-                                  flags=cv2.SOLVEPNP_IPPE)
-    if not ok:
+    solved = pnp_tool_frame(points, pixels, view_calibration)
+    if solved is None:
         return None
-    rotation, _ = cv2.Rodrigues(rvec)
-    flip = np.diag([1.0, -1.0, -1.0])
-    camera_from_board = np.eye(4)
-    camera_from_board[:3, :3] = flip @ rotation
-    camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+    camera_from_board = solved[0]
     board = base_camera @ camera_from_board
 
     # Refine this view's full planar pose in the calibrated (MuJoCo) camera

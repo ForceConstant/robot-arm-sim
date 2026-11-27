@@ -385,6 +385,31 @@ updated source of truth, a re-rendered contact sheet at the new commit, and
 Brian's approval recorded in the receipt. Editing a test or threshold to accept
 an unexplained revert is itself a regression.
 
+## 3c. Reprojection RMS conventions — one name per number (2026-11-27)
+
+Two different "RMS pixel error" numbers are in circulation and they differ by
+sqrt(2). Both helpers live in `chess_sim/projection.py`; use the name, not the
+formula, in receipts.
+
+| Helper | Defined as | Reports it feeds |
+| --- | --- | --- |
+| `per_axis_rms(projected, observed)` | `sqrt(mean over all 2N components of d^2)` — RMS of one coordinate error | `tools/block5r_wide_solve.py` held-out RMS |
+| `per_component_rms(projected, observed)` | `sqrt(mean over N of dx^2 + dy^2)` — RMS of the per-corner error vector | `live/app.py` `/board/derive` reprojection, `tools/calibrate_board_charuco.py`, `chess_sim/board_target.py` `rms_px` |
+
+For isotropic error `per_component_rms = sqrt(2) * per_axis_rms`, so a 2.0 px
+per-axis figure and a 2.8 px per-component figure are the same measurement.
+They are **not interchangeable**: quoting one under the other's name moves a
+number by 41% with no code change. A receipt must say which it used, and a gate
+must be written in the convention its own tool prints.
+
+**Acceptance must use the fit's own objective.** Judging a robust-loss fit with
+a plain RMS can make a better fit look worse: `tools/block3_placement_matrix.py`
+fits its per-view plane with `loss="soft_l1"` and then prints a plain RMS, so a
+down-weighted outlier still enters the headline number (see
+`reports/confidence_checklist_20261127.md`). Compare like with like — either
+score the fit with its loss, or refit with plain least squares before quoting
+an RMS. Never "fix" this by loosening the RMS gate.
+
 ## 4. Known, accepted limitations (do not re-litigate in this test)
 
 - Landing accuracy ~9 mm (frame residual) + 3–4° servo deadband; corrections

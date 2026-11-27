@@ -46,6 +46,7 @@ from wrist_scan_runner import (ScanInputs, frames_from_captured, load_inputs,
                                summarize as summarize_wrist_scan)
 from chess_sim import fiducials
 from chess_sim.board_target import Board, SQUARE_MM as BOARD_SQUARE_MM
+from chess_sim.projection import per_component_rms, pnp_tool_frame, project_tool_frame
 from chess_sim.marker_scan import (MarkerLayout, MarkerScanPlan, PoseCoverage,
                                    board_offset, load_plan, marker_corners_world)
 from chess_sim.product import current_layout
@@ -973,8 +974,6 @@ class Live:
         self._refresh_limits(state)
         values = [float(joints[name]) for name in JOINTS]
         base_camera = self.kinematics.camera_pose(values)
-        fx, fy, cx, cy = self.calibration.intrinsics
-        camera_matrix = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
         candidates = []
         for detection in detections:
             try:
@@ -986,27 +985,24 @@ class Live:
                     yaw=0, marker_z=0), dtype=float)
             except (ValueError, KeyError):
                 continue
-            ok, rvec, tvec = cv2.solvePnP(
-                corners, np.asarray(detection.corners, dtype=float),
-                camera_matrix, None, flags=cv2.SOLVEPNP_IPPE)
-            if not ok:
+            # Both IPPE branches, same calibrated lens for the fit and the
+            # residual, lower residual wins (the first branch produced a 32 deg
+            # outlier on a 10-marker view, reports/rot_scan_20261127.md).
+            solved = pnp_tool_frame(corners,
+                                    np.asarray(detection.corners, dtype=float),
+                                    self.calibration)
+            if solved is None:
                 continue
-            rotation, _ = cv2.Rodrigues(rvec)
-            # cv2.solvePnP returns board -> OpenCV camera (+z forward, +y down).
-            # The calibrated camera frame is MuJoCo's (-z forward, +y up), so
-            # flip y/z and compose base<-camera with board->camera.  The old
-            # code skipped the flip *and* inverted the transform: on the sim
-            # bench that put the board plane 641 mm above the true surface and
-            # turned yaw by 20 deg, while x/y looked deceptively plausible.
-            flip = np.diag([1.0, -1.0, -1.0])
-            camera_from_board = np.eye(4)
-            camera_from_board[:3, :3] = flip @ rotation
-            camera_from_board[:3, 3] = flip @ np.ravel(tvec)
+            # pnp_tool_frame returns board -> calibrated camera (-z forward,
+            # +y up), which is the frame base_camera lives in.  The old code
+            # skipped that flip *and* inverted the transform: on the sim bench
+            # that put the board plane 641 mm above the true surface and turned
+            # yaw by 20 deg, while x/y looked deceptively plausible.
+            camera_from_board = solved[0]
             board = base_camera @ camera_from_board
-            projected, _ = cv2.projectPoints(corners, rvec, tvec, camera_matrix, None)
-            error_px = float(np.mean(np.linalg.norm(
-                projected.reshape(-1, 2) - np.asarray(detection.corners, dtype=float),
-                axis=1)))
+            camera_pts = (camera_from_board @ np.c_[corners, np.ones(len(corners))].T).T[:, :3]
+            projected = project_tool_frame(camera_pts, self.calibration)
+            error_px = per_component_rms(projected, detection.corners)
             candidates.append({
                 "marker_id": detection.marker_id,
                 "reproj_px": round(error_px, 2),

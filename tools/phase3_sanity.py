@@ -32,6 +32,7 @@ sys.path.insert(0, str(ROOT / "live"))
 
 from chess_sim import fiducials  # noqa: E402
 from chess_sim.charuco_face import CharucoLayout  # noqa: E402
+from chess_sim.projection import FLIP, pnp_tool_frame  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from live.kinematics import ArmKinematics, frame_at  # noqa: E402
 
@@ -53,6 +54,8 @@ def median_pose(poses):
 
 def estimate_board(records, cal, kin, layout, K, dist, flip=True):
     """One board pose per capture from every marker in it."""
+    lens = {"intrinsics": (K[0, 0], K[1, 1], K[0, 2], K[1, 2]),
+            "distortion": np.asarray(dist, float).ravel()}
     poses = []
     per_view = []
     for name, joints, image in records:
@@ -67,13 +70,15 @@ def estimate_board(records, cal, kin, layout, K, dist, flip=True):
             obj = np.asarray(layout.corners_mm(d.marker_id), float) / 1000.0
             obj3 = np.column_stack([obj, np.zeros(4)]).reshape(-1, 1, 3)
             img = np.asarray(d.corners, float).reshape(-1, 1, 2)
-            ok, rvec, tvec = cv2.solvePnP(obj3, img, K, dist,
-                                          flags=cv2.SOLVEPNP_IPPE)
-            if not ok:
+            solved = pnp_tool_frame(obj3.reshape(-1, 3), img.reshape(-1, 2), lens)
+            if solved is None:
                 continue
+            # Back to the OpenCV camera frame this function composes in; the
+            # helper returns the project's flipped frame.
+            transform = solved[0]
             T = np.eye(4)
-            T[:3, :3] = cv2.Rodrigues(rvec)[0]
-            T[:3, 3] = np.ravel(tvec)
+            T[:3, :3] = FLIP @ transform[:3, :3]
+            T[:3, 3] = FLIP @ transform[:3, 3]
             poses.append(base_camera @ T)
             ids.append(int(d.marker_id))
         per_view.append({"ids": ids, "roll": round(float(joints[4]), 2)})

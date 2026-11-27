@@ -41,6 +41,7 @@ sys.path.insert(0, str(ROOT / "live"))
 
 from chess_sim import fiducials  # noqa: E402
 from chess_sim.charuco_face import CharucoLayout  # noqa: E402
+from chess_sim.projection import FLIP as CAM_FLIP, pnp_tool_frame  # noqa: E402
 from chess_sim.wrist_calibration import WristCalibration  # noqa: E402
 from live.kinematics import ArmKinematics, frame_at  # noqa: E402
 
@@ -132,15 +133,18 @@ def fk_camera_cv(views, X_mj, kin):
 
 def pnp_camera_pos(view, board):
     """PnP camera position per marker, in base metres (mean over markers)."""
+    lens = {"intrinsics": (VIEW_K[0, 0], VIEW_K[1, 1], VIEW_K[0, 2], VIEW_K[1, 2]),
+            "distortion": np.asarray(VIEW_DIST, float).ravel()}
     positions = []
     for marker_id, uv in view["obs"].items():
-        ok, rvec, tvec = cv2.solvePnP(corners3d(marker_id),
-                                      uv.reshape(-1, 1, 2), VIEW_K, VIEW_DIST,
-                                      flags=cv2.SOLVEPNP_IPPE)
-        if not ok:
+        solved = pnp_tool_frame(corners3d(marker_id), uv, lens)
+        if solved is None:
             continue
-        R = cv2.Rodrigues(rvec)[0]
-        cam_in_board = -R.T @ np.ravel(tvec)
+        # The helper returns the flipped frame; convert to the OpenCV frame
+        # this function works in before taking the camera position.
+        R = CAM_FLIP @ solved[0][:3, :3]
+        tvec = CAM_FLIP @ solved[0][:3, 3]
+        cam_in_board = -R.T @ tvec
         positions.append((board[:3, :3] @ cam_in_board) + board[:3, 3])
     return np.mean(positions, axis=0) if positions else None
 

@@ -23,6 +23,7 @@ from scipy.spatial.transform import Rotation
 
 from chess_sim import fiducials
 from chess_sim.charuco_face import CharucoLayout
+from chess_sim.projection import FLIP, pnp_tool_frame
 
 SQUARE_MM = 28.0
 JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex",
@@ -56,15 +57,23 @@ class Board:
             image_points.append(np.asarray(detection.corners, float))
         object_points = np.vstack(object_points)
         image_points = np.vstack(image_points)
-        ok, rvec, tvec = cv2.solvePnP(object_points, image_points, self.K, None,
-                                      flags=cv2.SOLVEPNP_IPPE)
-        if not ok:
+        # Every quoted board number was taken with a distortion-free solve here
+        # (the console and the p4 tools pass already-rectified frames; the sim
+        # renders have no lens), so that model is kept deliberately.  What
+        # changes is branch selection: both IPPE branches are refined and the
+        # lower-residual one wins -- taking the first produced a 32 deg outlier
+        # on a 10-marker view (reports/rot_scan_20261127.md).
+        solved = pnp_tool_frame(object_points, image_points,
+                                {"intrinsics": (self.fx, self.fy, self.cx, self.cy),
+                                 "distortion": (0.0,) * 5})
+        if solved is None:
             return None, detections
-        rvec, tvec = cv2.solvePnPRefineLM(object_points, image_points, self.K, None,
-                                          rvec, tvec)
+        transform = solved[0]
+        rotation = FLIP @ transform[:3, :3]
+        tvec = (FLIP @ transform[:3, 3]).reshape(3, 1)
+        rvec, _ = cv2.Rodrigues(rotation)
         projected, _ = cv2.projectPoints(object_points, rvec, tvec, self.K, None)
         residuals = np.linalg.norm(projected.reshape(-1, 2) - image_points, axis=1)
-        rotation, _ = cv2.Rodrigues(rvec)
         per_marker = {}
         for detection in detections:
             mask = np.array([d.marker_id for d in detections for _ in range(4)]) == detection.marker_id

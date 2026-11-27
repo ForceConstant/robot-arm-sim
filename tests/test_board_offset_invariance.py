@@ -52,6 +52,17 @@ def _board(yaw_deg: float) -> np.ndarray:
     return board
 
 
+def _turn_board(board: np.ndarray, delta_deg: float) -> np.ndarray:
+    """The same mat, physically rotated about its own origin (a new session)."""
+    turn = np.eye(4)
+    turn[:3, :3] = Rotation.from_euler("z", delta_deg, degrees=True).as_matrix()
+    return board @ turn
+
+
+def _yaw_deg(pose: np.ndarray) -> float:
+    return math.degrees(math.atan2(pose[1, 0], pose[0, 0]))
+
+
 def _recover_mount(flange_poses, board_stored, mount, board_true):
     """The mount the solver infers, per view.
 
@@ -116,3 +127,62 @@ def test_a_stale_board_both_shifts_the_mean_and_scatters_the_views():
     assert worst_stale > 5.0, f"{worst_stale:.2f} mm"
     assert mean_shift > 5.0, f"{mean_shift:.2f} mm"
     assert 0.3 < worst_stale / mean_shift < 3.0
+
+
+def test_a_session_rotation_moves_the_board_never_the_mount():
+    """Two sessions, one arm: same true mount, same flange poses, mat turned.
+
+    Session A stores the mat at yaw Y0; session B physically rotates the mat by
+    a known amount and measures it again.  Re-registering the board per session
+    must recover the *same* mount in both, and the derived board pose must
+    differ by exactly the applied rotation.  Reusing session A's board in
+    session B is the failure mode: the mount then comes back scattered and
+    rotated, which is what "the 11 deg constant follows the board" looked like
+    (reports/rot_scan_20261127.md).
+    """
+    poses = _flange_poses()
+    mount = _mount()
+    yaw_a = 184.32
+    delta = 13.07
+    board_a = _board(yaw_a)
+    board_b = _turn_board(board_a, delta)
+    assert _yaw_deg(board_b) - _yaw_deg(board_a) == pytest.approx(delta, abs=1e-9)
+    assert np.allclose(board_b[:3, 3], board_a[:3, 3]), "a turn about the origin must not translate"
+
+    mounts_a = _recover_mount(poses, board_a, mount, board_a)
+    mounts_b = _recover_mount(poses, board_b, mount, board_b)
+    for a, b in zip(mounts_a, mounts_b):
+        assert np.allclose(a, b, atol=1e-9), "same mount, two sessions"
+        assert np.allclose(a, mount, atol=1e-9)
+
+    def solved_board(board_true):
+        """The board pose the pinned-mount solve reports, per view.
+
+        Composition order is the whole point: base<-camera = FK @ mount, the
+        measured camera<-board comes from the physical setup, and the board is
+        base<-camera @ camera<-board.  The 641 mm board-plane bug was this
+        product written the other way round.
+        """
+        out = []
+        for pose in poses:
+            base_from_camera = pose @ mount
+            camera_from_board = np.linalg.inv(base_from_camera) @ board_true
+            out.append(base_from_camera @ camera_from_board)
+        return out
+
+    boards_a = solved_board(board_a)
+    boards_b = solved_board(board_b)
+    for pose_a, pose_b in zip(boards_a, boards_b):
+        applied = np.linalg.inv(pose_a) @ pose_b
+        angle = math.degrees(Rotation.from_matrix(applied[:3, :3]).magnitude())
+        assert angle == pytest.approx(delta, abs=1e-6), (
+            f"derived board turned {angle:.4f} deg, applied {delta} deg")
+        assert np.linalg.norm(applied[:3, 3]) < 1e-9
+
+    # The failure mode: session B measured, session A's board constant reused.
+    stale = _recover_mount(poses, board_a, mount, board_b)
+    worst_mm, worst_deg = _spread(stale)
+    assert worst_mm > 5.0, f"reused board scattered the mount by only {worst_mm:.2f} mm"
+    assert worst_deg > 0.5, f"reused board scattered the mount by only {worst_deg:.2f} deg"
+    shift = Rotation.from_matrix(mounts_a[0][:3, :3].T @ stale[0][:3, :3]).magnitude()
+    assert math.degrees(shift) > 5.0, "the reused board must also rotate the inferred mount"
