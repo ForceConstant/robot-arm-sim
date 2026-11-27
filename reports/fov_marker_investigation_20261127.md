@@ -400,3 +400,40 @@ inside the frame with nothing in front of them, yet the render detects 3 — and
 are likewise a subset. That pattern points at the **sim board's marker texture
 covering only part of the mat**, while the layout model assumes the full 5–36. That
 is the next thing to check, and it is an asset/texture question, not a camera one.
+
+## Pose-level comparison: the sim camera is ~100 mm too close, and 10–15° off
+
+Counting markers kept giving different answers, so this compares the *board pose*
+from PnP on each image at the same joint vector (sim rendered through
+`wrist_landscape` with `sim_wrist_roll` applied, IRL at the recorded joints):
+
+```
+pose   board orientation  sim vs irl     board depth  IRL        SIM
+ h            15.62 deg                    240.3 mm      163.6 mm
+ a             9.60 deg                    233.3 mm      143.7 mm
+ f             9.39 deg                    288.9 mm      184.0 mm
+```
+
+Two numbers, both real:
+
+1. **The ~15° Brian sees is there** — 9.4–15.6° of board orientation between the two
+   images at the same joints.
+2. **The bigger error is depth: the sim camera sits 90–105 mm closer to the board.**
+   At a fixed FOV that shrinks the visible board by roughly 40 %, which is the
+   marker-coverage gap far better than any of the explanations I tried before.
+
+Controls run:
+
+- `sim_wrist_roll` is doing its job: without it the orientation error is **93–97°**,
+  with it 9–16°. So the −87.21° offset is correct in kind and leaves a residual.
+- Matching the mat heading (session yaw instead of `BOARD_TURN`) changed counts by
+  one or two markers, not by the gap: pose h 3→4, a 7→5, f 8→8. So heading is
+  not the coverage cause either.
+- The board texture draws a marker in every light square (`FIRST_ID` upward, 32 of
+  64 squares), so the "texture covers only part of the mat" theory is dead too.
+
+What this points at: the tool frame the camera hangs from. The CAD tool is measured
+at a 90.00° pitch about the jaw-span axis, and a 90° error there is exactly the kind
+of thing that leaves a 10–15° residual after a −87.21° joint offset and shifts the
+lens ~100 mm along the approach axis. Fixing the tool mount and then re-deriving
+`sim_wrist_roll` and the mount is the ordered path; nudging the camera is not.
