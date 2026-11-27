@@ -23,3 +23,11 @@ packages = ["chess_sim", "chess_sim.labsim"]
 
 [tool.setuptools.package-data]
 chess_sim = ["assets/**/*", "calib/*.json"]
+
+[tool.pytest.ini_options]
+# Collect only the test tree.  Several tool scripts end with
+# `raise SystemExit(main())` at module level (house style for CLI entry points),
+# so a root-level `pytest` used to abort collection with INTERNALERROR as soon as
+# it reached tools/.  The launcher already scoped to tests/; this makes a bare
+# `pytest` behave the same way.
+testpaths = ["tests"]

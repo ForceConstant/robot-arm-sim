@@ -43,6 +43,66 @@ JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex",
 BOARD = None
 LAYOUT = None
 
+# The project carries points in a flipped camera frame: depth = -z and
+# v = fy*(-y)/depth.  cv2 works in the standard frame, so every crossing of the
+# boundary applies this once.  Keeping it in one place is the point: view_mount()
+# used to solve PnP *with* distortion while validate() projected without it.
+FLIP = np.diag([1.0, -1.0, -1.0])
+
+
+def camera_matrix(calibration):
+    return np.array([[calibration.intrinsics[0], 0, calibration.intrinsics[2]],
+                     [0, calibration.intrinsics[1], calibration.intrinsics[3]],
+                     [0, 0, 1]], float)
+
+
+def project_tool_frame(points, calibration):
+    """Project tool-frame points through the calibrated lens (distortion included).
+
+    Returns (N, 2) image points; points behind the camera come back as nan so a
+    caller can never silently score a mirrored projection.
+    """
+    pts = np.asarray(points, float).reshape(-1, 3)
+    pts_cv = pts @ FLIP.T
+    out = np.full((len(pts), 2), np.nan)
+    front = pts_cv[:, 2] > 1e-6
+    if front.any():
+        projected, _ = cv2.projectPoints(
+            pts_cv[front], np.zeros(3), np.zeros(3),
+            camera_matrix(calibration), np.asarray(calibration.distortion, float))
+        out[front] = projected.reshape(-1, 2)
+    return out
+
+
+def pnp_tool_frame(obj, img, calibration):
+    """Planar PnP -> (T_tool_cam, residual).  Both IPPE branches are refined and
+    the lower-residual one wins.
+
+    SOLVEPNP_IPPE returns two valid solutions for a planar target.  Taking the
+    first one produced a 32 deg outlier on a 10-marker view
+    (reports/rot_scan_20261127.md), which is exactly the kind of silent error a
+    measurement tool must not have.
+    """
+    K = camera_matrix(calibration)
+    dist = np.asarray(calibration.distortion, float)
+    ok, rvecs, tvecs, _ = cv2.solvePnPGeneric(
+        obj, img, K, dist, flags=cv2.SOLVEPNP_IPPE)
+    if not ok or len(rvecs) == 0:
+        return None
+    best = None
+    for rvec, tvec in zip(rvecs, tvecs):
+        rvec, tvec = cv2.solvePnPRefineLM(obj, img, K, dist, rvec, tvec)
+        projected, _ = cv2.projectPoints(obj, rvec, tvec, K, dist)
+        residual = float(np.sqrt(np.mean(
+            (projected.reshape(-1, 2) - np.asarray(img, float)) ** 2)))
+        if best is None or residual < best[0]:
+            best = (residual, rvec, tvec)
+    _, rvec, tvec = best
+    mount = np.eye(4)
+    mount[:3, :3] = FLIP @ Rotation.from_rotvec(np.ravel(rvec)).as_matrix()
+    mount[:3, 3] = FLIP @ np.ravel(tvec)
+    return mount, best[0]
+
 
 def load(captures: Path):
     views = []
@@ -75,10 +135,6 @@ def board_matrix():
 
 def view_mount(view, calibration, board_from_base):
     """T_flange_cam.  Returns None if PnP fails."""
-    K = np.array([[calibration.intrinsics[0], 0, calibration.intrinsics[2]],
-                  [0, calibration.intrinsics[1], calibration.intrinsics[3]],
-                  [0, 0, 1]], float)
-    dist = np.asarray(calibration.distortion, float)
     obj, img = [], []
     for det in view["detections"]:
         try:
@@ -90,15 +146,11 @@ def view_mount(view, calibration, board_from_base):
         img.extend(np.asarray(det.corners, float))
     if len(obj) < 12:
         return None
-    obj = np.asarray(obj, np.float32); img = np.asarray(img, np.float32)
-    ok, rvec, tvec = cv2.solvePnP(obj, img, K, dist, flags=cv2.SOLVEPNP_IPPE)
-    if not ok:
+    solved = pnp_tool_frame(np.asarray(obj, np.float32),
+                            np.asarray(img, np.float64), calibration)
+    if solved is None:
         return None
-    rot, _ = cv2.Rodrigues(rvec)
-    flip = np.diag([1.0, -1.0, -1.0])
-    cam_from_board = np.eye(4)
-    cam_from_board[:3, :3] = flip @ rot
-    cam_from_board[:3, 3] = flip @ np.ravel(tvec)
+    cam_from_board, _ = solved
     joints = np.radians(view["joints_deg"])
     base_from_flange = flange_pose(calibration, joints)
     base_from_cam = board_from_base @ np.linalg.inv(cam_from_board)
@@ -116,10 +168,12 @@ def average(mounts):
 
 
 def validate(views, calibration, board_from_base, mount):
-    """Reprojection RMS of the detected corners under a given mount."""
-    K = np.array([[calibration.intrinsics[0], 0, calibration.intrinsics[2]],
-                  [0, calibration.intrinsics[1], calibration.intrinsics[3]],
-                  [0, 0, 1]], float)
+    """Per-component reprojection RMS of the detected corners under a mount.
+
+    Units note: this is sqrt(mean over 2N components), so it is sqrt(2) larger
+    than a per-axis RMS.  Every number this tool prints uses this convention;
+    reports that quote a per-axis figure say so explicitly.
+    """
     out = []
     for view in views:
         obj, img = [], []
@@ -136,13 +190,7 @@ def validate(views, calibration, board_from_base, mount):
         base_from_flange = flange_pose(calibration, np.radians(view["joints_deg"]))
         cam_from_base = np.linalg.inv(base_from_flange @ mount)
         pts = (cam_from_base @ board_from_base @ np.c_[np.asarray(obj), np.ones(len(obj))].T).T[:, :3]
-        proj = []
-        for p in pts:
-            depth = -p[2]
-            if depth <= 1e-6:
-                proj.append([np.nan, np.nan]); continue
-            proj.append([K[0, 0] * p[0] / depth + K[0, 2],
-                         K[1, 1] * (-p[1]) / depth + K[1, 2]])
+        proj = project_tool_frame(pts, calibration)
         err = np.asarray(proj) - np.asarray(img, float)
         out.append(float(np.sqrt(np.nanmean(err ** 2))))
     return np.asarray(out)
