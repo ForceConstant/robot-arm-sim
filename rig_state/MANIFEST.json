@@ -5,8 +5,8 @@
   "files": {
     "board.json": {
       "canonical": "live/board.json",
-      "sha256": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
-      "bytes": 78,
+      "sha256": "434db96e8d60c7a75b61c983a5b42480898f57b26d40e448d1de25b23215c8e7",
+      "bytes": 79,
       "purpose": "board pose in the arm frame (x, y, z, yaw) - a wrong value moves every commanded square and fails silently"
     },
     "live_config.json": {

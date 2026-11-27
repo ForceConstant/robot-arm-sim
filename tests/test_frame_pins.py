@@ -34,13 +34,13 @@ RIG = ROOT / "rig_state"
 
 # --- frozen expectations (docs/TESTS.md §3 / §3b) --------------------------
 BOARD_EXPECTED = {
-    "x_mm": -27.62,
-    "y_mm": -31.63,
-    "z_mm": 432.65,
-    "yaw_deg": 184.32,
+    "x_mm": -11.50,
+    "y_mm": -37.72,
+    "z_mm": 423.77,
+    "yaw_deg": -165.50,
 }
 MANIFEST_HASHES = {
-    "board.json": "9928f253514dee0ad42914889d5a156b0eba511b5b6acd07cdbf367d471ec665",
+    "board.json": "434db96e8d60c7a75b61c983a5b42480898f57b26d40e448d1de25b23215c8e7",
     "live_config.json": "8c8303a13b17e96a27ac83c5a11af13ee7aa9231e657930ea22c63ec69b93cc8",
     "wrist_calibration.json": "8ccb496166c9600a20e0f8f5894dad7e292dc8f9bf3e6131d96a76e9ea5d0480",
     "mount_calibration.json": "70f6c51893d294fdf1512c896f5f7171694b06fce8c888e6c04b00a788b144f4",

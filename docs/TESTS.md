@@ -102,6 +102,38 @@ Notes that cost time on the first pass:
 - First-pass receipt: `reports/full_parity_20261125_firstpass.json` (sim side,
   result BLOCKED; T5/T8/T9 not run).
 
+## 0c — Rig-state pin as a test step (2026-11-27)
+
+A test run **starts by verifying the pins**: `tools/rig_state.py verify` for the
+four canonical files and `tests/test_frame_pins.py` for the committed literals
+(§T2b). A `DRIFT` line or a pin failure stops the run before any motion.
+
+The pin exists to catch **unexplained** drift. It is not a demand that
+per-session data never changes. A legitimate change — an accepted wrist zero, a
+new session board registration, a deliberate config change — is re-pinned as a
+deliberate, logged step, never by hand-editing the literal:
+
+```bash
+robot-arm-sim python tools/repin_rig_state.py \
+    --why "board registration 2026-11-27 (session mat placement)" \
+    --file board.json
+```
+
+`tools/repin_rig_state.py` copies the named canonical file into `rig_state/`,
+recomputes sha256 + bytes in `rig_state/MANIFEST.json`, rewrites the matching
+`MANIFEST_HASHES` literal (and, for `board.json`, `BOARD_EXPECTED`) in
+`tests/test_frame_pins.py`, and appends one line — UTC time, file, old → new
+hash prefix, reason — to `rig_state/PIN_LOG.md`. It only accepts names that are
+in the pinned set and it refuses any run without a non-blank `--why`.
+
+- **A re-pin without a reason is a failure.** No silent re-pin, no "just update
+the number". The reason is the evidence that the change was deliberate.
+- The pinned set is read from `MANIFEST.json`, so whether `board.json` stays
+pinned per session or leaves the set is a manifest decision, not a tool edit.
+- Pinning is not a claim of accuracy: a board pose whose own per-view spread is
+  tens of millimetres is still only as good as its spread (§3c), it is simply
+  the number this session actually measured.
+
 ## 1. Test identity and artifacts
 
 ```
