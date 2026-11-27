@@ -497,3 +497,29 @@ but it cannot make the comparison exact: even with each pose's own best delta th
 is 4–10° left, and the best delta itself varies by 10° across poses. That is a
 pose-dependent residual, matching the real arm's chain behaviour, and it belongs in
 the chain rather than in the camera or in this constant.
+
+## Comparison FOV widened to match marker size (Brian's call: move the FOV, not the camera)
+
+Measured marker-side ratio sim/IRL across the eight bench poses, with the new roll
+zero in place and `wrist_landscape` at the lens fovy (32.1445°, f = 833.0 px):
+
+```
+pose  a     b     c     d     e     f     g     h
+    1.118 1.067 1.117 1.158 1.091 1.068 1.137 1.121    median 1.118
+```
+
+Sim markers were 12 % too large. With the camera untouched, f becomes
+833.0 / 1.118 = 745.3 px → fovy = 2·atan(240/745.3) = **35.6995°**, applied to the
+landscape comparison camera only (`WRIST_COMPARISON_FOVY_DEG` in `scene.py`).
+`fovy_deg()` still reports the true lens value for product receipts, and the
+perception camera (`wrist`, 47°) is unchanged.
+
+After the change:
+
+```
+pose  a     b     c     d     e     f     g     h
+    0.995 1.011 1.000 1.035 0.973 0.953 1.018 1.094    median 1.005
+```
+
+Median now lands on 1.0 and every pose is within ±10 %. Suite: 298 collected,
+274 passed, 22 skipped, 2 failed — the two known pre-existing ones.

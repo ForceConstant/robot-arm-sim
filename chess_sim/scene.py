@@ -100,6 +100,19 @@ if CAMERA_SOURCE not in ("reference", "4c"):
 # the render orientation that matches the sensor (mounted 90 deg to the model).
 WRIST_REFERENCE_FOVY_DEG = float(os.environ.get("ROBOT_WRIST_FOVY", "47.0"))
 
+# Vertical FOV for the landscape *comparison* camera only.
+#
+# Measured 2026-11-27 against eight bench poses (live/captures_boardreg_20261127):
+# rendering `wrist_landscape` at the lens fovy (32.1445 deg, f = 833.0 px) puts the
+# markers 1.118x too large, median over the set (per-pose ratios 1.067-1.158).
+# Brian's call was to widen the FOV rather than move the camera, so f becomes
+# 833.0 / 1.118 = 745.3 px and fovy = 2*atan(240/745.3) = 35.6995 deg.
+#
+# This is a comparison-render scale correction, not a lens property: `fovy_deg()`
+# still derives the true lens value from fy for product receipts, and the
+# perception camera (`wrist`) is untouched.
+WRIST_COMPARISON_FOVY_DEG = 35.6995
+
 def wrist_camera_fovy() -> float:
     """The fovy the built model will actually carry for the wrist camera.
 
@@ -513,7 +526,7 @@ def _add_wrist_camera(spec, prefix=ARM_PREFIX, name=Camera.WRIST):
         tool_body.add_camera(
             name=str(name) + "_landscape", pos=list(pos),
             xyaxes=list(rolled[:, 0]) + list(rolled[:, 1]),
-            fovy=tool_reference.fovy_deg())
+            fovy=WRIST_COMPARISON_FOVY_DEG)
     # Orient the housing body with the camera, not the gripper body. A MuJoCo
     # camera looks down its own -z, so the box sits at +z from the lens and its
     # front face lands exactly on the image plane.
