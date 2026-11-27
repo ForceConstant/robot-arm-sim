@@ -141,3 +141,38 @@ sim wrist camera from `camera_in_tool` and the measured fovy (32.1445°), keepin
 marker size and coverage should be re-measured before any pixel axis is rebuilt —
 the earlier geometric projection suggests the far row may still be thin even with
 the correct mount, which would be a separate question about the sim board's extent.
+
+## Fix applied: the sim camera now derives from the IRL calibration (41aa8ed → this commit)
+
+Brian: the sim must take its offset **from** the IRL calibration, never the other
+way round. `chess_sim/scene.py` now reads `camera_in_tool` and the measured
+intrinsics at build time (`measured_mount_from_calibration()`) and uses that mount
+for `ROBOT_WRIST_CAMERA=4c`; the hand-copied `WRIST_CAMERA_MEASURED` stays only as a
+documented fallback when the file cannot be read. Nothing writes back to the
+calibration.
+
+Convention found by measurement, not by fitting: MuJoCo `xyaxes` are the
+**columns** of `camera_in_tool`'s rotation. Rows give a constant 17.64° error;
+columns give **0.00°** at every pose.
+
+Verification after the change, five poses:
+
+```
+camera delta vs camera_in_tool   5.0 mm / 0.00 deg  at every pose   (was 23.40 deg)
+marker side in render            95.5 – 100.7 px    (real camera 95.8 px; was 57–86)
+```
+
+So the lens and pose now agree with the bench camera. The residual is a constant
+**5 mm lateral** offset (4.9 mm along camera +x), reported rather than absorbed.
+
+## What is still wrong, and it is not the camera
+
+Coverage did **not** improve: still 0–2 markers on the sampled squares, against
+5–13 on the real camera at the same scale and the same field of view. With lens,
+scale and pose now matching, a different marker footprint means the **sim board
+face does not cover the same area as the printed mat** — a board-content question,
+independent of the camera. Candidates to check next: the rendered ChArUco face's
+extent against the 8×8 × 28 mm printed mat, and `AppearanceConfig(board_markers=False)`.
+
+Suite after the change: 298 collected, 274 passed, 22 skipped, 2 failed — the two
+known pre-existing failures, nothing new.
