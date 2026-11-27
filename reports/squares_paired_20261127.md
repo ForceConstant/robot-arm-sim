@@ -149,3 +149,32 @@ which threshold counted as solved.
 squares** (62 solved both, e8 and f8 refused both, same reason). The T4 baseline
 is 62/64 through the MoveSolver at 3.0 mm / 8 deg, not 64/64 through the LS path at
 20 mm.
+
+## T4 columns closed (option 1, second pass)
+
+`tools/phase2_squares.py` now records the two columns the legacy sim run used to
+produce, so T4 can be paired rather than only counted — with the production
+`MoveSolver` as the solver, not the least-squares path:
+
+```
+rows with an achieved pose   62 / 64   (e8, f8 have no solution to drive)
+achieved tip error, mm       p50 0.46   p95 1.10   max 1.43
+markers per rendered view    min 0      p50 5      max 8
+views with zero markers      4 : a8, d8, g8, h8
+views with <=2 markers       13
+```
+
+The achieved column is the chain-tip readback after driving the model to the
+MoveSolver's joints — the same construction the legacy column used, so T6 now has
+a like-for-like tip comparison.
+
+**Two things this exposes, both new:**
+
+1. **The sim wrist render sees nothing on 4 of 62 squares** (a8, d8, g8, h8 — all
+   row 8, the far row) and two or fewer on 13. The real wrist camera reads 1–46
+   observations per pose in the same row. A sim view with zero markers cannot
+   support any pixel comparison, and it is the same far-row region where the
+   approach gate already refuses e8/f8.
+2. Because of (1), a marker/pixel axis for T6 can only be built on the ~49 squares
+   with adequate coverage, and the 48 → 98 px anomaly cannot be attributed until
+   that subset is paired. The anomaly stays open.

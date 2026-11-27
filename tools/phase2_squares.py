@@ -76,6 +76,7 @@ def main() -> None:
     import mujoco
     from chess_sim.config import AppearanceConfig, BoardConfig, EnvConfig
     from chess_sim.env import ChessSimEnv
+    from chess_sim import fiducials
     from chess_sim.wrist_calibration import WristCalibration
     from kinematics import ArmKinematics
     from tip_frame import TIP_IN_CHAIN
@@ -130,6 +131,27 @@ def main() -> None:
                                 and not row["mink"]["pass20"])
         row["regress3"] = bool(row["least_squares"]["pass3"]
                                and not row["mink"]["pass3"])
+
+        # Achieved columns, so this run can be paired with the IRL sweep instead
+        # of only counted.  Same construction the legacy `cartesian_squares.py
+        # --backend sim` column used: drive the model to the MoveSolver's joints,
+        # read the tip through the chain->tip transform the live app uses, and
+        # count wrist-camera markers in the render.  The difference is that these
+        # numbers now come from the production solver, not the LS one.
+        achieved = None
+        markers = 0
+        if row["mink"]["pass3"]:
+            joints_mink = [row["mink"]["joints"][j] for j in JOINTS]
+            data.qpos[env._joint_qpos] = np.radians(joints_mink)
+            mujoco.mj_forward(model, data)
+            tip = chain.fk(joints_mink) @ TIP_IN_CHAIN
+            achieved = [round(float(v), 1)
+                        for v in (chain.to_board(tip[:3, 3]) * 1000.0)]
+            image = env.render("wrist")
+            markers = len([d for d in fiducials.detect_markers(image)
+                           if 5 <= d.marker_id <= 36])
+        row["achieved"] = achieved
+        row["markers"] = markers
         rows.append(row)
         # Seed the next square from where the incumbent (/move today) left the
         # arm, so neither column gets a warm start from its own answer.
