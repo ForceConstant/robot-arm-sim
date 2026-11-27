@@ -523,3 +523,38 @@ pose  a     b     c     d     e     f     g     h
 
 Median now lands on 1.0 and every pose is within ±10 %. Suite: 298 collected,
 274 passed, 22 skipped, 2 failed — the two known pre-existing ones.
+
+## Pose h, with the detections drawn: the misses are out of frame
+
+`reports/poseh_markers_20261127.jpg` outlines and numbers every detected marker in
+both frames.
+
+```
+IRL 12: 23,25,26,27,28,29,30,31,33,34,35,36
+SIM  5: 28,29,30,31,32
+only IRL: 23,25,26,27,33,34,35,36        only SIM: 32
+```
+
+Board positions of the disputed ids, and where the sim camera puts their centres:
+
+```
+id 23  y  14 mm   pixel ( 126,  88)  inside
+id 25  y  42 mm   pixel ( -67,  50)  OUT (left)
+id 26  y  42 mm   pixel (  14,  52)  OUT (clipped)
+id 27  y  42 mm   pixel (  88,  53)  inside  (not detected)
+id 33  y  98 mm   pixel ( -76, -28)  OUT (above)
+id 34  y  98 mm   pixel (   6, -22)  OUT (above)
+id 35  y  98 mm   pixel (  81, -17)  OUT (above)
+id 36  y  98 mm   pixel ( 148, -13)  OUT (above)
+```
+
+So the y = 98 mm row sits **above the top edge** in the sim frame and several
+left-hand markers fall off the left edge: the sim camera is pointed at a different
+part of the mat, not failing to detect what it sees. Only id 27 is genuinely inside
+and undetected.
+
+That is consistent with the residual pose difference measured earlier (8–16 mm in
+depth, ~9–11° of orientation) plus the 14.5° board-heading offset: a 14.5° rotation
+of a ~200 mm mat moves the far edge by ~50 mm, which is enough to push a row out of
+frame. The earlier board-heading test only compared marker *counts*, which is a weak
+instrument when detection also degrades at the frame edge.
