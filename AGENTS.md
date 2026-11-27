@@ -66,6 +66,18 @@ user; the roadmap is not authorization to implement all future phases at once.
   move and capture families separately and may retain scripted control. The
   private corpus and checkpoints stay under `.private/phase11b/`.
 
+- **Board placement is a per-session input, never a calibration constant (Brian,
+  2026-11-27).** In real life the mat is put down by hand, so its position and
+  yaw differ every session and there will always be a constant offset relative to
+  whatever was stored. `camera_in_tool` is a hardware constant; `live/board.json`
+  is a per-session measurement. Never re-fit the camera mount to absorb a board
+  offset — that corrupts the hardware constant with a session artifact. Register
+  the board from images at the start of a session and leave the mount alone.
+  Evidence: `reports/block5r_wide3_20261127.md` (a mount re-fit over one volume
+  produced a consistent ~15 mm "correction" that is board placement, and a joint
+  mount+board fit still left 17 px held-out because distance trades against focal
+  length).
+
 - Current interactive layout: `hardware/current_layout.json` / `docs/LAYOUT_OPTIMIZATION.md`
   (one follower via `ROBOT_ARM_COUNT=1`, 90 mm board-edge-to-base-frame gap,
   extended base with a 462.4 mm frame datum so its bottom is coplanar with the
