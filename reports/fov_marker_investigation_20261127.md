@@ -176,3 +176,34 @@ extent against the 8×8 × 28 mm printed mat, and `AppearanceConfig(board_marker
 
 Suite after the change: 298 collected, 274 passed, 22 skipped, 2 failed — the two
 known pre-existing failures, nothing new.
+
+## Jaw-vs-camera check (Brian: rotate the jaw, not the camera)
+
+Measured in the model at one pose:
+
+```
+camera vs camera_in_tool          0.00 deg (unchanged, every pose)
+jaw span vs gripper-site +x       90.0 deg
+jaw span vs gripper-site +y       70.0 deg
+jaw span vs gripper-site +z       20.0 deg     <- +z is the documented jaw-span axis
+jaw bodies midpoint, site frame   (-56.0, 0.0, 0.0) mm
+jaw span in the camera frame      (-0.728, 0.497, 0.473) -> 43.3 deg off image x
+```
+
+So the CAD jaws sit **20° off the axis their own documentation names as the jaw
+span**, and the span lands diagonally in the camera frame. That is a jaw-versus-
+camera error of the kind Brian described, but the magnitude in this measurement is
+20°, not 90°.
+
+Consequence for where the fix belongs: **not** the camera. The camera now matches
+the bench calibration exactly and must stay that way. The correction belongs in the
+tool model — a yaw about the approach axis applied to the CAD tool mount
+(`tool_frames.MOUNT_QUAT`, or the jaw bodies' placement), set from the real images
+rather than from the CAD.
+
+What is missing to set it: the *sign and size* of the jaw yaw that the real images
+require. I cannot read that off the render myself — review images are delivery only
+in this setup — so the panel (`reports/sim_roll_options_20261127.jpg`) is the
+measurement channel: whichever rotation of the render matches the real fingertips
+gives the number, and it then goes into the tool mount as a constant, with the
+camera untouched.
