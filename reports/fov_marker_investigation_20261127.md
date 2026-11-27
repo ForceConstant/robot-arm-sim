@@ -292,3 +292,40 @@ Consequence: no pixel column, marker count or image comparison is meaningful unt
 the render configuration (size + orientation) is pinned to the one the FOV was
 fitted at. That is a different question from the mount, which the calibration
 states correctly, and from the CAD tool, which is 90° pitched.
+
+## The comparison camera already existed (tip-center.md §3) — I was using the wrong one
+
+Brian pointed at `tip-center.md`. That document, confirmed by eye on 2026-11-24 and
+marked "do not change without asking", states the conventions:
+
+1. **Compare in landscape** — IRL frames as captured, 640×480, no rotation.
+2. **The sim comparison camera is rolled −90°** about its optical axis, because the
+   real C270 is mounted 90° to the model (i.e. the sensor is portrait, 480×640).
+3. **Apply `sim_wrist_roll()`** — sim roll = live roll + **−87.21°**.
+4. **Render at the measured lens**, fovy 32.144°; `WRIST_REFERENCE_FOVY_DEG = 47.0`
+   is a scale fudge and "must not be used when comparing pixels".
+
+`chess_sim/scene.py` already implements (2) as the **`wrist_landscape`** camera —
+reference mount rolled −90°, `tool_reference.fovy_deg()`, added explicitly "for
+sim-vs-IRL pixel comparison". And `tools/full_parity_sample_images.py` already uses
+it by default.
+
+Every comparison I produced today rendered **`wrist`** — the 47° perception camera
+without the roll. That is the whole explanation for "fingers at the bottom instead
+of the right" and for the 25–35% scale error. Not a new bug, not the revert: I used
+the wrong camera.
+
+Measured with the documented camera and `sim_wrist_roll` applied:
+
+```
+pose   IRL markers / side      SIM markers / side
+ a      9 / 68.58 px            7 / 76.39 px     (+11 % size)
+ f     10 / 55.92 px            8 / 59.63 px     (+7 %)
+ h     12 / 60.21 px            3 / 73.01 px     (+21 %, coverage poor)
+```
+
+Within-pose marker size now agrees to 7–21 % instead of 25–35 %, and counts are
+close at a and f. Pose h still loses most markers — the remaining coverage question,
+unchanged by any camera choice.
+
+Panel: `reports/sim_vs_irl_landscape_20261127.jpg` (IRL above SIM, three poses).
