@@ -207,3 +207,55 @@ in this setup — so the panel (`reports/sim_roll_options_20261127.jpg`) is the
 measurement channel: whichever rotation of the render matches the real fingertips
 gives the number, and it then goes into the tool mount as a constant, with the
 camera untouched.
+
+## Root cause found: the CAD tool is pitched 90° about the jaw-span axis
+
+Brian: "if you have the jaws open like IRL you should see the 2 fingers, not the one
+side." Measured in the model, at one pose:
+
+```
+chain flange vs so101:gripper          dT  5.0 mm   dR   0.00 deg   <- camera_in_tool's frame
+chain flange vs so101:wrist            dT 61.9 mm   dR 178.03 deg
+chain flange vs so101:cad:parallel_base dT 70.3 mm  dR  90.00 deg   <- the CAD tool
+CAD base relative to the flange: 90.00 deg about flange -z, translation (14.0, 23.6, -64.7) mm
+```
+
+And where the jaws actually sit in the calibrated camera frame:
+
+```
+jaw left    camera mm ( 64.9, -27.7, -95.3)   depth 95.3 mm
+jaw right   camera mm (-14.1,  26.2, -43.9)   depth 43.9 mm
+```
+
+The two fingers are **51 mm apart in depth** and on opposite sides laterally. One is
+in front of the other, which is exactly why the render shows one finger side-on
+instead of two jaws side by side. That is not an image roll — rotating the render
+(0/90/180) cannot fix it, which is why none of the four options looked close.
+
+The cause is a **90.00° pitch of the CAD tool mount about the jaw-span axis**
+relative to the calibrated flange. The camera is correct (0.00° against
+`camera_in_tool`, and that mount lives in the gripper body frame, which the flap
+above confirms is the calibration's frame to 5 mm / 0.00°). **The tool model is
+wrong, exactly as Brian described.**
+
+### Where the fix goes, and its blast radius
+
+The correction is in the CAD mount — `tool_frames.MOUNT_QUAT`
+(`(0.707107, 0.0, 0.0, -0.707107)`, itself a 90° rotation) or the jaw placement in
+`cad_tool.install`. A −90° correction about the jaw-span axis should put the jaws
+side by side at equal depth.
+
+This is not a safe one-liner to slip in. Both are pinned:
+
+- `tests/test_frame_pins.py` pins `MOUNT_POS_MM`, `MOUNT_QUAT`, `TIP_M` and
+  `TIP_DEPTH_MM` (110.450 mm measured over every jaw vertex).
+- Rotating the tool by 90° about the jaw-span axis will move the deepest jaw vertex,
+  so `TIP_DEPTH_MM` and every grasp/pinch test that leans on it will change.
+- `chess_sim/tool_frames.py` documents the chain with "what the chain has to
+  produce" bboxes, so the rotation has to be reconciled with that description, not
+  simply overwritten.
+
+Recommended: apply the −90°, re-measure the jaw depths (expect them equal) and the
+new tip depth, then re-pin deliberately with `tools/repin_rig_state.py` semantics
+and run the suite to see which grasp tests move. That needs Brian's go-ahead because
+it changes a pinned physical constant, not because it is technically uncertain.
