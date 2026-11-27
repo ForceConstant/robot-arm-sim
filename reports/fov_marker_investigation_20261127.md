@@ -329,3 +329,34 @@ close at a and f. Pose h still loses most markers — the remaining coverage que
 unchanged by any camera choice.
 
 Panel: `reports/sim_vs_irl_landscape_20261127.jpg` (IRL above SIM, three poses).
+
+## Pose h explained: the parked pieces occlude the mat
+
+Segmentation at pose h (`wrist_landscape`, `sim_wrist_roll` applied), sampling the
+centre of every marker whose corners project inside the 640×480 frame:
+
+```
+17 markers project inside the frame: 6,7,8,11,12,14,15,16,19,20,22,23,24,27,28,31,32
+0 of them show background at their centre
+all 17 are covered by body id 2 or 3
+body 2 = white_pawn1, body 3 = white_pawn2
+```
+
+The pieces absent from the position are parked in a grid 60 mm off the board's right
+edge (`BoardConfig.graveyard_gap = 0.06`) and measured at x = 0.18–0.29 m against a
+board half-width of ~0.11 m. At pose h that parked strip sits **between the lens and
+the mat**, so most markers are physically behind a pawn.
+
+The bench captures were taken on a clear mat, so the comparison was never
+like-for-like. This is the whole of "pose h loses markers", and likely most of the
+earlier far-row losses too — not the camera, not the board texture.
+
+### An attempt that did not work, recorded rather than hidden
+
+Re-running with `graveyard_gap=0.55` (pieces parked 0.55 m away) returned **2 markers
+at every pose with an identical 66.8 px side**, which is implausible for three
+different joint vectors and contradicts the earlier 7/8/3 result on the same camera.
+I do not understand that result and am not presenting it as evidence. The next step
+is a fair comparison scene with the pieces genuinely gone (hidden geoms, not merely
+parked), verified by a segmentation check that the mat is unobstructed before any
+frame is used for a pixel comparison.
