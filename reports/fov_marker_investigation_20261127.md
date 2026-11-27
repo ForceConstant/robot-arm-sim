@@ -631,3 +631,31 @@ refinement gets worse — which suggests some of the extra detections are poor
 (grazing or edge markers) and pull the fit, rather than that the laser was helping.
 That is a solver/question for the next session, not something to settle by moving a
 threshold at 16:00 on the day it was found.
+
+## The hand-eye regression was a duplicate marker id — fixed
+
+Reproduced outside pytest: laser on → refinement error 0.255 mm / 0.061°, laser off
+→ 2.737 mm / 1.369°, with 8 observations either way. Logging every detection call
+during the test showed frames decoding the **same id twice**, e.g.
+
+```
+laser on   [5, 6, 7, 11, 13, 17, 17, 18]
+laser off  [5, 6, 7, 9, 11, 13, 17, 17, 18]   and one more view with 12 ids vs 10
+```
+
+Both copies were returned and both fed `refine_hand_eye`, so one spurious quad
+dragged the solve. The laser had been hiding enough of the scene that the duplicate
+never appeared in that test.
+
+`detect_markers` now keeps **one detection per id — the largest quad** (`_one_per_id`):
+a duplicated read is almost always the smaller, clipped or blurred copy. Result:
+
+```
+test_hand_eye::test_refinement_recovers_a_perturbed_mount   passes
+suite                                                      298 collected,
+                                                           274 passed, 22 skipped,
+                                                           2 failed (both pre-existing)
+```
+
+So the laser-off default is back to being a clean win: more markers on the bench
+poses, no duplicate-id corruption, and the gate untouched at 1.0 mm.

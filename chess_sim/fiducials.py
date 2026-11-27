@@ -289,7 +289,29 @@ def detect_markers(frame: np.ndarray, *, ignore_laser: bool = True) -> list[Mark
             continue
         found.append(MarkerDetection(int(marker_id),
                                      np.asarray(quad, dtype=np.float64).reshape(4, 2)))
-    return found
+    return _one_per_id(found)
+
+
+def _one_per_id(detections: list[MarkerDetection]) -> list[MarkerDetection]:
+    """Keep one detection per id, the largest quad.
+
+    A frame can decode the same id twice - a partial or blurred copy of a marker
+    beside the real one.  Both used to be returned, and both fed the solver: at
+    the hand-eye test a duplicate id 17 carried the refinement from 0.26 mm to
+    2.74 mm once the aim laser stopped hiding part of the scene
+    (reports/fov_marker_investigation_20261127.md).
+
+    The larger quad is kept: a duplicated read is almost always the smaller,
+    clipped or blurred copy.
+    """
+    best: dict[int, tuple[float, MarkerDetection]] = {}
+    for detection in detections:
+        quad = np.asarray(detection.corners, dtype=np.float64).reshape(-1, 2)
+        area = abs(float(cv2.contourArea(quad.astype(np.float32))))
+        current = best.get(detection.marker_id)
+        if current is None or area > current[0]:
+            best[detection.marker_id] = (area, detection)
+    return [best[key][1] for key in sorted(best)]
 
 
 def _project(pose, calibration: CameraCalibration, points: np.ndarray,
