@@ -112,3 +112,40 @@ recorded in the receipt; none is silently dropped.
 `tools/rig_state.py verify` after ~450 commanded legs: **MATCHES the manifest**
 (no DRIFT on any of the four files). Arm homed and left there; gripper held at
 its measured value (50.38) and never actuated.
+
+## Gate alignment (Brian's option 1) — the 62/64 was the gate, not the arm
+
+Aligning the two columns exposed the real cause, and it is not the solver's
+quality: **the T4 column was quoting a different solver.**
+
+`tools/cartesian_squares.py --backend sim` solves with the legacy
+`ArmKinematics.solve_tip` least-squares path and gates it at a hard-coded 20 mm.
+`tools/phase2_squares.py` runs the **real `MoveSolver`** — the object `/move`
+uses, and the one the IRL column uses — and reports both gates.
+
+Re-running the sim column through the MoveSolver (`reports/phase2_squares_20261127.json`):
+
+```
+20 mm gate:  LS 64/64   mink 62/64
+ 3 mm gate:  LS 15/64   mink 62/64
+mink residual: median 0.48 mm, max 1.50 mm, max approach 15.55 deg
+LS  residual: median 3.85 mm, max 19.90 mm, median solve 1858 ms vs 1.4 ms
+```
+
+So at the same solver and the same 3.0 mm / 8 deg gates, sim and IRL **fail the
+same two squares for the same reason**:
+
+| square | sim (mink) | IRL pre-check |
+| --- | --- | --- |
+| e8 | 1.49 mm **/** 15.55 deg | position pass, **approach 10.9 deg > 8** |
+| f8 | 1.32 mm **/** 14.02 deg | position pass, **approach 9.1 deg > 8** |
+
+The legacy LS column gives 19.90 / 17.90 mm on those squares — which is why the
+old 20 mm gate accepted them and the pair read as 62/64 "disagreement". It was
+never a disagreement about the arm; it was a disagreement about which solver and
+which threshold counted as solved.
+
+**Corrected T4/T6 numbers:** sim 62/64 and IRL 62/64, agreement **64/64 across all
+squares** (62 solved both, e8 and f8 refused both, same reason). The T4 baseline
+is 62/64 through the MoveSolver at 3.0 mm / 8 deg, not 64/64 through the LS path at
+20 mm.

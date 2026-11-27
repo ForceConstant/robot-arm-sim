@@ -256,12 +256,22 @@ but NOT sufficient — T8 still reviews the pictures.
 
 ### T4 — Sim-side functional sweep (sim, scripted)
 
-- `tools/cartesian_squares.py --backend sim` (and `phase2_squares.py` through
-  the real `MoveSolver` wiring) over the identical 64-square target list with
-  the configured solver and `--bridge-limits` from the Pi (honest servo ranges).
-- **Baseline:** 64/64 squares, solver gate 3.0 mm, mink. Note the documented
-  ~19 mm FK-vs-image model bias is invisible inside FK and neither column can
-  remove it — it is a known, recorded constant, not a new drift.
+- **The sim column is `tools/phase2_squares.py`** — the real `MoveSolver` wiring
+  (`live/solver.MoveSolver`, the object `/move` uses) over the identical
+  64-square target list with the configured solver and `--bridge-limits` from the
+  Pi (honest servo ranges), judged at **3.0 mm position / 8° approach**: the same
+  gates the IRL column uses.
+- `tools/cartesian_squares.py --backend sim` is the **legacy least-squares** path
+  (median residual 3.85 mm, max 19.9 mm, ~1.9 s per solve, against the
+  MoveSolver's 0.48 mm / 1.5 mm / 1.4 ms). It is not parity-comparable at a 3 mm
+  gate (15/64) and its old hard-coded 20 mm gate made it read as 64/64. Do not
+  quote it as T4; a paired comparison needs one solver and one gate on both sides.
+- **Baseline (2026-11-27, `reports/phase2_squares_20261127.json`):** MoveSolver
+  **62/64** at both 20 mm and 3.0 mm; the two failures are e8 and f8 on the 8°
+  approach gate (1.49 mm / 15.55° and 1.32 mm / 14.02°), which the IRL column
+  refuses for the same reason (10.9° / 9.1°). Note the documented ~19 mm
+  FK-vs-image model bias is invisible inside FK and neither column can remove it —
+  it is a known, recorded constant, not a new drift.
 - **Pass:** square count and error distribution match baseline within §5 gates.
 
 ### T5 — IRL functional sweep (real arm, paired with T4)
