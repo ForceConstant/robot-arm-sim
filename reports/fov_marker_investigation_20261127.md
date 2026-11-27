@@ -94,3 +94,50 @@ perspective — which is exactly what a pixel column built on it would disagree 
 Nothing was changed here: no scene edit, no FOV change, no `camera_in_tool` edit.
 Probes ran on the BC-250; the numbers above are from
 `reports/phase2_squares_20261127.json` plus the two probe scripts.
+
+## Direct readout: the sim camera vs the calibrated mount (no markers, no fitting)
+
+In the simulator the camera is a rigid body, so its pose can be read straight from
+MuJoCo (`data.cam_xpos`, `data.cam_xmat`) and compared with
+`chain.fk(q) @ camera_in_tool` at the same joint vector. Five very different poses:
+
+```
+                     flange delta      camera delta
+ pose                dT mm    dR deg    dT mm   dR deg
+ [0,-50,45,70,0]      61.9   178.03      16.3    23.40
+ [-20,-60,40,80,0]    62.1   178.03      17.6    23.40
+ [20,-40,30,60,0]     60.5   178.03      14.3    23.40
+ [0,-70,60,90,0]      63.1   178.03      16.5    23.40
+ [-12,-13,5,95,0]     64.0   178.03      17.4    23.40
+```
+
+Two constants, and the pair settles it:
+
+- **Flange: 178.03° and ~62 mm, identical at every pose.** That is a frame
+  convention — the MJCF `so101:wrist` body frame versus the calibration chain's
+  flange frame — not an error.
+- **Camera: 23.40° and 14–18 mm, also constant.** Once the flange convention is
+  factored out, the sim camera and the calibrated mount differ by a **fixed**
+  transform.
+
+A constant transform means this is **not** a physics, pose or FOV problem at all.
+`chess_sim/scene.py` carries `WRIST_CAMERA_MEASURED` as hand-transcribed numbers
+(`pos`, `xyaxes`, `fovy`) rather than building the camera from
+`calibration.camera_in_tool`; those numbers disagree with the calibration by
+~23° and ~15 mm. The `reference` source (47°) is a second, further reconstruction,
+which is why its marker sizes (68 px) and the 4c ones (98 px) bracket the real
+95.8 px.
+
+## Answering the original question
+
+Yes — on the real arm, several poses plus marker PnP give the camera-versus-arm
+relation, and that is exactly how `handeye-2026-11-18T11-block4c` was made (per-view
+PnP 0.70 px). In the simulator the same relation needs no images at all: it is read
+from the model, and it disagrees with the calibration by a constant 23.4° / 15 mm.
+
+**Therefore the fix is one line of construction, not a calibration:** build the
+sim wrist camera from `camera_in_tool` and the measured fovy (32.1445°), keeping
+`scene.py`'s hand-written numbers only as a documented fallback. After that the
+marker size and coverage should be re-measured before any pixel axis is rebuilt —
+the earlier geometric projection suggests the far row may still be thin even with
+the correct mount, which would be a separate question about the sim board's extent.
