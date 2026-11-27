@@ -437,3 +437,45 @@ at a 90.00° pitch about the jaw-span axis, and a 90° error there is exactly th
 of thing that leaves a 10–15° residual after a −87.21° joint offset and shifts the
 lens ~100 mm along the approach axis. Fixing the tool mount and then re-deriving
 `sim_wrist_roll` and the mount is the ordered path; nudging the camera is not.
+
+## Correcting the depth claim, and the rotation is a wrist offset (Brian's notes)
+
+**Note 2 — camera position error should be under 10 mm. Largely right; my 90–105 mm
+figure was my own error.**
+
+I ran the sim PnP with **f = 551.94 px** (the 47° reference lens) while rendering
+through `wrist_landscape`, which is the **32.144°** measured lens → f = **833.0 px**.
+A factor-1.51 focal error scales every recovered depth by the same 1.51. With the
+correct intrinsics:
+
+```
+pose   depth IRL   depth SIM   error
+ h      240.3 mm    232.5 mm    7.8 mm
+ a      233.3 mm    216.9 mm   16.4 mm
+ f      288.9 mm    277.7 mm   11.2 mm
+```
+
+So the position error is **8–16 mm**, not ~100 mm. Two poses sit slightly over the
+10 mm figure, which is consistent with the pose-dependent residual already measured
+on the real arm rather than with a mount mistake.
+
+**Note 1 — any rotation difference is at the wrist. Confirmed, and it is small.**
+
+Scanning an extra roll delta on top of `sim_wrist_roll` (−87.21°) against the board
+orientation from PnP:
+
+```
+pose   best delta   residual
+ h        -10 deg     5.74 deg
+ a         -5 deg     7.06 deg
+ f         -5 deg     6.62 deg
+```
+
+So the current roll offset is ~5–10° from what the images want, and even at the best
+delta about 6° remains — **pose-dependently** (h wants −10, a and f want −5). A
+single constant cannot remove the remainder; it is the same pose-dependent chain
+residual seen on the real arm, not a mount error.
+
+Recommended: move `WRIST_ROLL_ZERO_SIM_DEG` by about −5° as a measured improvement,
+and treat the residual ~6° as the known pose-dependent term rather than trying to
+absorb it into the camera or the mount.
