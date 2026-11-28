@@ -1,0 +1,476 @@
+{
+ "test_id": "FULL-PARITY-01",
+ "date": "2026-11-27T18:11-05:00",
+ "run_label": "receipt refresh (T4/T5/T6/T7) at c260e86",
+ "head": "c260e86cdf72971427f461e4fb40b654399a1197",
+ "head_short": "c260e86",
+ "host": "cachyos-x8664 / CachyOS, kernel 7.3.4-1.2-bc250-test",
+ "tree": "/home/brian/robot-arm-sim",
+ "dirty_tracked": [],
+ "note_stash": "chess_sim/fiducials.py had an uncommitted copy of the c260e86 change; stashed as stash@{0} ('parity rerun 20261127: local fiducials one-per-id'). Stashed blob is byte-identical to HEAD:chess_sim/fiducials.py (0-line diff), so it was not popped.",
+ "env": {
+  "ROBOT_GRIPPER": "cad_parallel",
+  "ROBOT_GRIPPER_ASSETS": ".private/gripper-assets-5y",
+  "ROBOT_PIECE_SET": "printed",
+  "ROBOT_PIECE_ASSETS": ".private/piece-assets-v9-brian-parallel-knight"
+ },
+ "rig_state": {
+  "verify_before": "MATCHES the manifest",
+  "verify_after": "MATCHES the manifest",
+  "files_ok": [
+   "live/board.json",
+   "live/live_config.json",
+   "live/wrist_calibration.json",
+   ".private/phase11d/calibration.json"
+  ]
+ },
+ "board": {
+  "x_mm": -11.5,
+  "y_mm": -37.72,
+  "z_mm": 423.77,
+  "yaw_deg": -165.5,
+  "provenance": "re-pinned 2026-11-27, PIN_LOG.md 2026-11-27T15:31:35Z, sha 434db96e8d"
+ },
+ "solver": {
+  "ik_solver": "mink",
+  "move_tolerance_mm": 3.0,
+  "gate_deg": 8.0,
+  "tip_in_chain_m": [
+   0.0,
+   0.0,
+   -0.11045
+  ]
+ },
+ "home": {
+  "command": "tools/home_arm.py --reason 'FULL-PARITY-01 T5 start 2026-11-27'",
+  "before_tip_mm": [
+   18.4,
+   -22.6,
+   120.4
+  ],
+  "before_lateral_mm": 29.1,
+  "after_tip_mm": [
+   18.4,
+   -22.6,
+   120.4
+  ],
+  "after_lateral_mm": 29.1,
+  "joints_deg": {
+   "shoulder_pan": -12.57,
+   "shoulder_lift": -12.88,
+   "elbow_flex": 6.29,
+   "wrist_flex": 98.07,
+   "wrist_roll": 0.0
+  },
+  "recovery_joints_deg": {
+   "shoulder_pan": -12.37,
+   "shoulder_lift": -13.02,
+   "elbow_flex": 4.8,
+   "wrist_flex": 98.34,
+   "wrist_roll": 0.0
+  },
+  "note": "already at the stored pose; /recover executed one 1.49 deg leg. Tip is 29.1 mm from board centre in BOARD coordinates - the 2026-11-27 board pose, not a different arm pose. Above the ~15 mm invariant; reported, not adjusted (board.json untouched)."
+ },
+ "steps": {
+  "T4": {
+   "tool": "tools/phase2_squares.py",
+   "command": "~/.local/bin/robot-arm-sim python tools/phase2_squares.py --out reports/phase2_squares_20261127b.json",
+   "status": "PASS (count and distribution unchanged vs baseline)",
+   "squares": 64,
+   "mink_pass_20": 62,
+   "mink_pass_3": 62,
+   "ls_pass_20": 64,
+   "ls_pass_3": 15,
+   "mink_regress3": 0,
+   "mink_residual_mm": {
+    "median": 0.48,
+    "max": 1.5
+   },
+   "mink_ms": {
+    "median": 1.4,
+    "max": 265.7
+   },
+   "achieved_tip_err_mm": {
+    "n": 62,
+    "p50": 0.46,
+    "p95": 1.09,
+    "max": 1.43,
+    "mean": 0.53
+   },
+   "baseline_achieved_tip_err_mm": {
+    "p50": 0.46,
+    "p95": 1.1,
+    "max": 1.43
+   },
+   "per_square_achieved_delta_vs_baseline_mm": {
+    "max": 0.0,
+    "squares_over_0_5mm": []
+   },
+   "failures": [
+    {
+     "square": "e8",
+     "residual_mm": 1.49,
+     "approach_deg": 15.547,
+     "reason": "approach > 8 deg gate"
+    },
+    {
+     "square": "f8",
+     "residual_mm": 1.32,
+     "approach_deg": 14.024,
+     "reason": "approach > 8 deg gate"
+    }
+   ],
+   "markers": {
+    "sum": 353,
+    "n_squares": 62,
+    "zeros": [
+     "d8"
+    ],
+    "min": 0,
+    "max": 10,
+    "baseline_sum": 261,
+    "baseline_zeros": [
+     "a8",
+     "d8",
+     "g8",
+     "h8"
+    ],
+    "why": "baseline report committed at c7c9c88 predates 07509b1 (FOV), 24bb955 (roll zero) and 872f9a4 (aim laser off); the laser is modelled geometry in the wrist render and hides marker faces. c260e86's dedup can only remove duplicates, never add markers."
+   }
+  },
+  "T5": {
+   "tool": "tools/cartesian_squares.py --backend irl",
+   "command": "~/.local/bin/robot-arm-sim python -u tools/cartesian_squares.py --backend irl --bridge-limits http://192.168.1.167:8100 --out reports/squares_irl_20261127b.json",
+   "status": "COMPLETE - 64/64 attempted, 62 solved, 2 local pre-check refusals, no HTTP refusal, no early stop",
+   "attempted": 64,
+   "solved": 62,
+   "stopped": null,
+   "stream": {
+    "attached": true,
+    "error": null
+   },
+   "http_errors": 0,
+   "refusals": [
+    {
+     "square": "e8",
+     "detail": "pre-check: approach 10.9 deg > 8 deg"
+    },
+    {
+     "square": "f8",
+     "detail": "pre-check: approach 9.1 deg > 8 deg"
+    }
+   ],
+   "tip_err_mm": {
+    "n": 62,
+    "p50": 4.83,
+    "p95": 6.8,
+    "max": 9.11
+   },
+   "settle_deg": {
+    "n": 62,
+    "p50": 1.09,
+    "p95": 1.58,
+    "max": 2.0
+   },
+   "roll_delta_deg": "0.0 on every executed leg",
+   "gripper": "not actuated; bridge value 50.38% before, 50.29% after (read noise)",
+   "marker_aim_columns": "absent - /move returned no square/aim_pixel/offset_px on any leg",
+   "joints_deg_from_move": "empty {} on every row - the app does not echo the joint vector, so the paired joint-vector column is unavailable"
+  },
+  "T6": {
+   "method": "tools/cartesian_squares.py --compare /tmp/sim_from_t4.json reports/squares_irl_20261127b.json; sim rows derived from the T4 receipt with solved=mink.pass3, ik_mm/ik_deg=MoveSolver residual (format adapter only - the legacy least-squares sim column is not parity comparable, TESTS.md T4)",
+   "agreement": 64,
+   "squares": 64,
+   "solved_both": 62,
+   "refused_both": [
+    "e8",
+    "f8"
+   ],
+   "sim_tip_err_mm": {
+    "n": 62,
+    "p50": 0.46,
+    "p95": 1.09,
+    "max": 1.43,
+    "mean": 0.53
+   },
+   "irl_tip_err_mm": {
+    "n": 62,
+    "p50": 4.83,
+    "p95": 6.8,
+    "max": 9.11,
+    "mean": 4.41
+   },
+   "bias_irl_minus_sim_mm": {
+    "x": 1.39,
+    "y": 2.32,
+    "z": -2.87,
+    "abs": 4.21,
+    "n": 62
+   },
+   "fails": [],
+   "gate_verdict": "no \u00a75 hard-gate failure observed on this pass; T3 model parity (0.1 mm) not re-run"
+  },
+  "T6_aim": {
+   "method": "tools/aim_squares.py (64 squares, z 70 mm, tol 4 mm) then compared with reports/aim_squares_20261127.json",
+   "status": "measured; mm columns within noise, pixel column moved - see pixel_column flag",
+   "aim_done": 57,
+   "aim_ok": 57,
+   "tip_done": 64,
+   "tip_ok": 60,
+   "plane_failures": 3,
+   "aim_err_mm": {
+    "n": 57,
+    "p50": 3.74,
+    "p95": 6.84,
+    "max": 7.11,
+    "mean": 3.64
+   },
+   "tip_err_mm": {
+    "n": 60,
+    "p50": 4.69,
+    "p95": 5.81,
+    "max": 7.87,
+    "mean": 4.28
+   },
+   "aim_px_pnp": {
+    "n": 45,
+    "p50": 118.05,
+    "p95": 177.23,
+    "max": 1045.72,
+    "mean": 140.33
+   },
+   "tip_px_pnp": {
+    "n": 43,
+    "p50": 116.57,
+    "p95": 165.13,
+    "max": 611.27,
+    "mean": 124.77
+   },
+   "aim_px_cfg": {
+    "n": 57,
+    "p50": 48.42,
+    "p95": 85.35,
+    "max": 95.5,
+    "mean": 51.25
+   },
+   "tip_px_cfg": {
+    "n": 60,
+    "p50": 50.5,
+    "p95": 64.25,
+    "max": 69.3,
+    "mean": 47.84
+   },
+   "prior": {
+    "aim_done": 59,
+    "tip_ok": 60,
+    "aim_err_mm": {
+     "n": 59,
+     "p50": 3.14,
+     "p95": 6.75,
+     "max": 7.2,
+     "mean": 3.53
+    },
+    "tip_err_mm": {
+     "n": 60,
+     "p50": 4.55,
+     "p95": 5.8,
+     "max": 6.02,
+     "mean": 4.07
+    },
+    "aim_px": {
+     "n": 50,
+     "p50": 97.95,
+     "p95": 157.02,
+     "max": 190.29,
+     "mean": 98.87
+    },
+    "tip_px": {
+     "n": 49,
+     "p50": 95.82,
+     "p95": 144.95,
+     "max": 167.03,
+     "mean": 93.0
+    },
+    "aim_px_cfg": {
+     "n": 59,
+     "p50": 42.83,
+     "p95": 81.8,
+     "max": 92.58,
+     "mean": 48.48
+    },
+    "tip_px_cfg": {
+     "n": 60,
+     "p50": 47.75,
+     "p95": 59.72,
+     "max": 63.29,
+     "mean": 44.51
+    },
+    "stamp": "2026-11-27T10:47:17",
+    "head_note": "run 10:47-11:05, before 07509b1 (FOV 32.14->35.70), 24bb955 (roll zero) and 872f9a4 (aim laser off)"
+   },
+   "failures": [
+    {
+     "square": "a3",
+     "leg": "aim/refine",
+     "reason": "plane went stale mid-refine: board plane is stale: last marker solve 30 s ago (limit 30 s)"
+    },
+    {
+     "square": "a7",
+     "leg": "aim",
+     "reason": "plane before aim_point: no usable board plane"
+    },
+    {
+     "square": "a7",
+     "leg": "plane",
+     "reason": "no usable board plane"
+    },
+    {
+     "square": "a8",
+     "leg": "aim",
+     "reason": "plane before aim_point: no usable board plane"
+    },
+    {
+     "square": "a8",
+     "leg": "plane",
+     "reason": "no usable board plane"
+    },
+    {
+     "square": "c8",
+     "leg": "aim",
+     "reason": "plane before aim_point: no usable board plane"
+    },
+    {
+     "square": "c8",
+     "leg": "plane",
+     "reason": "no usable board plane"
+    },
+    {
+     "square": "d8",
+     "leg": "tip",
+     "reason": "no reachable pose: off by 2.3 mm / 13.638 deg"
+    },
+    {
+     "square": "d8",
+     "leg": "aim",
+     "reason": "arm is not over the square after the tip leg (tip [17.9, -23.7, 120.8] vs [-14.0, 98.0, 70.0]); skipped"
+    },
+    {
+     "square": "e8",
+     "leg": "tip",
+     "reason": "no reachable pose: off by 4.58 mm / 23.545 deg"
+    },
+    {
+     "square": "e8",
+     "leg": "aim",
+     "reason": "arm is not over the square after the tip leg (tip [17.9, -23.7, 120.8] vs [14.0, 98.0, 70.0]); skipped"
+    },
+    {
+     "square": "f8",
+     "leg": "tip",
+     "reason": "no reachable pose: off by 4.22 mm / 21.835 deg"
+    },
+    {
+     "square": "f8",
+     "leg": "aim",
+     "reason": "arm is not over the square after the tip leg (tip [17.9, -23.7, 120.8] vs [42.0, 98.0, 70.0]); skipped"
+    },
+    {
+     "square": "g8",
+     "leg": "tip",
+     "reason": "no reachable pose: off by 1.35 mm / 8.886 deg"
+    },
+    {
+     "square": "g8",
+     "leg": "aim",
+     "reason": "arm is not over the square after the tip leg (tip [17.9, -23.7, 120.8] vs [70.0, 98.0, 70.0]); skipped"
+    }
+   ],
+   "pixel_column_flag": {
+    "board_solve_rms_px_this_run": {
+     "median": 2.55,
+     "p95": 52.09,
+     "max": 1597.84,
+     "legs_over_10px": [
+      [
+       "a3",
+       "tip",
+       1597.8
+      ],
+      [
+       "a4",
+       "aim",
+       942.2
+      ],
+      [
+       "b3",
+       "aim",
+       141.3
+      ],
+      [
+       "b2",
+       "aim",
+       133.5
+      ],
+      [
+       "d5",
+       "aim",
+       76.8
+      ],
+      [
+       "d6",
+       "aim",
+       52.1
+      ],
+      [
+       "e6",
+       "aim",
+       51.7
+      ]
+     ]
+    },
+    "board_solve_rms_px_prior": {
+     "median": 1.61,
+     "p95": 2.84,
+     "max": 4.7
+    },
+    "square_uv_off_image": [
+     "a3 tip square_uv [271.1,-337.8]",
+     "a4 aim square_uv [670.1,1202.2]"
+    ],
+    "conclusion": "two 2-tag board solves produced nonsense poses; pixel column p50 118.05 vs 97.95 px and max 1045.72 vs 190.29 px follow from those two legs. The prior receipt predates the FOV/roll/laser changes, so this column is not a like-for-like baseline. Flagged for diagnosis (\u00a77 step 1-2), not waived and not tuned."
+   }
+  }
+ },
+ "not_run": [
+  "T1",
+  "T2",
+  "T2b",
+  "T3",
+  "T8",
+  "T9"
+ ],
+ "commands": [
+  "git stash push -m 'parity rerun 20261127: local fiducials one-per-id' -- chess_sim/fiducials.py; git pull --ff-only  # 872f9a4 -> c260e86",
+  "~/.local/bin/robot-arm-sim python tools/rig_state.py verify",
+  "~/.local/bin/robot-arm-sim python tools/phase2_squares.py --out reports/phase2_squares_20261127b.json",
+  "~/.local/bin/robot-arm-sim python tools/home_arm.py --reason 'FULL-PARITY-01 T5 start 2026-11-27'",
+  "~/.local/bin/robot-arm-sim python -u tools/cartesian_squares.py --backend irl --bridge-limits http://192.168.1.167:8100 --out reports/squares_irl_20261127b.json",
+  "python3 /tmp/t6_pair.py sim reports/phase2_squares_20261127b.json /tmp/sim_from_t4.json",
+  "~/.local/bin/robot-arm-sim python tools/cartesian_squares.py --compare /tmp/sim_from_t4.json reports/squares_irl_20261127b.json",
+  "python3 /tmp/t6_pair.py pair reports/phase2_squares_20261127b.json reports/squares_irl_20261127b.json /tmp/t6_pair.json",
+  "~/.local/bin/robot-arm-sim python -u tools/aim_squares.py --base http://127.0.0.1:8080 --out reports/aim_squares_20261127b.json",
+  "~/.local/bin/robot-arm-sim python tools/home_arm.py --reason 'FULL-PARITY-01 T7 end 2026-11-27'",
+  "~/.local/bin/robot-arm-sim python tools/rig_state.py verify"
+ ],
+ "artifacts": {
+  "t4": "reports/phase2_squares_20261127b.json",
+  "t5": "reports/squares_irl_20261127b.json",
+  "aim": "reports/aim_squares_20261127b.json",
+  "logs": [
+   "/tmp/t4_20261127b.log",
+   "/tmp/t5_20261127b.log",
+   "/tmp/aim_20261127b.log"
+  ]
+ },
+ "result": "T4 PASS (62/64 both gates, identical to baseline; failures e8/f8 approach only). T5 62/64, refusals e8 10.9deg / f8 9.1deg, no 409, no early stop. T6 agreement 64/64, bias (+1.39,+2.32,-2.87) mm, mean 4.21 mm, empty fail list, no observed \u00a75 hard-gate failure. T7 rig state MATCHES after motion. Aim column: mm within noise, pnp pixel column moved with two corrupted 2-tag board solves (a3, a4) - flagged."
+}
